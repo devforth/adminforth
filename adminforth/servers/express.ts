@@ -2,6 +2,7 @@
 import path from 'path';
 import fs from 'fs';
 import { Express } from 'express';
+import { apiReference } from '@scalar/express-api-reference';
 import fetch from 'node-fetch';
 import { AdminUserAuthorizeFunction, IAdminForth, IExpressHttpServer, HttpExtra } from '../types/Back.js';
 import { WebSocketServer } from 'ws';
@@ -90,6 +91,7 @@ const respondNoServer = (title, explanation) => {
     </body>
     `;
 }
+
 class ExpressServer implements IExpressHttpServer {
 
   expressApp: Express;
@@ -214,6 +216,7 @@ class ExpressServer implements IExpressHttpServer {
     this.expressApp = app;
     this.setupWsServer();
     this.adminforth.setupEndpoints(this);
+    this.setupOpenApiRoutes();
     this.setupSpaServer();
   }
 
@@ -300,11 +303,34 @@ class ExpressServer implements IExpressHttpServer {
     }
   }
 
-  endpoint({ method='GET', path, handler, noAuth=false }) {
+  setupOpenApiRoutes() {
+    this.expressApp.get('/api/v1/openapi.json', (req, res) => {
+      res.json(this.adminforth.openApi.renderOpenApiDocument());
+    });
+
+    this.expressApp.use('/api-docs', apiReference({
+      url: '/api/v1/openapi.json',
+      theme: 'saturn',
+    }));
+  }
+
+  endpoint(options) {
+    const { method='GET', path, handler, noAuth=false, request_schema, response_schema, responce_schema } = options;
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
     }
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
+    const normalizedResponseSchema = response_schema ?? responce_schema;
+    const registeredApiSchema = (request_schema || normalizedResponseSchema)
+      ? this.adminforth.openApi.registerApiSchema({
+        method,
+        noAuth,
+        path: fullPath,
+        request_schema,
+        response_schema: normalizedResponseSchema,
+        handler,
+      })
+      : null;
 
     const expressHandler = async (req, res) => {
       const abortController = new AbortController();
@@ -333,7 +359,17 @@ class ExpressServer implements IExpressHttpServer {
         } catch (e) {
           afLogger.error(`Failed to parse body, ${e}`);
           res.status(400).send('Invalid JSON body');
+          return;
         }
+      }
+
+      const requestValidation = this.adminforth.openApi.validateRequestSchema(registeredApiSchema, body);
+      if (!requestValidation.valid) {
+        res.status(400).json({
+          error: 'Request body validation failed',
+          details: requestValidation.errors,
+        });
+        return;
       }
       
       const query = req.query;
@@ -390,7 +426,17 @@ class ExpressServer implements IExpressHttpServer {
       if (output === null) {
         // nothing should be returned anymore
         return;
-      }      
+      }
+
+      const responseValidation = this.adminforth.openApi.validateResponseSchema(registeredApiSchema, output);
+      if (!responseValidation.valid) {
+        res.status(500).json({
+          error: 'Response validation failed',
+          details: responseValidation.errors,
+        });
+        return;
+      }
+
       res.json(output);
     }
 
