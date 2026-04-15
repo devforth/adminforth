@@ -303,6 +303,39 @@ Now we have to define this endpoint in the backend to make our page work:
 
 ## Defining custom API for own page and components
 
+> ☝️ Using `admin.express.withSchema(...)` is the recommended approach because it adds your route to `/api/v1/openapi.json` and `/api-docs` (Solar), performs early runtime validation for API calls, and gives agent plugins a machine-readable API contract they can use in skills. It is still optional though, and you can register plain Express routes without `withSchema(...)` if you prefer.
+
+> ☝️ If you do not want to use Zod, you can pass a plain JSON Schema object instead of a Zod schema. For example, this Zod response schema:
+>
+> ```ts
+> response: z.object({
+>   apartsByDays: z.array(z.record(z.string(), z.unknown())),
+>   totalAparts: z.number(),
+> }).catchall(z.unknown()),
+> ```
+>
+> can be written as pure JSON Schema:
+>
+> ```ts
+> response: {
+>   type: 'object',
+>   properties: {
+>     apartsByDays: {
+>       type: 'array',
+>       items: {
+>         type: 'object',
+>         additionalProperties: true,
+>       },
+>     },
+>     totalAparts: {
+>       type: 'number',
+>     },
+>   },
+>   required: ['apartsByDays', 'totalAparts'],
+>   additionalProperties: true,
+> },
+> ```
+
 
 Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` !
 
