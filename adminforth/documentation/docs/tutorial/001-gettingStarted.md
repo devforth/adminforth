@@ -392,7 +392,7 @@ async function seedDatabase() {
 //diff-add
       title: `Apartment ${i}`,
 //diff-add
-      square_meter: (Math.random() * 100).toFixed(1),
+      square_meter: +(Math.random() * 100).toFixed(1),
 //diff-add
       price: (Math.random() * 10000).toFixed(2),
 //diff-add
