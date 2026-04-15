@@ -154,6 +154,13 @@ export const admin = new AdminForth({
       badgeTooltip: 'Seconds in current minute',  
     },
     {
+      label: 'Dashboard',
+      path: '/overview',
+      homepage: true,
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/Dashboard.vue',
+    },
+    {
       type: 'divider'
     },
     {
@@ -164,7 +171,6 @@ export const admin = new AdminForth({
         {
           label: 'Cars (SQLITE)',
           resourceId: 'cars_sl',
-          homepage: true,
         },
         {
           label: 'Cars (MySQL)',
