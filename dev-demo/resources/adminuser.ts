@@ -10,6 +10,8 @@ import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapt
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
+import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
+import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -189,6 +191,14 @@ export default {
           role: 'user',
         },
       },
+    }),
+    new AdminForthAgent({
+      adapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+        model: 'gpt-5',
+      }),
+      maxTokens: 10000,
+      reasoning: 'high',
     }),
   ],
   hooks: {
