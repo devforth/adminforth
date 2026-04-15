@@ -315,7 +315,7 @@ class ExpressServer implements IExpressHttpServer {
   }
 
   endpoint(options) {
-    const { method='GET', path, handler, noAuth=false, request_schema, response_schema, responce_schema } = options;
+    const { method='GET', path, handler, noAuth=false, description, request_schema, response_schema, responce_schema } = options;
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
     }
@@ -326,6 +326,7 @@ class ExpressServer implements IExpressHttpServer {
         method,
         noAuth,
         path: fullPath,
+        description,
         request_schema,
         response_schema: normalizedResponseSchema,
         handler,

@@ -54,6 +54,7 @@ class OpenApiRegistry implements IOpenApiRegistry {
     const route: IRegisteredApiSchema = {
       method: options.method.toLowerCase(),
       path: options.path,
+      description: options.description,
       request_schema: options.request_schema,
       response_schema: responseSchema,
     };
@@ -124,6 +125,9 @@ class OpenApiRegistry implements IOpenApiRegistry {
       }
 
       paths[route.path][route.method] = {
+        ...(route.description ? {
+          description: route.description,
+        } : {}),
         ...(route.request_schema ? {
           requestBody: {
             required: true,
