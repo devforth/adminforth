@@ -41,7 +41,7 @@
       :adminUser="coreStore.adminUser"
     />
 
-    <CreateEditSkeleton v-if="loading"></CreateEditSkeleton>
+    <CreateEditSkeleton :resource="coreStore.resource" v-if="loading"></CreateEditSkeleton>
  
     <ResourceForm 
       v-else-if="coreStore.resource"
