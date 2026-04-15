@@ -200,7 +200,7 @@
                   :key="action.id"
                 >
                     <component
-                      v-if="action.customComponent"
+                      v-if="action"
                       :is="action.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
                       :meta="formatComponent(action.customComponent).meta"
                       :row="row"
