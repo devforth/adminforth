@@ -2,9 +2,10 @@
 import path from 'path';
 import fs from 'fs';
 import { Express } from 'express';
+import type { AnySchemaObject } from 'ajv';
 import { apiReference } from '@scalar/express-api-reference';
 import fetch from 'node-fetch';
-import { AdminUserAuthorizeFunction, IAdminForth, IExpressHttpServer, HttpExtra } from '../types/Back.js';
+import { AdminUserAuthorizeFunction, IAdminForth, IAdminForthExpressRouteSchema, IExpressHttpServer, HttpExtra } from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
@@ -12,6 +13,7 @@ import http from 'http';
 import { randomUUID } from 'crypto';
 import { listify } from '../modules/utils.js';
 import { afLogger } from '../modules/logger.js';
+import * as z from 'zod';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -50,6 +52,38 @@ async function parseExpressCookie(req): Promise<
     return [];
   }
   return parseCookiesString(cookies);
+}
+
+const EXPRESS_ROUTE_SCHEMA = Symbol('adminforth.express.withSchema');
+
+type SchemaAnnotatedHandler = ((...args: any[]) => any) & {
+  [EXPRESS_ROUTE_SCHEMA]?: IAdminForthExpressRouteSchema;
+};
+
+type ZodSchemaLike = {
+  _zod?: unknown;
+  _def?: unknown;
+  safeParse?: (...args: any[]) => any;
+};
+
+function isZodSchemaLike(schema: unknown): schema is ZodSchemaLike {
+  return !!schema
+    && typeof schema === 'object'
+    && 'safeParse' in schema
+    && typeof (schema as ZodSchemaLike).safeParse === 'function'
+    && ('_zod' in schema || '_def' in schema);
+}
+
+function normalizeExpressSchema(schema: unknown): AnySchemaObject | undefined {
+  if (!schema) {
+    return undefined;
+  }
+
+  if (isZodSchemaLike(schema)) {
+    return z.toJSONSchema(schema as any, { target: 'openapi-3.0' }) as AnySchemaObject;
+  }
+
+  return schema as AnySchemaObject;
 }
 
 const respondNoServer = (title, explanation) => {
@@ -97,6 +131,7 @@ class ExpressServer implements IExpressHttpServer {
   expressApp: Express;
   adminforth: IAdminForth;
   server: http.Server;
+  schemaAwareRouteRegistrationPatched = false;
 
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
@@ -214,6 +249,8 @@ class ExpressServer implements IExpressHttpServer {
 
   serve(app) {
     this.expressApp = app;
+    this.patchSchemaAwareRouteRegistration();
+    this.registerSchemaAwareExistingRoutes();
     this.setupWsServer();
     this.adminforth.setupEndpoints(this);
     this.setupOpenApiRoutes();
@@ -294,6 +331,16 @@ class ExpressServer implements IExpressHttpServer {
     };
   }
 
+  withSchema(schema, handler) {
+    const wrapped = ((...args: any[]) => handler(...args)) as SchemaAnnotatedHandler;
+    wrapped[EXPRESS_ROUTE_SCHEMA] = {
+      ...schema,
+      request: normalizeExpressSchema(schema.request),
+      response: normalizeExpressSchema(schema.response),
+    };
+    return wrapped;
+  }
+
   translatable(handler) {
     // same as authorize, but injects tr function into request
     return async (req, res, next) => {
@@ -301,6 +348,88 @@ class ExpressServer implements IExpressHttpServer {
       req.tr = tr;
       handler(req, res, next);
     }
+  }
+
+  patchSchemaAwareRouteRegistration() {
+    if (this.schemaAwareRouteRegistrationPatched) {
+      return;
+    }
+
+    const methods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
+
+    methods.forEach((method) => {
+      const original = this.expressApp[method]?.bind(this.expressApp);
+      if (!original) {
+        return;
+      }
+
+      this.expressApp[method] = ((path, ...handlers) => {
+        this.registerSchemaAwareRoute([method], path, handlers);
+        return original(path, ...handlers);
+      }) as any;
+    });
+
+    this.schemaAwareRouteRegistrationPatched = true;
+  }
+
+  registerSchemaAwareExistingRoutes() {
+    const stack = (this.expressApp as any)?._router?.stack;
+    if (!Array.isArray(stack)) {
+      return;
+    }
+
+    stack.forEach((layer) => {
+      if (!layer.route) {
+        return;
+      }
+
+      const methods = Object.keys(layer.route.methods || {}).filter((method) => layer.route.methods[method]);
+      const handlers = (layer.route.stack || []).map((routeLayer) => routeLayer.handle);
+      this.registerSchemaAwareRoute(methods, layer.route.path, handlers);
+    });
+  }
+
+  registerSchemaAwareRoute(methods, path, handlers) {
+    const flatHandlers = this.flattenHandlers(handlers);
+    const schema = flatHandlers.find((handler) => (handler as SchemaAnnotatedHandler)?.[EXPRESS_ROUTE_SCHEMA])?.[EXPRESS_ROUTE_SCHEMA];
+
+    if (!schema || (!schema.request && !schema.response)) {
+      return;
+    }
+
+    const normalizedMethods = methods.filter((method, index, allMethods) => {
+      if (!method || method === '_all') {
+        return false;
+      }
+
+      if (method === 'head' && allMethods.includes('get')) {
+        return false;
+      }
+
+      return allMethods.indexOf(method) === index;
+    });
+
+    const routePaths = Array.isArray(path) ? path : [path];
+    routePaths.forEach((routePath) => {
+      if (typeof routePath !== 'string') {
+        return;
+      }
+
+      normalizedMethods.forEach((method) => {
+        this.adminforth.openApi.registerApiSchema({
+          method: method.toUpperCase(),
+          path: routePath,
+          description: schema.description,
+          request_schema: schema.request,
+          response_schema: schema.response,
+          handler: async () => null,
+        });
+      });
+    });
+  }
+
+  flattenHandlers(handlers) {
+    return handlers.flatMap((handler) => Array.isArray(handler) ? this.flattenHandlers(handler) : [handler]);
   }
 
   setupOpenApiRoutes() {

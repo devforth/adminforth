@@ -36,7 +36,8 @@
     "express": "^4.21.0",
     "pg": "^8.16.3",
     "random-words": "^2.0.1",
-    "sqlstring": "^2.3.3"
+    "sqlstring": "^2.3.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.39.0",

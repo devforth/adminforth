@@ -151,8 +151,26 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 
   app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
-    admin.express.authorize(
-      async (req, res) => {
+    admin.express.withSchema(
+      {
+        description: 'Returns aggregated dashboard metrics used by the live demo dashboard page.',
+        response: {
+          type: 'object',
+          properties: {
+            apartsByDays: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+            totalAparts: { type: 'number' },
+          },
+          additionalProperties: true,
+        },
+      },
+      admin.express.authorize(
+        async (req, res) => {
         const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
@@ -237,7 +255,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
         });
-      }
+        }
+      )
     )
   );
   
