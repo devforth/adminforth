@@ -29,11 +29,15 @@ export default {
     {
       name: 'asker_id',
       type: AdminForthDataTypes.STRING,
+      foreignResource: {
+        resourceId: 'adminuser',
+        labelField: 'id'
+      }
     },
     {
       name: 'created_at',
       type: AdminForthDataTypes.DATE,
-      fillOnCreate: () => new Date(),
+      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
       showIn: {
         edit: false,
         create: false,

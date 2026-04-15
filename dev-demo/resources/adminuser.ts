@@ -193,7 +193,7 @@ export default {
       },
     }),
     new AdminForthAgent({
-      adapter: new CompletionAdapterOpenAIChatGPT({
+      completionAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
         model: 'gpt-5',
       }),
