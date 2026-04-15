@@ -303,38 +303,6 @@ Now we have to define this endpoint in the backend to make our page work:
 
 ## Defining custom API for own page and components
 
-> ☝️ Using `admin.express.withSchema(...)` is the recommended approach because it adds your route to `/api/v1/openapi.json` and `/api-docs` (Solar), performs early runtime validation for API calls, and gives agent plugins a machine-readable API contract they can use in skills. It is still optional though, and you can register plain Express routes without `withSchema(...)` if you prefer.
-
-> ☝️ If you do not want to use Zod, you can pass a plain JSON Schema object instead of a Zod schema. For example, this Zod response schema:
->
-> ```ts
-> response: z.object({
->   apartsByDays: z.array(z.record(z.string(), z.unknown())),
->   totalAparts: z.number(),
-> }).catchall(z.unknown()),
-> ```
->
-> can be written as pure JSON Schema:
->
-> ```ts
-> response: {
->   type: 'object',
->   properties: {
->     apartsByDays: {
->       type: 'array',
->       items: {
->         type: 'object',
->         additionalProperties: true,
->       },
->     },
->     totalAparts: {
->       type: 'number',
->     },
->   },
->   required: ['apartsByDays', 'totalAparts'],
->   additionalProperties: true,
-> },
-> ```
 
 
 Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` !
@@ -458,15 +426,47 @@ admin.discoverDatabases();
 
 Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
 
+If you created the app with the CLI defaults, start it and open `http://localhost:3500/api-docs` in your browser to see this custom method in the generated API docs.
+
 
 > ☝️ Please note that we are using `admin.express.authorize` middleware to check if the user is logged in. If you want to make this endpoint public, you can remove this middleware. If user is not logged in, the request will return 401 Unauthorized status code, and protect our statistics from leak.
 
 > ☝️ Moreover if you wrap your endpoint with `admin.express.authorize` middleware, you can access `req.adminUser` object in your endpoint to get the current user information.
 
-> ☝️ Wrapping the route with `admin.express.withSchema(...)` registers it in `/api/v1/openapi.json` and `/api-docs`. Define custom routes before `admin.express.serve(app)` so AdminForth can pick them up.
+> ☝️ Using `admin.express.withSchema(...)` is the recommended approach because it adds your route to `/api/v1/openapi.json` and `/api-docs` (Solar), performs early runtime validation for API calls, and gives agent plugins a machine-readable API contract they can use in skills. It is still optional though, and you can register plain Express routes without `withSchema(...)` if you prefer.
 
-> ☝️ AdminForth does not provide any facility to access data in database. You are free to use any ORM like Prisma, TypeORM, Sequelize,
-mongoose, or just use raw SQL queries against your tables.
+> ☝️ If you do not want to use Zod, you can pass a plain JSON Schema (or convert it from e.g. typebox) object instead of a Zod schema. For example, this Zod response schema:
+>
+> ```ts
+> response: z.object({
+>   apartsByDays: z.array(z.record(z.string(), z.unknown())),
+>   totalAparts: z.number(),
+> }).catchall(z.unknown()),
+> ```
+>
+> can be written as pure JSON Schema:
+>
+> ```ts
+> response: {
+>   type: 'object',
+>   properties: {
+>     apartsByDays: {
+>       type: 'array',
+>       items: {
+>         type: 'object',
+>         additionalProperties: true,
+>       },
+>     },
+>     totalAparts: {
+>       type: 'number',
+>     },
+>   },
+>   required: ['apartsByDays', 'totalAparts'],
+>   additionalProperties: true,
+> },
+> ```
+
+> ☝️ AdminForth does provide own data access facility called [DATA API](./11-dataApi.md) to access data in database. But it is very basic and mostly covers only simple CRUD operations. For complex queries like in this example, it is better to use your own data access code with any ORM. You are free to use any ORM like Prisma, TypeORM, Sequelize, mongoose, or just use raw SQL queries against your tables.
 
 
 Demo:
