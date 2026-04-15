@@ -1,6 +1,7 @@
 import { createRequire } from 'module';
 import type { AnySchemaObject, ErrorObject, ValidateFunction } from 'ajv';
 import { ADMINFORTH_VERSION } from '../modules/utils.js';
+import { buildOpenApiDocument } from './openapiDocument.js';
 import {
   type IAdminForth,
   type IAdminForthApiValidationError,
@@ -113,55 +114,12 @@ class OpenApiRegistry implements IOpenApiRegistry {
   }
 
   renderOpenApiDocument(): {[key: string]: any} {
-    const paths = {} as Record<string, Record<string, unknown>>;
-
-    for (const route of this.registeredSchemas) {
-      if (!route.request_schema && !route.response_schema) {
-        continue;
-      }
-
-      if (!paths[route.path]) {
-        paths[route.path] = {};
-      }
-
-      paths[route.path][route.method] = {
-        ...(route.description ? {
-          description: route.description,
-        } : {}),
-        ...(route.request_schema ? {
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: route.request_schema,
-              },
-            },
-          },
-        } : {}),
-        responses: {
-          200: route.response_schema ? {
-            description: 'Successful response',
-            content: {
-              'application/json': {
-                schema: route.response_schema,
-              },
-            },
-          } : {
-            description: 'Successful response',
-          },
-        },
-      };
-    }
-
-    return {
-      openapi: '3.0.3',
-      info: {
-        title: `${this.adminforth.config.customization.brandName || 'AdminForth'} API`,
-        version: ADMINFORTH_VERSION,
-        description: 'Generated from AdminForth endpoint schemas.',
-      },
-      paths,
-    };
+    return buildOpenApiDocument({
+      title: `${this.adminforth.config.customization.brandName || 'AdminForth'} API`,
+      version: ADMINFORTH_VERSION,
+      description: 'Generated from AdminForth endpoint schemas.',
+      routes: this.registeredSchemas,
+    });
   }
 
   private findCompiledRoute(route: IRegisteredApiSchema | null): CompiledApiSchema | null {

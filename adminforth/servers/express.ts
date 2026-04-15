@@ -56,8 +56,13 @@ async function parseExpressCookie(req): Promise<
 
 const EXPRESS_ROUTE_SCHEMA = Symbol('adminforth.express.withSchema');
 
+type RegisteredExpressRouteSchema = IAdminForthExpressRouteSchema & {
+  request?: AnySchemaObject;
+  response?: AnySchemaObject;
+};
+
 type SchemaAnnotatedHandler = ((...args: any[]) => any) & {
-  [EXPRESS_ROUTE_SCHEMA]?: IAdminForthExpressRouteSchema;
+  [EXPRESS_ROUTE_SCHEMA]?: RegisteredExpressRouteSchema;
 };
 
 type ZodSchemaLike = {
@@ -74,7 +79,7 @@ function isZodSchemaLike(schema: unknown): schema is ZodSchemaLike {
     && ('_zod' in schema || '_def' in schema);
 }
 
-function normalizeExpressSchema(schema: unknown): AnySchemaObject | undefined {
+function normalizeExpressRuntimeSchema(schema: unknown): AnySchemaObject | undefined {
   if (!schema) {
     return undefined;
   }
@@ -335,8 +340,8 @@ class ExpressServer implements IExpressHttpServer {
     const wrapped = ((...args: any[]) => handler(...args)) as SchemaAnnotatedHandler;
     wrapped[EXPRESS_ROUTE_SCHEMA] = {
       ...schema,
-      request: normalizeExpressSchema(schema.request),
-      response: normalizeExpressSchema(schema.response),
+      request: normalizeExpressRuntimeSchema(schema.request),
+      response: normalizeExpressRuntimeSchema(schema.response),
     };
     return wrapped;
   }
@@ -444,7 +449,16 @@ class ExpressServer implements IExpressHttpServer {
   }
 
   endpoint(options) {
-    const { method='GET', path, handler, noAuth=false, description, request_schema, response_schema, responce_schema } = options;
+    const {
+      method='GET',
+      path,
+      handler,
+      noAuth=false,
+      description,
+      request_schema,
+      response_schema,
+      responce_schema,
+    } = options;
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
     }

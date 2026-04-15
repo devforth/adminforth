@@ -88,6 +88,8 @@ const genericObjectSchema: AnySchemaObject = {
 };
 
 const errorResponseSchema: AnySchemaObject = {
+  title: 'AdminForthErrorResponse',
+  description: 'Standard error response returned by AdminForth endpoints.',
   type: 'object',
   required: ['error'],
   properties: {
@@ -97,6 +99,8 @@ const errorResponseSchema: AnySchemaObject = {
 };
 
 const recordIdentifierSchema: AnySchemaObject = {
+  title: 'AdminForthRecordIdentifier',
+  description: 'Record identifier accepted by AdminForth. Depending on the resource it can be a string or a number.',
   anyOf: [
     { type: 'string' },
     { type: 'number' },
@@ -104,6 +108,8 @@ const recordIdentifierSchema: AnySchemaObject = {
 };
 
 const actionIdentifierSchema: AnySchemaObject = {
+  title: 'AdminForthActionIdentifier',
+  description: 'Action identifier accepted by AdminForth. Depending on configuration it can be a string or a number.',
   anyOf: [
     { type: 'string' },
     { type: 'number' },
@@ -111,6 +117,7 @@ const actionIdentifierSchema: AnySchemaObject = {
 };
 
 const namedColumnSchema: AnySchemaObject = {
+  title: 'AdminForthNamedColumn',
   type: 'object',
   required: ['name'],
   properties: {
@@ -120,6 +127,7 @@ const namedColumnSchema: AnySchemaObject = {
 };
 
 const validationResultSchema: AnySchemaObject = {
+  title: 'AdminForthValidationResult',
   type: 'object',
   required: ['isValid'],
   properties: {
@@ -129,56 +137,97 @@ const validationResultSchema: AnySchemaObject = {
   additionalProperties: true,
 };
 
-const commonFilterSchemaDefs: Record<string, AnySchemaObject> = {
-  singleFilter: {
-    type: 'object',
-    properties: {
-      field: { type: 'string' },
-      operator: { type: 'string', enum: SIMPLE_FILTER_OPERATORS },
-      value: {},
-      rightField: { type: 'string' },
-      insecureRawSQL: { type: 'string' },
-      insecureRawNoSQL: {},
-    },
-    additionalProperties: true,
+const filterConditionExample = {
+  field: 'status',
+  operator: AdminForthFilterOperators.EQ,
+  value: 'active',
+};
+
+const filterGroupExample = {
+  operator: AdminForthFilterOperators.AND,
+  subFilters: [filterConditionExample],
+};
+
+const sortItemExample = {
+  field: 'createdAt',
+  direction: AdminForthSortDirections.desc,
+};
+
+const filterConditionSchema: AnySchemaObject = {
+  title: 'AdminForthFilterCondition',
+  description: 'Single field comparison used in AdminForth filtering.',
+  type: 'object',
+  properties: {
+    field: { type: 'string' },
+    operator: { type: 'string', enum: SIMPLE_FILTER_OPERATORS },
+    value: {},
+    rightField: { type: 'string' },
+    insecureRawSQL: { type: 'string' },
+    insecureRawNoSQL: {},
   },
+  additionalProperties: true,
+  examples: [filterConditionExample],
+};
+
+const filterGroupSchema: AnySchemaObject = {
+  title: 'AdminForthFilterGroup',
+  description: 'Nested boolean filter group. Use this for AND or OR combinations of filter nodes.',
+  type: 'object',
+  required: ['operator', 'subFilters'],
+  properties: {
+    operator: {
+      type: 'string',
+      enum: [AdminForthFilterOperators.AND, AdminForthFilterOperators.OR],
+    },
+    subFilters: {
+      type: 'array',
+      items: { $ref: '#/$defs/filterNode' },
+      description: 'Nested filters evaluated with the selected operator.',
+    },
+  },
+  additionalProperties: true,
+  examples: [filterGroupExample],
+};
+
+const sortItemSchema: AnySchemaObject = {
+  title: 'AdminForthSortItem',
+  description: 'Single sort instruction applied in order with the rest of the list.',
+  type: 'object',
+  required: ['field', 'direction'],
+  properties: {
+    field: { type: 'string' },
+    direction: { type: 'string', enum: Object.values(AdminForthSortDirections) },
+  },
+  additionalProperties: true,
+  examples: [sortItemExample],
+};
+
+const commonFilterSchemaDefs: Record<string, AnySchemaObject> = {
+  singleFilter: filterConditionSchema,
+  filterGroup: filterGroupSchema,
   filterNode: {
+    title: 'AdminForthFilterNode',
+    description: 'Either a single filter condition or a nested filter group.',
     anyOf: [
       { $ref: '#/$defs/singleFilter' },
-      {
-        type: 'object',
-        required: ['operator', 'subFilters'],
-        properties: {
-          operator: {
-            type: 'string',
-            enum: [AdminForthFilterOperators.AND, AdminForthFilterOperators.OR],
-          },
-          subFilters: {
-            type: 'array',
-            items: { $ref: '#/$defs/filterNode' },
-          },
-        },
-        additionalProperties: true,
-      },
+      { $ref: '#/$defs/filterGroup' },
     ],
+    examples: [filterConditionExample, filterGroupExample],
   },
-  sortItem: {
-    type: 'object',
-    required: ['field', 'direction'],
-    properties: {
-      field: { type: 'string' },
-      direction: { type: 'string', enum: Object.values(AdminForthSortDirections) },
-    },
-    additionalProperties: true,
-  },
+  sortItem: sortItemSchema,
 };
 
 const commonSortSchema: AnySchemaObject = {
+  title: 'AdminForthSortList',
+  description: 'Ordered list of sort instructions.',
   type: 'array',
   items: { $ref: '#/$defs/sortItem' },
+  examples: [[sortItemExample]],
 };
 
 const commonFiltersSchema: AnySchemaObject = {
+  title: 'AdminForthFilterInput',
+  description: 'Runtime accepts either a single filter node or an array of filter nodes. The OpenAPI document normalizes this to the array form for readability.',
   oneOf: [
     {
       type: 'array',
@@ -203,9 +252,19 @@ const getResourceDataRequestSchema: AnySchemaObject = {
   required: ['resourceId', 'source', 'limit', 'offset', 'filters', 'sort'],
   properties: {
     resourceId: { type: 'string' },
-    source: { type: 'string', enum: ['show', 'list', 'edit'] },
-    limit: { type: 'integer' },
-    offset: { type: 'integer' },
+    source: {
+      type: 'string',
+      enum: ['show', 'list', 'edit'],
+      description: 'Target UI context. Show and edit requests should use direct field filters that identify a single record.',
+    },
+    limit: {
+      type: 'integer',
+      description: 'Maximum number of rows to return for the current page.',
+    },
+    offset: {
+      type: 'integer',
+      description: 'Zero-based row offset used for pagination.',
+    },
     sort: commonSortSchema,
     filters: commonFiltersSchema,
   },
@@ -287,8 +346,14 @@ const getResourceForeignDataRequestSchema: AnySchemaObject = {
   properties: {
     resourceId: { type: 'string' },
     column: { type: 'string' },
-    limit: { type: 'integer' },
-    offset: { type: 'integer' },
+    limit: {
+      type: 'integer',
+      description: 'Maximum number of dropdown options to return.',
+    },
+    offset: {
+      type: 'integer',
+      description: 'Zero-based offset used to fetch the next option page.',
+    },
     search: { type: 'string' },
     filters: commonFiltersSchema,
     sort: commonSortSchema,
