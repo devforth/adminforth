@@ -199,6 +199,14 @@ export default {
       }),
       maxTokens: 10000,
       reasoning: 'high',
+      sessionResource: {
+        resource_id: 'sessions',
+        id_field: 'id',
+        title_field: 'title',
+        turns_field: 'turns',
+        asker_id_field: 'asker_id',
+        created_at_field: 'created_at',
+      }
     }),
   ],
   hooks: {
