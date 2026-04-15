@@ -34,6 +34,10 @@ export default {
       name: 'created_at',
       type: AdminForthDataTypes.DATE,
       fillOnCreate: () => new Date(),
+      showIn: {
+        edit: false,
+        create: false,
+      }
     }
   ],
 } as AdminForthResourceInput;
