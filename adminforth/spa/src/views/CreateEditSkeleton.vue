@@ -13,29 +13,6 @@
 
       <template v-for="column in visibleColumns" :key="column.name">
         <div
-          v-if="isMarkdownEditor(column)"
-          class="flex items-start bg-lightForm dark:bg-darkForm border-b border-gray-100 dark:border-darkFormBorder"
-        >
-          <div class="w-[208px] flex-shrink-0 px-6 pt-7">
-            <Skeleton class="w-24 h-[10px]" />
-          </div>
-
-          <div class="flex-1 px-6 pt-4 flex flex-col pb-6">
-            <div class="flex flex-wrap items-center gap-3 p-1.5 border border-gray-300 dark:border-gray-600 rounded-t-lg bg-gray-50 dark:bg-gray-800 w-full h-[46px]">
-              <template v-for="btn in skeletonButtons" :key="btn.id">
-                <div class="animate-pulse flex items-center justify-center h-8 px-1 text-gray-300 dark:text-gray-600">
-                  <component :is="btn.icon" class="w-5 h-5" />
-                </div>
-                <div v-if="btn.sep" class="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-              </template>
-            </div>
-
-            <div class="animate-pulse bg-white dark:bg-gray-950 border-x border-b border-gray-200 dark:border-gray-700 rounded-b-lg w-full h-[670px]"></div>
-          </div>
-        </div>
-
-        <div
-          v-else
           class="flex items-center bg-lightForm dark:bg-darkForm border-b border-gray-100 dark:border-darkFormBorder"
           :style="{ height: getFieldHeight(column) }"
         >
@@ -87,7 +64,6 @@ const visibleColumns = computed(() => {
   });
 });
 
-const isMarkdownEditor = (column: any) => column.name === 'description';
 
 const hasEditingNote = (column: any) => !!column.editingNote;
 
