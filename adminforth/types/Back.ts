@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from 'express';
 import type { AnySchemaObject } from 'ajv';
 import type { Writable } from 'stream';
+import type { ZodType } from 'zod';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
@@ -62,6 +63,25 @@ export interface IAdminForthEndpointOptions {
   response_schema?: AnySchemaObject,
   responce_schema?: AnySchemaObject,
   handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
+}
+
+export type AdminForthExpressSchemaInput = AnySchemaObject | ZodType;
+
+export interface IAdminForthExpressRouteSchema {
+  /**
+   * Detailed OpenAPI operation description for a custom Express route.
+   */
+  description?: string;
+
+  /**
+   * JSON schema or Zod schema describing the request body for a custom Express route.
+   */
+  request?: AdminForthExpressSchemaInput;
+
+  /**
+   * JSON schema or Zod schema describing the JSON response body for a custom Express route.
+   */
+  response?: AdminForthExpressSchemaInput;
 }
 
 export interface IRegisteredApiSchema {
@@ -148,7 +168,31 @@ export interface IExpressHttpServer extends IHttpServer {
    * ```
    * 
    */  
-  authorize(callable: Function): void;
+  authorize(callable: (...args: any[]) => any): (...args: any[]) => any;
+
+  /**
+   * Method (middleware) to inject translation helper into Express request object.
+   */
+  translatable(callable: (...args: any[]) => any): (...args: any[]) => any;
+
+  /**
+   * Registers OpenAPI schemas for a custom Express route.
+   *
+   * Wrap this around the handler passed to `app.get/post/...`.
+   * If you also need authorization, make `withSchema` the outer wrapper:
+   *
+   * ```ts
+  * import * as z from 'zod';
+  *
+   * app.get('/myApi', admin.express.withSchema({
+   *   description: 'Returns current user profile',
+  *   response: z.object({ user: z.unknown() }),
+   * }, admin.express.authorize((req, res) => {
+   *   res.json({ user: req.adminUser });
+   * })));
+   * ```
+   */
+  withSchema(schema: IAdminForthExpressRouteSchema, callable: (...args: any[]) => any): (...args: any[]) => any;
 }
 
 export interface ITranslateFunction {
@@ -400,7 +444,7 @@ export interface IAdminForthRestAPI {
 export interface IAdminForth {
   config: AdminForthConfig;
   codeInjector: ICodeInjector;
-  express: IHttpServer;
+  express: IExpressHttpServer;
   openApi: IOpenApiRegistry;
 
   restApi: IAdminForthRestAPI;

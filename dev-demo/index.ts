@@ -1,5 +1,6 @@
 import express from 'express';
 import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
+import * as z from 'zod';
 import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -215,8 +216,17 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   app.use(express.json());
 
   app.post(`${ADMIN_BASE_URL}/api/create-job/`,
-    admin.express.authorize(
-      async (req: any, res: any) => {
+    admin.express.withSchema(
+      {
+        description: 'Starts the demo background job and returns immediate job start confirmation.',
+        request: z.object({}),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
         const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
         if (!backgroundJobsPlugin) {
           res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
@@ -236,8 +246,9 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           'example_job_handler', //job handler name
         )
         res.json({ok: true, message: 'Job started' });
-      }
-    ),
+        }
+      ),
+    )
   );
 
   initApi(app, admin);
