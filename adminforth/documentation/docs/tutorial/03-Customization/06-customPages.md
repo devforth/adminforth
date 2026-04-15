@@ -310,12 +310,21 @@ Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` 
 
 import type { IAdminUserExpressRequest } from 'adminforth';
 import express from 'express';
+import * as z from 'zod';
 
 ....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
-  admin.express.authorize(
-    async (req:IAdminUserExpressRequest, res: express.Response) => {
+  admin.express.withSchema(
+    {
+      description: 'Returns aggregated apartment metrics for the custom dashboard page.',
+      response: z.object({
+        apartsByDays: z.array(z.record(z.string(), z.unknown())),
+        totalAparts: z.number(),
+      }).catchall(z.unknown()),
+    },
+    admin.express.authorize(
+      async (req:IAdminUserExpressRequest, res: express.Response) => {
       const days = req.body.days || 7;
       const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
@@ -403,7 +412,8 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         totalUnlistedPrice,
         listedVsUnlistedPriceByDays,
       });
-    }
+      }
+    )
   )
 );
 
@@ -413,10 +423,14 @@ admin.discoverDatabases();
 
 ```
 
+Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
+
 
 > ☝️ Please note that we are using `admin.express.authorize` middleware to check if the user is logged in. If you want to make this endpoint public, you can remove this middleware. If user is not logged in, the request will return 401 Unauthorized status code, and protect our statistics from leak.
 
 > ☝️ Moreover if you wrap your endpoint with `admin.express.authorize` middleware, you can access `req.adminUser` object in your endpoint to get the current user information.
+
+> ☝️ Wrapping the route with `admin.express.withSchema(...)` registers it in `/api/v1/openapi.json` and `/api-docs`. Define custom routes before `admin.express.serve(app)` so AdminForth can pick them up.
 
 > ☝️ AdminForth does not provide any facility to access data in database. You are free to use any ORM like Prisma, TypeORM, Sequelize,
 mongoose, or just use raw SQL queries against your tables.

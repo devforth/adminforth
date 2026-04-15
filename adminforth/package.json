@@ -104,7 +104,8 @@
     "rate-limiter-flexible": "^8.1.0",
     "recast": "^0.23.11",
     "ws": "^8.18.0",
-    "yaml": "^2.8.2"
+    "yaml": "^2.8.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@semantic-release/exec": "^7.1.0",
