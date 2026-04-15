@@ -57,6 +57,7 @@ export interface IAdminForthEndpointOptions {
   method: string,
   noAuth?: boolean,
   path: string,
+  description?: string,
   request_schema?: AnySchemaObject,
   response_schema?: AnySchemaObject,
   responce_schema?: AnySchemaObject,
@@ -66,6 +67,7 @@ export interface IAdminForthEndpointOptions {
 export interface IRegisteredApiSchema {
   method: string;
   path: string;
+  description?: string;
   request_schema?: AnySchemaObject;
   response_schema?: AnySchemaObject;
 }
