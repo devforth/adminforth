@@ -305,9 +305,9 @@ Now we have to define this endpoint in the backend to make our page work:
 
 
 
-Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` !
+Open `api.ts` file and add the following code *BEFORE* `admin.express.authorize` !
 
-```ts title="/index.ts"
+```ts title="/api.ts"
 
 import type { IAdminUserExpressRequest } from 'adminforth';
 import express from 'express';
@@ -417,11 +417,6 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
     )
   )
 );
-
-// serve after you added all api
-admin.express.serve(app)
-admin.discoverDatabases();
-
 ```
 
 Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
