@@ -195,10 +195,10 @@ export default {
     new AdminForthAgent({
       completionAdapter: new CompletionAdapterOpenAIChatGPT({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-5',
+        model: 'gpt-5-mini',
       }),
       maxTokens: 10000,
-      reasoning: 'high',
+      reasoning: 'none',
       sessionResource: {
         resourceId: 'sessions',
         idField: 'id',
