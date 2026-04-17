@@ -184,6 +184,7 @@ import type {
 } from "@/types/Common";
 
 type DebugToolCall = {
+  toolCallId: string;
   toolName: string;
   input: string;
   output: string | null;
