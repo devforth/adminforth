@@ -24,6 +24,7 @@ import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js
 
 import auditLogsResource from "./resources/auditLogs.js"
 import sessionsResource from "./resources/agent_resources/sessions.js";
+import turnsResource from './resources/agent_resources/turns.js';
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
@@ -137,7 +138,8 @@ export const admin = new AdminForth({
     carsDescriptionImage,
     translations,
     background_jobs_resource,
-    sessionsResource
+    sessionsResource,
+    turnsResource
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -220,6 +222,11 @@ export const admin = new AdminForth({
       label: 'Agent Sessions',
       icon: 'heroicons:sparkles-solid',
       resourceId: 'sessions',
+    },
+    {
+      label: 'Agent Turns',
+      icon: 'heroicons:sparkles-solid',
+      resourceId: 'turns',
     }
   ],
 });
