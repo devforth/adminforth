@@ -48,7 +48,7 @@ Here's how to add a custom action:
 - `icon`: Icon to show (using Flowbite icon set)
 - `allowed`: Function to control access to the action
 - `action`: Handler function that executes when action is triggered for a **single** record
-- `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Bulk button with bulkHandler](#bulk-button-with-bulkhandler))
+- `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Dedicated bulk handler](#dedicated-bulk-handler))
 - `showIn`: Controls where the action appears
   - `list`: whether to show as an icon button per row in the list view
   - `listThreeDotsMenu`: whether to show in the three-dots menu per row in the list view
@@ -74,6 +74,8 @@ When `showIn.bulkButton` is `true` and only `action` (not `bulkHandler`) is defi
   }
 }
 ```
+
+### Dedicated bulk handler
 
 If your operation can be expressed more efficiently as a single batched query (e.g., a single `UPDATE … WHERE id IN (…)`), define `bulkHandler` instead. AdminForth will call it **once** with all selected record IDs:
 

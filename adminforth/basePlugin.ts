@@ -47,7 +47,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
 
     const seed = `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${uniqueness}`;
     this.pluginInstanceId = md5hash(seed);
-    afLogger.trace(`🪲 AdminForthPlugin.modifyResourceConfig, ${seed}, 'id', ${this.pluginInstanceId}`);
+    afLogger.trace({seed, pluginInstanceId: this.pluginInstanceId}, `🪲 AdminForthPlugin.modifyResourceConfig`);
     this.adminforth = adminforth;
   }
 

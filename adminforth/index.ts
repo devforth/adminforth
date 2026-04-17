@@ -5,6 +5,7 @@ import MysqlConnector from './dataConnectors/mysql.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
+import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
 import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError } from './modules/utils.js';
 import { 
@@ -116,6 +117,7 @@ class AdminForth implements IAdminForth {
   // fastify: FastifyServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
+  openApi: OpenApiRegistry;
   connectors: {
     [dataSourceId: string]: IAdminForthDataSourceConnectorBase,
   };
@@ -169,6 +171,10 @@ class AdminForth implements IAdminForth {
     afLogger.trace('🔧 Creating AdminForthRestAPI...');
     this.restApi = new AdminForthRestAPI(this);
     afLogger.trace('🔧 AdminForthRestAPI created');
+
+    afLogger.trace('🔧 Creating OpenApiRegistry...');
+    this.openApi = new OpenApiRegistry(this);
+    afLogger.trace('🔧 OpenApiRegistry created');
     
     afLogger.trace('🔧 Creating SocketBroker...');
     this.websocket = new SocketBroker(this);
