@@ -214,6 +214,7 @@ export default {
         createdAtField: 'created_at',
         promptField: 'prompt',
         responseField: 'response',
+        debugField: 'dubbug',
       },
     }),
   ],
