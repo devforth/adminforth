@@ -39,5 +39,21 @@ export default {
       name: 'response',
       type: AdminForthDataTypes.TEXT,
     },
+    {
+      name: 'dubbug',
+      type: AdminForthDataTypes.JSON,
+      components: {
+        show: {
+          file: '@@/TurnDebugShow.vue',
+        },
+      },
+      showIn: {
+        list: false,
+        show: true,
+        edit: false,
+        create: false,
+        filter: false,
+      },
+    },
   ],
 } as AdminForthResourceInput;
