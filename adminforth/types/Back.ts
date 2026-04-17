@@ -1,5 +1,7 @@
 import type { Express, Request, Response } from 'express';
+import type { AnySchemaObject } from 'ajv';
 import type { Writable } from 'stream';
+import type { ZodType } from 'zod';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
@@ -38,6 +40,81 @@ export interface IAdminForthHttpResponse {
     blobStream: () => Writable,
 };
 
+export interface IAdminForthEndpointHandlerInput {
+  body: any;
+  adminUser: AdminUser | undefined;
+  query: {[key: string]: any};
+  headers: {[key: string]: any};
+  cookies: Array<{ key: string, value: string }>;
+  response: IAdminForthHttpResponse;
+  requestUrl: string;
+  abortSignal: AbortSignal;
+  _raw_express_req: Request;
+  _raw_express_res: Response;
+  tr: ITranslateFunction;
+}
+
+export interface IAdminForthEndpointOptions {
+  method: string,
+  noAuth?: boolean,
+  path: string,
+  description?: string,
+  request_schema?: AnySchemaObject,
+  response_schema?: AnySchemaObject,
+  responce_schema?: AnySchemaObject,
+  handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
+}
+
+export type AdminForthExpressSchemaInput = AnySchemaObject | ZodType;
+
+export interface IAdminForthExpressRouteSchema {
+  /**
+   * Detailed OpenAPI operation description for a custom Express route.
+   */
+  description?: string;
+
+  /**
+   * JSON schema or Zod schema describing the request body for a custom Express route.
+   */
+  request?: AdminForthExpressSchemaInput;
+
+  /**
+   * JSON schema or Zod schema describing the JSON response body for a custom Express route.
+   */
+  response?: AdminForthExpressSchemaInput;
+}
+
+export interface IRegisteredApiSchema {
+  method: string;
+  path: string;
+  description?: string;
+  request_schema?: AnySchemaObject;
+  response_schema?: AnySchemaObject;
+}
+
+export interface IAdminForthApiValidationError {
+  instancePath: string;
+  schemaPath: string;
+  keyword: string;
+  message?: string;
+  params: {[key: string]: any};
+}
+
+export interface IAdminForthApiValidationResult {
+  valid: boolean;
+  errors?: IAdminForthApiValidationError[];
+}
+
+export interface IOpenApiRegistry {
+  registeredSchemas: IRegisteredApiSchema[];
+
+  registerApiSchema(options: IAdminForthEndpointOptions): IRegisteredApiSchema;
+  register_api_schema(options: IAdminForthEndpointOptions): IRegisteredApiSchema;
+  validateRequestSchema(route: IRegisteredApiSchema | null, payload: any): IAdminForthApiValidationResult;
+  validateResponseSchema(route: IRegisteredApiSchema | null, payload: any): IAdminForthApiValidationResult;
+  renderOpenApiDocument(): {[key: string]: any};
+}
+
 /**
  * Implement this interface to create custom HTTP server adapter for AdminForth.
  */
@@ -57,23 +134,7 @@ export interface IHttpServer {
    * 
    * @param options : Object with method, path and handler properties.
    */
-  endpoint(options: {
-    method: string,
-    noAuth?: boolean,
-    path: string,
-    handler: (
-      body: any, 
-      adminUser: any, 
-      query: {[key: string]: string}, 
-      headers: {[key: string]: string}, 
-      cookies: {[key: string]: string}, 
-      response: IAdminForthHttpResponse,
-      requestUrl: string,
-      abortSignal: AbortSignal,
-      _raw_express_req: Request,
-      _raw_express_res: Response,
-    ) => void,
-  }): void;
+  endpoint(options: IAdminForthEndpointOptions): void;
 
 }
 
@@ -107,14 +168,38 @@ export interface IExpressHttpServer extends IHttpServer {
    * ```
    * 
    */  
-  authorize(callable: Function): void;
+  authorize(callable: (...args: any[]) => any): (...args: any[]) => any;
+
+  /**
+   * Method (middleware) to inject translation helper into Express request object.
+   */
+  translatable(callable: (...args: any[]) => any): (...args: any[]) => any;
+
+  /**
+   * Registers OpenAPI schemas for a custom Express route.
+   *
+   * Wrap this around the handler passed to `app.get/post/...`.
+   * If you also need authorization, make `withSchema` the outer wrapper:
+   *
+   * ```ts
+  * import * as z from 'zod';
+  *
+   * app.get('/myApi', admin.express.withSchema({
+   *   description: 'Returns current user profile',
+  *   response: z.object({ user: z.unknown() }),
+   * }, admin.express.authorize((req, res) => {
+   *   res.json({ user: req.adminUser });
+   * })));
+   * ```
+   */
+  withSchema(schema: IAdminForthExpressRouteSchema, callable: (...args: any[]) => any): (...args: any[]) => any;
 }
 
 export interface ITranslateFunction {
   (
     msg: string,
     category: string,
-    params: any,
+    params?: any,
     pluralizationNumber?: number
   ): Promise<string>;
 }
@@ -359,7 +444,8 @@ export interface IAdminForthRestAPI {
 export interface IAdminForth {
   config: AdminForthConfig;
   codeInjector: ICodeInjector;
-  express: IHttpServer;
+  express: IExpressHttpServer;
+  openApi: IOpenApiRegistry;
 
   restApi: IAdminForthRestAPI;
   activatedPlugins: Array<IAdminForthPlugin>;
@@ -456,6 +542,8 @@ export interface IAdminForth {
    * ```
    */
   getPluginById<T>(id: string): T;
+
+  refreshMenuBadge(menuItemId: string, adminUser: AdminUser): Promise<void>;
 }
 
 
@@ -533,7 +621,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     body: any,
     query: Record<string, string>,
     headers: Record<string, string>,
-    cookies: Record<string, string>,
+    cookies: { key: string, value: string }[],
     requestUrl: string,
   },
   filtersTools: any,
@@ -571,7 +659,7 @@ export interface HttpExtra {
   body: any,
   query: Record<string, string>,
   headers: Record<string, string>,
-  cookies: Record<string, string>,
+  cookies: { key: string, value: string }[],
   requestUrl: string,
   meta?: any,
   response: IAdminForthHttpResponse
@@ -2019,7 +2107,7 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * It should return Promise which will be resolved when action is done.
    */
   action: ({ resource, selectedIds, adminUser, response, tr }: { 
-    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: (key: string, category?: string, params?: any) => string
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: ITranslateFunction
   }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**

@@ -1,5 +1,6 @@
 import express from 'express';
-import AdminForth, {  Filters } from '../adminforth/index.js';
+import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
+import * as z from 'zod';
 import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -22,6 +23,8 @@ import background_jobs_resource from './resources/background_jobs.js';
 import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js';
 
 import auditLogsResource from "./resources/auditLogs.js"
+import sessionsResource from "./resources/agent_resources/sessions.js";
+import turnsResource from './resources/agent_resources/turns.js';
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
@@ -134,7 +137,9 @@ export const admin = new AdminForth({
     passkeysResource,
     carsDescriptionImage,
     translations,
-    background_jobs_resource
+    background_jobs_resource,
+    sessionsResource,
+    turnsResource
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -143,6 +148,19 @@ export const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/AfComponents.vue',
       path: '/af-components',
+      itemId: 'menuTimestamp',
+      badge: async (adminUser: AdminUser, adminForth: IAdminForth) => {
+        const now = new Date();
+        return now.getSeconds();
+      },
+      badgeTooltip: 'Seconds in current minute',  
+    },
+    {
+      label: 'Dashboard',
+      path: '/overview',
+      homepage: true,
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/Dashboard.vue',
     },
     {
       type: 'divider'
@@ -155,7 +173,6 @@ export const admin = new AdminForth({
         {
           label: 'Cars (SQLITE)',
           resourceId: 'cars_sl',
-          homepage: true,
         },
         {
           label: 'Cars (MySQL)',
@@ -200,6 +217,16 @@ export const admin = new AdminForth({
       label: 'Background Jobs',
       icon: 'flowbite:briefcase-solid',
       resourceId: 'jobs',
+    },
+    {
+      label: 'Agent Sessions',
+      icon: 'heroicons:sparkles-solid',
+      resourceId: 'sessions',
+    },
+    {
+      label: 'Agent Turns',
+      icon: 'heroicons:sparkles-solid',
+      resourceId: 'turns',
     }
   ],
 });
@@ -209,8 +236,17 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   app.use(express.json());
 
   app.post(`${ADMIN_BASE_URL}/api/create-job/`,
-    admin.express.authorize(
-      async (req: any, res: any) => {
+    admin.express.withSchema(
+      {
+        description: 'Starts the demo background job and returns immediate job start confirmation.',
+        request: z.object({}),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
         const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
         if (!backgroundJobsPlugin) {
           res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
@@ -230,8 +266,9 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           'example_job_handler', //job handler name
         )
         res.json({ok: true, message: 'Job started' });
-      }
-    ),
+        }
+      ),
+    )
   );
 
   initApi(app, admin);

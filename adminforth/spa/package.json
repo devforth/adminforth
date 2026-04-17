@@ -36,6 +36,7 @@
     "vue3-json-viewer": "^2.2.2"
   },
   "devDependencies": {
+    "ajv": "^8.18.0",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tsconfig/node20": "^20.1.4",

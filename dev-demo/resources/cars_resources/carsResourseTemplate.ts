@@ -267,9 +267,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           },
         ]
       }),
-      new Many2ManyPlugin({
-        linkedResourceId: 'adminuser'
-      }),
+      // new Many2ManyPlugin({
+      //   linkedResourceId: 'adminuser'
+      // }),
     /*********************************************************************************
      
                                         AI Plugins
