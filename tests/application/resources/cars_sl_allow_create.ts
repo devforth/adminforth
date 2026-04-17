@@ -1,4 +1,4 @@
-import carsResourseTemplate from "../../../dev-demo/resources/carsResourseTemplate.js";
+import carsResourseTemplate from "../../../dev-demo/resources/cars_resources/carsResourseTemplate.js";
 import { AdminForthDataTypes } from 'adminforth'
 
 const cars_sl = carsResourseTemplate("cars_sl", "sqlite", "id");

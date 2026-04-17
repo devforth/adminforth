@@ -67,3 +67,13 @@ ansible:
   label: Ansible
   permalink: /ansible
   description: Ansible is an open-source automation tool used for configuration management, application deployment, and task automation.
+
+context7:
+  label: Context7
+  permalink: /context7
+  description: Context7 provides MCP-powered library and API documentation access for coding assistants.
+
+MCP:
+  label: MCP
+  permalink: /mcp
+  description: Model Context Protocol is a standard way for tools and assistants to connect to external capabilities and data sources.

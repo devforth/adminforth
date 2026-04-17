@@ -17,8 +17,8 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
   <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
   
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <div>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <div class="mb-2">
           <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
           <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
         </div>
@@ -31,7 +31,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }]"
           :options="{
             chart: {
-              height: 130,
+              height: 180,
             },
             yaxis: {
               stepSize: 1,
@@ -44,12 +44,16 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
         />
       </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Top countries') }}</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400 mb-3 text-center">
+          {{ $t('Top countries') }}
+        </p>
+
+        <div class="flex justify-center items-center">
         <PieChart
           :data="topCountries"
           :options="{
-            chart: { type: 'pie'},
+            chart: { type: 'pie', height: 300 },
             legend: {
               show: false,
             },
@@ -63,20 +67,26 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }"
         />
       </div>
+      </div>
 
-      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2" v-if="data">
-        <div class="grid grid-cols-2 py-3">
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2 min-h-[700px]" v-if="data">
+        <div class="grid grid-cols-2 py-3 gap-4 text-center">
           <dl>
-            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Listed price') }}</dt>
-            <dd class="leading-none text-xl font-bold dark:text-green-400" :style="{color:COLORS[0]}">{{
+            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">
+              {{ $t('Listed price') }}
+            </dt>
+            <dd class="leading-none text-xl font-bold" :style="{color:COLORS[0]}">
+              {{
               new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
                 data.totalListedPrice,
               ) }}
             </dd>
           </dl>
           <dl>
-            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Unlisted price') }}</dt>
-            <dd class="leading-none text-xl font-bold dark:text-red-500" :style="{color:COLORS[1]}">{{
+            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">
+              {{ $t('Unlisted price') }}</dt>
+            <dd class="leading-none text-xl font-bold" :style="{color:COLORS[1]}">
+            {{
               new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
                 data.totalUnlistedPrice,
               ) }}
@@ -98,7 +108,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }]"
           :options="{
             chart: {
-              height: 500,
+              height: 600,
             },
             xaxis: {
               labels: { show: true },
@@ -120,12 +130,13 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 
       </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment by rooms') }}</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400 mb-3 text-center">{{ $t('Apartment by rooms') }}</p>
+        <div class="flex justify-center items-center">
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
-            chart: { type: 'donut'},
+            chart: { type: 'donut', height: 300 },
             plotOptions: {
               pie: {
                 donut: {
@@ -142,9 +153,10 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }"
         />
       </div>
+      </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Unlisted vs Listed price' ) }}</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400 mb-3 text-center">{{ $t('Unlisted vs Listed price' ) }}</p>
 
         <AreaChart 
           :data="listedVsUnlistedPriceByDays"
@@ -160,7 +172,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }]"
           :options="{
             chart: {
-              height: 250,
+              height: 320,
             },
             yaxis: {
               labels: {
@@ -304,18 +316,28 @@ Now we have to define this endpoint in the backend to make our page work:
 ## Defining custom API for own page and components
 
 
+
 Open `index.ts` file and add the following code *BEFORE* `admin.express.serve(` !
 
 ```ts title="/index.ts"
 
 import type { IAdminUserExpressRequest } from 'adminforth';
 import express from 'express';
+import * as z from 'zod';
 
 ....
 
 app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
-  admin.express.authorize(
-    async (req:IAdminUserExpressRequest, res: express.Response) => {
+  admin.express.withSchema(
+    {
+      description: 'Returns aggregated apartment metrics for the custom dashboard page.',
+      response: z.object({
+        apartsByDays: z.array(z.record(z.string(), z.unknown())),
+        totalAparts: z.number(),
+      }).catchall(z.unknown()),
+    },
+    admin.express.authorize(
+      async (req:IAdminUserExpressRequest, res: express.Response) => {
       const days = req.body.days || 7;
       const apartsByDays = admin.resource('aparts').dataConnector.client.prepare(
         `SELECT 
@@ -403,7 +425,8 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
         totalUnlistedPrice,
         listedVsUnlistedPriceByDays,
       });
-    }
+      }
+    )
   )
 );
 
@@ -413,13 +436,49 @@ admin.discoverDatabases();
 
 ```
 
+Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
+
+If you created the app with the CLI defaults, start it and open `http://localhost:3500/api-docs` in your browser to see this custom method in the generated API docs.
+
 
 > ☝️ Please note that we are using `admin.express.authorize` middleware to check if the user is logged in. If you want to make this endpoint public, you can remove this middleware. If user is not logged in, the request will return 401 Unauthorized status code, and protect our statistics from leak.
 
 > ☝️ Moreover if you wrap your endpoint with `admin.express.authorize` middleware, you can access `req.adminUser` object in your endpoint to get the current user information.
 
-> ☝️ AdminForth does not provide any facility to access data in database. You are free to use any ORM like Prisma, TypeORM, Sequelize,
-mongoose, or just use raw SQL queries against your tables.
+> ☝️ Using `admin.express.withSchema(...)` is the recommended approach because it adds your route to `/api/v1/openapi.json` and `/api-docs` (Solar), performs early runtime validation for API calls, and gives agent plugins a machine-readable API contract they can use in skills. It is still optional though, and you can register plain Express routes without `withSchema(...)` if you prefer.
+
+> ☝️ If you do not want to use Zod, you can pass a plain JSON Schema (or convert it from e.g. typebox) object instead of a Zod schema. For example, this Zod response schema:
+>
+> ```ts
+> response: z.object({
+>   apartsByDays: z.array(z.record(z.string(), z.unknown())),
+>   totalAparts: z.number(),
+> }).catchall(z.unknown()),
+> ```
+>
+> can be written as pure JSON Schema:
+>
+> ```ts
+> response: {
+>   type: 'object',
+>   properties: {
+>     apartsByDays: {
+>       type: 'array',
+>       items: {
+>         type: 'object',
+>         additionalProperties: true,
+>       },
+>     },
+>     totalAparts: {
+>       type: 'number',
+>     },
+>   },
+>   required: ['apartsByDays', 'totalAparts'],
+>   additionalProperties: true,
+> },
+> ```
+
+> ☝️ AdminForth does provide own data access facility called [DATA API](./11-dataApi.md) to access data in database. But it is very basic and mostly covers only simple CRUD operations. For complex queries like in this example, it is better to use your own data access code with any ORM. You are free to use any ORM like Prisma, TypeORM, Sequelize, mongoose, or just use raw SQL queries against your tables.
 
 
 Demo:
