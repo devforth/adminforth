@@ -25,7 +25,11 @@ export default {
     {
       name: 'created_at',
       type: AdminForthDataTypes.DATE,
-      fillOnCreate: () => new Date(),
+      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
+      showIn: {
+        edit: false,
+        create: false,
+      }
     },
     {
       name: 'prompt',

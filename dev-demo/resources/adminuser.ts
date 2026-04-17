@@ -206,7 +206,15 @@ export default {
         turnsField: 'turns',
         askerIdField: 'asker_id',
         createdAtField: 'created_at',
-      }
+      },
+      turnResource: {
+        resourceId: 'turns',
+        idField: 'id',
+        sessionIdField: 'session_id',
+        createdAtField: 'created_at',
+        promptField: 'prompt',
+        responseField: 'response',
+      },
     }),
   ],
   hooks: {
