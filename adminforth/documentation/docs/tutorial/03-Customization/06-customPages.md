@@ -17,8 +17,8 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
   <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
   
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <div>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <div class="mb-2">
           <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">{{ data.totalAparts }}</h5>
           <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment last 7 days | Apartments last 7 days', data.totalAparts) }}</p>
         </div>
@@ -31,7 +31,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }]"
           :options="{
             chart: {
-              height: 130,
+              height: 180,
             },
             yaxis: {
               stepSize: 1,
@@ -44,12 +44,16 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
         />
       </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Top countries') }}</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400 mb-3 text-center">
+          {{ $t('Top countries') }}
+        </p>
+
+        <div class="flex justify-center items-center">
         <PieChart
           :data="topCountries"
           :options="{
-            chart: { type: 'pie'},
+            chart: { type: 'pie', height: 300 },
             legend: {
               show: false,
             },
@@ -63,20 +67,26 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }"
         />
       </div>
+      </div>
 
-      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2" v-if="data">
-        <div class="grid grid-cols-2 py-3">
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 lg:row-span-2 xl:col-span-2 min-h-[700px]" v-if="data">
+        <div class="grid grid-cols-2 py-3 gap-4 text-center">
           <dl>
-            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Listed price') }}</dt>
-            <dd class="leading-none text-xl font-bold dark:text-green-400" :style="{color:COLORS[0]}">{{
+            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">
+              {{ $t('Listed price') }}
+            </dt>
+            <dd class="leading-none text-xl font-bold" :style="{color:COLORS[0]}">
+              {{
               new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
                 data.totalListedPrice,
               ) }}
             </dd>
           </dl>
           <dl>
-            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Unlisted price') }}</dt>
-            <dd class="leading-none text-xl font-bold dark:text-red-500" :style="{color:COLORS[1]}">{{
+            <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">
+              {{ $t('Unlisted price') }}</dt>
+            <dd class="leading-none text-xl font-bold" :style="{color:COLORS[1]}">
+            {{
               new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, }).format(
                 data.totalUnlistedPrice,
               ) }}
@@ -98,7 +108,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }]"
           :options="{
             chart: {
-              height: 500,
+              height: 600,
             },
             xaxis: {
               labels: { show: true },
@@ -120,12 +130,13 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
 
       </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{  $t('Apartment by rooms') }}</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400 mb-3 text-center">{{ $t('Apartment by rooms') }}</p>
+        <div class="flex justify-center items-center">
         <PieChart
           :data="apartsCountsByRooms"
           :options="{
-            chart: { type: 'donut'},
+            chart: { type: 'donut', height: 300 },
             plotOptions: {
               pie: {
                 donut: {
@@ -142,9 +153,10 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }"
         />
       </div>
+      </div>
 
-      <div class="max-w-md w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
-        <p class="text-base font-normal text-gray-500 dark:text-gray-400">{{ $t('Unlisted vs Listed price' ) }}</p>
+      <div class="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5 min-h-[340px]" v-if="data">
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400 mb-3 text-center">{{ $t('Unlisted vs Listed price' ) }}</p>
 
         <AreaChart 
           :data="listedVsUnlistedPriceByDays"
@@ -160,7 +172,7 @@ Create a Vue component in the `custom` directory of your project, e.g. `Dashboar
           }]"
           :options="{
             chart: {
-              height: 250,
+              height: 320,
             },
             yaxis: {
               labels: {
