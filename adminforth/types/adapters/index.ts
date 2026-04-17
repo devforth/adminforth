@@ -1,5 +1,5 @@
 export type { EmailAdapter } from './EmailAdapter.js';
-export type { CompletionAdapter } from './CompletionAdapter.js';
+export type { CompletionAdapter, CompletionStreamEvent } from './CompletionAdapter.js';
 export type { ImageGenerationAdapter } from './ImageGenerationAdapter.js';
 export type { KeyValueAdapter } from './KeyValueAdapter.js';
 export type { ImageVisionAdapter } from './ImageVisionAdapter.js';

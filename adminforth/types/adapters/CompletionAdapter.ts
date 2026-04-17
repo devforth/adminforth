@@ -1,3 +1,18 @@
+import type { JSONSchemaType } from "ajv";
+
+export type CompletionStreamEvent = {
+  type: "output" | "reasoning";
+  delta: string;
+  text: string;
+  source?: "summary" | "text";
+};
+
+export type CompletionTool<Input = Record<string, any>, Output = any> = {
+  name: string;
+  input_schema: JSONSchemaType<Input>;
+  description?: string;
+  handler: (input: Input) => Promise<Output> | Output;
+};
 export interface CompletionAdapter {
 
   /**
@@ -7,17 +22,24 @@ export interface CompletionAdapter {
   validate(): void;
 
   /**
-   * This method should return a text completion based on the provided content and stop sequence.
+   * This method should return a text completion based on the provided content.
    * @param content - The input text to complete
-   * @param stop - An array of stop sequences to indicate where to stop the completion
    * @param maxTokens - The maximum number of tokens to generate
+   * @param outputSchema - Optional structured output schema for the response
+   * @param reasoningEffort - Optional parameter to indicate the level of reasoning effort for the completion
+   * @param onChunk - Optional callback invoked for each streamed chunk or reasoning event
    * @returns A promise that resolves to an object containing the completed text and other metadata
    */
   complete(
     content: string,
-    stop: string[],
     maxTokens: number,
-    outputSchema?: any
+    outputSchema?: any,
+    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh',
+    tools?: CompletionTool[],
+    onChunk?: (
+      chunk: string,
+      event?: CompletionStreamEvent,
+    ) => void | Promise<void>,
   ): Promise<{
     content?: string;
     finishReason?: string;

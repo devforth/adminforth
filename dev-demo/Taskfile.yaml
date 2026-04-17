@@ -31,6 +31,7 @@ vars:
     - "adminforth-many2many"
     - "adminforth-background-jobs"
     - "adminforth-auto-remove"
+    - "adminforth-agent"
 
   ADAPTERS:
     - "adminforth-completion-adapter-open-ai-chat-gpt"
@@ -103,6 +104,58 @@ tasks:
           fi
         ' _ {}
 
+  update_adminforth_repos:
+    internal: true
+    cmds:
+      - |
+        set -euo pipefail
+        cd "{{.DIR}}"
+
+        repos=({{range .REPOS}}{{.}} {{end}})
+
+        printf '%s\n' "${repos[@]}" | xargs -n1 -P"{{.PNPM_JOBS}}" -I{} bash -c '
+          set -euo pipefail
+          name="$1"
+
+          if [ ! -d "${name}" ]; then
+            echo "Directory ${name} does not exist, skipping"
+            exit 0
+          fi
+
+          echo "Updating adminforth in ${name}"
+          cd "${name}"
+
+          if ! git diff --cached --quiet; then
+            echo "Repository ${name} has staged changes, skipping"
+            exit 0
+          fi
+
+          if ! git diff --quiet -- package.json || ! git diff --cached --quiet -- package.json; then
+            echo "Repository ${name} has pending dependency file changes, skipping"
+            exit 0
+          fi
+
+          if [ -f pnpm-lock.yaml ] && { ! git diff --quiet -- pnpm-lock.yaml || ! git diff --cached --quiet -- pnpm-lock.yaml; }; then
+            echo "Repository ${name} has pending dependency file changes, skipping"
+            exit 0
+          fi
+
+          pnpm i adminforth@latest
+
+          git add package.json
+          if [ -e pnpm-lock.yaml ]; then
+            git add pnpm-lock.yaml
+          fi
+
+          if git diff --cached --quiet; then
+            echo "No adminforth update needed in ${name}"
+            exit 0
+          fi
+
+          git commit -m "fix: update adminforth verion"
+          git push
+        ' _ {}
+
   pull_plugins:
     desc: Pull plugin repositories
     cmds:
@@ -138,3 +191,12 @@ tasks:
           DIR: "{{.ADAPTERS_DIR}}"
           REPOS:
             ref: .ADAPTERS
+
+  update_adminforth_plugins:
+    desc: Update adminforth to latest in plugin repositories, commit, and push
+    cmds:
+      - task: update_adminforth_repos
+        vars:
+          DIR: "{{.PLUGINS_DIR}}"
+          REPOS:
+            ref: .PLUGINS

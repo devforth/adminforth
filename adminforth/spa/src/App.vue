@@ -2,6 +2,7 @@
   <div>
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      id="af-header-nav"
       class="fixed h-14 top-0 z-30 w-full border-b drop-shadow-sm bg-lightNavbar dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
       <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
