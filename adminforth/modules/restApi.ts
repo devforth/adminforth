@@ -1482,10 +1482,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        return {
-          ...data,
-          options: resource?.options,
-        };
+        return data;
       },
     });
     server.endpoint({
