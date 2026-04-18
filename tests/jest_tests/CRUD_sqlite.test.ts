@@ -676,6 +676,36 @@ describe('POST /get_resource_data', () => {
     });
   });
 
+  describe('POST /get_resource', () => {
+    beforeAll(async () => {
+      const res = await agent
+        .post('/adminapi/v1/login')
+        .send({
+          username: 'adminforth',
+          password: 'adminforth',
+        });
+      expect(res.status).toEqual(200);
+      authCookie = res.headers['set-cookie']?.[0];
+      expect(authCookie).toContain('adminforth_');
+    });
+
+    it('does not expose backend-only resource metadata in frontend resource payload', async () => {
+      const res = await agent
+        .set('Cookie', authCookie)
+        .post('/adminapi/v1/get_resource')
+        .send({
+          resourceId: 'cars_sl',
+        });
+
+      expect(res.status).toEqual(200);
+      expect(res.body.error).toBeUndefined();
+      expect(res.body.resource.resourceId).toBe('cars_sl');
+      expect(res.body.resource.table).toBeUndefined();
+      expect(res.body.resource.dataSource).toBeUndefined();
+      expect(res.body.resource.dataSourceColumns).toBeUndefined();
+    });
+  });
+
   it('should throw error, that resource is not found', async () => {
     const res = await agent      .set('Cookie', authCookie)
       .post('/adminapi/v1/get_resource_data')

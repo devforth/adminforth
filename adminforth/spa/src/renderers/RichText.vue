@@ -3,14 +3,14 @@
 </template>
 
 <script setup lang="ts">
-import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common'
+import type { AdminForthResourceColumnCommon, AdminForthResourceFrontend, AdminUser } from '@/types/Common'
 import { protectAgainstXSS } from '@/utils'
 
 const props = defineProps<{
   column: AdminForthResourceColumnCommon
   record: any
   meta: any
-  resource: AdminForthResourceCommon
+  resource: AdminForthResourceFrontend
   adminUser: AdminUser
 }>()
 const htmlContent = protectAgainstXSS(props.record[props.column.name])
