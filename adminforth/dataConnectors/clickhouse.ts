@@ -498,14 +498,17 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       filters: IAdminForthAndOrFilter;
     }): Promise<number> {
       const tableName = resource.table;
+      let normalizedFilters = filters;
+
       // validate and normalize in case this method is called from dataAPI
       if (filters) {
         const filterValidation = this.validateAndNormalizeFilters(filters, resource);
         if (!filterValidation.ok) {
           throw new Error(filterValidation.error);
         }
+        normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
       }
-      const { where, params } = this.whereClause(resource, filters);
+      const { where, params } = this.whereClause(resource, normalizedFilters);
 
       const countQ = await this.client.query({
         query: `SELECT COUNT(*) as count FROM ${tableName} ${where}`,
