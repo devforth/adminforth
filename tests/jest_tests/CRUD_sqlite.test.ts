@@ -1,7 +1,11 @@
 import request from 'supertest';
+import { agent, app, closeApplication } from './testApp';
 
-const agent = request.agent('localhost:3333');
 let authCookie: string;
+
+afterAll(async () => {
+  await closeApplication();
+});
 
 describe('POST /create_record', () => {
   const requestBody: any ={
@@ -31,13 +35,17 @@ describe('POST /create_record', () => {
         password: 'adminforth',
       });
     expect(res.status).toEqual(200);
-    authCookie = res.headers['set-cookie']?.[0];
+    authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
     expect(authCookie).toContain('adminforth_');
   });
 
-  it('throw an error, that unauthorized access is blocked after login', async () => {
-    const res = await agent
-      .post('/adminapi/v1/create_record');
+  it('blocks create_record for unauthenticated requests', async () => {
+    const res = await request(app)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+        resourceId: 'cars_sl',
+      });
     expect(res.status).toEqual(401);
   });
 
@@ -298,7 +306,7 @@ describe('POST /update_record', () => {
         password: 'adminforth',
       });
     expect(res.status).toEqual(200);
-    authCookie = res.headers['set-cookie']?.[0];
+    authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
     expect(authCookie).toContain('adminforth_');
   });
 
@@ -377,6 +385,11 @@ describe('POST /update_record', () => {
       .post('/adminapi/v1/update_record')
       .send({
         resourceId: 'non_existent_resource',
+        recordId: '21345667',
+        meta: {},
+        record: {
+          model: 'Abobus2',
+        },
       });
     expect(res.status).toEqual(200);
     expect(res.body.error).toBe("Resource 'non_existent_resource' not found");
@@ -676,6 +689,31 @@ describe('POST /get_resource_data', () => {
     });
   });
 
+  it('returns list data for boolean filters without mutating the count path input', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [{ field: 'price', direction: 'desc' }],
+        filters: [
+          { field: 'id', operator: 'eq', value: createdRecordId },
+          { field: 'listed', operator: 'eq', value: true },
+        ],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.total).toBeGreaterThanOrEqual(1);
+    expect(res.body.data[0]).toMatchObject({
+      id: createdRecordId,
+      listed: true,
+    });
+  });
+
   describe('POST /get_resource', () => {
     beforeAll(async () => {
       const res = await agent
@@ -685,7 +723,7 @@ describe('POST /get_resource_data', () => {
           password: 'adminforth',
         });
       expect(res.status).toEqual(200);
-      authCookie = res.headers['set-cookie']?.[0];
+      authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
       expect(authCookie).toContain('adminforth_');
     });
 
@@ -846,6 +884,7 @@ describe('POST /delete_record', () => {
       .post('/adminapi/v1/delete_record')
       .send({
         resourceId: 'non_existent_resource',
+        primaryKey: 'non_existent_id',
       });
     expect(res.status).toEqual(200);
     expect(res.body.error).toBe("Resource 'non_existent_resource' not found");
