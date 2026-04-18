@@ -42,7 +42,7 @@ export const useCoreStore = defineStore('core', () => {
     return resource.value.columns.filter((col: AdminForthResourceColumnCommon) => col.showIn?.filter);
   })
 
-  const resourceOptions: Ref<AdminForthResourceCommon['options'] | null> = ref(null);
+  const resourceOptions: Ref<AdminForthResourceFrontend['options'] | null> = ref(null);
   const resourceColumnsError: Ref<string> = ref('');
   const resourceColumnsId: Ref<string | null> = ref(null);
   const adminUser: Ref<null | AdminUser> = ref(null);
