@@ -10,6 +10,7 @@ import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapt
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
+import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
 import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
@@ -93,6 +94,14 @@ export default {
       type: AdminForthDataTypes.STRING,
       foreignResource: {
           resourceId: 'adminuser',
+      }
+    },
+    {
+      name: "cars", 
+      type: AdminForthDataTypes.STRING,
+      foreignResource: {
+        resourceId: 'cars_sl',
+        searchableFields: ['model']
       }
     },
     {
@@ -191,31 +200,31 @@ export default {
         },
       },
     }),
-    new AdminForthAgent({
-      completionAdapter: new CompletionAdapterOpenAIChatGPT({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-5.4-mini',
-      }),
-      maxTokens: 10000,
-      reasoning: 'none',
-      sessionResource: {
-        resourceId: 'sessions',
-        idField: 'id',
-        titleField: 'title',
-        turnsField: 'turns',
-        askerIdField: 'asker_id',
-        createdAtField: 'created_at',
-      },
-      turnResource: {
-        resourceId: 'turns',
-        idField: 'id',
-        sessionIdField: 'session_id',
-        createdAtField: 'created_at',
-        promptField: 'prompt',
-        responseField: 'response',
-        debugField: 'dubbug',
-      },
-    }),
+    // new AdminForthAgent({
+    //   completionAdapter: new CompletionAdapterOpenAIChatGPT({
+    //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+    //     model: 'gpt-5.4-mini',
+    //   }),
+    //   maxTokens: 10000,
+    //   reasoning: 'none',
+    //   sessionResource: {
+    //     resourceId: 'sessions',
+    //     idField: 'id',
+    //     titleField: 'title',
+    //     turnsField: 'turns',
+    //     askerIdField: 'asker_id',
+    //     createdAtField: 'created_at',
+    //   },
+    //   turnResource: {
+    //     resourceId: 'turns',
+    //     idField: 'id',
+    //     sessionIdField: 'session_id',
+    //     createdAtField: 'created_at',
+    //     promptField: 'prompt',
+    //     responseField: 'response',
+    //     debugField: 'dubbug',
+    //   },
+    // }),
   ],
   hooks: {
     create: {
