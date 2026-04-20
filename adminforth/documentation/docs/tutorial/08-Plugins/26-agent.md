@@ -29,8 +29,12 @@ First create two resources for sessions and turns:
 
 ```ts title="./resources/agent_resources/sessions.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import type { AdminForthResourceInput } from 'adminforth';
+import type { AdminForthResourceInput, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
+
+async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
 
 export default {
   dataSource: 'sqlite',
@@ -70,13 +74,26 @@ export default {
       },
     },
   ],
+  options: {
+    allowedActions: {
+      list: allowedForSuperAdmins,
+      show: allowedForSuperAdmins,
+      create: false,
+      edit: false,
+      delete: false,
+    },
+  },
 } as AdminForthResourceInput;
 ```
 
 ```ts title="./resources/agent_resources/turns.ts"
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
-import type { AdminForthResourceInput } from 'adminforth';
+import type { AdminForthResourceInput, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
+
+async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
 
 export default {
   dataSource: 'sqlite',
@@ -116,6 +133,15 @@ export default {
       type: AdminForthDataTypes.TEXT,
     },
   ],
+  options: {
+    allowedActions: {
+      list: allowedForSuperAdmins,
+      show: allowedForSuperAdmins,
+      create: false,
+      edit: false,
+      delete: false,
+    },
+  },
 } as AdminForthResourceInput;
 ```
 

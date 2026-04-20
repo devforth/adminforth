@@ -1,4 +1,6 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
+import AdminForthAgent from '@adminforth/agent';
+import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
 
@@ -25,6 +27,63 @@ export default {
     }),
     new ForeignInlineListPlugin({
       foreignResourceId: 'audit_logs',
+    }),
+    new AdminForthAgent({
+      modes: [
+        {
+          name: 'Balanced',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4-mini',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'medium',
+              },
+            },
+          }),
+        },
+        {
+          name: 'Fast',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4-mini',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'low',
+              },
+            },
+          }),
+        },
+        {
+          name: 'Smart Thinking',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'xhigh',
+              },
+            },
+          }),
+        },
+      ],
+      maxTokens: 10000,
+      sessionResource: {
+        resourceId: 'sessions',
+        idField: 'id',
+        titleField: 'title',
+        turnsField: 'turns',
+        askerIdField: 'asker_id',
+        createdAtField: 'created_at',
+      },
+      turnResource: {
+        resourceId: 'turns',
+        idField: 'id',
+        sessionIdField: 'session_id',
+        createdAtField: 'created_at',
+        promptField: 'prompt',
+        responseField: 'response',
+      },
     }),
   ],
   columns: [
