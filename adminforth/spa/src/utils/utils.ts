@@ -8,7 +8,7 @@ import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
-import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, Predicate } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
@@ -779,7 +779,7 @@ export async function executeCustomBulkAction({
   onError?: (error: string) => void,
   setLoadingState?: (loading: boolean) => void,
   confirmMessage?: string,
-  resource?: AdminForthResourceCommon,
+  resource?: AdminForthResourceFrontend,
 }): Promise<any> {
   if (!recordIds || recordIds.length === 0) {
     if (onError) {

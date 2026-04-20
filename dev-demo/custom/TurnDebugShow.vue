@@ -38,32 +38,39 @@
       No debug data stored for this turn.
     </div>
 
-    <div
+    <details
       v-for="sequence in debugSequences"
       :key="sequence.sequenceId"
       class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
     >
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div class="text-lg font-semibold text-slate-900 dark:text-white">
-            Sequence #{{ sequence.sequenceId }}
+      <summary class="cursor-pointer list-none">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div class="text-lg font-semibold text-slate-900 dark:text-white">
+              Sequence #{{ sequence.sequenceId }}
+            </div>
+            <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Started {{ formatTimestamp(sequence.startedAt) }}
+              <span v-if="sequence.endedAt"> • Ended {{ formatTimestamp(sequence.endedAt) }}</span>
+              <span v-if="sequenceDuration(sequence)"> • {{ sequenceDuration(sequence) }}</span>
+            </div>
           </div>
-          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Started {{ formatTimestamp(sequence.startedAt) }}
-            <span v-if="sequence.endedAt"> • Ended {{ formatTimestamp(sequence.endedAt) }}</span>
-            <span v-if="sequenceDuration(sequence)"> • {{ sequenceDuration(sequence) }}</span>
-          </div>
-        </div>
 
-        <div
-          class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
-          :class="sequence.resultType === 'tool_calls'
-            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200'
-            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200'"
-        >
-          {{ sequence.resultType.replace('_', ' ') }}
+          <div class="flex items-center gap-3">
+            <div
+              class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+              :class="sequence.resultType === 'tool_calls'
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200'
+                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200'"
+            >
+              {{ sequence.resultType.replace('_', ' ') }}
+            </div>
+            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+              Toggle
+            </div>
+          </div>
         </div>
-      </div>
+      </summary>
 
       <div class="mt-4 grid gap-3 md:grid-cols-4">
         <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
@@ -93,22 +100,49 @@
       </div>
 
       <section v-if="sequence.prompt" class="mt-4">
-        <div class="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Prompt Sent To LLM
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Prompt Sent To LLM
+          </div>
+          <button
+            type="button"
+            class="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="copyText(`sequence-${sequence.sequenceId}-prompt`, sequence.prompt)"
+          >
+            {{ copyLabel(`sequence-${sequence.sequenceId}-prompt`) }}
+          </button>
         </div>
         <pre class="max-h-80 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-sky-100 whitespace-pre-wrap">{{ sequence.prompt }}</pre>
       </section>
 
       <section v-if="sequence.reasoning" class="mt-4">
-        <div class="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Reasoning
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Reasoning
+          </div>
+          <button
+            type="button"
+            class="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="copyText(`sequence-${sequence.sequenceId}-reasoning`, sequence.reasoning)"
+          >
+            {{ copyLabel(`sequence-${sequence.sequenceId}-reasoning`) }}
+          </button>
         </div>
         <pre class="max-h-80 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-slate-100 whitespace-pre-wrap">{{ sequence.reasoning }}</pre>
       </section>
 
       <section v-if="sequence.text" class="mt-4">
-        <div class="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Text
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Text
+          </div>
+          <button
+            type="button"
+            class="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="copyText(`sequence-${sequence.sequenceId}-text`, sequence.text)"
+          >
+            {{ copyLabel(`sequence-${sequence.sequenceId}-text`) }}
+          </button>
         </div>
         <pre class="max-h-80 overflow-auto rounded-lg bg-slate-100 p-4 text-xs leading-6 text-slate-800 whitespace-pre-wrap dark:bg-slate-800 dark:text-slate-100">{{ sequence.text }}</pre>
       </section>
@@ -121,7 +155,6 @@
         <details
           v-for="(toolCall, toolCallIndex) in sequence.toolCalls"
           :key="`${sequence.sequenceId}-${toolCallIndex}-${toolCall.toolName}`"
-          :open="toolCallIndex === 0"
           class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60"
         >
           <summary class="cursor-pointer list-none px-4 py-3">
@@ -142,33 +175,67 @@
 
           <div class="grid gap-3 border-t border-slate-200 p-4 dark:border-slate-700">
             <div>
-              <div class="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Input YAML
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  Input YAML
+                </div>
+                <button
+                  type="button"
+                  class="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  @click="copyText(`sequence-${sequence.sequenceId}-tool-${toolCall.toolCallId}-input`, toolCall.input)"
+                >
+                  {{ copyLabel(`sequence-${sequence.sequenceId}-tool-${toolCall.toolCallId}-input`) }}
+                </button>
               </div>
               <pre class="max-h-72 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-slate-100 whitespace-pre-wrap">{{ toolCall.input }}</pre>
             </div>
 
             <div v-if="toolCall.output">
-              <div class="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Output YAML
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  Output YAML
+                </div>
+                <button
+                  type="button"
+                  class="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  @click="copyText(`sequence-${sequence.sequenceId}-tool-${toolCall.toolCallId}-output`, toolCall.output)"
+                >
+                  {{ copyLabel(`sequence-${sequence.sequenceId}-tool-${toolCall.toolCallId}-output`) }}
+                </button>
               </div>
               <pre class="max-h-72 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-emerald-100 whitespace-pre-wrap">{{ toolCall.output }}</pre>
             </div>
 
             <div v-if="toolCall.error">
-              <div class="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-500 dark:text-rose-300">
-                Error YAML
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div class="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500 dark:text-rose-300">
+                  Error YAML
+                </div>
+                <button
+                  type="button"
+                  class="rounded-md border border-rose-200 px-2.5 py-1 text-[11px] font-semibold text-rose-600 transition hover:bg-rose-50 dark:border-rose-900/70 dark:text-rose-300 dark:hover:bg-rose-950/60"
+                  @click="copyText(`sequence-${sequence.sequenceId}-tool-${toolCall.toolCallId}-error`, toolCall.error)"
+                >
+                  {{ copyLabel(`sequence-${sequence.sequenceId}-tool-${toolCall.toolCallId}-error`) }}
+                </button>
               </div>
               <pre class="max-h-72 overflow-auto rounded-lg bg-rose-950 p-4 text-xs leading-6 text-rose-100 whitespace-pre-wrap">{{ toolCall.error }}</pre>
             </div>
           </div>
         </details>
       </section>
-    </div>
+    </details>
 
     <details class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <summary class="cursor-pointer text-sm font-semibold text-slate-900 dark:text-white">
-        Raw JSON
+      <summary class="flex cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-slate-900 dark:text-white">
+        <span>Raw JSON</span>
+        <button
+          type="button"
+          class="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          @click.prevent.stop="copyText('raw-json', rawJson)"
+        >
+          {{ copyLabel('raw-json') }}
+        </button>
       </summary>
       <pre class="mt-4 max-h-[32rem] overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-slate-100 whitespace-pre-wrap">{{ rawJson }}</pre>
     </details>
@@ -176,7 +243,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type {
   AdminForthResourceColumnCommon,
   AdminForthResourceCommon,
@@ -184,6 +251,7 @@ import type {
 } from "@/types/Common";
 
 type DebugToolCall = {
+  toolCallId: string;
   toolName: string;
   input: string;
   output: string | null;
@@ -224,6 +292,8 @@ const toolCallSequences = computed(() =>
 );
 
 const rawJson = computed(() => JSON.stringify(debugSequences.value, null, 2));
+const copiedFieldKey = ref<string | null>(null);
+let copiedFieldResetTimer: ReturnType<typeof setTimeout> | null = null;
 
 function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
@@ -239,5 +309,24 @@ function sequenceDuration(sequence: DebugSequence) {
   }
 
   return `${(durationMs / 1000).toFixed(2)} s`;
+}
+
+async function copyText(key: string, value: string) {
+  await navigator.clipboard.writeText(value);
+  copiedFieldKey.value = key;
+
+  if (copiedFieldResetTimer) {
+    clearTimeout(copiedFieldResetTimer);
+  }
+
+  copiedFieldResetTimer = setTimeout(() => {
+    if (copiedFieldKey.value === key) {
+      copiedFieldKey.value = null;
+    }
+  }, 1600);
+}
+
+function copyLabel(key: string) {
+  return copiedFieldKey.value === key ? 'Copied' : 'Copy';
 }
 </script>
