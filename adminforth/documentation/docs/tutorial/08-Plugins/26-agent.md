@@ -167,7 +167,7 @@ export const admin = new AdminForth({
 Then attach the plugin once, usually to your `adminuser` resource:
 
 ```ts title="./resources/adminuser.ts"
-import AdminForthAgent from 'adminforth-agent';
+import AdminForthAgent from '@adminforth/agent';
 import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt';
 
 ...
