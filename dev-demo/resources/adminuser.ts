@@ -97,14 +97,6 @@ export default {
       }
     },
     {
-      name: "cars", 
-      type: AdminForthDataTypes.STRING,
-      foreignResource: {
-        resourceId: 'cars_sl',
-        searchableFields: ['model']
-      }
-    },
-    {
       name: "avatar",
       type: AdminForthDataTypes.STRING,
       showIn: ["show", "edit", "create" ],
