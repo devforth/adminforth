@@ -5,7 +5,7 @@
 
 [![Ask AI](http://tluma.ai/badge)](http://tluma.ai/ask-ai/devforth/adminforth)
 
-* [Try live demo](https://demo.adminforth.dev/)  (Read-only mode)
+* [Try live demo](https://demo.adminforth.dev/) 
 
 * [Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted) with AdminForth
 

@@ -1179,6 +1179,11 @@ export interface AdminForthConfigMenuItem {
   itemId?: string,  // todo move to runtime type
   
   url?: string
+
+  /**
+   * Open menu item link in a new browser tab.
+   */
+  isOpenInNewTab?: boolean
 }
 
 
