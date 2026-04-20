@@ -176,6 +176,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         name: 'secret_field',
         type: AdminForthDataTypes.STRING,
         backendOnly: true,
+        showIn: {
+          all: false,
+        }
       }
     ],
     plugins: [
