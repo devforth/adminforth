@@ -10,7 +10,7 @@ It stores session history in your own resources and uses any AdminForth completi
 ## Installation
 
 ```bash
-pnpm i adminforth-agent --save
+pnpm i @adminforth/agent --save
 pnpm i @adminforth/completion-adapter-open-ai-chat-gpt --save
 ```
 
