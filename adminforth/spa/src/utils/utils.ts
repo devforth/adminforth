@@ -803,7 +803,7 @@ export async function executeCustomBulkAction({
   try {
     const action = resource?.options?.actions?.find((a: any) => a.id === actionId) as AdminForthActionFront | undefined;
 
-    if (action?.hasBulkHandler && action?.showIn?.bulkButton) {
+    if (action?.bulkHandler && action?.showIn?.bulkButton) {
       const result = await callAdminForthApi({
         path: '/start_custom_bulk_action',
         method: 'POST',

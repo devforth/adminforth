@@ -1389,10 +1389,10 @@ export interface AdminForthActionInput {
       showThreeDotsMenu?: boolean,
       bulkButton?: boolean,
   };
-  allowed?: (params: {
+  allowed?: boolean | ((params: {
     adminUser: AdminUser;
     standardAllowedActions: AllowedActions;
-  }) => boolean;
+  }) => boolean | Promise<boolean>);
   url?: string;
   bulkHandler?: (params: {
       adminforth: IAdminForth;
