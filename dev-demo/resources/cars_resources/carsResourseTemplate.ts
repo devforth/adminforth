@@ -25,12 +25,22 @@ import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
 
-export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
+const CAR_RESOURCE_DB_LABELS = {
+  sqlite: 'SQLite',
+  mysql: 'MySQL',
+  postgres: 'PostgreSQL',
+  mongo: 'MongoDB',
+  clickhouse: 'ClickHouse',
+} as const;
+
+type CarResourceDataSource = keyof typeof CAR_RESOURCE_DB_LABELS;
+
+export default function carsResourseTemplate(resourceId: string, dataSource: CarResourceDataSource, pkFileldName: string) {
   return {
     dataSource: dataSource,
     table: 'cars',
     resourceId: resourceId,
-    label: 'Cars',
+    label: `Car - ${CAR_RESOURCE_DB_LABELS[dataSource]}`,
     recordLabel: (r) => `🚘 ${r.model} 🚗`,
 
     /*********************************************************************************
