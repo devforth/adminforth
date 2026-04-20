@@ -5,7 +5,7 @@
 
 This plugin adds an AI agent with a chat surface to AdminForth which is capable of default skills like searching/editing data and extending with custom skills. 
 
-It stores session history in your own resources and uses any AdminForth completion adapter to generate responses.
+It stores session history in your own resources and generates responses using one of the configured `modes`.
 
 ## Installation
 
@@ -21,7 +21,7 @@ Add your LLM credentials to `.env`:
 OPENAI_API_KEY=your_key
 ```
 
-You can replace the OpenAI adapter with any completion adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
+Each mode accepts any AdminForth completion adapter, so you can replace the OpenAI adapter with another adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
 
 ## Setup
 
@@ -166,6 +166,8 @@ export const admin = new AdminForth({
 
 Then attach the plugin once, usually to your `adminuser` resource:
 
+Configure the plugin with `modes`. The legacy top-level `completionAdapter` setup is no longer used.
+
 ```ts title="./resources/adminuser.ts"
 import AdminForthAgent from '@adminforth/agent';
 import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt';
@@ -175,12 +177,45 @@ import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-
 plugins: [
   ...
   new AdminForthAgent({
-    completionAdapter: new CompletionAdapterOpenAIChatGPT({
-      openAiApiKey: process.env.OPENAI_API_KEY as string,
-      model: 'gpt-5.4-mini',
-    }),
+    modes: [
+      {
+        name: 'Balanced',
+        completionAdapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-5.4-mini',
+          extraRequestBodyParameters: {
+            reasoning: {
+              effort: 'medium',
+            },
+          },
+        }),
+      },
+      {
+        name: 'Fast',
+        completionAdapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-5.4-mini',
+          extraRequestBodyParameters: {
+            reasoning: {
+              effort: 'low',
+            },
+          },
+        }),
+      },
+      {
+        name: 'Smart Thinking',
+        completionAdapter: new CompletionAdapterOpenAIChatGPT({
+          openAiApiKey: process.env.OPENAI_API_KEY as string,
+          model: 'gpt-5.4',
+          extraRequestBodyParameters: {
+            reasoning: {
+              effort: 'xhigh',
+            },
+          },
+        }),
+      },
+    ],
     maxTokens: 10000,
-    reasoning: 'none',
     sessionResource: {
       resourceId: 'sessions',
       idField: 'id',
@@ -203,7 +238,9 @@ plugins: [
 ]
 ```
 
-The plugin adds a chat surface to the admin UI and keeps session history per admin user.
+Each item in `modes` defines a user-selectable preset in the chat UI. The selected mode is sent to the backend and the plugin uses that mode's `completionAdapter` for the response.
+
+The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
 
 ## Reverse proxy and CDN configuration for streaming
 
@@ -270,5 +307,3 @@ In skills markdown file, merge which tool exactlu agent should load.
 Skill example:
 
 // TODO
-
-
