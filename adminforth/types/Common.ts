@@ -330,7 +330,7 @@ export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsComm
   bulkActions?: AdminForthBulkActionFront[],
 }
 
-export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
   options: AdminForthOptionsForFrontend;
 }
 

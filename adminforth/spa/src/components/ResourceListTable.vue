@@ -363,7 +363,7 @@ import {
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
 import { Tooltip, Spinner } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull, AdminForthComponentDeclaration } from '@/types/Common';
+import type { AdminForthResourceFrontend, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull, AdminForthComponentDeclaration } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
@@ -374,7 +374,7 @@ const { t } = useI18n();
 const { alert, confirm } = useAdminforth();
 const props = defineProps<{
   page: number,
-  resource: AdminForthResourceCommon | null,
+  resource: AdminForthResourceFrontend | null,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,

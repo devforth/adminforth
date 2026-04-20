@@ -140,7 +140,7 @@ tasks:
             exit 0
           fi
 
-          pnpm i adminforth@latest
+          pnpm add adminforth@latest --save-peer
 
           git add package.json
           if [ -e pnpm-lock.yaml ]; then

@@ -191,6 +191,31 @@ export default {
         },
       },
     }),
+    new AdminForthAgent({
+      completionAdapter: new CompletionAdapterOpenAIChatGPT({
+        openAiApiKey: process.env.OPENAI_API_KEY as string,
+        model: 'gpt-5.4-mini',
+      }),
+      maxTokens: 10000,
+      reasoning: 'none',
+      sessionResource: {
+        resourceId: 'sessions',
+        idField: 'id',
+        titleField: 'title',
+        turnsField: 'turns',
+        askerIdField: 'asker_id',
+        createdAtField: 'created_at',
+      },
+      turnResource: {
+        resourceId: 'turns',
+        idField: 'id',
+        sessionIdField: 'session_id',
+        createdAtField: 'created_at',
+        promptField: 'prompt',
+        responseField: 'response',
+        debugField: 'dubbug',
+      },
+    }),
   ],
   hooks: {
     create: {
