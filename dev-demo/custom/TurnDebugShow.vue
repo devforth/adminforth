@@ -28,6 +28,10 @@
           <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Tool Sequences</div>
           <div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{{ toolCallSequences }}</div>
         </div>
+        <div class="rounded-lg bg-white p-3 shadow-sm dark:bg-slate-800">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Cached Prompt Tokens</div>
+          <div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{{ formatNumber(totalCachedTokens) }}</div>
+        </div>
       </div>
     </div>
 
@@ -58,6 +62,12 @@
 
           <div class="flex items-center gap-3">
             <div
+              v-if="sequence.cachedTokens > 0"
+              class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-800 dark:bg-sky-900/50 dark:text-sky-200"
+            >
+              Cache hit: {{ formatNumber(sequence.cachedTokens) }}
+            </div>
+            <div
               class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
               :class="sequence.resultType === 'tool_calls'
                 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200'
@@ -72,7 +82,7 @@
         </div>
       </summary>
 
-      <div class="mt-4 grid gap-3 md:grid-cols-4">
+      <div class="mt-4 grid gap-3 md:grid-cols-5">
         <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
           <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Prompt</div>
           <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
@@ -95,6 +105,12 @@
           <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Tool Calls</div>
           <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
             {{ sequence.toolCalls.length }}
+          </div>
+        </div>
+        <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Cached Prompt Tokens</div>
+          <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+            {{ formatNumber(sequence.cachedTokens) }}
           </div>
         </div>
       </div>
@@ -264,6 +280,8 @@ type DebugSequence = {
   prompt: string;
   reasoning: string;
   text: string;
+  cachedTokens: number;
+  responseId: string | null;
   toolCalls: DebugToolCall[];
   endedAt: string;
   resultType: 'tool_calls' | 'final_text';
@@ -291,12 +309,23 @@ const toolCallSequences = computed(() =>
   debugSequences.value.filter((sequence) => sequence.resultType === 'tool_calls').length,
 );
 
+const totalCachedTokens = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequence.cachedTokens, 0),
+);
+
 const rawJson = computed(() => JSON.stringify(debugSequences.value, null, 2));
 const copiedFieldKey = ref<string | null>(null);
 let copiedFieldResetTimer: ReturnType<typeof setTimeout> | null = null;
 
 function formatTimestamp(value: string) {
   return new Date(value).toLocaleString();
+}
+
+function formatNumber(value: number) {
+  if (value) {
+    return value.toLocaleString();
+  }
+  return '0';
 }
 
 function sequenceDuration(sequence: DebugSequence) {
