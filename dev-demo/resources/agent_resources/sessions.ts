@@ -1,6 +1,7 @@
 import AdminForth, { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
+import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
 
 export default {
   dataSource: 'sqlite',
@@ -42,6 +43,11 @@ export default {
         edit: false,
         create: false,
       }
-    }
+    },
+  ],
+  plugins: [
+    new ForeignInlineListPlugin({
+      foreignResourceId: 'turns',
+    }),
   ],
 } as AdminForthResourceInput;

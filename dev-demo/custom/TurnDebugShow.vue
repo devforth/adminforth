@@ -84,21 +84,21 @@
 
       <div class="mt-4 grid gap-3 md:grid-cols-5">
         <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
-          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Prompt</div>
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Prompt Tokens</div>
           <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
-            {{ sequence.prompt ? `${sequence.prompt.length} chars` : 'Empty' }}
+            {{ sequence.prompt ? `${formatNumber(sequence.promptTokens)} tokens` : 'Empty' }}
           </div>
         </div>
         <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
-          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Reasoning</div>
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Reasoning Tokens</div>
           <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
-            {{ sequence.reasoning ? `${sequence.reasoning.length} chars` : 'Empty' }}
+            {{ sequence.reasoning ? `${formatNumber(sequence.reasoningTokens)} tokens` : 'Empty' }}
           </div>
         </div>
         <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
-          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Text</div>
+          <div class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Text Tokens</div>
           <div class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
-            {{ sequence.text ? `${sequence.text.length} chars` : 'Empty' }}
+            {{ sequence.text ? `${formatNumber(sequence.textTokens)} tokens` : 'Empty' }}
           </div>
         </div>
         <div class="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
@@ -278,8 +278,11 @@ type DebugSequence = {
   sequenceId: number;
   startedAt: string;
   prompt: string;
+  promptTokens: number;
   reasoning: string;
+  reasoningTokens: number;
   text: string;
+  textTokens: number;
   cachedTokens: number;
   responseId: string | null;
   toolCalls: DebugToolCall[];
