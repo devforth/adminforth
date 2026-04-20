@@ -21,6 +21,10 @@ export default {
     {
       name: 'session_id',
       type: AdminForthDataTypes.STRING,
+      foreignResource: {
+        resourceId: 'sessions',
+        labelField: 'id'
+      }
     },
     {
       name: 'created_at',
