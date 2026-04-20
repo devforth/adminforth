@@ -344,7 +344,7 @@ async function startCustomBulkActionInner(actionId: string | number) {
       const successResults = results.filter(r => r?.successMessage);
       if (successResults.length > 0) {
         alert({
-          message: action?.bulkSuccessMessage ? action.bulkSuccessMessage : action?.hasBulkHandler ? successResults[0].successMessage : `${successResults.length} out of ${results.length} items processed successfully`,
+          message: action?.bulkSuccessMessage ? action.bulkSuccessMessage : action?.bulkHandler ? successResults[0].successMessage : `${successResults.length} out of ${results.length} items processed successfully`,
           variant: 'success'
         });
       }
