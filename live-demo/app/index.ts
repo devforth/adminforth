@@ -50,14 +50,6 @@ new AdminForth({
         // title: 'Support us for free',
       }
     },
-      globalInjections: {
-      header: [
-        {
-          file: '@/custom/GitHubButton.vue',
-          meta: { thinEnoughToShrinkHeader: true }
-        }
-      ]
-    }
   },
 
   dataSources: [
@@ -120,6 +112,17 @@ new AdminForth({
       icon: 'flowbite:search-outline',
       resourceId: 'audit_logs',
     },
+    {
+      type: 'gap'
+    },
+    {
+      type: 'divider'
+    },
+    {
+      label: 'Demo source',
+      icon: 'mdi:github',
+      url: 'https://github.com/devforth/adminforth/tree/main/live-demo/app',
+    },
   ],
 });
 
@@ -131,7 +134,7 @@ async function seedDatabase() {
     await admin.resource('aparts').create({
       id: randomUUID(),
       title: `Apartment ${i}`,
-      square_meter: (Math.random() * 100).toFixed(1),
+      square_meter: +(Math.random() * 100).toFixed(1),
       price: (Math.random() * 10000).toFixed(2),
       number_of_rooms: Math.floor(Math.random() * 4) + 1,
       description: 'Next gen apartments',
