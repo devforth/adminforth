@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.16.1
-        version: 1.16.1(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
+        specifier: ^1.17.0
+        version: 1.17.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
       '@adminforth/audit-log':
         specifier: ^1.9.12
         version: 1.9.15(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
@@ -74,6 +74,9 @@ importers:
       better-sqlite3:
         specifier: ^10.0.0
         version: 10.1.0
+      cldr-core:
+        specifier: ^48.2.0
+        version: 48.2.0
       express:
         specifier: ^4.19.2
         version: 4.22.1
@@ -93,8 +96,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.16.1':
-    resolution: {integrity: sha512-hOxhs1ATLFJvPKeBlgcLOLUx9wd3WBFYvCrZ5ITvVsoDCMEt2DAb/jw793LBAc8KV5a+pyHFrrvaLOU1bA+4hg==}
+  '@adminforth/agent@1.17.0':
+    resolution: {integrity: sha512-Ni9cSgAKOsxznYmpG2ZubB1gPaNuz/MCo24Ab5AJhHShIs+XzKZ5JGqmRklZKpFQF+LNXpDafy+3Xz+4S03mgQ==}
 
   '@adminforth/audit-log@1.9.15':
     resolution: {integrity: sha512-do8vXCMlfvu6ToPcACs+YBwGaa/g3cc2GyseUZIoUmerqBe7Y5Lj3T6KLjVa9Fd69f27mLowORsfXrRpqfoTIA==}
@@ -1290,6 +1293,9 @@ packages:
 
   citty@0.2.1:
     resolution: {integrity: sha512-kEV95lFBhQgtogAPlQfJJ0WGVSokvLr/UEoFPiKKOXF7pl98HfUVUD0ejsuTCld/9xH9vogSywZ5KqHzXrZpqg==}
+
+  cldr-core@48.2.0:
+    resolution: {integrity: sha512-zfmLothncSwfv2jlevoSrgI2VGgH8SDGHXst6jUEotHA8nq9Igeg9jzdJDFtBso9pgJuG89DK16TzrmZDdo2Bg==}
 
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
@@ -2661,7 +2667,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.16.1(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
+  '@adminforth/agent@1.17.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
     dependencies:
       '@langchain/core': 1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0)
       '@langchain/langgraph': 1.2.9(@langchain/core@1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0))(zod@4.3.6)
@@ -4503,6 +4509,8 @@ snapshots:
       consola: 3.4.2
 
   citty@0.2.1: {}
+
+  cldr-core@48.2.0: {}
 
   cli-cursor@5.0.0:
     dependencies:
