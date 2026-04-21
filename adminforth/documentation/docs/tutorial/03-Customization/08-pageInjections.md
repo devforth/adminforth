@@ -109,7 +109,7 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
 Also we have to add an Api to get percentages:
 
-```ts title="./index.ts"
+```ts title="/api.ts"
 import type { IAdminUserExpressRequest } from 'adminforth';
 import express from 'express';
 import * as z from 'zod';
@@ -152,10 +152,6 @@ import * as z from 'zod';
       )
     )
   );
-
-  // serve after you added all api
-  admin.discoverDatabases();
-  admin.express.serve(app)
 ```
 
 Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.

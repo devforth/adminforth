@@ -35,13 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw } from 'vue';
-import {
-  IconLinkOutline, IconCodeOutline, IconRectangleListOutline, 
-  IconOrderedListOutline, IconLetterBoldOutline, IconLetterUnderlineOutline, 
-  IconLetterItalicOutline, IconTextSlashOutline 
-} from '@iconify-prerendered/vue-flowbite';
-import { IconH116Solid, IconH216Solid, IconH316Solid } from '@iconify-prerendered/vue-heroicons';
+import { computed } from 'vue';
 import { Skeleton } from '@/afcl';
 
 interface Props {
@@ -77,17 +71,4 @@ const getSkeletonInputClass = (column: any) => {
   return 'h-[42px] w-full';
 };
 
-const skeletonButtons = [
-  { id: 'bold', icon: markRaw(IconLetterBoldOutline), sep: false },
-  { id: 'italic', icon: markRaw(IconLetterItalicOutline), sep: false },
-  { id: 'underline', icon: markRaw(IconLetterUnderlineOutline), sep: false },
-  { id: 'strike', icon: markRaw(IconTextSlashOutline), sep: true },
-  { id: 'h1', icon: markRaw(IconH116Solid), sep: false },
-  { id: 'h2', icon: markRaw(IconH216Solid), sep: false },
-  { id: 'h3', icon: markRaw(IconH316Solid), sep: true },
-  { id: 'ul', icon: markRaw(IconRectangleListOutline), sep: false },
-  { id: 'ol', icon: markRaw(IconOrderedListOutline), sep: false },
-  { id: 'link', icon: markRaw(IconLinkOutline), sep: false },
-  { id: 'codeBlock', icon: markRaw(IconCodeOutline), sep: false },
-];
 </script>

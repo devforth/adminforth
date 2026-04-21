@@ -13,6 +13,14 @@ import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import { afLogger } from '../modules/logger.js';
 
+type AdminForthFilterNode = IAdminForthSingleFilter | IAdminForthAndOrFilter;
+type AdminForthFilterInput = AdminForthFilterNode | AdminForthFilterNode[];
+type AdminForthFilterNormalizationResult = {
+  ok: boolean;
+  error: string;
+  normalizedFilters?: AdminForthFilterInput;
+};
+
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
 
@@ -49,6 +57,22 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     return data.length > 0 ? data[0] : null;
   }
 
+  cloneFilterNode(filter: AdminForthFilterNode): AdminForthFilterNode {
+    if ((filter as IAdminForthAndOrFilter).subFilters) {
+      const complexFilter = filter as IAdminForthAndOrFilter;
+      return {
+        ...complexFilter,
+        subFilters: complexFilter.subFilters.map((subFilter) => this.cloneFilterNode(subFilter)),
+      };
+    }
+
+    const singleFilter = filter as IAdminForthSingleFilter;
+    return {
+      ...singleFilter,
+      ...(Array.isArray(singleFilter.value) ? { value: [...singleFilter.value] } : {}),
+    };
+  }
+
   validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter {
     if (!filter) {
       // if no filter, return empty "and" filter
@@ -59,77 +83,82 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
     if (Array.isArray(filter)) {
       // if filter is an array, combine them using "and" operator
-      return { operator: AdminForthFilterOperators.AND, subFilters: filter };
+      return { operator: AdminForthFilterOperators.AND, subFilters: filter.map((subFilter) => this.cloneFilterNode(subFilter)) };
     }
     if ((filter as IAdminForthAndOrFilter).subFilters) {
       // if filter is already AndOr filter - return as is
-      return filter as IAdminForthAndOrFilter;
+      return this.cloneFilterNode(filter as IAdminForthAndOrFilter) as IAdminForthAndOrFilter;
     }
 
     // by default, assume filter is Single filter, turn it into AndOr filter
-    return { operator: AdminForthFilterOperators.AND, subFilters: [filter] };
+    return { operator: AdminForthFilterOperators.AND, subFilters: [this.cloneFilterNode(filter as AdminForthFilterNode)] };
   }
 
-  validateAndNormalizeFilters(filters: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, resource: AdminForthResource): { ok: boolean, error: string } {
+  validateAndNormalizeFilters(filters: AdminForthFilterInput, resource: AdminForthResource): AdminForthFilterNormalizationResult {
     if (Array.isArray(filters)) {
-      // go through all filters in array and call validation+normalization for each
-      // as soon as error is encountered, there is no point in calling validation for other filters
-      // if error is not encountered all filters will be validated and normalized
-      return filters.reduce((result, f, fIndex) => {
-        if (!result.ok) {
-          return result;
+      const normalizedFilters: AdminForthFilterNode[] = [];
+
+      for (const filter of filters) {
+        const filterValidation = this.validateAndNormalizeFilters(filter, resource);
+        if (!filterValidation.ok) {
+          return filterValidation;
         }
 
-        const filterValidation = this.validateAndNormalizeFilters(f, resource);
+        let normalizedFilter = filterValidation.normalizedFilters as AdminForthFilterNode;
+        const normalizedSingleFilter = normalizedFilter as IAdminForthSingleFilter;
 
         // in case column isArray and enumerator/foreign resource - IN filter must be transformed into OR filter
-        if (filterValidation.ok && f.operator == AdminForthFilterOperators.IN) {
-          const column = resource.dataSourceColumns.find((col) => col.name == (f as IAdminForthSingleFilter).field);
+        if (normalizedSingleFilter.field && normalizedSingleFilter.operator == AdminForthFilterOperators.IN) {
+          const column = resource.dataSourceColumns.find((col) => col.name == normalizedSingleFilter.field);
           if (column.isArray?.enabled && (column.enum || column.foreignResource)) {
-            filters[fIndex] = {
+            normalizedFilter = {
               operator: AdminForthFilterOperators.OR,
-              subFilters: f.value.map((v: any) => {
+              subFilters: normalizedSingleFilter.value.map((v: any) => {
                 return { field: column.name, operator: AdminForthFilterOperators.LIKE, value: v };
               }),
             };
           }
         }
 
-        return filterValidation;
-      }, { ok: true, error: '' });
+        normalizedFilters.push(normalizedFilter);
+      }
+
+      return { ok: true, error: '', normalizedFilters };
     }
 
     const filtersAsSingle = filters as IAdminForthSingleFilter;
     if (filtersAsSingle.field) {
+      const normalizedFilter = this.cloneFilterNode(filters) as IAdminForthSingleFilter;
+
       // if "field" is present, filter must be Single
-      if (!filters.operator) {
+      if (!normalizedFilter.operator) {
         return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
       }
       // Either compare with value or with rightField (field-to-field). If rightField is set, value must be undefined.
-      const comparingWithRightField = filtersAsSingle.rightField !== undefined && filtersAsSingle.rightField !== null;
-      const isEmptyOperator = filters.operator === AdminForthFilterOperators.IS_EMPTY || filters.operator === AdminForthFilterOperators.IS_NOT_EMPTY;
+      const comparingWithRightField = normalizedFilter.rightField !== undefined && normalizedFilter.rightField !== null;
+      const isEmptyOperator = normalizedFilter.operator === AdminForthFilterOperators.IS_EMPTY || normalizedFilter.operator === AdminForthFilterOperators.IS_NOT_EMPTY;
       
-      if (!comparingWithRightField && !isEmptyOperator && filtersAsSingle.value === undefined) {
+      if (!comparingWithRightField && !isEmptyOperator && normalizedFilter.value === undefined) {
         return { ok: false, error: `Field "value" not specified in filter object: ${JSON.stringify(filters)}` };
       }
-      if (comparingWithRightField && filtersAsSingle.value !== undefined) {
+      if (comparingWithRightField && normalizedFilter.value !== undefined) {
         return { ok: false, error: `Specify either "value" or "rightField", not both: ${JSON.stringify(filters)}` };
       }
-      if (filtersAsSingle.insecureRawSQL) {
+      if (normalizedFilter.insecureRawSQL) {
         return { ok: false, error: `Field "insecureRawSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
       }
-      if (filtersAsSingle.insecureRawNoSQL) {
+      if (normalizedFilter.insecureRawNoSQL) {
         return { ok: false, error: `Field "insecureRawNoSQL" should not be specified in filter object alongside "field": ${JSON.stringify(filters)}` };
       }
       if (![AdminForthFilterOperators.EQ, AdminForthFilterOperators.NE, AdminForthFilterOperators.GT,
       AdminForthFilterOperators.LT, AdminForthFilterOperators.GTE, AdminForthFilterOperators.LTE,
       AdminForthFilterOperators.LIKE, AdminForthFilterOperators.ILIKE, AdminForthFilterOperators.IN,
-      AdminForthFilterOperators.NIN, AdminForthFilterOperators.IS_EMPTY, AdminForthFilterOperators.IS_NOT_EMPTY].includes(filters.operator)) {
+      AdminForthFilterOperators.NIN, AdminForthFilterOperators.IS_EMPTY, AdminForthFilterOperators.IS_NOT_EMPTY].includes(normalizedFilter.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
-      const fieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field);
+      const fieldObj = resource.dataSourceColumns.find((col) => col.name == normalizedFilter.field);
       if (!fieldObj) {
-        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), filtersAsSingle.field);
+        const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), normalizedFilter.field);
         
         let isPolymorphicTarget = false;
         if (global.adminforth?.config?.resources) {
@@ -142,68 +171,85 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
           );
         }
         if (isPolymorphicTarget) {
-          afLogger.trace(`⚠️  Field '${filtersAsSingle.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
-          return { ok: true, error: '' };
+          afLogger.trace(`⚠️  Field '${normalizedFilter.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+          return { ok: true, error: '', normalizedFilters: normalizedFilter };
         } else {
-          throw new Error(`Field '${filtersAsSingle.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+          throw new Error(`Field '${normalizedFilter.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
       }
       // value normalization
       if (comparingWithRightField) {
         // ensure rightField exists in resource
-        const rightFieldObj = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.rightField);
+        const rightFieldObj = resource.dataSourceColumns.find((col) => col.name == normalizedFilter.rightField);
         if (!rightFieldObj) {
-          const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), filtersAsSingle.rightField as string);
-          throw new Error(`Field '${filtersAsSingle.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
+          const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), normalizedFilter.rightField as string);
+          throw new Error(`Field '${normalizedFilter.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // No value conversion needed for field-to-field comparison here
       } else if (isEmptyOperator) {
         // IS_EMPTY and IS_NOT_EMPTY don't need value normalization
         // Set value to null if not already set
-        if (filtersAsSingle.value === undefined) {
-          filtersAsSingle.value = null;
+        if (normalizedFilter.value === undefined) {
+          normalizedFilter.value = null;
         }
-      } else if (filters.operator == AdminForthFilterOperators.IN || filters.operator == AdminForthFilterOperators.NIN) {
-        if (!Array.isArray(filters.value)) {
-          return { ok: false, error: `Value for operator '${filters.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
+      } else if (normalizedFilter.operator == AdminForthFilterOperators.IN || normalizedFilter.operator == AdminForthFilterOperators.NIN) {
+        if (!Array.isArray(normalizedFilter.value)) {
+          return { ok: false, error: `Value for operator '${normalizedFilter.operator}' should be an array, in filter object: ${JSON.stringify(filters) }` };
         }
-        if (filters.value.length === 0) {
+        if (normalizedFilter.value.length === 0) {
           // nonsense, and some databases might not accept IN []
-          const colType = resource.dataSourceColumns.find((col) => col.name == filtersAsSingle.field)?.type;
+          const colType = resource.dataSourceColumns.find((col) => col.name == normalizedFilter.field)?.type;
           if (colType === AdminForthDataTypes.STRING || colType === AdminForthDataTypes.TEXT) {
-            filters.value = [randomUUID()];
-            return { ok: true,  error: `` };
+            normalizedFilter.value = [randomUUID()];
+            return { ok: true,  error: '', normalizedFilters: normalizedFilter };
           } else {
-            return { ok: false, error: `Value for operator '${filters.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
+            return { ok: false, error: `Value for operator '${normalizedFilter.operator}' should not be empty array, in filter object: ${JSON.stringify(filters) }` };
           }
         }
-        filters.value = filters.value.map((val: any) => this.validateAndSetFieldValue(fieldObj, val));
+        normalizedFilter.value = normalizedFilter.value.map((val: any) => this.validateAndSetFieldValue(fieldObj, val));
       } else {
-        filtersAsSingle.value = this.validateAndSetFieldValue(fieldObj, filtersAsSingle.value);
+        normalizedFilter.value = this.validateAndSetFieldValue(fieldObj, normalizedFilter.value);
       }
+
+      return { ok: true, error: '', normalizedFilters: normalizedFilter };
     } else if (filtersAsSingle.insecureRawSQL || filtersAsSingle.insecureRawNoSQL) {
+      const normalizedFilter = this.cloneFilterNode(filters) as IAdminForthSingleFilter;
+
       // if "insecureRawSQL" filter is insecure sql string
-      if (filtersAsSingle.operator) {
+      if (normalizedFilter.operator) {
         return { ok: false, error: `Field "operator" should not be specified in filter object alongside "insecureRawSQL" or "insecureRawNoSQL": ${JSON.stringify(filters)}` };
       }
-      if (filtersAsSingle.value !== undefined) {
+      if (normalizedFilter.value !== undefined) {
         return { ok: false, error: `Field "value" should not be specified in filter object alongside "insecureRawSQL" or "insecureRawNoSQL": ${JSON.stringify(filters)}` };
       }
+      return { ok: true, error: '', normalizedFilters: normalizedFilter };
     } else if ((filters as IAdminForthAndOrFilter).subFilters) {
+      const complexFilter = filters as IAdminForthAndOrFilter;
+
       // if "subFilters" is present, filter must be AndOr
-      if (!filters.operator) {
+      if (!complexFilter.operator) {
         return { ok: false, error: `Field "operator" not specified in filter object: ${JSON.stringify(filters)}` };
       }
-      if (![AdminForthFilterOperators.AND, AdminForthFilterOperators.OR].includes(filters.operator)) {
+      if (![AdminForthFilterOperators.AND, AdminForthFilterOperators.OR].includes(complexFilter.operator)) {
         return { ok: false, error: `Field "operator" has wrong value in filter object: ${JSON.stringify(filters)}` };
       }
 
-      return this.validateAndNormalizeFilters((filters as IAdminForthAndOrFilter).subFilters, resource);
+      const subFiltersValidation = this.validateAndNormalizeFilters(complexFilter.subFilters, resource);
+      if (!subFiltersValidation.ok) {
+        return subFiltersValidation;
+      }
+
+      return {
+        ok: true,
+        error: '',
+        normalizedFilters: {
+          ...complexFilter,
+          subFilters: subFiltersValidation.normalizedFilters as AdminForthFilterNode[],
+        },
+      };
     } else {
       return { ok: false, error: `Fields "field" or "subFilters" are not specified in filter object: ${JSON.stringify(filters)}` };
     }
-
-    return { ok: true, error: '' };
   }
 
   getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
@@ -469,14 +515,17 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     filters: IAdminForthAndOrFilter,
     getTotals: boolean,
   }): Promise<{ data: any[], total: number }> {
+    let normalizedFilters = filters;
+
     if (filters) {
       const filterValidation = this.validateAndNormalizeFilters(filters, resource);
       if (!filterValidation.ok) {
         throw new Error(filterValidation.error);
       }
+      normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
     }
 
-    const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters })];
+    const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters: normalizedFilters })];
     if (getTotals) {
       promises.push(this.getCount({ resource, filters }));
     } else {

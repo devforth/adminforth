@@ -21,6 +21,10 @@ export default {
     {
       name: 'session_id',
       type: AdminForthDataTypes.STRING,
+      foreignResource: {
+        resourceId: 'sessions',
+        labelField: 'id'
+      }
     },
     {
       name: 'created_at',
@@ -38,6 +42,22 @@ export default {
     {
       name: 'response',
       type: AdminForthDataTypes.TEXT,
+    },
+    {
+      name: 'dubbug',
+      type: AdminForthDataTypes.JSON,
+      components: {
+        show: {
+          file: '@@/TurnDebugShow.vue',
+        },
+      },
+      showIn: {
+        list: false,
+        show: true,
+        edit: false,
+        create: false,
+        filter: false,
+      },
     },
   ],
 } as AdminForthResourceInput;

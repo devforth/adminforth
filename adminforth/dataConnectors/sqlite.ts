@@ -326,16 +326,19 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }
 
     async getCount({ resource, filters }) {
+      let normalizedFilters = filters;
+
       if (filters) {
       // validate and normalize in case this method is called from dataAPI
         const filterValidation = this.validateAndNormalizeFilters(filters, resource);
         if (!filterValidation.ok) {
           throw new Error(filterValidation.error);
         }
+        normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
       }
       const tableName = resource.table;
-      const where = this.whereClause(filters);
-      const filterValues = this.getFilterParams(filters);
+      const where = this.whereClause(normalizedFilters);
+      const filterValues = this.getFilterParams(normalizedFilters);
       const q = `SELECT COUNT(*) FROM ${tableName} ${where}`;
       dbLogger.trace(`🪲📜 SQLITE Q: ${q}, params: ${JSON.stringify(filterValues)}`);
       const totalStmt = this.client.prepare(q);

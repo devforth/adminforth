@@ -396,14 +396,17 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
     async getCount({ resource, filters }: { resource: AdminForthResource; filters: IAdminForthAndOrFilter; }): Promise<number> {
         const tableName = resource.table;
+        let normalizedFilters = filters;
+
         // validate and normalize in case this method is called from dataAPI
         if (filters) {
             const filterValidation = this.validateAndNormalizeFilters(filters, resource);
             if (!filterValidation.ok) {
                 throw new Error(filterValidation.error);
             }
+            normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
         }
-        const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
+        const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, normalizedFilters);
         const q = `SELECT COUNT(*) FROM "${tableName}" ${where}`;
         dbLogger.trace(`🪲📜 PG Q: ${q}, values: ${JSON.stringify(filterValues)}`);
         const stmt = await this.client.query(q, filterValues);
