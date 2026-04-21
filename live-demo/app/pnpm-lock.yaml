@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.9.1
-        version: 1.11.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
+        specifier: ^1.16.1
+        version: 1.16.1(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
       '@adminforth/audit-log':
         specifier: ^1.9.12
         version: 1.9.15(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
@@ -93,8 +93,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.11.0':
-    resolution: {integrity: sha512-sbBZvI/5PgE4lyqRNa8h2xhObWn1g82OjewFC1gQ8odHHEFVdDwNk/eDvnVyjw/za0WnteEHLLUV1LCwMAn+Hw==}
+  '@adminforth/agent@1.16.1':
+    resolution: {integrity: sha512-hOxhs1ATLFJvPKeBlgcLOLUx9wd3WBFYvCrZ5ITvVsoDCMEt2DAb/jw793LBAc8KV5a+pyHFrrvaLOU1bA+4hg==}
 
   '@adminforth/audit-log@1.9.15':
     resolution: {integrity: sha512-do8vXCMlfvu6ToPcACs+YBwGaa/g3cc2GyseUZIoUmerqBe7Y5Lj3T6KLjVa9Fd69f27mLowORsfXrRpqfoTIA==}
@@ -2661,7 +2661,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.11.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
+  '@adminforth/agent@1.16.1(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
     dependencies:
       '@langchain/core': 1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0)
       '@langchain/langgraph': 1.2.9(@langchain/core@1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0))(zod@4.3.6)
