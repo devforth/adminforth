@@ -16,7 +16,7 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^1.9.1",
+    "@adminforth/agent": "^1.16.1",
     "@adminforth/audit-log": "^1.9.12",
     "@adminforth/bulk-ai-flow": "^1.23.14",
     "@adminforth/chat-gpt": "^1.0.20",
