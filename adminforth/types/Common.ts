@@ -330,7 +330,7 @@ export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsComm
   bulkActions?: AdminForthBulkActionFront[],
 }
 
-export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
   options: AdminForthOptionsForFrontend;
 }
 
@@ -1179,6 +1179,11 @@ export interface AdminForthConfigMenuItem {
   itemId?: string,  // todo move to runtime type
   
   url?: string
+
+  /**
+   * Open menu item link in a new browser tab.
+   */
+  isOpenInNewTab?: boolean
 }
 
 

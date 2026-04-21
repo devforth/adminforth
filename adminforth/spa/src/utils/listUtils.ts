@@ -1,11 +1,11 @@
 import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import { callAdminForthApi } from '@/utils';
-import { type AdminForthResourceCommon } from '../types/Common';
+import { type AdminForthResourceFrontend } from '../types/Common';
 import { useAdminforth } from '@/adminforth';
 import { showErrorTost } from '@/composables/useFrontendApi'
 
 let getResourceDataLastAbortController: AbortController | null = null;
-export async function getList(resource: AdminForthResourceCommon, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
+export async function getList(resource: AdminForthResourceFrontend, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
   let rows: any[] = [];
   let totalRows: number | null = null;
   if (!isPageLoaded) {
@@ -53,7 +53,7 @@ export async function getList(resource: AdminForthResourceCommon, isPageLoaded: 
 
 
 
-export async function startBulkAction(actionId: string, resource: AdminForthResourceCommon, checkboxes: { value: any[] }, 
+export async function startBulkAction(actionId: string, resource: AdminForthResourceFrontend, checkboxes: { value: any[] }, 
   bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>) {
   const action = resource?.options?.bulkActions?.find(a => a.id === actionId);
   const { confirm, alert } = useAdminforth();

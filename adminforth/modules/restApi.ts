@@ -23,7 +23,7 @@ import { afLogger } from "./logger.js";
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
+import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
   AdminForthSortDirections,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
    AnnouncementBadgeResponse,
@@ -76,6 +76,11 @@ async function isShown(
 async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
   const fillOnCreate = !!col.fillOnCreate;
   return fillOnCreate;
+}
+
+function stripResourceColumnFrontendMeta(column: Record<string, any>) {
+  const { default: _default, _baseTypeDebug, ...sanitizedColumn } = column;
+  return sanitizedColumn;
 }
 
 const SIMPLE_FILTER_OPERATORS = Object.values(AdminForthFilterOperators).filter((operator) => {
@@ -1045,7 +1050,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       description: 'Returns the definition of a single resource. The response includes translated labels, column metadata, allowed actions, visible bulk actions, frontend action metadata, and resource options after permission checks and removal of backend-only internals.',
       request_schema: getResourceRequestSchema,
       response_schema: getResourceResponseSchema,
-      handler: async ({ body, adminUser, tr }): Promise<{ resource?: AdminForthResourceCommon, error?: string }> => {
+      handler: async ({ body, adminUser, tr }): Promise<{ resource?: AdminForthResourceFrontend, error?: string }> => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -1106,13 +1111,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         
         const toReturn = {
-            ...resource,
+            resourceId: resource.resourceId,
             label: translated.resLabel,
             columns:
               await Promise.all(
                 resource.columns.map(
                   async (inCol, i) => {
-                    const col = JSON.parse(JSON.stringify(inCol));
+                    const col = JSON.parse(JSON.stringify(stripResourceColumnFrontendMeta(inCol)));
                     let validation = null;
                     if (col.validation) {
                       validation = await Promise.all(                  
@@ -1188,14 +1193,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               ),
               actions: resource.options.actions?.map((action) => ({
                 ...action,
+                id: action.id!,
                 hasBulkHandler: !!action.bulkHandler,
                 bulkHandler: undefined,
               })),
               allowedActions,
             } 
         }
-        delete toReturn.hooks;
-        delete toReturn.plugins;
 
         return { 
           resource: toReturn,
@@ -1482,10 +1486,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        return {
-          ...data,
-          options: resource?.options,
-        };
+        return data;
       },
     });
     server.endpoint({
