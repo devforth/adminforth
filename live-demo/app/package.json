@@ -16,7 +16,7 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^1.16.1",
+    "@adminforth/agent": "^1.17.0",
     "@adminforth/audit-log": "^1.9.12",
     "@adminforth/bulk-ai-flow": "^1.23.14",
     "@adminforth/chat-gpt": "^1.0.20",
@@ -38,6 +38,7 @@
     "@prisma/client": "^6.6.0",
     "adminforth": "2.37.2",
     "better-sqlite3": "^10.0.0",
+    "cldr-core": "^48.2.0",
     "express": "^4.19.2"
   },
   "devDependencies": {
