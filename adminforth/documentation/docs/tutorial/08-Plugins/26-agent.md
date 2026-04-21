@@ -203,6 +203,13 @@ import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-
 plugins: [
   ...
   new AdminForthAgent({
+    // optional, can be used to suggest example prompts in the UI
+    // placeholderMessages: async ({ adminUser, httpExtra }) => {
+    //   return [
+    //     'What is a cars count in SQLite',
+    //     'Build average car price by days chart in SQLite',
+    //   ];
+    // },
     modes: [
       {
         name: 'Balanced',
@@ -260,6 +267,8 @@ plugins: [
       // optional
       // debugField: 'debug',
     },
+    // optional, see the "Persistent checkpointer" section below
+    // checkpointResource: { ... },
   }),
 ]
 ```
@@ -267,6 +276,218 @@ plugins: [
 Each item in `modes` defines a user-selectable preset in the chat UI. The selected mode is sent to the backend and the plugin uses that mode's `completionAdapter` for the response.
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
+
+## Persistent checkpointer
+
+If you do not configure `checkpointResource`, the plugin falls back to an in-memory `MemorySaver`. This is fine for local testing, but checkpoints are lost on process restart.
+
+If you want persistent LangGraph checkpoints between requests, add a dedicated resource and pass it via `checkpointResource`.
+
+You can use your own table and field names. The plugin does not require a specific schema name, only a mapping for these logical fields:
+
+- `idField`
+- `threadIdField`
+- `checkpointNamespaceField`
+- `checkpointIdField`
+- `parentCheckpointIdField`
+- `rowKindField`
+- `taskIdField`
+- `sequenceField`
+- `createdAtField`
+- `checkpointPayloadField`
+- `metadataPayloadField`
+- `writesPayloadField`
+- `schemaVersionField`
+
+Create a resource for checkpoint rows:
+
+```ts title="./resources/agent_resources/checkpoints.ts"
+import { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput } from 'adminforth';
+
+export default {
+  dataSource: 'sqlite',
+  table: 'checkpoints',
+  resourceId: 'checkpoints',
+  label: 'Checkpoints',
+  recordLabel: (record) => record.id,
+  options: {
+    allowedActions: {
+      create: false,
+      edit: false,
+    },
+  },
+  columns: [
+    {
+      name: 'id',
+      primaryKey: true,
+      type: AdminForthDataTypes.STRING,
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'thread_id',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'checkpoint_ns',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'checkpoint_id',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'parent_checkpoint_id',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'row_kind',
+      type: AdminForthDataTypes.STRING,
+      enum: [
+        { value: 'checkpoint', label: 'Checkpoint' },
+        { value: 'writes', label: 'Writes' },
+      ],
+    },
+    {
+      name: 'task_id',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'seq',
+      type: AdminForthDataTypes.INTEGER,
+    },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'checkpoint_payload',
+      type: AdminForthDataTypes.JSON,
+      showIn: {
+        list: false,
+      },
+    },
+    {
+      name: 'metadata_payload',
+      type: AdminForthDataTypes.JSON,
+      showIn: {
+        list: false,
+      },
+    },
+    {
+      name: 'writes_payload',
+      type: AdminForthDataTypes.JSON,
+      showIn: {
+        list: false,
+      },
+    },
+    {
+      name: 'schema_version',
+      type: AdminForthDataTypes.INTEGER,
+    },
+  ],
+} as AdminForthResourceInput;
+```
+
+Add a matching table to your schema:
+
+```prisma title='./schema.prisma'
+model checkpoints {
+  id                   String   @id
+  thread_id            String
+  checkpoint_ns        String
+  checkpoint_id        String
+  parent_checkpoint_id String?
+  row_kind             String
+  task_id              String?
+  seq                  Int
+  created_at           DateTime
+  checkpoint_payload   String?
+  metadata_payload     String?
+  writes_payload       String?
+  schema_version       Int
+
+  @@index([thread_id, checkpoint_ns, checkpoint_id])
+}
+```
+
+The payload fields can be stored as strings. The plugin serializes and deserializes checkpoint JSON on its own. The composite index on `(thread_id, checkpoint_ns, checkpoint_id)` is recommended because the checkpointer filters rows by these columns.
+
+Run migration:
+
+```bash
+pnpm makemigration --name add-adminforth-agent-checkpoints ; pnpm migrate:local
+```
+
+Register the resource in your app:
+
+```ts title="./index.ts"
+import checkpoints_resource from './resources/agent_resources/checkpoints.js';
+import sessions_resource from './resources/agent_resources/sessions.js';
+import turns_resource from './resources/agent_resources/turns.js';
+
+export const admin = new AdminForth({
+  ...
+  resources: [
+    ...
+    sessions_resource,
+    turns_resource,
+    checkpoints_resource,
+  ],
+  ...
+});
+```
+
+Then connect it to the plugin:
+
+```ts title="./resources/adminuser.ts"
+new AdminForthAgent({
+  modes: [
+    ...
+  ],
+  sessionResource: {
+    resourceId: 'sessions',
+    idField: 'id',
+    titleField: 'title',
+    turnsField: 'turns',
+    askerIdField: 'asker_id',
+    createdAtField: 'created_at',
+  },
+  turnResource: {
+    resourceId: 'turns',
+    idField: 'id',
+    sessionIdField: 'session_id',
+    createdAtField: 'created_at',
+    promptField: 'prompt',
+    responseField: 'response',
+  },
+  checkpointResource: {
+    resourceId: 'checkpoints',
+    idField: 'id',
+    threadIdField: 'thread_id',
+    checkpointNamespaceField: 'checkpoint_ns',
+    checkpointIdField: 'checkpoint_id',
+    parentCheckpointIdField: 'parent_checkpoint_id',
+    rowKindField: 'row_kind',
+    taskIdField: 'task_id',
+    sequenceField: 'seq',
+    createdAtField: 'created_at',
+    checkpointPayloadField: 'checkpoint_payload',
+    metadataPayloadField: 'metadata_payload',
+    writesPayloadField: 'writes_payload',
+    schemaVersionField: 'schema_version',
+  },
+});
+```
+
+If your existing checkpoint table already uses different column names, keep your schema and only change the field mapping in `checkpointResource`.
 
 ## Reverse proxy and CDN configuration for streaming
 

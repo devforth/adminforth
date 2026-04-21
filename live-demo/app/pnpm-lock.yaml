@@ -9,65 +9,74 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.9.0
-        version: 1.9.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
+        specifier: ^1.17.0
+        version: 1.17.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
       '@adminforth/audit-log':
-        specifier: ^1.8.3
-        version: 1.9.8(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        specifier: ^1.9.12
+        version: 1.9.15(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/bulk-ai-flow':
-        specifier: ^1.18.11
-        version: 1.23.8(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        specifier: ^1.23.14
+        version: 1.23.18(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/chat-gpt':
         specifier: ^1.0.20
         version: 1.0.20
       '@adminforth/clone-row':
         specifier: ^1.2.0
-        version: 1.2.3(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.2.3(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/completion-adapter-open-ai-chat-gpt':
         specifier: ^2.0.19
-        version: 2.0.19(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)
+        version: 2.0.19(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)
       '@adminforth/email-password-reset':
         specifier: ^1.3.6
-        version: 1.3.10(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.3.10(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/foreign-inline-list':
         specifier: ^1.10.5
-        version: 1.10.7(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.10.7(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/i18n':
         specifier: ^1.6.7
-        version: 1.10.1(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.10.1(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.7
-        version: 1.0.9(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.0.9(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/image-vision-adapter-openai':
         specifier: ^1.0.1
-        version: 1.0.2(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.0.2(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/import-export':
         specifier: ^1.4.6
-        version: 1.4.11(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.4.11(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
+      '@adminforth/login-captcha':
+        specifier: ^1.1.7
+        version: 1.1.10(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
+      '@adminforth/login-captcha-adapter-cloudflare':
+        specifier: ^1.0.16
+        version: 1.0.17(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/rich-editor':
         specifier: ^1.6.14
-        version: 1.6.16(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.6.16(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/storage-adapter-amazon-s3':
         specifier: ^1.0.11
-        version: 1.0.16(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 1.0.16(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/text-complete':
-        specifier: ^1.8.9
-        version: 1.8.10(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        specifier: ^2.0.7
+        version: 2.0.8(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/two-factors-auth':
         specifier: ^2.9.20
-        version: 2.10.12(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 2.10.12(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/upload':
         specifier: ^2.15.3
-        version: 2.15.6(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))
+        version: 2.15.6(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))
       '@prisma/client':
         specifier: ^6.6.0
         version: 6.19.2(prisma@6.19.2(typescript@5.9.3))(typescript@5.9.3)
       adminforth:
-        specifier: 2.27.0-next.75
-        version: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+        specifier: 2.37.2
+        version: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       better-sqlite3:
         specifier: ^10.0.0
         version: 10.1.0
+      cldr-core:
+        specifier: ^48.2.0
+        version: 48.2.0
       express:
         specifier: ^4.19.2
         version: 4.22.1
@@ -87,18 +96,18 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.9.0':
-    resolution: {integrity: sha512-q/7aKojYVvkYiiFYEP4gipp9rdegm0PkGh5g4Xd9+MoRRtOmGvlHxjaetfguhFoQ+L6g1wOWzoELZSCZmsHFAA==}
+  '@adminforth/agent@1.17.0':
+    resolution: {integrity: sha512-Ni9cSgAKOsxznYmpG2ZubB1gPaNuz/MCo24Ab5AJhHShIs+XzKZ5JGqmRklZKpFQF+LNXpDafy+3Xz+4S03mgQ==}
 
-  '@adminforth/audit-log@1.9.8':
-    resolution: {integrity: sha512-eWQKLkABiEYYLgEo+63mpccj8jrP95aNqJ8/jlwLHHSdlhKLQHav32AGkCzB2R9BE2INAcUeGuWV4/RZOVZWIg==}
+  '@adminforth/audit-log@1.9.15':
+    resolution: {integrity: sha512-do8vXCMlfvu6ToPcACs+YBwGaa/g3cc2GyseUZIoUmerqBe7Y5Lj3T6KLjVa9Fd69f27mLowORsfXrRpqfoTIA==}
     peerDependencies:
-      adminforth: ^2.24.0
+      adminforth: ^2.35.0
 
-  '@adminforth/bulk-ai-flow@1.23.8':
-    resolution: {integrity: sha512-UJ53k0qOy6fK6nHE638CYY7cj6D00HQ1V2EVMTzSwfFLzEKGOiwKlSI+XPJL40mKVJrJk9UH9qyksYWKe1WEuQ==}
+  '@adminforth/bulk-ai-flow@1.23.18':
+    resolution: {integrity: sha512-XRhu4V+wJWhJp2Gor+4Uk8ntdBovK6KRY2sl6gww0dHKxds1z3+pi1Gq9QUm7uItklTO1hERboy8O3ZdoiihKg==}
     peerDependencies:
-      adminforth: ^2.24.0
+      adminforth: ^2.35.0
 
   '@adminforth/chat-gpt@1.0.20':
     resolution: {integrity: sha512-7a1YExECWcQaAhBYJqKiex9rbEw1cS1M9EVmQwcgv2SwiqJdy+jOi1CdQ6J7ez3QTtxWeLX8BhYXgiAt6LwfVA==}
@@ -143,6 +152,16 @@ packages:
     peerDependencies:
       adminforth: ^2.24.0
 
+  '@adminforth/login-captcha-adapter-cloudflare@1.0.17':
+    resolution: {integrity: sha512-AN9Fb6e6zDQQfDhYGvOu1VCagxnVduLHS47Ackf2xXllD5YHIoR0UBtYIsbeClBsAk+O8uJnNuuqp7nLnypmuw==}
+    peerDependencies:
+      adminforth: ^2.24.0
+
+  '@adminforth/login-captcha@1.1.10':
+    resolution: {integrity: sha512-vajUmI60R3iE2H3feYAhhW4dEICat0qQTMHAopuUa0L0DQYG0jCO6EUeHuBLar19D/+1HAqEZj4UNAuzKC2TOw==}
+    peerDependencies:
+      adminforth: ^2.35.0
+
   '@adminforth/rich-editor@1.6.16':
     resolution: {integrity: sha512-Vf3mLAc66z4OQ4RolOXwFiynsi7XD3gSrHr37fDnpQmLqJlLfjqF253OeU5f/z8xdHX+sGDjCoCueUyHYY4/bg==}
     peerDependencies:
@@ -153,10 +172,10 @@ packages:
     peerDependencies:
       adminforth: ^2.24.0
 
-  '@adminforth/text-complete@1.8.10':
-    resolution: {integrity: sha512-BX4jMw5ftRgtnh6WRqiRiyR3yXxroxLkxIhXchkpsNif3eiBrWAiWaDJkbDQoov61W8RDqKvQtE+8kS6NLTW4Q==}
+  '@adminforth/text-complete@2.0.8':
+    resolution: {integrity: sha512-dAebJYSIhWeKLcpS1XstDCBdHzu+uafKqKhr3VrTmiNC5HPS18J0LXc5FKEhIf02p7A80P9xztuOle6FwMt/JQ==}
     peerDependencies:
-      adminforth: next
+      adminforth: ^2.35.0
 
   '@adminforth/two-factors-auth@2.10.12':
     resolution: {integrity: sha512-lxAvyYeod+GKpccRtY/Am11yBlBvxCcmMkF9e1j68wZmA4pXDYovM6EmxD9JSy2w4v6vEslwR14nAZhI8kW9Vg==}
@@ -1119,8 +1138,8 @@ packages:
     resolution: {integrity: sha512-spVnJX7iNG2B1rLt/zPHHzkCSlto/oxIf+L6QDXpzxGstDsJgJwCXyBQ7DdQmuKO2xspSHIhDCNQcACwyAeB9w==}
     hasBin: true
 
-  adminforth@2.27.0-next.75:
-    resolution: {integrity: sha512-tyyXXHJfXpLI7QCywc5okPFOuz9NCdFTFCZYdYYaml/ZCQWF4yIwQTou2C/LZ3han21K9w0Lr4m8SPGmkODXng==}
+  adminforth@2.37.2:
+    resolution: {integrity: sha512-TgnUIpgh/+K3hrzp74FOtZ/6VFhBDoFar9SBWvnNSTEevU42hd4vrVFaEckNpVAzfBf7RZB6wOWF4KrvqwVA+Q==}
     hasBin: true
 
   ajv@8.18.0:
@@ -1275,6 +1294,9 @@ packages:
   citty@0.2.1:
     resolution: {integrity: sha512-kEV95lFBhQgtogAPlQfJJ0WGVSokvLr/UEoFPiKKOXF7pl98HfUVUD0ejsuTCld/9xH9vogSywZ5KqHzXrZpqg==}
 
+  cldr-core@48.2.0:
+    resolution: {integrity: sha512-zfmLothncSwfv2jlevoSrgI2VGgH8SDGHXst6jUEotHA8nq9Igeg9jzdJDFtBso9pgJuG89DK16TzrmZDdo2Bg==}
+
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
     engines: {node: '>=18'}
@@ -1351,9 +1373,6 @@ packages:
 
   dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
-
-  dayjs@1.11.19:
-    resolution: {integrity: sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw==}
 
   dayjs@1.11.20:
     resolution: {integrity: sha512-YbwwqR/uYpeoP4pu043q+LTDLFBLApUP6VxRihdfNTqu4ubqMlGDLd6ErXhEgsyvY0K6nCs7nggYumAN+9uEuQ==}
@@ -1671,11 +1690,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  handlebars@4.7.8:
-    resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
-    engines: {node: '>=0.4.7'}
-    hasBin: true
 
   handlebars@4.7.9:
     resolution: {integrity: sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ==}
@@ -2653,7 +2667,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.9.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
+  '@adminforth/agent@1.17.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
     dependencies:
       '@langchain/core': 1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0)
       '@langchain/langgraph': 1.2.9(@langchain/core@1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0))(zod@4.3.6)
@@ -2688,50 +2702,50 @@ snapshots:
       - ws
       - zod-to-json-schema
 
-  '@adminforth/audit-log@1.9.8(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/audit-log@1.9.15(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
-      dayjs: 1.11.19
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
+      dayjs: 1.11.20
 
-  '@adminforth/bulk-ai-flow@1.23.8(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/bulk-ai-flow@1.23.18(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       '@types/handlebars': 4.1.0
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
-      handlebars: 4.7.8
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
+      handlebars: 4.7.9
 
   '@adminforth/chat-gpt@1.0.20': {}
 
-  '@adminforth/clone-row@1.2.3(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/clone-row@1.2.3(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
 
-  '@adminforth/completion-adapter-open-ai-chat-gpt@2.0.19(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)':
+  '@adminforth/completion-adapter-open-ai-chat-gpt@2.0.19(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       openai: 6.34.0(ws@8.19.0)(zod@4.3.6)
       tiktoken: 1.0.22
     transitivePeerDependencies:
       - ws
       - zod
 
-  '@adminforth/email-password-reset@1.3.10(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/email-password-reset@1.3.10(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       '@aws-sdk/client-ses': 3.1004.0
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       validator: 13.15.26
     transitivePeerDependencies:
       - aws-crt
 
-  '@adminforth/foreign-inline-list@1.10.7(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/foreign-inline-list@1.10.7(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       clone: 2.1.2
 
-  '@adminforth/i18n@1.10.1(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/i18n@1.10.1(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       '@aws-sdk/client-ses': 3.1004.0
       '@sapphire/async-queue': 1.5.5
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       bcp-47: 2.1.0
       chokidar: 4.0.3
       country-flag-svg: 1.0.19
@@ -2741,9 +2755,9 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@adminforth/image-generation-adapter-openai@1.0.9(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/image-generation-adapter-openai@1.0.9(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       axios: 1.13.6
       file-type: 20.5.0
       form-data: 4.0.5
@@ -2752,44 +2766,58 @@ snapshots:
       - debug
       - supports-color
 
-  '@adminforth/image-vision-adapter-openai@1.0.2(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/image-vision-adapter-openai@1.0.2(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       typescript: 5.9.3
 
-  '@adminforth/import-export@1.4.11(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/import-export@1.4.11(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
 
-  '@adminforth/rich-editor@1.6.16(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/login-captcha-adapter-cloudflare@1.0.17(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
+      axios: 1.13.6
+      file-type: 20.5.0
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
+  '@adminforth/login-captcha@1.1.10(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
+    dependencies:
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
+
+  '@adminforth/rich-editor@1.6.16(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
+    dependencies:
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       cheerio: 1.2.0
 
-  '@adminforth/storage-adapter-amazon-s3@1.0.16(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/storage-adapter-amazon-s3@1.0.16(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       '@aws-sdk/client-s3': 3.1004.0
       '@aws-sdk/s3-request-presigner': 3.1004.0
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
       - aws-crt
 
-  '@adminforth/text-complete@1.8.10(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/text-complete@2.0.8(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
 
-  '@adminforth/two-factors-auth@2.10.12(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/two-factors-auth@2.10.12(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       '@simplewebauthn/server': 13.2.3
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
       node-2fa: 2.0.3
 
-  '@adminforth/upload@2.15.6(adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/upload@2.15.6(adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       '@aws-sdk/client-s3': 3.1004.0
       '@aws-sdk/s3-request-presigner': 3.1004.0
-      adminforth: 2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3)
+      adminforth: 2.37.2(@types/node@25.3.5)(typescript@5.9.3)
     transitivePeerDependencies:
       - aws-crt
 
@@ -4144,7 +4172,7 @@ snapshots:
 
   '@types/handlebars@4.1.0':
     dependencies:
-      handlebars: 4.7.8
+      handlebars: 4.7.9
 
   '@types/http-errors@2.0.5': {}
 
@@ -4243,7 +4271,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  adminforth@2.27.0-next.75(@types/node@25.3.5)(typescript@5.9.3):
+  adminforth@2.37.2(@types/node@25.3.5)(typescript@5.9.3):
     dependencies:
       '@babel/parser': 7.29.0
       '@clickhouse/client': 1.18.1
@@ -4482,6 +4510,8 @@ snapshots:
 
   citty@0.2.1: {}
 
+  cldr-core@48.2.0: {}
+
   cli-cursor@5.0.0:
     dependencies:
       restore-cursor: 5.1.0
@@ -4544,8 +4574,6 @@ snapshots:
   data-uri-to-buffer@4.0.1: {}
 
   dateformat@4.6.3: {}
-
-  dayjs@1.11.19: {}
 
   dayjs@1.11.20: {}
 
@@ -4893,15 +4921,6 @@ snapshots:
   gopd@1.2.0: {}
 
   graceful-fs@4.2.11: {}
-
-  handlebars@4.7.8:
-    dependencies:
-      minimist: 1.2.8
-      neo-async: 2.6.2
-      source-map: 0.6.1
-      wordwrap: 1.0.0
-    optionalDependencies:
-      uglify-js: 3.19.3
 
   handlebars@4.7.9:
     dependencies:
