@@ -329,8 +329,8 @@ async function loadPublicConfig() {
 
 // initialize components based on data attribute selectors
 onMounted(async () => {
-  loadMenu(); // run this in async mode
-  loadPublicConfig(); // and this
+  await loadPublicConfig(); // run this in async mode
+  await loadMenu(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
 
