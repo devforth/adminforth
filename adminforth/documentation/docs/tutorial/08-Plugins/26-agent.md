@@ -203,6 +203,13 @@ import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-
 plugins: [
   ...
   new AdminForthAgent({
+    // optional, can be used to suggest example prompts in the UI
+    // placeholderMessages: async ({ adminUser, httpExtra }) => {
+    //   return [
+    //     'What is a cars count in SQLite',
+    //     'Build average car price by days chart in SQLite',
+    //   ];
+    // },
     modes: [
       {
         name: 'Balanced',
