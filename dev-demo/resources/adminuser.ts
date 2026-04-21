@@ -193,6 +193,12 @@ export default {
       },
     }),
     new AdminForthAgent({
+      placeholderMessages: async ({ adminUser, httpExtra }) => {
+        return [
+          "What is a cars count in SQLite",
+          "Build average car price by days chart in SQLite",
+        ]
+      },
       modes: [
         {
           name: 'Balanced',
