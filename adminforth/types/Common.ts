@@ -1197,11 +1197,10 @@ export interface AdminForthConfigMenuItem {
   
   url?: string
 
-
-  /**   
-   * If true, link will be opened in new tab.
+  /**
+   * Open menu item link in a new browser tab.
    */
-  isOpenInNewTab?: boolean,
+  isOpenInNewTab?: boolean
 }
 
 
