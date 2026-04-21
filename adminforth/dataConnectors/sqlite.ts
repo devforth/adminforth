@@ -1,5 +1,5 @@
 import betterSqlite3 from 'better-sqlite3';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, AdminForthConfig } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
@@ -297,6 +297,123 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }
     whereClause(filter: IAdminForthAndOrFilter) {
       return filter.subFilters.length ? `WHERE ${this.getFilterString(filter)}` : '';
+    }
+
+    private _dateGroupKey(rawValue: any, underlineType: string, truncation: string, timezone: string): string {
+      const date = (underlineType === 'timestamp' || underlineType === 'int')
+        ? new Date(Number(rawValue) * 1000)
+        : new Date(rawValue);
+
+      const fmt = (opts: Intl.DateTimeFormatOptions) =>
+        new Intl.DateTimeFormat('en', { timeZone: timezone, ...opts }).formatToParts(date);
+
+      const get = (parts: Intl.DateTimeFormatPart[], type: string) =>
+        parts.find(p => p.type === type)?.value ?? '';
+
+      const dateParts = fmt({ year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
+      const year  = get(dateParts, 'year');
+      const month = get(dateParts, 'month');
+      const day   = get(dateParts, 'day');
+      const dateStr = `${year}-${month}-${day}`;
+
+      switch (truncation) {
+        case 'day': return dateStr;
+        case 'week': {
+          const dowMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+          const dow = dowMap[get(dateParts, 'weekday')] ?? 0;
+          const daysBack = dow === 0 ? 6 : dow - 1; // rewind to Monday (ISO)
+          const [y, m, d] = dateStr.split('-').map(Number);
+          return new Date(Date.UTC(y, m - 1, d - daysBack)).toISOString().split('T')[0];
+        }
+        case 'month': return `${year}-${month}-01`;
+        case 'year':  return `${year}-01-01`;
+        default:      return dateStr;
+      }
+    }
+
+    async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
+      resource: AdminForthResource,
+      filters: IAdminForthAndOrFilter,
+      aggregations: { [alias: string]: IAggregationRule },
+      groupBy?: IGroupByRule,
+    }): Promise<Array<{ group?: string, [key: string]: any }>> {
+      const tableName = resource.table;
+      const where = this.whereClause(filters);
+      const filterValues = this.getFilterParams(filters);
+
+      if (!groupBy || groupBy.type === 'field') {
+        const selectParts: string[] = [];
+        let groupExpr: string | null = null;
+
+        if (groupBy?.type === 'field') {
+          const g = groupBy as IGroupByField;
+          groupExpr = `"${g.field}"`;
+          selectParts.push(`${groupExpr} AS "group"`);
+        }
+
+        for (const [alias, rule] of Object.entries(aggregations)) {
+          switch (rule.operation) {
+            case 'sum':    selectParts.push(`SUM("${rule.field}") AS "${alias}"`); break;
+            case 'count':  selectParts.push(`COUNT(*) AS "${alias}"`); break;
+            case 'avg':    selectParts.push(`AVG("${rule.field}") AS "${alias}"`); break;
+            case 'min':    selectParts.push(`MIN("${rule.field}") AS "${alias}"`); break;
+            case 'max':    selectParts.push(`MAX("${rule.field}") AS "${alias}"`); break;
+            case 'median': throw new Error('Aggregates.median() with GroupBy.Field is not supported in SQLite.');
+          }
+        }
+
+        let query = `SELECT ${selectParts.join(', ')} FROM ${tableName} ${where}`;
+        if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+        dbLogger.trace(`🪲📜 SQLITE AGG Q: ${query}, params: ${JSON.stringify(filterValues)}`);
+        return this.client.prepare(query).all([...filterValues]);
+      }
+
+      const g = groupBy as IGroupByDateTrunc;
+      const timezone = g.timezone ?? 'UTC';
+      const col = resource.dataSourceColumns.find(c => c.name === g.field);
+      const underlineType = col?._underlineType ?? 'varchar';
+
+      const neededFields = new Set<string>([g.field]);
+      for (const rule of Object.values(aggregations)) {
+        if (rule.field) neededFields.add(rule.field);
+      }
+      const selectCols = [...neededFields].map(f => `"${f}"`).join(', ');
+      const rawQuery = `SELECT ${selectCols} FROM ${tableName} ${where}`;
+      dbLogger.trace(`🪲📜 SQLITE AGG RAW Q: ${rawQuery}, params: ${JSON.stringify(filterValues)}`);
+      const rawRows: any[] = this.client.prepare(rawQuery).all([...filterValues]);
+
+      const groups = new Map<string, any[]>();
+      for (const row of rawRows) {
+        const key = this._dateGroupKey(row[g.field], underlineType, g.truncation, timezone);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(row);
+      }
+
+      const results: Array<{ group: string, [key: string]: any }> = [];
+      for (const [groupKey, rows] of groups) {
+        const result: { group: string, [key: string]: any } = { group: groupKey };
+        for (const [alias, rule] of Object.entries(aggregations)) {
+          const nums = rule.field ? rows.map(r => Number(r[rule.field!] ?? 0)) : [];
+          switch (rule.operation) {
+            case 'count':  result[alias] = rows.length; break;
+            case 'sum':    result[alias] = nums.reduce((s, v) => s + v, 0); break;
+            case 'avg':    result[alias] = nums.reduce((s, x) => s + x, 0) / nums.length; break;
+            case 'min':    result[alias] = Math.min(...nums); break;
+            case 'max':    result[alias] = Math.max(...nums); break;
+            case 'median': {
+              const sorted = nums.slice().sort((a, b) => a - b);
+              const mid = Math.floor(sorted.length / 2);
+              result[alias] = sorted.length % 2 === 0
+                ? (sorted[mid - 1] + sorted[mid]) / 2
+                : sorted[mid];
+              break;
+            }
+          }
+        }
+        results.push(result);
+      }
+
+      return results.sort((a, b) => a.group.localeCompare(b.group));
     }
 
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
