@@ -103,7 +103,6 @@ import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
-import type { AdminForthActionInput } from '@/types/Back';
 import { Spinner } from '@/afcl';
 
 const { list, alert} = useAdminforth();
@@ -137,7 +136,7 @@ function setComponentRef(el: ComponentPublicInstance | null, index: number) {
   }
 }
 
-async function handleActionClick(action: AdminForthActionInput, payload: any) {
+async function handleActionClick(action: AdminForthActionFront, payload: any) {
   list.closeThreeDotsDropdown();
   await executeCustomAction({
     actionId: action.id,

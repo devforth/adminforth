@@ -23,9 +23,9 @@ import { afLogger } from "./logger.js";
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
+import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
   AdminForthSortDirections,
-   AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
+   AdminUser, AllowedActionsEnum, AllowedActionsResolved,
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
@@ -1079,6 +1079,22 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
+        const allowedCustomActions = [];
+        if (resource.options.actions) {
+          await Promise.all(
+            resource.options.actions.map(async (action) => {
+              if (typeof action.allowed === 'function') {
+                const res = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+                if (res) {
+                  allowedCustomActions.push(action);
+                }
+              } else {
+                allowedCustomActions.push(action);
+              }
+            })
+          );
+        }
+
         // translate
         const translateRoutines: Record<string, Promise<string>> = {};
         translateRoutines.resLabel = tr(resource.label, `resource.${resource.resourceId}`);
@@ -1191,12 +1207,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
                 })
               ),
-              actions: resource.options.actions?.map((action) => ({
-                ...action,
-                id: action.id!,
-                hasBulkHandler: !!action.bulkHandler,
-                bulkHandler: undefined,
-              })),
+              actions: allowedCustomActions.map(({ bulkHandler, allowed, action: actionFn, ...rest }) => ({
+                ...rest,
+                ...(bulkHandler && { bulkHandler: true }),
+              })) as AdminForthActionFront[],
               allowedActions,
             } 
         }
@@ -2223,7 +2237,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!action) {
           return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
         }
-        if (action.allowed) {
+        if (typeof action.allowed === 'function') {
           const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
           if (!execAllowed) {
             return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
@@ -2275,7 +2289,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!action.bulkHandler) {
           return { error: await tr(`Action "{actionId}" has no bulkHandler`, 'errors', { actionId }) };
         }
-        if (action.allowed) {
+        if (typeof action.allowed === 'function') {
           const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
           if (!execAllowed) {
             return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
