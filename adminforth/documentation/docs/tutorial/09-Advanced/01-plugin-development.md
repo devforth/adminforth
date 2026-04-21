@@ -60,8 +60,9 @@ In plugin options we will pass field name and `OPENAI_API_KEY`.
 
 
 ```ts title='./af-plugin-chatgpt/types.ts'
+import  {type PluginsCommonOptions } from "adminforth";
 
-export interface PluginOptions {
+export interface PluginOptions extends PluginsCommonOptions {
 
 //diff-add
   /**
@@ -557,9 +558,9 @@ To use adapter in plugin you should define it in plugin options:
 
 ```ts title='./af-plugin-any-complete/types.ts'
 
-import { CompletionAdapter } from "adminforth";
+import { CompletionAdapter, type PluginsCommonOptions } from "adminforth";
 
-export interface PluginOptions {
+export interface PluginOptions extends PluginsCommonOptions{
   ...
 
 //diff-add
