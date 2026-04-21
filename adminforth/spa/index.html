@@ -17,6 +17,12 @@
     <!-- /* IMPORTANT:ADMINFORTH HEAD */ -->
   </head>
   <body class="min-h-screen flex flex-col">
+    <script>
+      const embedZoom = Number(new URLSearchParams(window.location.search).get('embedZoom'));
+      if (Number.isFinite(embedZoom) && embedZoom > 0) {
+        document.documentElement.style.fontSize = `${embedZoom * 100}%`;
+      }
+    </script>
     <div id="app" class="grow bg-lightHtml dark:bg-darkHtml w-full"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
