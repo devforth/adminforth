@@ -125,4 +125,5 @@ model turns {
   created_at    DateTime
   prompt        String?
   response      String?
+  dubbug        String?
 }

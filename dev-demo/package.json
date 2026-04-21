@@ -23,7 +23,7 @@
     "preinstall": "node scripts/check-node.js",
     "check-docker": "node scripts/check-docker.js",
     "check-task": "node scripts/check-task.js",
-    "setup-dev-demo": "pnpm preinstall && pnpm check-docker && pnpm check-task && pnpm build-adminforth && cp .env.local .env && pnpm install-plugins && pnpm install-adapters && pnpm install && pnpm link ../adminforth && bash ./scripts/run_inventory.sh"
+    "setup-dev-demo": "pnpm preinstall && pnpm check-docker && pnpm check-task && pnpm build-adminforth && [ -f .env ] || cp .env.local .env && pnpm install-plugins && pnpm install-adapters && pnpm install && pnpm link ../adminforth && bash ./scripts/run_inventory.sh"
   },
   "author": "",
   "license": "ISC",

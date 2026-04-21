@@ -64,7 +64,7 @@
   import { getCustomComponent, checkShowIf } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
-  import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon } from '@/types/Common';
+  import type { AdminForthResourceFrontend, AdminForthResourceColumnInputCommon } from '@/types/Common';
   const props = withDefaults(defineProps<{ 
     columns: Array<{
         name: string;
@@ -83,7 +83,7 @@
     }>;
     groupName?: string | null;
     noTitle?: boolean;
-    resource: AdminForthResourceCommon | null;
+    resource: AdminForthResourceFrontend | null;
     record: Record<string, any>;
     isRounded?: boolean;
   }>(), {
