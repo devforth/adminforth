@@ -1,10 +1,13 @@
-import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
-import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
+
+async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
 
 export default {
-  dataSource: 'sqlite',
+  dataSource: 'maindb',
   table: 'sessions',
   resourceId: 'sessions',
   label: 'Sessions',
@@ -13,7 +16,7 @@ export default {
       name: 'id',
       primaryKey: true,
       type: AdminForthDataTypes.STRING,
-      fillOnCreate: ({ initialRecord, adminUser }) => randomUUID(),
+      fillOnCreate: () => randomUUID(),
       showIn: {
         edit: false,
         create: false,
@@ -30,24 +33,24 @@ export default {
     {
       name: 'asker_id',
       type: AdminForthDataTypes.STRING,
-      foreignResource: {
-        resourceId: 'adminuser',
-        labelField: 'id'
-      }
     },
     {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME,
-      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
+      fillOnCreate: () => new Date().toISOString(),
       showIn: {
         edit: false,
         create: false,
-      }
+      },
     },
   ],
-  plugins: [
-    new ForeignInlineListPlugin({
-      foreignResourceId: 'turns',
-    }),
-  ],
+  options: {
+    allowedActions: {
+      list: allowedForSuperAdmins,
+      show: allowedForSuperAdmins,
+      create: false,
+      edit: false,
+      delete: false,
+    },
+  },
 } as AdminForthResourceInput;
