@@ -1,8 +1,9 @@
-import { 
-  AdminForthResource, IAdminForthDataSourceConnectorBase, 
-  AdminForthResourceColumn, 
-  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter, 
-  AdminForthConfig
+import {
+  AdminForthResource, IAdminForthDataSourceConnectorBase,
+  AdminForthResourceColumn,
+  IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter,
+  AdminForthConfig,
+  IAggregationRule, IGroupByRule, IGroupByDateTrunc,
 } from "../types/Back.js";
 
 
@@ -252,14 +253,92 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
   }
 
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
-    resource: AdminForthResource, 
-    limit: number, 
-    offset: number, 
-    sort: IAdminForthSort[], 
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
+    resource: AdminForthResource,
+    limit: number,
+    offset: number,
+    sort: IAdminForthSort[],
     filters: IAdminForthAndOrFilter,
   }): Promise<any[]> {
     throw new Error('Method not implemented.');
+  }
+
+  getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource,
+    filters: IAdminForthAndOrFilter,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  }): Promise<Array<{ group?: string, [key: string]: any }>> {
+    throw new Error('getAggregateWithOriginalTypes() not implemented for this connector.');
+  }
+
+  private validateAggregateParams(
+    resource: AdminForthResource,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  ): void {
+    const VALID_ALIAS = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    const VALID_OPERATIONS = ['sum', 'count', 'avg', 'min', 'max', 'median'];
+    const VALID_TRUNCATIONS = ['day', 'week', 'month', 'year'];
+    const VALID_TIMEZONE = /^[a-zA-Z_\/\-\+0-9]+$/;
+    const columnNames = new Set(resource.dataSourceColumns.map(c => c.name));
+
+    const assertColumn = (field: string, context: string) => {
+      if (!columnNames.has(field)) {
+        throw new Error(`${context}: unknown column "${field}". Available: ${[...columnNames].join(', ')}`);
+      }
+    };
+
+    for (const [alias, rule] of Object.entries(aggregations)) {
+      if (!VALID_ALIAS.test(alias)) {
+        throw new Error(`Invalid aggregation alias "${alias}". Must match ${VALID_ALIAS}`);
+      }
+      if (!VALID_OPERATIONS.includes(rule.operation)) {
+        throw new Error(`Invalid aggregation operation "${rule.operation}". Must be one of: ${VALID_OPERATIONS.join(', ')}`);
+      }
+      if (rule.operation !== 'count') {
+        if (!rule.field) {
+          throw new Error(`Aggregation "${alias}" with operation "${rule.operation}" requires a field`);
+        }
+        assertColumn(rule.field, `Aggregation "${alias}"`);
+      }
+    }
+
+    if (groupBy) {
+      if (groupBy.type === 'field') {
+        assertColumn(groupBy.field, 'GroupBy.Field');
+      } else if (groupBy.type === 'date_trunc') {
+        const g = groupBy as IGroupByDateTrunc;
+        assertColumn(g.field, 'GroupBy.DateTrunc');
+        if (!VALID_TRUNCATIONS.includes(g.truncation)) {
+          throw new Error(`Invalid truncation "${g.truncation}". Must be one of: ${VALID_TRUNCATIONS.join(', ')}`);
+        }
+        if (g.timezone && !VALID_TIMEZONE.test(g.timezone)) {
+          throw new Error(`Invalid timezone "${g.timezone}". Must be a valid IANA timezone name`);
+        }
+      } else {
+        throw new Error(`Unknown groupBy type "${(groupBy as any).type}"`);
+      }
+    }
+  }
+
+  async aggregate({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource,
+    filters: IAdminForthAndOrFilter,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  }): Promise<Array<{ group?: string, [key: string]: any }>> {
+    this.validateAggregateParams(resource, aggregations, groupBy);
+
+    let normalizedFilters = filters;
+    if (filters) {
+      const filterValidation = this.validateAndNormalizeFilters(filters, resource);
+      if (!filterValidation.ok) {
+        throw new Error(filterValidation.error);
+      }
+      normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
+    }
+    return this.getAggregateWithOriginalTypes({ resource, filters: normalizedFilters, aggregations, groupBy });
   }
 
   getCount({ resource, filters }: { resource: AdminForthResource; filters: IAdminForthAndOrFilter; }): Promise<number> {

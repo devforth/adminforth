@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
@@ -371,6 +371,56 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         };
     }
 
+
+    async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
+        resource: AdminForthResource,
+        filters: IAdminForthAndOrFilter,
+        aggregations: { [alias: string]: IAggregationRule },
+        groupBy?: IGroupByRule,
+    }): Promise<Array<{ group?: string, [key: string]: any }>> {
+        const tableName = resource.table;
+        const selectParts: string[] = [];
+        let groupExpr: string | null = null;
+
+        if (groupBy?.type === 'date_trunc') {
+            const g = groupBy as IGroupByDateTrunc;
+            const tz = g.timezone ?? 'UTC';
+            const col = resource.dataSourceColumns.find(c => c.name === g.field);
+            const hasTZ = (col as any)?._baseTypeDebug?.includes('with time zone');
+            const innerExpr = hasTZ
+                ? `"${g.field}" AT TIME ZONE '${tz}'`
+                : `"${g.field}" AT TIME ZONE 'UTC' AT TIME ZONE '${tz}'`;
+            const fieldExpr = `DATE_TRUNC('${g.truncation}', ${innerExpr})`;
+            groupExpr = `TO_CHAR(${fieldExpr}, 'YYYY-MM-DD')`;
+            selectParts.push(`${groupExpr} AS "group"`);
+        } else if (groupBy?.type === 'field') {
+            const g = groupBy as IGroupByField;
+            groupExpr = `"${g.field}"`;
+            selectParts.push(`${groupExpr} AS "group"`);
+        }
+
+        for (const [alias, rule] of Object.entries(aggregations)) {
+            switch (rule.operation) {
+                case 'sum': selectParts.push(`SUM("${rule.field}") AS "${alias}"`); break;
+                case 'count': selectParts.push(`COUNT(*) AS "${alias}"`); break;
+                case 'avg': selectParts.push(`AVG("${rule.field}") AS "${alias}"`); break;
+                case 'min': selectParts.push(`MIN("${rule.field}") AS "${alias}"`); break;
+                case 'max': selectParts.push(`MAX("${rule.field}") AS "${alias}"`); break;
+                case 'median': selectParts.push(`PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "${rule.field}") AS "${alias}"`); break;
+            }
+        }
+
+        const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
+        let query = `SELECT ${selectParts.join(', ')} FROM "${tableName}" ${where}`;
+
+        if (groupExpr) {
+            query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+        }
+
+        dbLogger.trace(`🪲📜 PG AGG Q: ${query}, params: ${JSON.stringify(filterValues)}`);
+        const stmt = await this.client.query(query, filterValues);
+        return stmt.rows;
+    }
 
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
         const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');

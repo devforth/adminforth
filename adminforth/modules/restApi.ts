@@ -1489,6 +1489,133 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         return data;
       },
     });
+
+    const aggregateRequestSchema: AnySchemaObject = {
+      type: 'object',
+      $defs: commonFilterSchemaDefs,
+      required: ['resourceId', 'aggregations'],
+      properties: {
+        resourceId: { type: 'string' },
+        aggregations: {
+          type: 'object',
+          description: 'Map of alias → aggregation rule. Each rule has an "operation" (sum, count, avg, min, max, median) and an optional "field".',
+          additionalProperties: {
+            type: 'object',
+            required: ['operation'],
+            properties: {
+              operation: { type: 'string', enum: ['sum', 'count', 'avg', 'min', 'max', 'median'] },
+              field: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+        },
+        filters: commonFiltersSchema,
+        groupBy: {
+          description: 'Optional grouping rule. Either { type: "field", field: "col" } or { type: "date_trunc", field: "col", truncation: "day"|"week"|"month"|"year", timezone?: "IANA/Name" }.',
+          anyOf: [
+            {
+              type: 'object',
+              required: ['type', 'field'],
+              properties: {
+                type: { type: 'string', enum: ['field'] },
+                field: { type: 'string' },
+              },
+              additionalProperties: false,
+            },
+            {
+              type: 'object',
+              required: ['type', 'field', 'truncation'],
+              properties: {
+                type: { type: 'string', enum: ['date_trunc'] },
+                field: { type: 'string' },
+                truncation: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+                timezone: { type: 'string' },
+              },
+              additionalProperties: false,
+            },
+          ],
+        },
+      },
+      additionalProperties: false,
+    };
+
+    const aggregateResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+      type: 'object',
+      required: ['data'],
+      properties: {
+        data: {
+          type: 'array',
+          items: genericObjectSchema,
+        },
+      },
+      additionalProperties: true,
+    });
+
+    server.endpoint({
+      method: 'POST',
+      path: '/aggregate',
+      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation.',
+      request_schema: aggregateRequestSchema,
+      response_schema: aggregateResponseSchema,
+      handler: async ({ body, adminUser }) => {
+        const { resourceId, aggregations, filters, groupBy } = body;
+        if (!this.adminforth.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.adminforth.statuses.dbDiscover !== 'done') {
+          return { error: 'Database discovery is still in progress, please try later' };
+        }
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+
+        const meta = { requestBody: body, pk: undefined };
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          ActionCheckSource.ListRequest,
+          this.adminforth
+        );
+
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        if (!allowed) {
+          return { error };
+        }
+
+        // normalize filters same way as get_resource_data
+        const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+        if (filters) {
+          if (typeof filters !== 'object') {
+            return { error: 'Filter should be an array or an object' };
+          }
+          if (Array.isArray(filters)) {
+            normalizedFilters.subFilters = filters;
+          } else if (filters.field) {
+            normalizedFilters.subFilters = [filters];
+          } else if (filters.subFilters) {
+            normalizedFilters.operator = filters.operator;
+            normalizedFilters.subFilters = filters.subFilters;
+          } else {
+            return { error: `Wrong filter object value: ${JSON.stringify(filters)}` };
+          }
+        }
+
+        try {
+          const data = await this.adminforth.connectors[resource.dataSource].aggregate({
+            resource,
+            filters: normalizedFilters as IAdminForthAndOrFilter,
+            aggregations,
+            groupBy,
+          });
+          return { data };
+        } catch (e) {
+          return { error: e.message };
+        }
+      },
+    });
+
     server.endpoint({
       method: 'POST',
       path: '/get_resource_foreign_data',
