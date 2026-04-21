@@ -193,10 +193,44 @@ export default {
       },
     }),
     new AdminForthAgent({
-      completionAdapter: new CompletionAdapterOpenAIChatGPT({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-5.4-mini',
-      }),
+      modes: [
+        {
+          name: 'Balanced',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4-mini',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'medium',
+              },
+            },
+          }),
+        },
+        {
+          name: 'Fast',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4-mini',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'low',
+              },
+            },
+          }),
+        },
+        {
+          name: 'Smart Thinking',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'xhigh',
+              },
+            },
+          }),
+        },
+      ],
       maxTokens: 10000,
       reasoning: 'none',
       sessionResource: {

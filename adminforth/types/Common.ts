@@ -316,7 +316,7 @@ export type FieldGroup = {
 
 export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
   id: string;
-  hasBulkHandler?: boolean;
+  bulkHandler?: boolean;
 }
 
 export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
@@ -1177,6 +1177,23 @@ export interface AdminForthConfigMenuItem {
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
   itemId?: string,  // todo move to runtime type
+
+
+  /**
+   * If set, menu item will be rendered as external link with this URL. Supported for AdminForthMenuTypes.PAGE and AdminForthMenuTypes.RESOURCE only!
+   * If URL starts with `http://` or `https://`, it will be treated as absolute URL. Otherwise, it will be treated as relative to admin panel base URL.
+   * Example of absolute URL:
+   * 
+   * ```ts
+   * url: 'https://google.com',
+   * ```
+   * 
+   * Example of relative URL:
+   * 
+   * ```ts
+   * url: '/custom-page',
+   * ```
+   */
   
   url?: string
 
