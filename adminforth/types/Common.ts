@@ -316,7 +316,7 @@ export type FieldGroup = {
 
 export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
   id: string;
-  hasBulkHandler?: boolean;
+  bulkHandler?: boolean;
 }
 
 export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
