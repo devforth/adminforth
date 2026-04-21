@@ -85,7 +85,8 @@ export default {
         promptField: 'prompt',
         responseField: 'response',
       },
-    } as any),
+      stickByDefault: true,
+    }),
   ],
   columns: [
     { 
