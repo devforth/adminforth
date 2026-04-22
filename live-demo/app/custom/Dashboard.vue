@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none min-h-screen">
+  <div class="px-4 py-4 bg-blue-50 dark:bg-gray-900 dark:shadow-none" :style="{ minHeight: heightOfDashboard + 'px' }">
   
     <div class="flex flex-wrap gap-4">
       <div class="flex min-w-[18rem] flex-[1_1_40rem] flex-wrap content-start gap-4">
@@ -90,7 +90,7 @@
             }]"
             :options="{
               chart: {
-                height: 250,
+                height: 320,
               },
               yaxis: {
                 labels: {
@@ -138,7 +138,7 @@
           }]"
           :options="{
             chart: {
-              height: 650,
+              height: 600,
             },
             xaxis: {
               labels: { show: true },
@@ -172,6 +172,11 @@ import { callApi } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import adminforth from '@/adminforth';
 import { AreaChart, BarChart, PieChart } from '@/afcl';
+
+const heightOfDashboard = computed(() => {
+  const headerHeight = window.document.getElementById('af-header-nav')?.offsetHeight || 0;
+  return window.innerHeight - headerHeight;
+});
 
 const data: Ref<{listedVsUnlistedPriceByDays: any, listedVsUnlistedByDays: any, 
   apartsByDays: any, apartsCountsByRooms: any, topCountries: any, totalAparts: any} | null> = ref(null);
