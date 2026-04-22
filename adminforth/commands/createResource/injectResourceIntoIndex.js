@@ -100,7 +100,12 @@ export async function injectResourceIntoIndex({
     },
   });
 
-  const newCode = recast.print(ast).code;
+  const newCode = recast.print(ast, { 
+    tabWidth: 2, 
+    useTabs: false,
+    trailingComma: true,
+    wrapColumn: 1
+  }).code;
   await fs.writeFile(indexFilePath, newCode, "utf-8");
   console.log(`✅ Injected resource "${resourceId}" into index`);
 }
