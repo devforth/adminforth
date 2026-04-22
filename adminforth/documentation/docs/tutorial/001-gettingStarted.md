@@ -197,7 +197,7 @@ After the resource file is generated, extend it with display and validation sett
 To properly apply these changes, refer to the example below and adjust the configuration according to your settings
 
 ```ts title="./resources/apartments.ts"
-import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
+import { AdminForthResourceInput, AdminForthDataTypes } from 'adminforth';
 
 export default {
   dataSource: 'maindb',
@@ -206,6 +206,7 @@ export default {
   resourceId: 'apartments'
   //diff-add
   resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
+  //diff-add
   // in case of same table names from different data sources
   label: 'Apartments',   // label is defaulted to table name but you can change it
   //diff-add
@@ -213,25 +214,33 @@ export default {
   columns: [
     {
       name: 'id',
+      //diff-add
       type: AdminForthDataTypes.STRING,
       //diff-add
       label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
       showIn: { // show column in filter and in show page
-      //diff-add
+        //diff-remove
+        all:true,
+        //diff-add
         list: false,
         //diff-add
         edit: false,
         //diff-add
         create: false,
       },
+      //diff-add
       primaryKey: true,
       //diff-add
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
     },
     {
-      name: 'title',
+      name: "title",
+      //diff-add
       required: true,
-      showIn: { all: true },  // all available options
+      showIn: {
+        all:true, // all available options
+      },
+      //diff-add
       type: AdminForthDataTypes.STRING,
       //diff-add
       maxLength: 255,  // you can set max length for string fields
@@ -240,14 +249,24 @@ export default {
     },
     {
       name: 'created_at',
+      //diff-add
       type: AdminForthDataTypes.DATETIME,
+      //diff-add
       allowMinMaxQuery: true,
-      showIn: { create: false },
+      showIn: {
+        //diff-remove
+        all:true,
+        //diff-add
+        create: false,
+      },
       //diff-add
       fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
     {
       name: 'price',
+      showIn: {
+        all:true,
+      },
       //diff-add
       inputSuffix: 'USD', // you can add a suffix to an input field that will be displayed when creating or editing records
       //diff-add
@@ -257,8 +276,13 @@ export default {
     },
     {
       name: 'square_meter',
+      //diff-add
       label: 'Square',
+      //diff-add
       allowMinMaxQuery: true,
+      showIn: {
+        all:true,
+      },
       //diff-add
       minValue: 1,  // you can set min /max value for number columns so users will not be able to enter more/less
       //diff-add
@@ -266,7 +290,11 @@ export default {
     },
     {
       name: 'number_of_rooms',
+      //diff-add
       allowMinMaxQuery: true,
+      showIn: {
+        all:true,
+      },
       //diff-add
       enum: [
         //diff-add
@@ -284,11 +312,20 @@ export default {
     },
     {
       name: 'description',
+      //diff-add
       sortable: false,
-      showIn: { list: false },
+      showIn: {
+        //diff-remove
+        all:true,
+        //diff-add
+        list: false,
+      }
     },
     {
       name: 'country',
+      showIn: {
+        all:true,
+      },
       //diff-add
       enum: [{
         //diff-add
@@ -362,18 +399,27 @@ export default {
       name: 'listed',
       //diff-add
       required: true,  // will be required on create/edit
+      showIn: {
+        all:true,
+      }
     },
     {
       name: 'realtor_id',
+      //diff-add
       foreignResource: {
+        //diff-add
         resourceId: 'adminuser',
         //diff-add
         searchableFields: ["id", "email"], // fields available for search in filter
+        //diff-add
+      },
+      showIn: {
+        all:true,
       }
     }
   ],
   options: {
-    listPageSize: 12,
+    listPageSize: 10,
     //diff-add
     allowedActions: {
       //diff-add
@@ -439,8 +485,17 @@ export const admin = new AdminForth({
     },
     {
       label: 'Users',
-      ...
-    }
+      icon: 'flowbite:user-solid',
+      resourceId: 'adminuser'
+    },
+    {
+      label: "Apartments",
+      icon: "flowbite:user-solid",
+      //diff-remove
+      resourceId: "apartments",
+      //diff-add
+      resourceId: "aparts",
+    },
   ],
   ...
 });
@@ -467,7 +522,7 @@ async function seedDatabase() {
 //diff-add
       title: `Apartment ${i}`,
 //diff-add
-      square_meter: (Math.random() * 100).toFixed(1),
+      square_meter: Number((Math.random() * 100).toFixed(1)),
 //diff-add
       price: (Math.random() * 10000).toFixed(2),
 //diff-add
