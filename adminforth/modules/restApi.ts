@@ -362,6 +362,9 @@ const getResourceForeignDataRequestSchema: AnySchemaObject = {
     search: { type: 'string' },
     filters: commonFiltersSchema,
     sort: commonSortSchema,
+    currentValue: {
+      description: 'When set, guarantees this PK value appears in the returned items even if it falls outside the requested page.',
+    },
   },
   additionalProperties: true,
 };
@@ -1635,7 +1638,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       request_schema: getResourceForeignDataRequestSchema,
       response_schema: getResourceForeignDataResponseSchema,
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
-        const { resourceId, column, search } = body;
+        const { resourceId, column, search, currentValue } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -1744,6 +1747,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   });
                 } else if (searchFilters.length === 1) {
                   normalizedFilters.subFilters.push(searchFilters[0]);
+                }
+              }
+              if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
+                const pkField = targetResource.columns.find((col) => col.primaryKey);
+                if (pkField) {
+                  normalizedFilters.subFilters.push({ field: pkField.name, operator: AdminForthFilterOperators.EQ, value: currentValue });
                 }
               }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
