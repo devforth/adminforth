@@ -433,7 +433,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         return this.setFieldValue(field, null);
       }
       if (typeof value !== 'boolean') {
-        throw new Error(`Value is not a boolean. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`);
+        const errorMessage = `Value is not a boolean. Field ${field.name} with type is ${field.type}, but got value: ${value} with type ${typeof value}`;
+        if (value !== 1 && value !== 0) {
+          throw new Error(errorMessage);
+        } else {
+          afLogger.warn(errorMessage);
+          afLogger.warn(`Ignore this warn, if you are using an sqlite database`);
+        }
       }
       return this.setFieldValue(field, value);
     }
