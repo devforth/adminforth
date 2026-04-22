@@ -452,7 +452,8 @@ export async function loadMoreForeignOptions({
     if (!columnOptions.value[columnName]) {
       columnOptions.value[columnName] = [];
     }
-    columnOptions.value[columnName].push(...list.items);
+    const existingValues = new Set(columnOptions.value[columnName].map((o: any) => o.value));
+    columnOptions.value[columnName].push(...list.items.filter((o: any) => !existingValues.has(o.value)));
     
     columnOffsets[columnName] += 100;
     

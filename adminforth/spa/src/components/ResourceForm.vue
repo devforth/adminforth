@@ -281,6 +281,21 @@ watch(() => props.resource.columns, async (newColumns) => {
         columnEmptyResultsCount[column.name] = 0;
         
         await loadMoreOptions(column.name);
+
+        const currentFkValue = props.record?.[column.name];
+        if (currentFkValue != null && currentFkValue !== '') {
+          const inOptions = columnOptions.value[column.name]?.some((opt: any) => opt.value == currentFkValue);
+          if (!inOptions) {
+            const result = await callAdminForthApi({
+              method: 'POST',
+              path: '/get_resource_foreign_data',
+              body: { resourceId: router.currentRoute.value.params.resourceId, column: column.name, limit: 1, offset: 0, currentValue: currentFkValue },
+            });
+            if (result?.items?.length) {
+              columnOptions.value[column.name].unshift(...result.items);
+            }
+          }
+        }
       }
     }
   }
@@ -325,7 +340,7 @@ async function loadMoreOptions(columnName: string, searchTerm = '') {
     columnOptions,
     columnLoadingState,
     columnOffsets,
-    columnEmptyResultsCount
+    columnEmptyResultsCount,
   });
 }
 
