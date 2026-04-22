@@ -41,7 +41,7 @@
       :adminUser="coreStore.adminUser"
     />
 
-    <SingleSkeletLoader v-if="loading"></SingleSkeletLoader>
+    <CreateEditSkeleton :resource="coreStore.resource" v-if="loading"></CreateEditSkeleton>
  
     <ResourceForm 
       v-else-if="coreStore.resource"
@@ -88,6 +88,7 @@ import { type AdminForthComponentDeclaration, type AdminForthComponentDeclaratio
 import type { AdminForthResourceColumn } from '@/types/Back';
 import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
 import { Spinner } from '@/afcl'
+import CreateEditSkeleton from './CreateEditSkeleton.vue';
 
 const { t } = useI18n();
 const coreStore = useCoreStore();
@@ -147,7 +148,7 @@ const editableRecord = computed(() => {
   coreStore.resource.columns.forEach(column => {
     if (column.foreignResource) {
       if (column.isArray?.enabled) {
-        newRecord[column.name] = newRecord[column.name]?.map((fr: { pk: any }) => fr.pk);
+        newRecord[column.name] = newRecord[column.name]?.map((fr: { pk: any }) => fr?.pk);
       } else {
         newRecord[column.name] = newRecord[column.name]?.pk;
       }

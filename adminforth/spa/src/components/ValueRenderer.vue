@@ -11,6 +11,7 @@
         class="rounded-md m-0.5 bg-lightAnnouncementBG dark:bg-darkAnnouncementBG text-lightAnnouncementText dark:text-darkAnnouncementText py-0.5 px-2.5 text-sm"
       >
         <RouterLink
+          v-if="foreignResource && foreignResource?.pk"
           class="font-medium text-lightSidebarText dark:text-darkSidebarText hover:brightness-110 whitespace-nowrap"
           :to="{
             name: 'resource-show',

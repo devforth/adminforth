@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 import websocket from '@/websocket';
@@ -21,6 +21,19 @@ export const useCoreStore = defineStore('core', () => {
   const userData: Ref<UserData | null> = ref(null);
   const isResourceFetching = ref(false);
   const isInternetError = ref(false);
+  const screenWidth = ref(window.innerWidth);
+
+  onMounted(() => {
+    window.addEventListener('resize', updateWidth);
+  });
+  onUnmounted(() => {
+    window.removeEventListener('resize', updateWidth);
+  });
+
+  const isMobile = computed(() => screenWidth.value <= 768);
+  const updateWidth = () => {
+    screenWidth.value = window.innerWidth
+  }
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -29,7 +42,7 @@ export const useCoreStore = defineStore('core', () => {
     return resource.value.columns.filter((col: AdminForthResourceColumnCommon) => col.showIn?.filter);
   })
 
-  const resourceOptions: Ref<AdminForthResourceCommon['options'] | null> = ref(null);
+  const resourceOptions: Ref<AdminForthResourceFrontend['options'] | null> = ref(null);
   const resourceColumnsError: Ref<string> = ref('');
   const resourceColumnsId: Ref<string | null> = ref(null);
   const adminUser: Ref<null | AdminUser> = ref(null);
@@ -261,5 +274,6 @@ export const useCoreStore = defineStore('core', () => {
     isResourceFetching,
     isIos,
     isInternetError,
+    isMobile,
   }
 })

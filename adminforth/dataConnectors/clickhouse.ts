@@ -149,7 +149,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return dayjs.unix(+value).toISOString();
         } else if (field._underlineType.startsWith('DateTime') 
             || field._underlineType.startsWith('String') 
-            || field._underlineType.startsWith('FixedString')) {
+            || field._underlineType.startsWith('FixedString')
+            || field._underlineType.startsWith('Nullable(String)')
+            || field._underlineType.startsWith('Nullable(FixedString)')) {
           const v = dayjs(value).toISOString();
           return v;
         } else {
@@ -163,7 +165,10 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value === null ? null : !!value;
       } else if (field.type == AdminForthDataTypes.JSON) {
-        if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
+        if (field._underlineType.startsWith('String') 
+            || field._underlineType.startsWith('FixedString') 
+            || field._underlineType.startsWith('Nullable(String)')
+            || field._underlineType.startsWith('Nullable(FixedString)')) {
           try {
             return JSON.parse(value);
           } catch (e) {
@@ -186,7 +191,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           return dayjs(value).unix();
         } else if (field._underlineType.startsWith('DateTime') 
           || field._underlineType.startsWith('String') 
-          || field._underlineType.startsWith('FixedString')) {
+          || field._underlineType.startsWith('FixedString')
+          || field._underlineType.startsWith('Nullable(String)')
+          || field._underlineType.startsWith('Nullable(FixedString)')) {
           // value is iso string now, convert to unix timestamp
           const iso = dayjs(value).format('YYYY-MM-DDTHH:mm:ss');
           return iso;
@@ -195,7 +202,10 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         return  value === null ? null : (value ? true : false);
       } else if (field.type == AdminForthDataTypes.JSON) {
         // check underline type is text or string
-        if (field._underlineType.startsWith('String') || field._underlineType.startsWith('FixedString')) {
+        if (field._underlineType.startsWith('String') 
+            || field._underlineType.startsWith('FixedString') 
+            || field._underlineType.startsWith('Nullable(String)')
+            || field._underlineType.startsWith('Nullable(FixedString)')) {
           return JSON.stringify(value);
         } else {
           afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
@@ -226,6 +236,21 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       [AdminForthSortDirections.asc]: 'ASC',
       [AdminForthSortDirections.desc]: 'DESC',
     };
+
+    isArrayType(underlineType: string): boolean {
+      return underlineType.startsWith('Array(') || underlineType.startsWith('Nullable(Array(');
+    }
+
+    isNullableType(underlineType: string): boolean {
+      return underlineType.startsWith('Nullable(');
+    }
+
+    isStringLikeType(underlineType: string): boolean {
+      return underlineType.startsWith('String')
+        || underlineType.startsWith('FixedString')
+        || underlineType.startsWith('Nullable(String)')
+        || underlineType.startsWith('Nullable(FixedString)');
+    }
   
     getFilterString(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): string {
       if ((filter as IAdminForthSingleFilter).field) {
@@ -245,6 +270,49 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         // Handle IS_EMPTY and IS_NOT_EMPTY operators
         if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
           return `${field} ${operator}`;
+        }
+
+        if ((filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE)
+            && column.isArray?.enabled) {
+          placeholder = '{f$?:String}';
+
+          if (this.isArrayType(column._underlineType)) {
+            const arrayField = this.isNullableType(column._underlineType) ? `assumeNotNull(${field})` : field;
+            const arrayMatch = `arrayExists(item -> toString(item) ${operator} ${placeholder}, ${arrayField})`;
+            return this.isNullableType(column._underlineType)
+              ? `${field} IS NOT NULL AND ${arrayMatch}`
+              : arrayMatch;
+          }
+
+          if (this.isStringLikeType(column._underlineType)) {
+            return `${field} ${operator} ${placeholder}`;
+          }
+        }
+
+        if ((filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN)
+            && column.isArray?.enabled
+            && this.isArrayType(column._underlineType)) {
+          const itemType = column._underlineType
+            .replace(/^Nullable\(/, '')
+            .match(/^Array\((.*)\)$/)?.[1];
+
+          if (!itemType) {
+            throw new Error(`Unable to determine item type for array field '${column.name}' with type '${column._underlineType}'`);
+          }
+
+          placeholder = `{f$?:Array(${itemType})}`;
+          const arrayField = this.isNullableType(column._underlineType) ? `assumeNotNull(${field})` : field;
+          const hasAnyExpression = `hasAny(${arrayField}, ${placeholder})`;
+
+          if (filter.operator == AdminForthFilterOperators.NIN) {
+            return this.isNullableType(column._underlineType)
+              ? `(${field} IS NULL OR NOT ${hasAnyExpression})`
+              : `NOT ${hasAnyExpression}`;
+          }
+
+          return this.isNullableType(column._underlineType)
+            ? `${field} IS NOT NULL AND ${hasAnyExpression}`
+            : hasAnyExpression;
         }
 
         if (column._underlineType.startsWith('Decimal')) {
@@ -293,13 +361,14 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }).join(` ${this.OperatorsMap[filter.operator]} `);
     }
     
-    getFilterParams(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
+    getFilterParams(resource: AdminForthResource, filter: IAdminForthSingleFilter | IAdminForthAndOrFilter): any[] {
       if ((filter as IAdminForthSingleFilter).field) {
         if ((filter as IAdminForthSingleFilter).rightField) {
           // No params for field-to-field comparisons
           return [];
         }
         // filter is a Single filter
+        const column = resource.dataSourceColumns.find((col) => col.name == (filter as IAdminForthSingleFilter).field);
         
         // Handle IS_EMPTY and IS_NOT_EMPTY operators - no params needed
         if (filter.operator == AdminForthFilterOperators.IS_EMPTY || filter.operator == AdminForthFilterOperators.IS_NOT_EMPTY) {
@@ -307,6 +376,9 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
         } else if (filter.operator == AdminForthFilterOperators.LIKE || filter.operator == AdminForthFilterOperators.ILIKE) {
           return [{ 'f': `%${filter.value}%` }];
         } else if (filter.operator == AdminForthFilterOperators.IN || filter.operator == AdminForthFilterOperators.NIN) {
+          if (column?.isArray?.enabled && this.isArrayType(column._underlineType)) {
+            return [{ 'f': filter.value }];
+          }
           return [{ 'p': filter.value }];
         } else if (filter.operator == AdminForthFilterOperators.EQ && filter.value === null) {
           // there is no param for IS NULL filter
@@ -326,15 +398,15 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
 
       // filter is a AndOrFilter
       return (filter as IAdminForthAndOrFilter).subFilters.reduce((params: any[], f: IAdminForthSingleFilter | IAdminForthAndOrFilter) => {
-        return params.concat(this.getFilterParams(f));
+        return params.concat(this.getFilterParams(resource, f));
       }, []);
     }
 
-    whereParams(filters: IAdminForthAndOrFilter): any {
+    whereParams(resource: AdminForthResource, filters: IAdminForthAndOrFilter): any {
       if (filters.subFilters.length === 0) {
         return {};
       }
-      const paramsArray = this.getFilterParams(filters);
+      const paramsArray = this.getFilterParams(resource, filters);
       const params = paramsArray.reduce((acc, param, paramIndex) => {
         if (param.f !== undefined) {
           acc[`f${paramIndex}`] = param.f;
@@ -362,7 +434,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           params: {},
         }
       }
-      const params = this.whereParams(filters);
+      const params = this.whereParams(resource, filters);
       const where = Object.keys(params).reduce((w, paramKey) => {
         // remove first char of string (will be "f" or "p") to leave only index
         const keyIndex = paramKey.substring(1);
@@ -388,6 +460,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }).join(', ');
       const tableName = resource.table;
 
+      console.log('getDataWithOriginalTypes called with filters', JSON.stringify(filters), 'and sort', JSON.stringify(sort));
       const { where, params } = this.whereClause(resource, filters);
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
@@ -425,14 +498,17 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       filters: IAdminForthAndOrFilter;
     }): Promise<number> {
       const tableName = resource.table;
+      let normalizedFilters = filters;
+
       // validate and normalize in case this method is called from dataAPI
       if (filters) {
         const filterValidation = this.validateAndNormalizeFilters(filters, resource);
         if (!filterValidation.ok) {
           throw new Error(filterValidation.error);
         }
+        normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
       }
-      const { where, params } = this.whereClause(resource, filters);
+      const { where, params } = this.whereClause(resource, normalizedFilters);
 
       const countQ = await this.client.query({
         query: `SELECT COUNT(*) as count FROM ${tableName} ${where}`,

@@ -207,8 +207,12 @@ Most times you need to refresh the badge from some backend API or hook. To do th
       resourceId: 'posts',
 //diff-add
       itemId: 'postsMenuItem',
-      badge: async (adminUser: AdminUser) => {
-        return 10
+      //diff-add
+      badge: async (adminUser: AdminUser, adminForth: IAdminForth) => {
+        //diff-add
+        const newCount = await adminforth.resource('posts').count(Filters.EQ('verified', false));
+        //diff-add
+        return newCount;
       },
       badgeTooltip: 'Unverified posts',  // explain user what this badge means
       ...
@@ -226,15 +230,13 @@ Most times you need to refresh the badge from some backend API or hook. To do th
   table: 'posts',
   hooks: {
     edit: {
-//diff-add
+      //diff-add
       afterSave: async ({ record, adminUser, resource, adminforth }) => {
-//diff-add
-        const newCount = await adminforth.resource('posts').count(Filters.EQ('verified', false));
-//diff-add
-        adminforth.websocket.publish(`/opentopic/update-menu-badge/postsMenuItem`, { badge: newCount });
-//diff-add
+        //diff-add
+        adminforth.refreshMenuBadge('postsMenuItem', adminUser);
+        //diff-add
         return { ok: true }
-//diff-add
+        //diff-add
       }
     }
   }
@@ -275,7 +277,7 @@ auth: {
 
 ```
 
-This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
+This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/05-0-upload/#using-plugin-for-uploading-avatar)
 
 
 ## Custom URL

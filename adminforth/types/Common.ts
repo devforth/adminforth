@@ -316,7 +316,7 @@ export type FieldGroup = {
 
 export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
   id: string;
-  hasBulkHandler?: boolean;
+  bulkHandler?: boolean;
 }
 
 export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
@@ -330,7 +330,7 @@ export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsComm
   bulkActions?: AdminForthBulkActionFront[],
 }
 
-export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
   options: AdminForthOptionsForFrontend;
 }
 
@@ -1164,7 +1164,7 @@ export interface AdminForthConfigMenuItem {
    * Optional callback which will be called before rendering the menu for each item.
    * Result of callback if not null will be used as a small badge near the menu item.
    */
-  badge?: string | ((user: AdminUser) => Promise<string>),
+  badge?: string | number | ((user: AdminUser, adminForth: IAdminForth) => Promise<string | number> | string | number),
 
   /**
    * Tooltip shown on hover for badge
@@ -1177,8 +1177,30 @@ export interface AdminForthConfigMenuItem {
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
   itemId?: string,  // todo move to runtime type
+
+
+  /**
+   * If set, menu item will be rendered as external link with this URL. Supported for AdminForthMenuTypes.PAGE and AdminForthMenuTypes.RESOURCE only!
+   * If URL starts with `http://` or `https://`, it will be treated as absolute URL. Otherwise, it will be treated as relative to admin panel base URL.
+   * Example of absolute URL:
+   * 
+   * ```ts
+   * url: 'https://google.com',
+   * ```
+   * 
+   * Example of relative URL:
+   * 
+   * ```ts
+   * url: '/custom-page',
+   * ```
+   */
   
   url?: string
+
+  /**
+   * Open menu item link in a new browser tab.
+   */
+  isOpenInNewTab?: boolean
 }
 
 
@@ -1257,4 +1279,8 @@ export interface GetBaseConfigResponse {
   config: AdminForthConfigForFrontend,
   adminUser: AdminUser,
   version: string,
+}
+
+export interface ColumnMinMaxValue { 
+  [key: string]: { min: any, max: any } 
 }

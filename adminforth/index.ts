@@ -5,6 +5,7 @@ import MysqlConnector from './dataConnectors/mysql.js';
 import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
+import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
 import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError } from './modules/utils.js';
 import { 
@@ -116,6 +117,7 @@ class AdminForth implements IAdminForth {
   // fastify: FastifyServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
+  openApi: OpenApiRegistry;
   connectors: {
     [dataSourceId: string]: IAdminForthDataSourceConnectorBase,
   };
@@ -127,6 +129,20 @@ class AdminForth implements IAdminForth {
   restApi: AdminForthRestAPI;
 
   websocket: IWebSocketBroker;
+
+  async refreshMenuBadge(menuItemId: string, adminUser: AdminUser) {
+    const menuItem = this.config.menu.find((item) => item.itemId === menuItemId);
+    if (!menuItem) {
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it was not found in config.menu`);
+      return;
+    }
+    if (!menuItem.badge) {
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it does not have badge function in config.menu`);
+      return;
+    }
+    const badgeValue = typeof menuItem.badge === 'function' ? await menuItem.badge(adminUser, this) : menuItem.badge;
+    this.websocket.publish(`/opentopic/update-menu-badge/${menuItemId}`, { badge: badgeValue });
+  }
 
   operationalResources: {
     [resourceId: string]: IOperationalResource,
@@ -155,6 +171,10 @@ class AdminForth implements IAdminForth {
     afLogger.trace('🔧 Creating AdminForthRestAPI...');
     this.restApi = new AdminForthRestAPI(this);
     afLogger.trace('🔧 AdminForthRestAPI created');
+
+    afLogger.trace('🔧 Creating OpenApiRegistry...');
+    this.openApi = new OpenApiRegistry(this);
+    afLogger.trace('🔧 OpenApiRegistry created');
     
     afLogger.trace('🔧 Creating SocketBroker...');
     this.websocket = new SocketBroker(this);

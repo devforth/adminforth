@@ -4,9 +4,9 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
-import { useState } from 'react';
-import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import styles from './index.module.css';
+
+const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
 
 
 const images = [
@@ -14,13 +14,7 @@ const images = [
     original: require('@site/static/img/previews/login_form.png').default,
     title: 'Authentication and Authorization',
     link: '/docs/tutorial/gettingStarted',
-    description: 'OWASP-Compliant Sign-In already there'
-  },
-  {
-    original: require('@site/static/img/previews/users_management.png').default,
-    title: 'Users management',
-    link: '/docs/tutorial/gettingStarted',
-    description: 'Manage users and roles with ease, extend as you like'
+    description: 'OWASP-Compliant Sign-In done for you'
   },
   {
     original: require('@site/static/img/previews/sso.png').default,
@@ -29,22 +23,46 @@ const images = [
     description: 'RFC 6749 SSO plugin with premade Google, Github, Facebook, Keycloak, Microsoft or any custom OAuth2 adapter'
   },
   {
-    original: require('@site/static/img/previews/ai_complete.png').default,
-    title: 'AI autocomplete Plugin - write with ChatGPT',
-    link: '/docs/tutorial/Plugins/text-complete/',
-    description: 'Provide your OpenAI API key to autocomplete plugin and AI will help you to write your content using record context'
+    original: require('@site/static/img/previews/2fa_plugin.png').default,
+    title: '2FA Plugin - secure your admin panel',
+    link: '/docs/tutorial/Plugins/TwoFactorsAuth/',
+    description: 'RFC 6238-Compliant TOTP-Based & WebAuthn PassKeys 2FA will add additional security layer (login and preferred actions)'
+  },
+  {
+    original: require('@site/static/img/previews/branding.png').default,
+    title: 'Branding and theming',
+    link: '/docs/tutorial/Customization/branding/',
+    description: 'Upload your logo, change colors, update titles, make the look to match your brand'
+  },
+  {
+    original: require('@site/static/img/previews/dashboard.png').default,
+    title: 'Custom Pages and Dashboards',
+    link: '/docs/tutorial/Customization/customPages/',
+    description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
+  },
+  {
+    original: require('@site/static/img/previews/users_management.png').default,
+    title: 'Users management',
+    link: '/docs/tutorial/gettingStarted',
+    description: 'Manage users and roles with ease, extend as you like'
+  },
+  {
+    original: require('@site/static/img/previews/translate.png').default,
+    title: 'LLM-based Translation Plugin - translate your admin and External apps',
+    link: '/docs/tutorial/Plugins/i18n/',
+    description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
   },
   {
     original: require('@site/static/img/previews/auditlog.png').default,
     title: 'Audit log Plugin - know who did what',
     link: '/docs/tutorial/Plugins/AuditLog/',
-    description: 'Attach Audit log plugin with couple of lines, create table for logs and track your users actions'
+    description: 'Attach Audit log plugin with couple of lines, create table for logs and track full history of any data changes'
   },
   {
-    original: require('@site/static/img/previews/2fa_plugin.png').default,
-    title: '2FA Plugin - secure your admin panel',
-    link: '/docs/tutorial/Plugins/TwoFactorsAuth/',
-    description: 'RFC 6238-Compliant TOTP-Based 2FA will add additional security layer to your admin panel. Also supports passkeys'
+    original: require('@site/static/img/previews/ai_complete.png').default,
+    title: 'AI autocomplete Plugin - write with LLMs',
+    link: '/docs/tutorial/Plugins/text-complete/',
+    description: 'Provide your LLM API key to autocomplete plugin and AI will help you to write your content using record context'
   },
   {
     original: require('@site/static/img/previews/dark.png').default,
@@ -55,21 +73,10 @@ const images = [
   {
     original: require('@site/static/img/previews/upload.png').default,
     title: 'Upload Plugin - upload files',
-    link: '/docs/tutorial/Plugins/Upload/',
+    link: '/docs/tutorial/Plugins/05-0-upload/',
     description: 'Upload files to Amazon S3 with instantiating plugin and providing your S3 credentials' 
   },
-  {
-    original: require('@site/static/img/previews/dashboard.png').default,
-    title: 'Custom Pages and Dashboards',
-    link: '/docs/tutorial/Customization/customPages/',
-    description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
-  },
-  {
-    original: require('@site/static/img/previews/branding.png').default,
-    title: 'Branding and theming',
-    link: '/docs/tutorial/Customization/branding/',
-    description: 'Upload your logo, change colors, update titles, make the look to match your brand'
-  },
+  
   {
     original: require('@site/static/img/previews/filters.png').default,
     title: 'Filters to query your data',
@@ -101,12 +108,6 @@ const images = [
     description: 'Export tables to CSV and import from CSV with one click. Move data between environments easily'
   },
   {
-    original: require('@site/static/img/previews/translate.png').default,
-    title: 'AI Translation Plugin - translate your admin and External apps',
-    link: '/docs/tutorial/Plugins/i18n/',
-    description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
-  },
-  {
     original: require('@site/static/img/previews/bulk-ai-flow.png').default,
     title: 'Bulk AI Plugin - generate data for your resources',
     link: '/docs/tutorial/Plugins/bulk-ai-flow/',
@@ -129,25 +130,17 @@ const images = [
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
-  // read theme from docusarus
-
-  const [theme, setTheme] = useState('light');
-
-  if (ExecutionEnvironment.canUseDOM) {
-
-    
-  } 
 
   return (
     <>
       <header className={clsx('hero', styles.heroBanner)}>
         <div className="container" >
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            The Free, Open-Source Admin Framework for Node, Vue & Tailwind
+            Open-Source Admin Framework with a native Agent
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
 
-          <div class="heroRow">
+          <div className="heroRow">
             <div className={styles.buttons}>
               <Link
                 className="button button--secondary button--outline button--lg"
@@ -183,15 +176,11 @@ function HomepageHeader() {
         <div className="laptop_container">
           <div className="laptop">
             <div className="laptop__screen">
-              <img 
-                src={{
-                    light: require('@site/static/img/preview_light.png').default,
-                    dark: require('@site/static/img/preview_dark.png').default,
-                  }[theme]
-                } alt="Screen" />
-              <div className="theme_switcher" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-                
-              </div>
+              <iframe
+                className={styles.demoFrame}
+                src={LIVE_DEMO_IFRAME_URL}
+                title="AdminForth live demo"
+              />
             </div>
             <div className="laptop__bottom">
               <div className="laptop__under"></div>

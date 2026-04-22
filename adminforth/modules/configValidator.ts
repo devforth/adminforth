@@ -1,8 +1,9 @@
-import { 
-  AdminForthConfig, 
-  AdminForthResource, 
-  IAdminForth, IConfigValidator, 
+import {
+  AdminForthConfig,
+  AdminForthResource,
+  IAdminForth, IConfigValidator,
   AdminForthBulkAction,
+  AdminForthActionInput,
   AdminForthInputConfig,
   AdminForthConfigCustomization,
   AdminForthResourceInput,
@@ -388,7 +389,7 @@ export default class ConfigValidator implements IConfigValidator {
     });
   }
 
-  validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): any[] {
+  validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): AdminForthActionInput[] {
     if (!resInput.options?.actions) {
       return [];
     }
@@ -430,13 +431,18 @@ export default class ConfigValidator implements IConfigValidator {
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
       }
 
+      if (typeof action.allowed === 'boolean') {
+        const val = action.allowed;
+        action.allowed = () => val;
+      }
+
       const shownInNonBulk = action.showIn.list || action.showIn.listThreeDotsMenu || action.showIn.showButton || action.showIn.showThreeDotsMenu;
       if (shownInNonBulk && !action.action && !action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" has showIn enabled for non-bulk locations (list, listThreeDotsMenu, showButton, showThreeDotsMenu) but has no "action" or "url" handler. Either add an "action" handler or set those showIn flags to false.`);
       }
     });
 
-    return actions;
+    return actions as AdminForthActionInput[];
   }
 
   validateAndNormalizeResources(errors: string[], warnings: string[]): AdminForthResource[] {

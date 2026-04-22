@@ -1,5 +1,7 @@
 import type { Express, Request, Response } from 'express';
+import type { AnySchemaObject } from 'ajv';
 import type { Writable } from 'stream';
+import type { ZodType } from 'zod';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
@@ -13,6 +15,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthConfigMenuItem,
   type AnnouncementBadgeResponse,
   type AdminForthResourceColumnInputCommon,
+  type ColumnMinMaxValue,
 } from './Common.js';
 
 export interface ICodeInjector {
@@ -37,6 +40,81 @@ export interface IAdminForthHttpResponse {
     blobStream: () => Writable,
 };
 
+export interface IAdminForthEndpointHandlerInput {
+  body: any;
+  adminUser: AdminUser | undefined;
+  query: {[key: string]: any};
+  headers: {[key: string]: any};
+  cookies: Array<{ key: string, value: string }>;
+  response: IAdminForthHttpResponse;
+  requestUrl: string;
+  abortSignal: AbortSignal;
+  _raw_express_req: Request;
+  _raw_express_res: Response;
+  tr: ITranslateFunction;
+}
+
+export interface IAdminForthEndpointOptions {
+  method: string,
+  noAuth?: boolean,
+  path: string,
+  description?: string,
+  request_schema?: AnySchemaObject,
+  response_schema?: AnySchemaObject,
+  responce_schema?: AnySchemaObject,
+  handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
+}
+
+export type AdminForthExpressSchemaInput = AnySchemaObject | ZodType;
+
+export interface IAdminForthExpressRouteSchema {
+  /**
+   * Detailed OpenAPI operation description for a custom Express route.
+   */
+  description?: string;
+
+  /**
+   * JSON schema or Zod schema describing the request body for a custom Express route.
+   */
+  request?: AdminForthExpressSchemaInput;
+
+  /**
+   * JSON schema or Zod schema describing the JSON response body for a custom Express route.
+   */
+  response?: AdminForthExpressSchemaInput;
+}
+
+export interface IRegisteredApiSchema {
+  method: string;
+  path: string;
+  description?: string;
+  request_schema?: AnySchemaObject;
+  response_schema?: AnySchemaObject;
+}
+
+export interface IAdminForthApiValidationError {
+  instancePath: string;
+  schemaPath: string;
+  keyword: string;
+  message?: string;
+  params: {[key: string]: any};
+}
+
+export interface IAdminForthApiValidationResult {
+  valid: boolean;
+  errors?: IAdminForthApiValidationError[];
+}
+
+export interface IOpenApiRegistry {
+  registeredSchemas: IRegisteredApiSchema[];
+
+  registerApiSchema(options: IAdminForthEndpointOptions): IRegisteredApiSchema;
+  register_api_schema(options: IAdminForthEndpointOptions): IRegisteredApiSchema;
+  validateRequestSchema(route: IRegisteredApiSchema | null, payload: any): IAdminForthApiValidationResult;
+  validateResponseSchema(route: IRegisteredApiSchema | null, payload: any): IAdminForthApiValidationResult;
+  renderOpenApiDocument(): {[key: string]: any};
+}
+
 /**
  * Implement this interface to create custom HTTP server adapter for AdminForth.
  */
@@ -56,23 +134,7 @@ export interface IHttpServer {
    * 
    * @param options : Object with method, path and handler properties.
    */
-  endpoint(options: {
-    method: string,
-    noAuth?: boolean,
-    path: string,
-    handler: (
-      body: any, 
-      adminUser: any, 
-      query: {[key: string]: string}, 
-      headers: {[key: string]: string}, 
-      cookies: {[key: string]: string}, 
-      response: IAdminForthHttpResponse,
-      requestUrl: string,
-      abortSignal: AbortSignal,
-      _raw_express_req: Request,
-      _raw_express_res: Response,
-    ) => void,
-  }): void;
+  endpoint(options: IAdminForthEndpointOptions): void;
 
 }
 
@@ -106,14 +168,38 @@ export interface IExpressHttpServer extends IHttpServer {
    * ```
    * 
    */  
-  authorize(callable: Function): void;
+  authorize(callable: (...args: any[]) => any): (...args: any[]) => any;
+
+  /**
+   * Method (middleware) to inject translation helper into Express request object.
+   */
+  translatable(callable: (...args: any[]) => any): (...args: any[]) => any;
+
+  /**
+   * Registers OpenAPI schemas for a custom Express route.
+   *
+   * Wrap this around the handler passed to `app.get/post/...`.
+   * If you also need authorization, make `withSchema` the outer wrapper:
+   *
+   * ```ts
+  * import * as z from 'zod';
+  *
+   * app.get('/myApi', admin.express.withSchema({
+   *   description: 'Returns current user profile',
+  *   response: z.object({ user: z.unknown() }),
+   * }, admin.express.authorize((req, res) => {
+   *   res.json({ user: req.adminUser });
+   * })));
+   * ```
+   */
+  withSchema(schema: IAdminForthExpressRouteSchema, callable: (...args: any[]) => any): (...args: any[]) => any;
 }
 
 export interface ITranslateFunction {
   (
     msg: string,
     category: string,
-    params: any,
+    params?: any,
     pluralizationNumber?: number
   ): Promise<string>;
 }
@@ -256,7 +342,7 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Internally should call {@link IAdminForthDataSourceConnector.getFieldValue} for both min and max values.
    */
-  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+  getMinMaxForColumnsWithOriginalTypes({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
 
   /**
@@ -274,6 +360,17 @@ export interface IAdminForthDataSourceConnector {
    * Used to delete record in database.
    */
   deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean>;
+
+  /**
+   * Optional. Used to perform aggregation queries on a resource table.
+   * Returns rows with aliased aggregate values and optional group key.
+   */
+  getAggregateWithOriginalTypes?({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource,
+    filters: IAdminForthAndOrFilter,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  }): Promise<Array<{ group?: string, [key: string]: any }>>;
 }
 
 
@@ -309,9 +406,16 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     newValues: any, 
   }): Promise<{ok: boolean, error?: string}>;
 
-  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<{ [key: string]: { min: any, max: any } }>;
+  getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
   deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
+
+  aggregate({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource,
+    filters: IAdminForthAndOrFilter,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  }): Promise<Array<{ group?: string, [key: string]: any }>>;
 }
 
 
@@ -358,7 +462,8 @@ export interface IAdminForthRestAPI {
 export interface IAdminForth {
   config: AdminForthConfig;
   codeInjector: ICodeInjector;
-  express: IHttpServer;
+  express: IExpressHttpServer;
+  openApi: IOpenApiRegistry;
 
   restApi: IAdminForthRestAPI;
   activatedPlugins: Array<IAdminForthPlugin>;
@@ -455,6 +560,8 @@ export interface IAdminForth {
    * ```
    */
   getPluginById<T>(id: string): T;
+
+  refreshMenuBadge(menuItemId: string, adminUser: AdminUser): Promise<void>;
 }
 
 
@@ -532,7 +639,7 @@ export type BeforeDataSourceRequestFunction = (params: {
     body: any,
     query: Record<string, string>,
     headers: Record<string, string>,
-    cookies: Record<string, string>,
+    cookies: { key: string, value: string }[],
     requestUrl: string,
   },
   filtersTools: any,
@@ -570,7 +677,7 @@ export interface HttpExtra {
   body: any,
   query: Record<string, string>,
   headers: Record<string, string>,
-  cookies: Record<string, string>,
+  cookies: { key: string, value: string }[],
   requestUrl: string,
   meta?: any,
   response: IAdminForthHttpResponse
@@ -1300,10 +1407,10 @@ export interface AdminForthActionInput {
       showThreeDotsMenu?: boolean,
       bulkButton?: boolean,
   };
-  allowed?: (params: {
+  allowed?: boolean | ((params: {
     adminUser: AdminUser;
     standardAllowedActions: AllowedActions;
-  }) => boolean;
+  }) => boolean | Promise<boolean>);
   url?: string;
   bulkHandler?: (params: {
       adminforth: IAdminForth;
@@ -1694,6 +1801,62 @@ export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customiza
 
 export type FDataFilter = (field: string, value: any) => IAdminForthSingleFilter;
 
+export interface IAggregationRule {
+  operation: 'sum' | 'count' | 'avg' | 'min' | 'max' | 'median';
+  /** Required for sum, avg, min, max, median. Omit for count. */
+  field?: string;
+}
+
+export interface IGroupByDateTrunc {
+  type: 'date_trunc';
+  field: string;
+  truncation: 'day' | 'week' | 'month' | 'year';
+  /** IANA timezone name, e.g. 'Europe/Kyiv'. Optional, defaults to UTC. */
+  timezone?: string;
+}
+
+export interface IGroupByField {
+  type: 'field';
+  field: string;
+}
+
+export type IGroupByRule = IGroupByDateTrunc | IGroupByField;
+
+/**
+ * Helper to build aggregation rules for use with resource().aggregate()
+ */
+export class Aggregates {
+  static sum(field: string): IAggregationRule { return { operation: 'sum', field }; }
+  static count(): IAggregationRule { return { operation: 'count' }; }
+  static avg(field: string): IAggregationRule { return { operation: 'avg', field }; }
+  static min(field: string): IAggregationRule { return { operation: 'min', field }; }
+  static max(field: string): IAggregationRule { return { operation: 'max', field }; }
+  static median(field: string): IAggregationRule { return { operation: 'median', field }; }
+}
+
+/**
+ * Helper to build grouping rules for use with resource().aggregate()
+ */
+export class GroupBy {
+  /**
+   * Group by date truncation. Returns ISO date strings (YYYY-MM-DD) for each group.
+   * @param field  Column name (must be DATETIME/DATE type in the resource)
+   * @param truncation  'day' | 'week' | 'month' | 'year'
+   * @param timezone  IANA timezone name, e.g. 'Europe/Kyiv'. Defaults to 'UTC' when omitted.
+   */
+  static DateTrunc(field: string, truncation: 'day' | 'week' | 'month' | 'year', timezone?: string): IGroupByDateTrunc {
+    return { type: 'date_trunc', field, truncation, timezone };
+  }
+
+  /**
+   * Group by raw field value. The field value is returned as-is in the `group` key.
+   * @param field  Column name to group by
+   */
+  static Field(field: string): IGroupByField {
+    return { type: 'field', field };
+  }
+}
+
 export class Filters {
   static EQ(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.EQ, value };
@@ -1790,6 +1953,12 @@ export interface IOperationalResource {
   list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
   count: (filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<number>;
+
+  aggregate: (
+    filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule
+  ) => Promise<Array<{ group?: string, [key: string]: any }>>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
@@ -2018,7 +2187,7 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * It should return Promise which will be resolved when action is done.
    */
   action: ({ resource, selectedIds, adminUser, response, tr }: { 
-    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: (key: string, category?: string, params?: any) => string
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: ITranslateFunction
   }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
@@ -2151,4 +2320,12 @@ export interface IWebSocketBroker {
   publish: (topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>) => void;
 
   registerWsClient: (client: IWebSocketClient) => void;
+}
+
+export interface PluginsCommonOptions {
+   /**
+     * Id of the plugin. It should be unique across all plugins.
+     * It is required if you want to log custom actions, otherwise it is optional.
+    */
+    id?: string;
 }

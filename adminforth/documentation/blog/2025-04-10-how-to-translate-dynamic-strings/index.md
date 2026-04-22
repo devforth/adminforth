@@ -45,7 +45,17 @@ export default {
 You might have this page and return it in your API for nuxt:
 
 ```ts
+import * as z from "zod";
+
 app.get(`${admin.config.baseUrl}/api/get_page`,
+  admin.express.withSchema(
+    {
+      description: 'Returns translated SEO metadata for the page specified by the pageUrl query parameter.',
+      response: z.object({
+        meta_title: z.string(),
+        meta_desc: z.string(),
+      }),
+    },
     async (req:any, res: Response): Promise<void> => {
       const pageUrl = req.query.pageUrl;
       if (!pageUrl) {
@@ -62,18 +72,29 @@ app.get(`${admin.config.baseUrl}/api/get_page`,
         meta_desc: page.meta_desc,
       });
     }
-  ) 
+  )
 );
 ```
+
+Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
 
 Now you want to translate page meta title and meta description. You can do this by using `i18n` plugin for AdminForth.
 
 ```ts
 import { AdminForth } from "adminforth";
+import * as z from "zod";
 
 export const SEO_PAGE_CATEGORY = "seo_page_config";
 
 app.get(`${admin.config.baseUrl}/api/get_page`,\
+ admin.express.withSchema(
+  {
+    description: 'Returns translated SEO metadata for the page specified by the pageUrl query parameter.',
+    response: z.object({
+      meta_title: z.string(),
+      meta_desc: z.string(),
+    }),
+  },
 //diff-add
  admin.express.translatable(
     async (req:any, res: Response): Promise<void> => {
@@ -107,6 +128,7 @@ app.get(`${admin.config.baseUrl}/api/get_page`,\
         meta_desc,
       });
     }
+  )
 //diff-add
   ) 
 );

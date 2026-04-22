@@ -1,4 +1,4 @@
-import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource } from '../types/Back.js';
+import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAggregationRule, IGroupByRule } from '../types/Back.js';
 import { AdminForthFilterOperators } from '../types/Common.js';
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
@@ -60,6 +60,19 @@ export default class OperationalResource implements IOperationalResource {
     return data;
   }
 
+
+  async aggregate(
+    filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule
+  ): Promise<Array<{ group?: string, [key: string]: any }>> {
+    return this.dataConnector.aggregate({
+      resource: this.resourceConfig,
+      filters: this.dataConnector.validateAndNormalizeInputFilters(filter),
+      aggregations,
+      groupBy,
+    });
+  }
 
   async count(filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): Promise<number> {
     return await this.dataConnector.getCount({

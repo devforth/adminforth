@@ -10,6 +10,8 @@ import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapt
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
+import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
+import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -188,6 +190,71 @@ export default {
         defaultFieldValues: { // Set default values for new users
           role: 'user',
         },
+      },
+    }),
+    new AdminForthAgent({
+      placeholderMessages: async ({ adminUser, httpExtra }) => {
+        return [
+          "What is a cars count in SQLite",
+          "Build average car price by days chart in SQLite",
+        ]
+      },
+      modes: [
+        {
+          name: 'Balanced',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4-mini',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'medium',
+              },
+            },
+          }),
+        },
+        {
+          name: 'Fast',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4-mini',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'low',
+              },
+            },
+          }),
+        },
+        {
+          name: 'Smart Thinking',
+          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+            openAiApiKey: process.env.OPENAI_API_KEY as string,
+            model: 'gpt-5.4',
+            extraRequestBodyParameters: {
+              reasoning: {
+                effort: 'xhigh',
+              },
+            },
+          }),
+        },
+      ],
+      maxTokens: 10000,
+      reasoning: 'none',
+      sessionResource: {
+        resourceId: 'sessions',
+        idField: 'id',
+        titleField: 'title',
+        turnsField: 'turns',
+        askerIdField: 'asker_id',
+        createdAtField: 'created_at',
+      },
+      turnResource: {
+        resourceId: 'turns',
+        idField: 'id',
+        sessionIdField: 'session_id',
+        createdAtField: 'created_at',
+        promptField: 'prompt',
+        responseField: 'response',
+        debugField: 'dubbug',
       },
     }),
   ],
