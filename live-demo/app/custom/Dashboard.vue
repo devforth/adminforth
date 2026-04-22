@@ -104,7 +104,7 @@
         </div>
       </div>
 
-      <div class="min-w-[24rem] flex-[1_1_32rem] bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
+      <div class="min-w-[20rem] flex-[1_1_32rem] bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-5" v-if="data">
         <div class="flex flex-wrap gap-4 py-3">
           <dl class="min-w-[12rem] flex-1">
             <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">{{ $t('Listed price') }}</dt>
