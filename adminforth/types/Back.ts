@@ -360,6 +360,17 @@ export interface IAdminForthDataSourceConnector {
    * Used to delete record in database.
    */
   deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean>;
+
+  /**
+   * Optional. Used to perform aggregation queries on a resource table.
+   * Returns rows with aliased aggregate values and optional group key.
+   */
+  getAggregateWithOriginalTypes?({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource,
+    filters: IAdminForthAndOrFilter,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  }): Promise<Array<{ group?: string, [key: string]: any }>>;
 }
 
 
@@ -398,6 +409,13 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
   getMinMaxForColumns({ resource, columns }: { resource: AdminForthResource, columns: AdminForthResourceColumn[] }): Promise<ColumnMinMaxValue>;
 
   deleteMany?({resource, recordIds}:{resource: AdminForthResource, recordIds: any[]}): Promise<number>;
+
+  aggregate({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource,
+    filters: IAdminForthAndOrFilter,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule,
+  }): Promise<Array<{ group?: string, [key: string]: any }>>;
 }
 
 
@@ -1783,6 +1801,62 @@ export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customiza
 
 export type FDataFilter = (field: string, value: any) => IAdminForthSingleFilter;
 
+export interface IAggregationRule {
+  operation: 'sum' | 'count' | 'avg' | 'min' | 'max' | 'median';
+  /** Required for sum, avg, min, max, median. Omit for count. */
+  field?: string;
+}
+
+export interface IGroupByDateTrunc {
+  type: 'date_trunc';
+  field: string;
+  truncation: 'day' | 'week' | 'month' | 'year';
+  /** IANA timezone name, e.g. 'Europe/Kyiv'. Optional, defaults to UTC. */
+  timezone?: string;
+}
+
+export interface IGroupByField {
+  type: 'field';
+  field: string;
+}
+
+export type IGroupByRule = IGroupByDateTrunc | IGroupByField;
+
+/**
+ * Helper to build aggregation rules for use with resource().aggregate()
+ */
+export class Aggregates {
+  static sum(field: string): IAggregationRule { return { operation: 'sum', field }; }
+  static count(): IAggregationRule { return { operation: 'count' }; }
+  static avg(field: string): IAggregationRule { return { operation: 'avg', field }; }
+  static min(field: string): IAggregationRule { return { operation: 'min', field }; }
+  static max(field: string): IAggregationRule { return { operation: 'max', field }; }
+  static median(field: string): IAggregationRule { return { operation: 'median', field }; }
+}
+
+/**
+ * Helper to build grouping rules for use with resource().aggregate()
+ */
+export class GroupBy {
+  /**
+   * Group by date truncation. Returns ISO date strings (YYYY-MM-DD) for each group.
+   * @param field  Column name (must be DATETIME/DATE type in the resource)
+   * @param truncation  'day' | 'week' | 'month' | 'year'
+   * @param timezone  IANA timezone name, e.g. 'Europe/Kyiv'. Defaults to 'UTC' when omitted.
+   */
+  static DateTrunc(field: string, truncation: 'day' | 'week' | 'month' | 'year', timezone?: string): IGroupByDateTrunc {
+    return { type: 'date_trunc', field, truncation, timezone };
+  }
+
+  /**
+   * Group by raw field value. The field value is returned as-is in the `group` key.
+   * @param field  Column name to group by
+   */
+  static Field(field: string): IGroupByField {
+    return { type: 'field', field };
+  }
+}
+
 export class Filters {
   static EQ(field: string, value: any): IAdminForthSingleFilter {
     return { field, operator: AdminForthFilterOperators.EQ, value };
@@ -1879,6 +1953,12 @@ export interface IOperationalResource {
   list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
 
   count: (filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<number>;
+
+  aggregate: (
+    filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
+    aggregations: { [alias: string]: IAggregationRule },
+    groupBy?: IGroupByRule
+  ) => Promise<Array<{ group?: string, [key: string]: any }>>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
 
