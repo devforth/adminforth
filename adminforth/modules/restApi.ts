@@ -1079,17 +1079,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
-        const allowedCustomActions = [];
+        const allowedCustomActions: Array<(typeof resource.options.actions)[number] & { allowed: boolean }> = [];
         if (resource.options.actions) {
           await Promise.all(
             resource.options.actions.map(async (action) => {
               if (typeof action.allowed === 'function') {
                 const res = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
-                if (res) {
-                  allowedCustomActions.push(action);
-                }
+                allowedCustomActions.push({ ...action, allowed: !!res });
               } else {
-                allowedCustomActions.push(action);
+                allowedCustomActions.push({ ...action, allowed: action.allowed !== false });
               }
             })
           );
@@ -1207,7 +1205,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
                 })
               ),
-              actions: allowedCustomActions.map(({ bulkHandler, allowed, action: actionFn, ...rest }) => ({
+              actions: allowedCustomActions.map(({ bulkHandler, action: actionFn, ...rest }) => ({
                 ...rest,
                 ...(bulkHandler && { bulkHandler: true }),
               })) as AdminForthActionFront[],
