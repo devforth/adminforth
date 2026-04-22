@@ -12,7 +12,7 @@
 import Toggle from '@/afcl/Toggle.vue';
 import type {
   AdminForthResourceColumnCommon,
-  AdminForthResourceCommon,
+    AdminForthResourceFrontend,
   AdminUser,
 } from "@/types/Common";
 
@@ -22,7 +22,7 @@ import type {
         column: AdminForthResourceColumnCommon,
         record: any,
         meta: any,
-        resource: AdminForthResourceCommon,
+        resource: AdminForthResourceFrontend,
         adminUser: AdminUser,
         readonly: boolean
     }>();

@@ -119,7 +119,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, t
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
-type ISingleSelectModelValue = string | number;
+type ISingleSelectModelValue = string | number | boolean;
 
 const props = defineProps({
   options: Array,
@@ -287,6 +287,7 @@ onMounted(() => {
   // Add scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
   }
 });
 
@@ -349,6 +350,7 @@ onUnmounted(() => {
   // Remove scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.removeEventListener('scroll', handleScroll, true);
+    window.removeEventListener('resize', handleScroll);
   }
   if (searchDebounceHandle) {
     clearTimeout(searchDebounceHandle);

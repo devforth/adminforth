@@ -31,8 +31,8 @@ nvm use 20
 ```bash
 mkdir af-hello
 cd af-hello
-npm init -y
-npm i adminforth express @dotenvx/dotenvx @types/express typescript tsx @types/node -D
+pnpm init
+pnpm add adminforth express@^4 @dotenvx/dotenvx @types/express typescript tsx @types/node prisma @prisma/client -D
 npx --yes tsc --init --module NodeNext --target ESNext
 ```
 
@@ -48,8 +48,8 @@ Put the following content to the `.env.local` file:
 ```bash title="./.env.local"
 ADMINFORTH_SECRET=123
 NODE_ENV=development
-DATABASE_FILE=../db.sqlite
-DATABASE_FILE_URL=file:${DATABASE_FILE}
+DATABASE_URL=sqlite://.db.sqlite
+PRISMA_DATABASE_URL=file:.db.sqlite
 ```
 
 > ☝️ Production best practices:
@@ -70,14 +70,330 @@ Open `package.json` and add the following scripts:
   "scripts": {
     ...
 //diff-add
-    "env": "dotenvx run -f .env.local -f .env --overload --",
+    "dev": "pnpm _env:dev tsx watch index.ts",
 //diff-add
-    "start": "npm run env -- tsx watch index.ts",
+    "prod": "pnpm _env:prod tsx index.ts",
 //diff-add
-    "migrateLocal": "npm run env -- npx prisma migrate deploy",
+    "start": "pnpm dev",
 //diff-add
-    "makemigration": "npm run env -- npx --yes prisma migrate deploy; npm run env -- npx --yes prisma migrate dev",
+    "makemigration": "pnpm _env:dev npx --yes prisma migrate dev --create-only",
+//diff-add
+    "migrate:local": "pnpm _env:dev npx --yes prisma migrate deploy",
+//diff-add
+    "migrate:prod": "pnpm _env:prod npx --yes prisma migrate deploy",
+//diff-add
+    "_env:dev": "dotenvx run -f .env -f .env.local --",
+//diff-add
+    "_env:prod": "dotenvx run -f .env.prod --"
   },
+//diff-add
+  "engines": {
+    //diff-add
+    "author": "",
+    //diff-add
+    "node": ">=20"
+    //diff-add
+  },
+}
+```
+
+Create `./pnpm-workspace.yaml` and put next content there:
+
+```json title="./pnpm-workspace.yaml"
+onlyBuiltDependencies:
+  - better-sqlite3
+```
+
+Run installation command to apply all dependencies
+```bash
+pnpm install
+```
+
+## Setting up AdminForth
+
+Create `index.ts` file in root directory with following content:
+
+```ts title="./index.ts"
+import express from 'express';
+import AdminForth from 'adminforth';
+import usersResource from "./resources/adminuser.js";
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { Filters } from 'adminforth';
+import { initApi } from './api.js';
+import { logger } from 'adminforth';
+
+const ADMIN_BASE_URL = '';
+
+export const admin = new AdminForth({
+  baseUrl: ADMIN_BASE_URL,
+  auth: {
+    usersResourceId: 'adminuser',
+    usernameField: 'email',
+    passwordHashField: 'password_hash',
+    rememberMeDuration: '30d', 
+    loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    loginBackgroundPosition: '1/2',
+    loginPromptHTML: async () => { 
+      const adminforthUserExists = await admin.resource("adminuser").count(Filters.EQ('email', 'adminforth')) > 0;
+      if (adminforthUserExists) {
+        return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
+      }
+    },
+  },
+  customization: {
+    brandName: "myadmin",
+    title: "myadmin",
+
+    datesFormat: 'DD MMM',
+    timeFormat: 'HH:mm a',
+  showBrandNameInSidebar: true,
+  showBrandLogoInSidebar: true,
+    emptyFieldPlaceholder: '-',
+    styles: {
+      colors: {
+        light: {
+          primary: '#1a56db',
+          sidebar: { main: '#f9fafb', text: '#213045' },
+        },
+        dark: {
+          primary: '#82ACFF',
+          sidebar: { main: '#1f2937', text: '#9ca3af' },
+        }
+      }
+    },
+  },
+  dataSources: [
+    {
+      id: 'maindb',
+      url: `${process.env.DATABASE_URL}`
+    },
+  ],
+  resources: [
+    usersResource
+  ],
+  menu: [
+    { type: 'heading', label: 'SYSTEM' },
+    {
+      label: 'Users',
+      icon: 'flowbite:user-solid',
+      resourceId: 'adminuser'
+    }
+  ],
+});
+
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  const app = express();
+  app.use(express.json());
+
+  initApi(app, admin);
+
+  const port = 3500;
+  
+  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
+    logger.info('Bundling AdminForth SPA done.');
+  });
+
+  admin.express.serve(app);
+
+  admin.discoverDatabases().then(async () => {
+    if (await admin.resource('adminuser').count() === 0) {
+      await admin.resource('adminuser').create({
+        email: 'adminforth',
+        password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+  });
+
+  admin.express.listen(port, () => {
+    logger.info(`\x1b[38;5;249m ⚡ AdminForth is available at\x1b[1m\x1b[38;5;46m http://localhost:${port}${ADMIN_BASE_URL}\x1b[0m\n`);
+  });
+}
+
+```
+
+> ☝️ For simplicity we defined whole configuration in one file. Normally once configuration grows you should
+> move each resource configuration to separate file and organize them to folder and import them in `index.ts`.
+
+Create `api.ts` file in root directory with following content:
+
+```ts title="./api.ts"
+import { Express, Response } from "express";
+import { IAdminForth, IAdminUserExpressRequest } from "adminforth";
+import * as z from "zod";
+
+export function initApi(app: Express, admin: IAdminForth) {
+  app.get(`${admin.config.baseUrl}/api/hello/`,
+
+    admin.express.withSchema(
+      {
+        description: "Returns example data from a custom Express API together with the current authenticated AdminForth user.",
+        response: z.object({
+          message: z.string(),
+          users: z.array(z.record(z.string(), z.unknown())),
+          adminUser: z.record(z.string(), z.unknown()),
+        }),
+      },
+
+      // you can use data API to work with your database https://adminforth.dev/docs/tutorial/Customization/dataApi/
+      // and admin.express.authorize to inject req.adminUser
+      admin.express.authorize(
+        async (req: IAdminUserExpressRequest, res: Response) => {
+          const allUsers = await admin.resource("adminuser").list([]);
+          res.json({
+            message: "Hello from AdminForth API!",
+            users: allUsers,
+            adminUser: req.adminUser,
+          });
+        }
+      )
+    )
+  );
+}
+```
+
+>Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
+
+
+Update `tsconfig.json` file in root directory with following content: 
+```ts title="./tsconfig.json"
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
+  },
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+Create new directory `./resources/adminuser.ts` with following content:
+
+```ts title="./resources/adminuser.ts"
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import { randomUUID } from 'crypto';
+import { logger } from 'adminforth';
+
+async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
+
+export default {
+  dataSource: 'maindb',
+  table: 'adminuser',
+  resourceId: 'adminuser',
+  label: 'Admin Users',
+  recordLabel: (r) => `👤 ${r.email}`,
+  options: {
+    allowedActions: {
+      edit: allowedForSuperAdmin,
+      delete: allowedForSuperAdmin,
+    },
+  },
+  columns: [
+    {
+      name: 'id',
+      primaryKey: true,
+      type: AdminForthDataTypes.STRING,
+      fillOnCreate: ({ initialRecord, adminUser }) => randomUUID(),
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'email',
+      required: true,
+      isUnique: true,
+      type: AdminForthDataTypes.STRING,
+      validation: [
+        // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object
+        {
+          regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+          message: 'Email is not valid, must be in format example@test.com'
+        },
+      ]
+    },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      showIn: {
+        edit: false,
+        create: false,
+      },
+      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
+    },
+    {
+      name: 'role',
+      type: AdminForthDataTypes.STRING,
+      enum: [
+        { value: 'superadmin', label: 'Super Admin' },
+        { value: 'user', label: 'User' },
+      ]
+    },
+    {
+      name: 'password',
+      virtual: true,  // field will not be persisted into db
+      required: { create: true }, // make required only on create page
+      editingNote: { edit: 'Leave empty to keep password unchanged' },
+      type: AdminForthDataTypes.STRING,
+      showIn: { // to show field only on create and edit pages
+        show: false,
+        list: false,
+        filter: false,
+      },
+      masked: true, // to show stars in input field
+
+      minLength: 8,
+      validation: [
+        // request to have at least 1 digit, 1 upper case, 1 lower case
+        AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM,
+      ],
+    },
+    {
+      name: 'password_hash',
+      type: AdminForthDataTypes.STRING,
+      backendOnly: true,
+      showIn: { all: false }
+    }
+  ],
+  hooks: {
+    create: {
+      beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        return { ok: true };
+      }
+    },
+    edit: {
+      beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        logger.info(`Updating user, ${updates}`);
+        if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+          return { ok: false, error: 'You cannot change your own role' };
+        }
+        if (updates.password) {
+          updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
+        }
+        return { ok: true }
+      },
+    },
+  },
+} as AdminForthResourceInput;
+```
+
+Create new directory `./custom/tsconfig.json` with following content:
+```ts title="./custom/tsconfig.json"
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../node_modules/adminforth/dist/spa/src/*"],
+      "@@/*": ["./*"]
+    }
+  }
 }
 ```
 
@@ -95,261 +411,41 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_FILE_URL")
 }
 
-model User {
-  id           String     @id
-  createdAt    DateTime
-  email        String   @unique
-  role         String
-  passwordHash String
-  posts        Post[]
+model adminuser {
+  id            String     @id
+  email         String     @unique
+  password_hash String
+  role          String
+  created_at    DateTime
 }
-
-model Post {
-  id        String     @id
-  createdAt DateTime
-  title     String
-  content   String?
-  published Boolean
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?
-}
-
 ```
+
+Create `./prisma.config.ts` and put next content there:
+
+```ts title="./prisma.config.ts"
+import 'dotenv/config'
+import { defineConfig, env } from 'prisma/config'
+
+export default defineConfig({
+  datasource: {
+    url: env('PRISMA_DATABASE_URL'),
+  },
+})
+```
+
 
 Create database using `prisma migrate`:
 
 ```bash
-npm run makemigration --name init ; npm run migrate:local
+pnpm run makemigration --name init ; pnpm run migrate:local
 ```
-
-## Setting up AdminForth
-
-Create `index.ts` file in root directory with following content:
-
-```ts title="./index.ts"
-import express from 'express';
-import AdminForth, { AdminForthDataTypes, Filters, logger } from 'adminforth';
-import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
-
-export const admin = new AdminForth({
-  baseUrl: '',
-  auth: {
-    usersResourceId: 'adminuser',  // resource to get user during login
-    usernameField: 'email',  // field where username is stored, should exist in resource
-    passwordHashField: 'passwordHash',
-  },
-  customization: {
-    brandName: 'My Admin',
-    datesFormat: 'D MMM YY',
-    timeFormat: 'HH:mm:ss',
-    emptyFieldPlaceholder: '-',
-  },
-  dataSources: [{
-    id: 'maindb',
-    url: `sqlite://${process.env.DATABASE_FILE}`,
-  }],
-  resources: [
-    {
-      dataSource: 'maindb',
-      table: 'adminuser',
-      resourceId: 'adminuser',
-      label: 'Users',
-      recordLabel: (r: any) => `👤 ${r.email}`,
-      columns: [
-        {
-          name: 'id',
-          primaryKey: true,
-          fillOnCreate: () => Math.random().toString(36).substring(7),
-          showIn: {
-            edit: false,
-            create: false,
-          },
-        },
-        {
-          name: 'email',
-          required: true,
-          isUnique: true,
-          enforceLowerCase: true,
-          validation: [
-            AdminForth.Utils.EMAIL_VALIDATOR,
-          ]
-        },
-        {
-          name: 'createdAt',
-          type: AdminForthDataTypes.DATETIME,
-          showIn: {
-            edit: false,
-            create: false,
-          },
-          fillOnCreate: () => (new Date()).toISOString(),
-        },
-        {
-          name: 'role',
-          enum: [
-            { value: 'superadmin', label: 'Super Admin' },
-            { value: 'user', label: 'User' },
-          ]
-        },
-        {
-          name: 'password',
-          virtual: true,
-          required: { create: true },
-          editingNote: { edit: 'Leave empty to keep password unchanged' },
-          minLength: 8,
-          type: AdminForthDataTypes.STRING,
-          showIn: {
-            show: false,
-            list: false,
-            filter: false,
-          },
-          masked: true,
-        },
-        { name: 'passwordHash', backendOnly: true, showIn: { all: false } }
-      ],
-      hooks: {
-        create: {
-          beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-            record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
-            return { ok: true };
-          }
-        },
-        edit: {
-          beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-            logger.info('Updating user', updates);
-            if (oldRecord.id === adminUser.dbUser.id && updates.role) {
-              return { ok: false, error: 'You cannot change your own role' };
-            }
-            if (updates.password) {
-              updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
-            }
-            return { ok: true }
-          },
-        },
-      }
-    },
-    {
-      table: 'post',
-      resourceId: 'posts',
-      dataSource: 'maindb',
-      label: 'Posts',
-      recordLabel: (r: any) => `📝 ${r.title}`,
-      columns: [
-        {
-          name: 'id',
-          primaryKey: true,
-          fillOnCreate: () => Math.random().toString(36).substring(7),
-          showIn: {
-            edit: false,
-            create: false,
-          },
-        },
-        {
-          name: 'title',
-          type: AdminForthDataTypes.STRING,
-          required: true,
-          showIn: { all: true },
-          maxLength: 255,
-          minLength: 3,
-        },
-        {
-          name: 'content',
-          showIn: { all: true },
-        },
-        {
-          name: 'createdAt',
-          showIn: {
-            edit: false,
-            create: false,
-          },
-          fillOnCreate: () => (new Date()).toISOString(),
-        },
-        {
-          name: 'published',
-          required: true,
-        },
-        {
-          name: 'authorId',
-          foreignResource: {
-            resourceId: 'adminuser',
-          },
-          showIn: {
-            edit: false,
-            create: false,
-          },
-          fillOnCreate: ({ adminUser }: { adminUser: AdminUser }) => {
-            return adminUser.dbUser.id;
-          }
-        }
-      ],
-    }
-  ],
-  menu: [
-    {
-      label: 'Core',
-      icon: 'flowbite:brain-solid', // any icon from iconify supported in format <setname>:<icon>, e.g. from here https://icon-sets.iconify.design/flowbite/
-      open: true,
-      children: [
-        {
-          homepage: true,
-          label: 'Posts',
-          icon: 'flowbite:home-solid',
-          resourceId: 'posts',
-        },
-      ]
-    },
-    { type: 'gap' },
-    { type: 'divider' },
-    { type: 'heading', label: 'SYSTEM' },
-    {
-      label: 'Users',
-      icon: 'flowbite:user-solid',
-      resourceId: 'adminuser',
-    }
-  ],
-});
-
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  // if script is executed directly e.g. node index.ts or npm start
-
-  const app = express()
-  app.use(express.json());
-  const port = 3500;
-
-  // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
-  admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
-    logger.info('Bundling AdminForth SPA done.');
-  });
-
-  // serve after you added all api
-  admin.express.serve(app)
-
-  admin.discoverDatabases().then(async () => {
-    if (await admin.resource('adminuser').count() === 0) {
-      await admin.resource('adminuser').create({
-        email: 'adminforth',
-        passwordHash: await AdminForth.Utils.generatePasswordHash('adminforth'),
-        role: 'superadmin',
-      });
-    }
-  });
-
-  admin.express.listen(port, () => {
-    logger.info(`\n⚡ AdminForth is available at http://localhost:${port}\n`)
-  });
-}
-```
-
-> ☝️ For simplicity we defined whole configuration in one file. Normally once configuration grows you should
-> move each resource configuration to separate file and organize them to folder and import them in `index.ts`.
 
 Now you can run your app:
 
 ```bash
-npm start
+pnpm start
 ```
 
 Open http://localhost:3500 in your browser and login with credentials `adminforth` / `adminforth`.

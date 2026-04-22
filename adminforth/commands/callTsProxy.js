@@ -37,11 +37,11 @@ export function callTsProxy(tsCode, silent=false) {
     });
 
     child.on("close", (code) => {
+      const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>>'));
+      const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>>') + 7, tsProxyResult.lastIndexOf('<<<<<<<'));
+      const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>>'));
       if (code === 0) {
         try {
-          const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>>'));
-          const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>>') + 46, tsProxyResult.lastIndexOf('<<<<<<<'));
-          const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>>'));
           for (const log of preparedStdoutLogs) {
             console.log(log);
           }

@@ -1,9 +1,12 @@
 <template>
-  <RouterLink 
-      :to="item.url || { name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {}}" 
+  <component
+      :is="isExternalUrl(item.url) ? 'a' : RouterLink"
+      v-bind="isExternalUrl(item.url)
+        ? { href: item.url }
+        : { to: item.url || { name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {} } }"
       :target="item.isOpenInNewTab ? '_blank' : '_self'"
-      class="af-menu-link flex group relative items-center w-full py-2 text-lightSidebarText dark:text-darkSidebarText rounded-default transition-all duration-200 ease-in-out" 
-      :class="{ 
+      class="af-menu-link flex group relative items-center w-full py-2 text-lightSidebarText dark:text-darkSidebarText rounded-default transition-all duration-200 ease-in-out"
+      :class="{
         'hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover active:bg-lightSidebarActive dark:active:bg-darkSidebarHover': !['divider', 'gap', 'heading'].includes(item.type),
         'pl-6 pr-3.5': (isChild && !isSidebarIconOnly && !isSidebarHovering) || (isChild && isSidebarIconOnly && isSidebarHovering),
         'px-3.5 ': !isChild || (isSidebarIconOnly && !isSidebarHovering),
@@ -35,7 +38,7 @@
     >
       {{ item.label }}
     </div>
-    <span class="absolute flex items-center justify-center right-1 top-1/2 -translate-y-1/2" v-if="item.badge && showExpandedBadge">
+    <span class="absolute flex items-center justify-center right-1 top-1/2 -translate-y-1/2" v-if="(item.badge || item.badge === 0) && showExpandedBadge ">
       <Tooltip v-if="item.badgeTooltip">
         <div class="af-badge inline-flex items-center justify-center h-3 py-2.5 px-1 ms-3 text-xs font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
@@ -48,10 +51,10 @@
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent min-w-[1.5rem] max-w-[3rem]">{{ item.badge }}</div>
       </template>
     </span>
-    <div v-if="item.badge && isSidebarIconOnly && !isSidebarHovering"  class="af-badge absolute right-0.5 bottom-1 -translate-y-1/2 inline-flex items-center justify-center h-2 w-2 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+    <div v-if="(item.badge || item.badge === 0) && isSidebarIconOnly && !isSidebarHovering"  class="af-badge absolute right-0.5 bottom-1 -translate-y-1/2 inline-flex items-center justify-center h-2 w-2 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
       fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
     </div>
-  </RouterLink>
+  </component>
 </template>
 
 <script setup lang="ts">  
@@ -60,13 +63,15 @@ import { Tooltip } from '@/afcl';
 import { ref, watch, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { IconFileImageOutline } from '@iconify-prerendered/vue-flowbite';
-import { useRoute } from 'vue-router';
+import { useRoute, RouterLink } from 'vue-router';
+
+const isExternalUrl = (url: string ) => /^https?:\/\//.test(url || '');
 
 const route = useRoute();
 
 const isItemActive = (item: any) => {
   if (item.url) {
-    return route.fullPath === item.url;
+    return !isExternalUrl(item.url) && route.fullPath === item.url;
   }
 
   if (item.resourceId) {

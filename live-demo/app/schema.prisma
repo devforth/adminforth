@@ -58,3 +58,19 @@ model translations {
     @@index([en_string, category])
     @@index([category])
 }
+
+model sessions {
+  id         String   @id
+  title      String
+  turns      Int?
+  asker_id   String
+  created_at DateTime
+}
+
+model turns {
+  id         String   @id
+  session_id String
+  created_at DateTime
+  prompt     String?
+  response   String?
+}

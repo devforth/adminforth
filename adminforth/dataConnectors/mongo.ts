@@ -340,15 +340,18 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         resource: AdminForthResource,
         filters: IAdminForthAndOrFilter,
     }): Promise<number> {
+        let normalizedFilters = filters;
+
         if (filters) {
             // validate and normalize in case this method is called from dataAPI
             const filterValidation = this.validateAndNormalizeFilters(filters, resource);
             if (!filterValidation.ok) {
                 throw new Error(filterValidation.error);
             }
+            normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
         }
         const collection = this.client.db().collection(resource.table);
-        const query = filters.subFilters.length ? this.getFilterQuery(resource, filters) : {};
+        const query = normalizedFilters.subFilters.length ? this.getFilterQuery(resource, normalizedFilters) : {};
         return await collection.countDocuments(query);
     }
 

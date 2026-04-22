@@ -76,7 +76,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthResourceColumnCommon, type AdminForthResourceCommon } from '@/types/Common';
+import { type AdminForthResourceColumnCommon, type AdminForthResourceFrontend } from '@/types/Common';
 import { Mutex } from 'async-mutex';
 import debounce from 'lodash.debounce';
 
@@ -88,7 +88,7 @@ const coreStore = useCoreStore();
 const router = useRouter();
 const route = useRoute();
 const props = defineProps<{
-  resource: AdminForthResourceCommon,
+  resource: AdminForthResourceFrontend,
   record: any,
   validatingMode: boolean,
   source: 'create' | 'edit',
@@ -162,7 +162,7 @@ const columnError = (column: AdminForthResourceColumnCommon) => {
       return currentValues.value[column.name] && currentValues.value[column.name].reduce((error: any, item: any) => {
         if (column.isArray) {
           return error || validateValue(column.isArray.itemType, item, column) ||
-            (item === null || !item.toString() ? t('Array cannot contain empty items') : null);
+            (item === null || (!item || item.toString() === '') ? t('Array cannot contain empty items') : null);
         } else {
           return error; 
         }

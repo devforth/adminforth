@@ -8,16 +8,117 @@ import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
 import sanitizeHtml  from 'sanitize-html'
 import debounce from 'debounce';
-import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, Predicate } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
+import { reconnect } from '@/websocket';
 
 
 
 const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
+const AUTOLOGIN_QUERY_PARAM = 'autologin';
+
+export function getAutologinCredentials(autologin: unknown): { username: string, password: string } | null {
+  if (typeof autologin !== 'string') {
+    return null;
+  }
+
+  const separatorIndex = autologin.indexOf(':');
+  if (separatorIndex === -1) {
+    return null;
+  }
+
+  return {
+    username: autologin.slice(0, separatorIndex),
+    password: autologin.slice(separatorIndex + 1),
+  };
+}
+
+function buildLoginRedirectQuery() {
+  const { path, query } = router.currentRoute.value;
+  const nextQuery = new URLSearchParams();
+
+  for (const [key, rawValue] of Object.entries(query)) {
+    if (key === AUTOLOGIN_QUERY_PARAM || rawValue == null) {
+      continue;
+    }
+
+    if (Array.isArray(rawValue)) {
+      rawValue.forEach((value) => {
+        if (value != null) {
+          nextQuery.append(key, value);
+        }
+      });
+      continue;
+    }
+
+    nextQuery.set(key, rawValue);
+  }
+
+  const next = nextQuery.size > 0 ? `${path}?${nextQuery.toString()}` : path;
+  const autologin = typeof query[AUTOLOGIN_QUERY_PARAM] === 'string'
+    ? query[AUTOLOGIN_QUERY_PARAM]
+    : undefined;
+
+  return {
+    next,
+    autologin,
+  };
+}
+
+async function tryAutologin(autologin: string): Promise<boolean> {
+  const credentials = getAutologinCredentials(autologin);
+  if (!credentials) {
+    return false;
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}/adminapi/v1/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+    },
+    body: JSON.stringify({
+      username: credentials.username,
+      password: credentials.password,
+      rememberMe: false,
+    }),
+  });
+
+  const loginResponse = await response.json();
+  if (loginResponse?.error) {
+    return false;
+  }
+
+  const userStore = useUserStore();
+  const coreStore = useCoreStore();
+  userStore.authorize();
+  reconnect();
+  await coreStore.fetchMenuAndResource();
+  return !!coreStore.adminUser;
+}
+
+export async function redirectToLogin() {
+  const currentPath = router.currentRoute.value.path;
+  const homeRoute = router.getRoutes().find(route => route.name === 'home');
+  const homePagePath = (homeRoute?.redirect as string) || '/';
+  const { next, autologin } = buildLoginRedirectQuery();
+
+  if (autologin && await tryAutologin(autologin)) {
+    return;
+  }
+
+  const query: Record<string, string> = {};
+
+  if (currentPath !== '/login' && currentPath !== homePagePath) {
+    query.next = next;
+  }
+
+  await router.push({ name: 'login', query });
+}
 
 export async function callApi({path, method, body, headers, silentError = false, abortSignal}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
@@ -43,20 +144,7 @@ export async function callApi({path, method, body, headers, silentError = false,
     if (r.status == 401 ) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
-      const currentPath = router.currentRoute.value.path;
-      const homeRoute = router.getRoutes().find(route => route.name === 'home');
-      const homePagePath = (homeRoute?.redirect as string) || '/';
-      let next = '';
-      if (currentPath !== '/login' && currentPath !== homePagePath) {
-        if (Object.keys(router.currentRoute.value.query).length > 0) {
-          next = currentPath + '?' + Object.entries(router.currentRoute.value.query).map(([key, value]) => `${key}=${value}`).join('&');
-        } else {
-          next = currentPath;
-        }
-        await router.push({ name: 'login', query: { next: next } });
-      } else {
-        await router.push({ name: 'login' });
-      }
+      await redirectToLogin();
       return null;
     } 
     return await r.json();
@@ -779,7 +867,7 @@ export async function executeCustomBulkAction({
   onError?: (error: string) => void,
   setLoadingState?: (loading: boolean) => void,
   confirmMessage?: string,
-  resource?: AdminForthResourceCommon,
+  resource?: AdminForthResourceFrontend,
 }): Promise<any> {
   if (!recordIds || recordIds.length === 0) {
     if (onError) {
@@ -803,7 +891,7 @@ export async function executeCustomBulkAction({
   try {
     const action = resource?.options?.actions?.find((a: any) => a.id === actionId) as AdminForthActionFront | undefined;
 
-    if (action?.hasBulkHandler && action?.showIn?.bulkButton) {
+    if (action?.bulkHandler && action?.showIn?.bulkButton) {
       const result = await callAdminForthApi({
         path: '/start_custom_bulk_action',
         method: 'POST',

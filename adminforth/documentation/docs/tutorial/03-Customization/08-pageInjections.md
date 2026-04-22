@@ -109,15 +109,24 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
 
 Also we have to add an Api to get percentages:
 
-```ts title="./index.ts"
+```ts title="/api.ts"
 import type { IAdminUserExpressRequest } from 'adminforth';
 import express from 'express';
+import * as z from 'zod';
 
 ....
 
   app.get(`${ADMIN_BASE_URL}/api/aparts-by-room-percentages/`,
-    admin.express.authorize(
-      async (req: IAdminUserExpressRequest, res: express.Response) => {
+    admin.express.withSchema(
+      {
+        description: 'Returns apartment room-count percentages for the page injection chart.',
+        response: z.array(z.object({
+          rooms: z.number(),
+          percentage: z.number(),
+        })),
+      },
+      admin.express.authorize(
+        async (req: IAdminUserExpressRequest, res: express.Response) => {
         const roomPercentages = await admin.resource('aparts').dataConnector.client.prepare(
           `SELECT 
             number_of_rooms, 
@@ -139,16 +148,17 @@ import express from 'express';
             })
           )
         );
-      }
+        }
+      )
     )
   );
-
-  // serve after you added all api
-  admin.discoverDatabases();
-  admin.express.serve(app)
 ```
 
+Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
+
 > ☝️ Please note that we are using [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
+
+> ☝️ The outer `admin.express.withSchema(...)` wrapper makes this custom Express route appear in `/api/v1/openapi.json` and `/api-docs`.
 
 Here is how it looks:
 ![alt text](<Page Injections.png>)

@@ -205,3 +205,32 @@ plugins: [
 
 >👆 Full list of buttons you can enable or disable via topPanelSettings:
 bold, italic, underline, strike, h1, h2, h3, ul, ol, link, codeBlock 
+
+
+## Change size of show view markdown text
+By default in markdown plugin turned cumpact preview mode, but you can turn it off:
+
+
+```ts
+  new MarkdownPlugin({
+    fieldName: 'description',
+    //diff-add
+    compactShowPreview: false,        
+    ...
+  })
+
+```
+
+## Limiting height of the markdown renderer on show view
+If you have really long markdown text and you don't wan't it to take the whole space on show view page, you can use `maxShowViewContainerHeightPx`, that will add max-height to the markdown renderer and button `show more`, so you can expand it.
+
+```ts
+  new MarkdownPlugin({
+    fieldName: 'description',
+    compactShowPreview: false,       
+    //diff-add
+    maxShowViewContainerHeightPx: 400, 
+    ...
+  })
+
+```

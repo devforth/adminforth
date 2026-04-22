@@ -23,7 +23,7 @@
     "preinstall": "node scripts/check-node.js",
     "check-docker": "node scripts/check-docker.js",
     "check-task": "node scripts/check-task.js",
-    "setup-dev-demo": "pnpm preinstall && pnpm check-docker && pnpm check-task && pnpm build-adminforth && cp .env.local .env && pnpm install-plugins && pnpm install-adapters && pnpm install && pnpm link ../adminforth && bash ./scripts/run_inventory.sh"
+    "setup-dev-demo": "pnpm preinstall && pnpm check-docker && pnpm check-task && pnpm build-adminforth && [ -f .env ] || cp .env.local .env && pnpm install-plugins && pnpm install-adapters && pnpm install && pnpm link ../adminforth && bash ./scripts/run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
@@ -31,12 +31,13 @@
     "@prisma/client": "^5.22.0",
     "adminforth": "link:../adminforth",
     "better-sqlite3": "^10.1.0",
-    "clickhouse-migrations": "^1.1.1",
+    "clickhouse-migrations": "^1.2.0",
     "decimal.js": "^10.6.0",
     "express": "^4.21.0",
     "pg": "^8.16.3",
     "random-words": "^2.0.1",
-    "sqlstring": "^2.3.3"
+    "sqlstring": "^2.3.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.39.0",
