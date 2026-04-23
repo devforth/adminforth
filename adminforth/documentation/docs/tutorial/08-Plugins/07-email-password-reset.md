@@ -1,3 +1,7 @@
+---
+title: Email Password Reset
+slug: /tutorial/Plugins/email-password-reset
+---
 
 # Email password reset
 

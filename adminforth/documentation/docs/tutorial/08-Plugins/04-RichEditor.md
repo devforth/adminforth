@@ -1,3 +1,8 @@
+---
+title: Rich Editor
+slug: /tutorial/Plugins/rich-editor
+---
+
 # Rich editor
 
 Under the hood this plugin uses [Quill](https://quilljs.com/). Quill is a free, open source WYSIWYG editor built for the modern web.
