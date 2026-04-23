@@ -1,7 +1,7 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
 import type { AdminForthResource } from 'adminforth';
 import AdminForthAgent from '@adminforth/agent';
-import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt';
+import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
 import { getLocalizedPlaceholderMessages } from './agent_resources/placeholderMessages';
@@ -11,7 +11,7 @@ const openAiApiKey = process.env.OPENAI_API_KEY as string;
 const createCompletionAdapter = (
   model: string,
   effort: 'low' | 'medium' | 'xhigh',
-) => new CompletionAdapterOpenAIChatGPT({
+) => new CompletionAdapterOpenAIResponses({
   openAiApiKey,
   model,
   extraRequestBodyParameters: {

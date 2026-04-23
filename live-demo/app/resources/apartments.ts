@@ -4,7 +4,7 @@ import RichEditorPlugin from '@adminforth/rich-editor';
 import TextCompletePlugin from '@adminforth/text-complete';
 import UploadPlugin from '@adminforth/upload';
 import { randomUUID } from 'crypto';
-import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
 import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 import BulkAiFlowPlugin  from '@adminforth/bulk-ai-flow';
@@ -167,7 +167,7 @@ export default {
     new RichEditorPlugin({
       htmlFieldName: 'description',
       completion: {
-        adapter: new CompletionAdapterOpenAIChatGPT({
+        adapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-4o', // default "gpt-4o-mini"
           expert: {
@@ -186,7 +186,7 @@ export default {
     }),
     new TextCompletePlugin({
       fieldName: 'title',
-      adapter: new CompletionAdapterOpenAIChatGPT({
+      adapter: new CompletionAdapterOpenAIResponses({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
       }),
       // expert: {

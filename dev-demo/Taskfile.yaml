@@ -34,7 +34,6 @@ vars:
     - "adminforth-agent"
 
   ADAPTERS:
-    - "adminforth-completion-adapter-open-ai-chat-gpt"
     - "adminforth-email-adapter-aws-ses"
     - "adminforth-email-adapter-mailgun"
     - "adminforth-oauth-adapter-google"
@@ -50,10 +49,15 @@ vars:
     - "adminforth-key-value-adapter-ram"
     - "adminforth-login-captcha-adapter-cloudflare"
     - "adminforth-login-captcha-adapter-recaptcha"
-    - "adminforth-completion-adapter-google-gemini"
     - "adminforth-key-value-adapter-redis"
     - "adminforth-key-value-adapter-leveldb"
     - "adminforth-image-generation-adapter-nano-banana"
+    # legacy
+    - "adminforth-completion-adapter-open-ai-chat-gpt"
+
+    - "adminforth-completion-adapter-openai-responses"
+    - "adminforth-completion-adapter-antropic-messages"
+    - "adminforth-completion-adapter-google-gemini"
 
 
 tasks:

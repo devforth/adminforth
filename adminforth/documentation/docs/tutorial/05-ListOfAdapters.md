@@ -154,18 +154,20 @@ Not really recommended for production use, cause cloud storage is more reliable 
 Is used for AI-powered text completion. 
 Feel free to fork and implement other models including models from Anthropic, Google Gemini, or any other AI model that supports text completion.
 
-### OpenAI Completion Adapter
+### OpenAI Responses Completion Adapter
 
 ```
-pnpm i @adminforth/completion-adapter-open-ai-chat-gpt
+pnpm i @adminforth/completion-adapter-openai-responses
 ```
 
-Integrates AdminForth with OpenAI’s ChatGPT models to provide AI-powered completion and conversational features.
+Integrates AdminForth with OpenAI's Responses API to provide AI-powered completion and conversational features.
+
+The older `@adminforth/completion-adapter-open-ai-chat-gpt` package is deprecated. Use this package instead.
 
 ```ts
-import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 
-new CompletionAdapterOpenAIChatGPT({
+new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
   model: 'gpt-5.2',
   extraRequestBodyParameters: {
@@ -259,7 +261,7 @@ If you want to use a custom `json_schema` for completion response, pass it as `o
 
 
 ```ts
-const openAi = new CompletionAdapterOpenAIChatGPT({
+const openAi = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
   model: 'gpt-5-mini',
 });
@@ -290,7 +292,7 @@ openAi.complete(
 If you want to explicitly test a reasoning-capable GPT-5 model, pass `reasoningEffort` as the 4th argument:
 
 ```ts
-const openAi = new CompletionAdapterOpenAIChatGPT({
+const openAi = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
   model: "gpt-5-mini",
 });
@@ -310,7 +312,7 @@ console.log(resp.content);
 If you pass `onChunk`, adapter switches to streaming mode automatically:
 
 ```ts
-const openAi = new CompletionAdapterOpenAIChatGPT({
+const openAi = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
   model: "gpt-5-mini",
 });

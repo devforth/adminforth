@@ -1,6 +1,11 @@
 
 # AGENTS.md
 
+## Package manager
+
+All packages and projects in this repo use `pnpm` and not `npm`. 
+Howeverer internally (e.g. in `codeInjector`) adminforth still supports both `npm` and `pnpm` style install commands, so users of framework itself can use it with either package manager. But in all dev demo/live demo, plugins, adapters, and documentation, we use `pnpm` as the standard.
+
 ## General engineering rules
 
 Write code as if the system contracts are already defined and trusted.
