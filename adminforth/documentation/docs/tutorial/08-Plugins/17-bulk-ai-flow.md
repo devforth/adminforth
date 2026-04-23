@@ -199,12 +199,12 @@ This is the most basic plugin usage. You can connect any text completion adapter
 Normalize user names by translating them from any language to English for internal processing.
 
 ```ts
-import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Translate surnames',
-  textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+  textCompleteAdapter: new CompletionAdapterOpenAIResponses({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-5-nano',
     extraRequestBodyParameters: {

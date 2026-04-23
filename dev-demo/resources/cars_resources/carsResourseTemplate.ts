@@ -15,7 +15,7 @@ import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
 import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
 import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
 
-import CompletionAdapterOpenAIChatGPT from '../../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterOpenAIResponses from '../../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
 import ImageGenerationAdapterOpenAI from '../../../adapters/adminforth-image-generation-adapter-openai/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../../adapters/adminforth-storage-adapter-local/index.js";
@@ -243,7 +243,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         },
         ...(process.env.OPENAI_API_KEY ? {
           completion: {
-            adapter: new CompletionAdapterOpenAIChatGPT({
+            adapter: new CompletionAdapterOpenAIResponses({
               openAiApiKey: process.env.OPENAI_API_KEY as string,
               model: 'gpt-5-mini',
             }),
@@ -325,7 +325,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         }),
         new TextCompletePlugin({
           fieldName: 'model',
-          adapter: new CompletionAdapterOpenAIChatGPT({
+          adapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-5-nano',
             extraRequestBodyParameters: {
@@ -336,7 +336,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         new BulkAiFlowPlugin({
           actionName: 'Generate description and Price',
           askConfirmationBeforeGenerating: true,
-          textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+          textCompleteAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: "gpt-5-mini",
             extraRequestBodyParameters: {

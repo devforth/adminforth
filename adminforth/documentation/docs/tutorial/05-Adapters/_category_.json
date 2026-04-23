@@ -1,0 +1,12 @@
+{
+  "label": "Adapters",
+  "position": 5,
+  "collapsible": true,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "title": "AdminForth Adapters",
+    "slug": "/tutorial/ListOfAdapters",
+    "description": "This section contains the available adapters in the AdminForth ecosystem. Adapters are used by AdminForth plugins to connect to third-party services and APIs, and each adapter can be forked and customized for a new service or provider."
+  }
+}

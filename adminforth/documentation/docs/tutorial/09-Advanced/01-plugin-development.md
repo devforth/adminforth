@@ -542,11 +542,22 @@ export interface CompletionAdapter {
 
   validate();
 
-  complete(
-    content: string,
-    stop: string[],
-    maxTokens: number,
-  ): Promise<{
+  complete(request: {
+    content: string;
+    maxTokens: number;
+    outputSchema?: any;
+    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh';
+    tools?: CompletionTool[];
+    onChunk?: (
+      chunk: string,
+      event?: {
+        type: 'output' | 'reasoning';
+        delta: string;
+        text: string;
+        source?: 'summary' | 'text';
+      },
+    ) => void | Promise<void>;
+  }): Promise<{
     content?: string;
     finishReason?: string;
     error?: string;
@@ -595,7 +606,10 @@ Now you can simply use adapter:
 ```ts title='./af-plugin-any-complete/index.ts'
 handler: async (a) => {
   ...
-  const resp = await this.options.adapter.complete(content, ['.'], this.options.expert?.maxTokens || 50);
+  const resp = await this.options.adapter.complete({
+    content,
+    maxTokens: this.options.expert?.maxTokens || 50,
+  });
   ...
 }
 ``` 
