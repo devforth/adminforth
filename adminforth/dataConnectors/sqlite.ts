@@ -9,6 +9,20 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
 
   async setupClient(url: string): Promise<void> {
     this.client = betterSqlite3(url.replace('sqlite://', ''));
+    this.client.aggregate('median', {
+      start: (): number[] => [],
+      step: (acc: number[], val: any) => {
+        if (val != null) acc.push(Number(val));
+      },
+      result: (acc: number[]): number | null => {
+        if (acc.length === 0) return null;
+        const sorted = acc.slice().sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 === 0
+          ? (sorted[mid - 1] + sorted[mid]) / 2
+          : sorted[mid];
+      },
+    });
   }
   async getAllTables(): Promise<Array<string>> {
     const stmt = this.client.prepare(
@@ -358,7 +372,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             case 'avg':    selectParts.push(`AVG("${rule.field}") AS "${alias}"`); break;
             case 'min':    selectParts.push(`MIN("${rule.field}") AS "${alias}"`); break;
             case 'max':    selectParts.push(`MAX("${rule.field}") AS "${alias}"`); break;
-            case 'median': throw new Error('Aggregates.median() with GroupBy.Field is not supported in SQLite.');
+            case 'median': selectParts.push(`median("${rule.field}") AS "${alias}"`); break;
           }
         }
 
