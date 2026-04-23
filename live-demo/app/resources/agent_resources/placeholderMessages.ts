@@ -112,12 +112,12 @@ async function translatePlaceholderMessages({
     }),
   ].join('\n\n');
 
-  const result = await completionAdapter.complete(
+  const result = await completionAdapter.complete({
     content,
-    300,
-    LOCALIZED_PLACEHOLDER_MESSAGES_SCHEMA,
-    'low',
-  );
+    maxTokens: 300,
+    outputSchema: LOCALIZED_PLACEHOLDER_MESSAGES_SCHEMA,
+    reasoningEffort: 'low',
+  });
 
   if (result.error) {
     throw new Error(result.error);
