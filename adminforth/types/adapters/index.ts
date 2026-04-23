@@ -1,7 +1,10 @@
 export type { EmailAdapter } from './EmailAdapter.js';
 export type {
 	CompletionAdapter,
+	CompletionAdapterLangChainAgentPurpose,
+	CompletionAdapterLangChainAgentSpec,
 	CompletionReasoningEffort,
+	LangChainAgentCompletionAdapter,
 	CompletionRequest,
 	CompletionStreamEvent,
 	CompletionTool,
