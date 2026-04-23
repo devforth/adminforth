@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.18.1
-        version: 1.18.4(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
+        specifier: ^1.18.5
+        version: 1.21.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)
       '@adminforth/audit-log':
         specifier: ^1.9.12
         version: 1.9.15(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))
@@ -23,9 +23,9 @@ importers:
       '@adminforth/clone-row':
         specifier: ^1.2.0
         version: 1.2.3(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))
-      '@adminforth/completion-adapter-open-ai-chat-gpt':
-        specifier: ^2.0.19
-        version: 2.0.19(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)
+      '@adminforth/completion-adapter-openai-responses':
+        specifier: ^2.0.21
+        version: 2.0.21(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)
       '@adminforth/email-password-reset':
         specifier: ^1.3.6
         version: 1.3.10(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))
@@ -96,8 +96,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.18.4':
-    resolution: {integrity: sha512-ndWiyupBccJKuLnVJ+pOP95AisDRLVTBjv6AL6cudfvpyy6jRu0wrTGsXNCkp8mQZcVyHsTvIdOQkV968CYUEw==}
+  '@adminforth/agent@1.21.0':
+    resolution: {integrity: sha512-aCiuJB8Cj4kcpT/oZ8cPqWiyvNbEz95hyCB7WPCJBy2TaIn+tBacL4sR2+mh9Ll4T+kJRijC/XMBAdQ98kAiuw==}
 
   '@adminforth/audit-log@1.9.15':
     resolution: {integrity: sha512-do8vXCMlfvu6ToPcACs+YBwGaa/g3cc2GyseUZIoUmerqBe7Y5Lj3T6KLjVa9Fd69f27mLowORsfXrRpqfoTIA==}
@@ -117,8 +117,8 @@ packages:
     peerDependencies:
       adminforth: ^2.24.0
 
-  '@adminforth/completion-adapter-open-ai-chat-gpt@2.0.19':
-    resolution: {integrity: sha512-XePBl/POUHaDjxZO+SvESFIwEKqFo32ovLd16/IVFW/hEIpWUfUhMYrsv+RrvQsTinKB2YDtvG94fhRI6bKjLg==}
+  '@adminforth/completion-adapter-openai-responses@2.0.21':
+    resolution: {integrity: sha512-rodTqSb2YePCY8QgWVvclB1Txqjz59vvYA3u4MCvKp2xyGyjl1fOZzROGrS5Weminy3uK5oXR8hwCou+EQAAjA==}
     peerDependencies:
       adminforth: ^2.24.0
 
@@ -2667,7 +2667,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.18.4(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
+  '@adminforth/agent@1.21.0(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(ws@8.19.0)':
     dependencies:
       '@langchain/core': 1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0)
       '@langchain/langgraph': 1.2.9(@langchain/core@1.1.40(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0))(zod@4.3.6)
@@ -2720,7 +2720,7 @@ snapshots:
     dependencies:
       adminforth: 2.40.0(@types/node@25.3.5)(typescript@5.9.3)
 
-  '@adminforth/completion-adapter-open-ai-chat-gpt@2.0.19(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)':
+  '@adminforth/completion-adapter-openai-responses@2.0.21(adminforth@2.40.0(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)':
     dependencies:
       adminforth: 2.40.0(@types/node@25.3.5)(typescript@5.9.3)
       openai: 6.34.0(ws@8.19.0)(zod@4.3.6)

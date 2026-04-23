@@ -11,7 +11,7 @@ It stores session history in your own resources and generates responses using on
 
 ```bash
 pnpm i @adminforth/agent --save
-pnpm i @adminforth/completion-adapter-open-ai-chat-gpt --save
+pnpm i @adminforth/completion-adapter-openai-responses --save
 ```
 
 Add your LLM credentials to `.env`:
@@ -196,7 +196,7 @@ Configure the plugin with `modes`. The legacy top-level `completionAdapter` setu
 
 ```ts title="./resources/adminuser.ts"
 import AdminForthAgent from '@adminforth/agent';
-import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt';
+import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 
 ...
 
@@ -213,7 +213,7 @@ plugins: [
     modes: [
       {
         name: 'Balanced',
-        completionAdapter: new CompletionAdapterOpenAIChatGPT({
+        completionAdapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-5.4-mini',
           extraRequestBodyParameters: {
@@ -225,7 +225,7 @@ plugins: [
       },
       {
         name: 'Fast',
-        completionAdapter: new CompletionAdapterOpenAIChatGPT({
+        completionAdapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-5.4-mini',
           extraRequestBodyParameters: {
@@ -237,7 +237,7 @@ plugins: [
       },
       {
         name: 'Smart Thinking',
-        completionAdapter: new CompletionAdapterOpenAIChatGPT({
+        completionAdapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-5.4',
           extraRequestBodyParameters: {
