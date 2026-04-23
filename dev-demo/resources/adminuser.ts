@@ -11,7 +11,7 @@ import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
-import CompletionAdapterOpenAIChatGPT from '../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterOpenAIResponses from '../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -202,7 +202,7 @@ export default {
       modes: [
         {
           name: 'Balanced',
-          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+          completionAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-5.4-mini',
             extraRequestBodyParameters: {
@@ -214,7 +214,7 @@ export default {
         },
         {
           name: 'Fast',
-          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+          completionAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-5.4-mini',
             extraRequestBodyParameters: {
@@ -226,7 +226,7 @@ export default {
         },
         {
           name: 'Smart Thinking',
-          completionAdapter: new CompletionAdapterOpenAIChatGPT({
+          completionAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-5.4',
             extraRequestBodyParameters: {

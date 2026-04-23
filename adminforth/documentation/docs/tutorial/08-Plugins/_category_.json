@@ -1,0 +1,12 @@
+{
+  "label": "Plugins",
+  "position": 8,
+  "collapsible": true,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "title": "AdminForth Plugins",
+    "slug": "/tutorial/ListOfPlugins",
+    "description": "This section contains the available plugins in the AdminForth ecosystem. Plugins extend AdminForth resources and UI with common features like editors, auth flows, AI tooling, imports, uploads, and automation."
+  }
+}
