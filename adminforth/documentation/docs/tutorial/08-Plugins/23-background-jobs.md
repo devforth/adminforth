@@ -1,3 +1,8 @@
+---
+title: Background Jobs
+slug: /tutorial/Plugins/background-jobs
+---
+
 # Background jobs
 BackgroundJobsPlugin adds a durable background-job system to AdminForth. Jobs are stored in your data store (via a resource), executed by registered handlers, and automatically resumed after server restarts.
 

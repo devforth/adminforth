@@ -1,3 +1,8 @@
+---
+title: Login Captcha
+slug: /tutorial/Plugins/login-captcha
+---
+
 # Login Captcha
 
 (this plugin experemental and not yet fully tested)

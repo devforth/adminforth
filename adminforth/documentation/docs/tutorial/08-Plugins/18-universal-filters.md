@@ -1,3 +1,8 @@
+---
+title: Universal Search (Legacy)
+slug: /tutorial/Plugins/universal-search
+---
+
 # Universal Search (legacy)
 > **Deprecated:** Prefer the [**Quick Filters**](/docs/tutorial/Plugins/quick-filters) plugin. It provides the same functionality and more.
 
