@@ -1,3 +1,8 @@
+---
+title: Open Signup
+slug: /tutorial/Plugins/open-signup
+---
+
 # Open Signup
 
 Open Signup plugin allows users to register in adminforth by them-selfs without admin. 

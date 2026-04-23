@@ -25,7 +25,7 @@ const images = [
   {
     original: require('@site/static/img/previews/2fa_plugin.png').default,
     title: '2FA Plugin - secure your admin panel',
-    link: '/docs/tutorial/Plugins/TwoFactorsAuth/',
+    link: '/docs/tutorial/Plugins/two-factors-auth/',
     description: 'RFC 6238-Compliant TOTP-Based & WebAuthn PassKeys 2FA will add additional security layer (login and preferred actions)'
   },
   {
@@ -73,7 +73,7 @@ const images = [
   {
     original: require('@site/static/img/previews/upload.png').default,
     title: 'Upload Plugin - upload files',
-    link: '/docs/tutorial/Plugins/05-0-upload/',
+    link: '/docs/tutorial/Plugins/upload/',
     description: 'Upload files to Amazon S3 with instantiating plugin and providing your S3 credentials' 
   },
   
@@ -86,7 +86,7 @@ const images = [
   {
     original: require('@site/static/img/previews/richeditor.png').default,
     title: 'Rich Editor Plugin - WYSIWYG',
-    link: '/docs/tutorial/Plugins/RichEditor/',
+    link: '/docs/tutorial/Plugins/rich-editor/',
     description: 'Attach Rich Editor plugin to your text fields and get WYSIWYG editor for your content'
   },
   {

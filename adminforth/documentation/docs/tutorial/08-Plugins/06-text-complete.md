@@ -1,3 +1,8 @@
+---
+title: Text Complete
+slug: /tutorial/Plugins/text-complete
+---
+
 # Text Complete
 
 This plugin allows you to auto-complete text and string fields using OpenAI GPT models via the Responses API.

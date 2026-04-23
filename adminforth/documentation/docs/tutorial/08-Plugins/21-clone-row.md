@@ -1,3 +1,8 @@
+---
+title: Clone Row
+slug: /tutorial/Plugins/clone-row
+---
+
 # Clone row
 
 Allows to create a copy of record quickly, by substituting default values to create form

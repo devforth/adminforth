@@ -1,3 +1,8 @@
+---
+title: Upload
+slug: /tutorial/Plugins/upload
+---
+
 # Upload
 
 This plugin allows you to upload files to Amazon S3 bucket.

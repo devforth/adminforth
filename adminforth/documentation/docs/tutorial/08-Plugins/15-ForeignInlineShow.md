@@ -1,3 +1,7 @@
+---
+title: Foreign Inline Show
+slug: /tutorial/Plugins/foreign-inline-show
+---
 
 Allows to add an inline show of connected foreign resource records on a adminforth show page.
 

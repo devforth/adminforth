@@ -1,3 +1,8 @@
+---
+title: Many to Many
+slug: /tutorial/Plugins/many2many
+---
+
 # Many2Many
 
 This plugin lets you manage many-to-many relationships.

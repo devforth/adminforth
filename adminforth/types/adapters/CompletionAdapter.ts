@@ -34,6 +34,15 @@ export type CompletionRequest = {
   ) => void | Promise<void>;
 };
 
+export type CompletionAdapterLangChainAgentPurpose =
+  | "primary"
+  | "summary";
+
+export type CompletionAdapterLangChainAgentSpec = {
+  model: unknown;
+  middleware?: unknown[];
+};
+
 export interface CompletionAdapter {
 
   /**
@@ -59,4 +68,12 @@ export interface CompletionAdapter {
    * @returns The number of tokens in the input content
    */
   measureTokensCount(content: string): Promise<number> | number;
+}
+
+export interface LangChainAgentCompletionAdapter extends CompletionAdapter {
+  getLangChainAgentSpec(params: {
+    maxTokens: number;
+    purpose: CompletionAdapterLangChainAgentPurpose;
+  }): Promise<CompletionAdapterLangChainAgentSpec>
+    | CompletionAdapterLangChainAgentSpec;
 }

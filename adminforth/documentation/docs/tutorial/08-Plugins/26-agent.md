@@ -1,3 +1,8 @@
+---
+title: Agent
+slug: /tutorial/Plugins/agent
+---
+
 > TODO: this plugin tutorial is in progress, some information might be missing, we are actively working on it now. If you have any questions regarding this plugin, please reach out to us in GitHub issues
 
 

@@ -1,3 +1,8 @@
+---
+title: Bulk AI Flow
+slug: /tutorial/Plugins/bulk-ai-flow
+---
+
 # Bulk AI Flow
 
 This plugin allows filling fields in multiple selected records based on data from other fields using LLM.
@@ -52,7 +57,7 @@ Migrate prisma schema:
 pnpm makemigration --name add-apartment-image-url ; pnpm migrate:local
 ```
 
-We will also attach [upload plugin](/docs/tutorial/Plugins/05-0-upload/) to this field.
+We will also attach [upload plugin](/docs/tutorial/Plugins/upload/) to this field.
 
 
 Add credentials in your `.env` file:
