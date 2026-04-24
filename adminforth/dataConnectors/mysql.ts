@@ -403,16 +403,16 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       let medianQuery: string;
       if (groupExpr) {
         medianQuery = `
-          SELECT ${groupExpr} AS \`group\`, AVG(${f}) AS \`${alias}\`
+          SELECT \`group\`, AVG(${f}) AS \`${alias}\`
           FROM (
-            SELECT ${groupExpr}, ${f},
+            SELECT ${groupExpr} AS \`group\`, ${f},
               ROW_NUMBER() OVER (PARTITION BY ${groupExpr} ORDER BY ${f}) AS rn,
               COUNT(*) OVER (PARTITION BY ${groupExpr}) AS cnt
             FROM \`${tableName}\` ${nullGuard}
           ) t
           WHERE rn IN (FLOOR((cnt + 1) / 2.0), CEIL((cnt + 1) / 2.0))
-          GROUP BY ${groupExpr}
-          ORDER BY ${groupExpr} ASC
+          GROUP BY \`group\`
+          ORDER BY \`group\` ASC
         `;
       } else {
         medianQuery = `
