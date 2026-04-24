@@ -449,7 +449,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       filters: IAdminForthAndOrFilter;
       aggregations: { [alias: string]: IAggregationRule };
       groupBy?: IGroupByRule;
-    }): Promise<any[]> {
+    }): Promise <Array<{ group?: string, [key: string]: any }>> {
 
       const tableName = `${this.dbName}.${resource.table}`;
 

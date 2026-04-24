@@ -325,14 +325,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         if (groupBy?.type === 'date_trunc') {
             const tz = groupBy.timezone ?? 'UTC';
-
-            groupId = {
-            $dateTrunc: {
-                date: `$${groupBy.field}`,
-                unit: groupBy.truncation,
-                timezone: tz,
-            },
-            };
+            const dateTruncSpec: any = { date: `$${groupBy.field}`, unit: groupBy.truncation, timezone: tz,};
+            if (groupBy.truncation === 'week') {
+                dateTruncSpec.startOfWeek = 'Mon';
+            }
+            groupId = { $dateTrunc: dateTruncSpec,};
         }
 
         const groupStage: any = {
@@ -361,10 +358,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         pipeline.push({
             $project: {
                 _id: 0,
-                group: groupBy?.type === 'date_trunc'
-                    ? {
-                        $cond: {
-                            if: { $eq: [{ $type: "$_id" }, "date"] },
+                group: !groupBy ? "$$REMOVE" : groupBy.type === 'date_trunc' ? {
+                    $cond: {
+                        if: { $eq: [{ $type: "$_id" }, "date"] },
                             then: { $dateToString: { format: "%Y-%m-%d", date: "$_id", timezone: groupBy?.timezone ?? 'UTC' } },
                             else: "$_id"
                         }
