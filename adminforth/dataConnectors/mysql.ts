@@ -338,15 +338,6 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     } : { sql: '', values: [] };
   }
 
-  private calculateMedian(values: number[]): number | null {
-    if (!values.length) return null;
-    const sorted = values.sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0
-      ? (sorted[mid - 1] + sorted[mid]) / 2
-      : sorted[mid];
-  }
-
   async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
     resource: AdminForthResource;
     filters: IAdminForthAndOrFilter;
@@ -355,7 +346,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   }): Promise<Array<{ group?: string, [key: string]: any }>> {
     const tableName = resource.table;
     const selectParts: string[] = [];
-    const medianAliases: string[] = [];
+    const medianFields: { alias: string; field: string }[] = [];
     let groupExpr: string | null = null;
 
     if (groupBy?.type === 'field') {
@@ -364,81 +355,111 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     } else if (groupBy?.type === 'date_trunc') {
       const g = groupBy as IGroupByDateTrunc;
       const tz = g.timezone ?? 'UTC';
-
-      const innerExpr = `COALESCE(CONVERT_TZ(\`${g.field}\`, 'UTC', '${tz}'), \`${g.field}\`)`;
-
-      switch (g.truncation) {
-        case 'day': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-%d')`; break;
-        case 'month': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-01')`; break;
-        case 'year': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-01-01')`; break;
-        case 'week': groupExpr = `DATE_FORMAT(DATE_SUB(${innerExpr}, INTERVAL WEEKDAY(${innerExpr}) DAY), '%Y-%m-%d')`; break;
+      if (!/^[A-Za-z0-9/_+\-]+$/.test(tz)) {
+        throw new Error(`Invalid timezone value: ${tz}`);
       }
-
+      const innerExpr = `COALESCE(CONVERT_TZ(\`${g.field}\`, 'UTC', '${tz}'), \`${g.field}\`)`;
+      switch (g.truncation) {
+        case 'day':   groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-%d')`; break;
+        case 'month': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-01')`; break;
+        case 'year':  groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-01-01')`; break;
+        case 'week':  groupExpr = `DATE_FORMAT(DATE_SUB(${innerExpr}, INTERVAL WEEKDAY(${innerExpr}) DAY), '%Y-%m-%d')`; break;
+      }
       selectParts.push(`${groupExpr} AS \`group\``);
     }
 
     for (const [alias, rule] of Object.entries(aggregations)) {
       const f = `\`${rule.field}\``;
       switch (rule.operation) {
-        case 'sum':   selectParts.push(`SUM(${f}) AS \`${alias}\``); break;
-        case 'count': selectParts.push(`COUNT(*) AS \`${alias}\``); break;
-        case 'avg':   selectParts.push(`AVG(${f}) AS \`${alias}\``); break;
-        case 'min':   selectParts.push(`MIN(${f}) AS \`${alias}\``); break;
-        case 'max':   selectParts.push(`MAX(${f}) AS \`${alias}\``); break;
-        case 'median': 
-          selectParts.push(`GROUP_CONCAT(${f} ORDER BY ${f} ASC SEPARATOR ',') AS \`${alias}\``); 
-          medianAliases.push(alias);
-          break;
+        case 'sum':    selectParts.push(`SUM(${f}) AS \`${alias}\``); break;
+        case 'count':  selectParts.push(`COUNT(*) AS \`${alias}\``); break;
+        case 'avg':    selectParts.push(`AVG(${f}) AS \`${alias}\``); break;
+        case 'min':    selectParts.push(`MIN(${f}) AS \`${alias}\``); break;
+        case 'max':    selectParts.push(`MAX(${f}) AS \`${alias}\``); break;
+        case 'median': medianFields.push({ alias, field: rule.field }); break;
       }
     }
 
     const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
-    let query = `SELECT ${selectParts.join(', ')} FROM \`${tableName}\` ${where}`;
-    if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
 
-    if (medianAliases.length > 0) {
-      let connection;
-      let originalMaxLen = null;
-      try {
-        connection = await this.client.getConnection();
-        
-        const [originalLenRows]: any = await connection.execute("SELECT @@SESSION.group_concat_max_len as original_len");
-        originalMaxLen = originalLenRows[0].original_len;
-        
-        await connection.execute("SET SESSION group_concat_max_len = 1000000");
-        
-        const [rows]: any = await connection.execute(query, filterValues);
+    type AggRow = { group?: string } & Record<string, number | string | null>;
 
-        return rows.map((row: any) => {
-          medianAliases.forEach(alias => {
-            const raw = row[alias];
-            const nums = raw ? raw.split(',').map(Number).filter((n: number) => !isNaN(n)) : [];
-            row[alias] = this.calculateMedian(nums);
-          });
-          return row;
-        });
+    // Run non-median aggregations
+    let rows: AggRow[] = [];
+    const hasNonMedian = selectParts.length > (groupExpr ? 1 : 0);
+    if (hasNonMedian) {
+      let query = `SELECT ${selectParts.join(', ')} FROM \`${tableName}\` ${where}`;
+      if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+      dbLogger.trace(`🪲📜 MySQL AGG Q: ${query} values: ${JSON.stringify(filterValues)}`);
+      const [result] = await this.client.execute(query, filterValues);
+      rows = result as AggRow[];
+    }
 
-      } finally {
-        if (connection) {
-          if (originalMaxLen !== null) {
-            await connection.execute(`SET SESSION group_concat_max_len = ${originalMaxLen}`);
+    // Run each median via window functions (MySQL 8+) — no session variables, no memory pressure
+    for (const { alias, field } of medianFields) {
+      const f = `\`${field}\``;
+      const nullGuard = where ? `${where} AND ${f} IS NOT NULL` : `WHERE ${f} IS NOT NULL`;
+
+      let medianQuery: string;
+      if (groupExpr) {
+        medianQuery = `
+          SELECT ${groupExpr} AS \`group\`, AVG(${f}) AS \`${alias}\`
+          FROM (
+            SELECT ${groupExpr}, ${f},
+              ROW_NUMBER() OVER (PARTITION BY ${groupExpr} ORDER BY ${f}) AS rn,
+              COUNT(*) OVER (PARTITION BY ${groupExpr}) AS cnt
+            FROM \`${tableName}\` ${nullGuard}
+          ) t
+          WHERE rn IN (FLOOR((cnt + 1) / 2.0), CEIL((cnt + 1) / 2.0))
+          GROUP BY ${groupExpr}
+          ORDER BY ${groupExpr} ASC
+        `;
+      } else {
+        medianQuery = `
+          SELECT AVG(${f}) AS \`${alias}\`
+          FROM (
+            SELECT ${f},
+              ROW_NUMBER() OVER (ORDER BY ${f}) AS rn,
+              COUNT(*) OVER () AS cnt
+            FROM \`${tableName}\` ${nullGuard}
+          ) t
+          WHERE rn IN (FLOOR((cnt + 1) / 2.0), CEIL((cnt + 1) / 2.0))
+        `;
+      }
+
+      dbLogger.trace(`🪲📜 MySQL MEDIAN Q: ${medianQuery} values: ${JSON.stringify(filterValues)}`);
+      const [medianResult] = await this.client.execute(medianQuery, filterValues);
+      const medianRows = medianResult as AggRow[];
+
+      if (groupExpr) {
+        if (rows.length === 0) {
+          rows = medianRows.map((r) => ({ group: r.group, [alias]: r[alias] }));
+        } else {
+          const byGroup = new Map(medianRows.map((r) => [String(r.group), r[alias]]));
+          for (const row of rows) {
+            row[alias] = byGroup.get(String(row.group)) ?? null;
           }
-          connection.release();
+        }
+      } else {
+        const medianVal = medianRows[0]?.[alias] ?? null;
+        if (rows.length === 0) {
+          rows = [{ [alias]: medianVal }];
+        } else {
+          rows[0][alias] = medianVal;
         }
       }
-    } else {
-      const [rows]: any = await this.client.execute(query, filterValues);
-      return rows;
     }
+
+    return rows;
   }
 
   async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
-    const columns = resource.dataSourceColumns.map((col) => `${col.name}`).join(', ');
+    const columns = resource.dataSourceColumns.map((col: { name: string }) => `${col.name}`).join(', ');
     const tableName = resource.table;
     
     const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
 
-    const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
+    const orderBy = sort.length ? `ORDER BY ${sort.map((s: { field: string; direction: AdminForthSortDirections }) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
     let selectQuery = `SELECT ${columns} FROM ${tableName}`;
     if (where) selectQuery += ` ${where}`;
     if (orderBy) selectQuery += ` ${orderBy}`;
@@ -479,7 +500,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
   async getMinMaxForColumnsWithOriginalTypes({ resource, columns }) {
     const tableName = resource.table;
     const result = {};
-    await Promise.all(columns.map(async (col) => {
+    await Promise.all(columns.map(async (col: { name: string }) => {
       const q = `SELECT MIN(${col.name}) as min, MAX(${col.name}) as max FROM ${tableName}`;
       dbLogger.trace(`🪲📜 MySQL Q: ${q}`);
       const [results] = await this.client.execute(q);
@@ -504,7 +525,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
   async updateRecordOriginalValues({ resource, recordId,  newValues }) {
     const values = [...Object.values(newValues), recordId];
-    const columnsWithPlaceholders = Object.keys(newValues).map((col, i) => `${col} = ?`).join(', ');
+    const columnsWithPlaceholders = Object.keys(newValues).map((col) => `${col} = ?`).join(', ');
     const q = `UPDATE ${resource.table} SET ${columnsWithPlaceholders} WHERE ${this.getPrimaryKey(resource)} = ?`;
     dbLogger.trace(`🪲📜 MySQL Q: ${q} values: ${JSON.stringify(values)}`);
     await this.client.execute(q, values);
