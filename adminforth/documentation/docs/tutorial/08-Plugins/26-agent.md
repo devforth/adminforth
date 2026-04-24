@@ -278,6 +278,19 @@ plugins: [
 ]
 ```
 
+When using OpenAI-compatible providers for agent modes, you can force Chat Completions API mode with `useComplitionApi: true`:
+
+```ts
+completionAdapter: new CompletionAdapterOpenAIResponses({
+  openAiApiKey: process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN as string,
+  baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
+  model: 'gpt-oss-20b',
+  useComplitionApi: true,
+})
+```
+
+OVH AI Endpoints still does not fully support the OpenAI `responses` API, so `useComplitionApi: false` may work unstably there.
+
 Each item in `modes` defines a user-selectable preset in the chat UI. The selected mode is sent to the backend and the plugin uses that mode's `completionAdapter` for the response.
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
