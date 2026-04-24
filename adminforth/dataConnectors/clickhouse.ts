@@ -1,4 +1,4 @@
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { createClient } from '@clickhouse/client'
@@ -444,13 +444,79 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       return { where, params };
     }
 
+    async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
+      resource: AdminForthResource;
+      filters: IAdminForthAndOrFilter;
+      aggregations: { [alias: string]: IAggregationRule };
+      groupBy?: IGroupByRule;
+    }): Promise<Array<{ group?: string; [key: string]: any }>> {
+
+      const tableName = `${this.dbName}.${resource.table}`;
+
+      const selectParts: string[] = [];
+      let groupExpr: string | null = null;
+
+      if (groupBy?.type === 'date_trunc') {
+        const g = groupBy as IGroupByDateTrunc;
+        const tz = g.timezone ?? 'UTC';
+
+        const field = `toTimeZone(${g.field}, '${tz}')`;
+
+        switch (g.truncation) {
+          case 'day': groupExpr = `toDate(toStartOfDay(${field}))`; break;
+          case 'month': groupExpr = `toDate(toStartOfMonth(${field}))`; break;
+          case 'week': groupExpr = `toDate(toStartOfWeek(${field}))`; break;
+          case 'year': groupExpr = `toDate(toStartOfYear(${field}))`; break;
+        }
+
+        selectParts.push(`${groupExpr} AS \`group\``);
+
+      } else if (groupBy?.type === 'field') {
+        const g = groupBy as IGroupByField;
+        groupExpr = `${g.field}`;
+        selectParts.push(`${groupExpr} AS \`group\``);
+      }
+
+      for (const [alias, rule] of Object.entries(aggregations)) {
+        switch (rule.operation) {
+          case 'count': selectParts.push(`count() AS \`${alias}\``); break;
+          case 'sum': selectParts.push(`sum(${rule.field}) AS \`${alias}\``); break;
+          case 'avg': selectParts.push(`avg(${rule.field}) AS \`${alias}\``); break;
+          case 'min': selectParts.push(`min(${rule.field}) AS \`${alias}\``); break;
+          case 'max': selectParts.push(`max(${rule.field}) AS \`${alias}\``); break;
+          case 'median': selectParts.push(`quantile(0.5)(${rule.field}) AS \`${alias}\``); break;
+        }
+      }
+
+      const { where, params } = this.whereClause(resource, filters);
+
+      let query = `SELECT ${selectParts.join(', ')} FROM ${tableName} ${where}`;
+
+      if (groupExpr) {
+        query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+      }
+
+      const result = await this.client.query({
+        query,
+        format: 'JSONEachRow',
+        query_params: params,
+      });
+
+      const rows = await result.json();
+
+      return rows.map((r: any) => ({
+        group: r.group,
+        ...r,
+      }));
+    }
+
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
         resource: AdminForthResource, 
         limit: number, 
         offset: number, 
         sort: { field: string, direction: AdminForthSortDirections }[], 
         filters: IAdminForthAndOrFilter,
-    }): Promise<any[]> {
+    }): Promise<Array<{ group?: string, [key: string]: any }>> {
       const columns = resource.dataSourceColumns.map((col) => {
         // for decimal cast to string
         if (col.type == AdminForthDataTypes.DECIMAL) {

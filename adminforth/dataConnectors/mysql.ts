@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
@@ -336,6 +336,82 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       sql: `WHERE ${this.getFilterString(filters)}`,
       values: this.getFilterParams(filters)
     } : { sql: '', values: [] };
+  }
+
+  private calculateMedian(values: number[]): number | null {
+    if (!values.length) return null;
+    const sorted = values.sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+  }
+
+  async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
+    resource: AdminForthResource;
+    filters: IAdminForthAndOrFilter;
+    aggregations: { [alias: string]: IAggregationRule };
+    groupBy?: IGroupByRule;
+  }): Promise<Array<{ group?: string, [key: string]: any }>> {
+    const tableName = resource.table;
+    const selectParts: string[] = [];
+    const medianAliases: string[] = [];
+    let groupExpr: string | null = null;
+
+    if (groupBy?.type === 'field') {
+      groupExpr = `\`${groupBy.field}\``;
+      selectParts.push(`${groupExpr} AS \`group\``);
+    } else if (groupBy?.type === 'date_trunc') {
+      const g = groupBy as IGroupByDateTrunc;
+      const tz = g.timezone ?? 'UTC';
+
+      const innerExpr = `COALESCE(CONVERT_TZ(\`${g.field}\`, 'UTC', '${tz}'), \`${g.field}\`)`;
+
+      switch (g.truncation) {
+        case 'day': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-%d')`; break;
+        case 'month': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-01')`; break;
+        case 'year': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-01-01')`; break;
+        case 'week': groupExpr = `DATE_FORMAT(DATE_SUB(${innerExpr}, INTERVAL WEEKDAY(${innerExpr}) DAY), '%Y-%m-%d')`; break;
+      }
+
+      selectParts.push(`${groupExpr} AS \`group\``);
+    }
+
+    for (const [alias, rule] of Object.entries(aggregations)) {
+      const f = `\`${rule.field}\``;
+      switch (rule.operation) {
+        case 'sum':   selectParts.push(`SUM(${f}) AS \`${alias}\``); break;
+        case 'count': selectParts.push(`COUNT(*) AS \`${alias}\``); break;
+        case 'avg':   selectParts.push(`AVG(${f}) AS \`${alias}\``); break;
+        case 'min':   selectParts.push(`MIN(${f}) AS \`${alias}\``); break;
+        case 'max':   selectParts.push(`MAX(${f}) AS \`${alias}\``); break;
+        case 'median': 
+          selectParts.push(`GROUP_CONCAT(${f}) AS \`${alias}\``); 
+          medianAliases.push(alias);
+          break;
+      }
+    }
+
+    const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
+    let query = `SELECT ${selectParts.join(', ')} FROM \`${tableName}\` ${where}`;
+    if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+
+    await this.client.execute("SET SESSION group_concat_max_len = 1000000;");
+
+    const [rows]: any = await this.client.execute(query, filterValues);
+
+    if (medianAliases.length > 0) {
+      return rows.map(row => {
+        medianAliases.forEach(alias => {
+          const raw = row[alias];
+          const nums = raw ? raw.split(',').map(Number).filter(n => !isNaN(n)) : [];
+          row[alias] = this.calculateMedian(nums);
+        });
+        return row;
+      });
+    }
+
+    return rows;
   }
 
   async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
