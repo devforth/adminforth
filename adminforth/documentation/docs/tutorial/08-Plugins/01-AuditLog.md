@@ -1,3 +1,7 @@
+---
+title: Audit Log
+slug: /tutorial/Plugins/audit-log
+---
 
 AuditLog plugin allows to log all changes in the resources done from the admin panel. 
 It will allow you to figure out who and when made changes in the data. 

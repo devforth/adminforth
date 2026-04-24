@@ -1,12 +1,17 @@
+---
+title: Text Complete
+slug: /tutorial/Plugins/text-complete
+---
+
 # Text Complete
 
-This plugin allows you to auto-complete text and string fields using OpenAI Chat GPT models.
+This plugin allows you to auto-complete text and string fields using OpenAI GPT models via the Responses API.
 
 ## Installation
 
 ```
 pnpm i @adminforth/text-complete --save
-pnpm i @adminforth/completion-adapter-open-ai-chat-gpt --save
+pnpm i @adminforth/completion-adapter-openai-responses --save
 ```
 
 Go to https://platform.openai.com/, open `Dashboard` -> `API keys` -> `Create new secret key`. Paste value in your `.env` file:
@@ -24,7 +29,7 @@ For example let's add it for title and description in `aparts` resource configur
 //diff-add
 import TextCompletePlugin from '@adminforth/text-complete';
 //diff-add
-import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 
 
 export const admin = new AdminForth({
@@ -40,7 +45,7 @@ export const admin = new AdminForth({
 //diff-add
       fieldName: 'title',
 //diff-add
-      adapter: new CompletionAdapterOpenAIChatGPT({
+      adapter: new CompletionAdapterOpenAIResponses({
 //diff-add
         openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add
@@ -60,7 +65,7 @@ export const admin = new AdminForth({
 //diff-add
       fieldName: 'description',
 //diff-add
-      adapter: new CompletionAdapterOpenAIChatGPT({
+      adapter: new CompletionAdapterOpenAIResponses({
 //diff-add
         openAiApiKey: process.env.OPENAI_API_KEY as string,
 //diff-add

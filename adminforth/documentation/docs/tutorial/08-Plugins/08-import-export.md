@@ -1,3 +1,7 @@
+---
+title: Import Export
+slug: /tutorial/Plugins/import-export
+---
 
 # Import-Export
 

@@ -1,3 +1,8 @@
+---
+title: Auto Remove Plugin
+slug: /tutorial/Plugins/auto-remove
+---
+
 # Auto Remove Plugin
 
 This plugin removes records from resources based on **count-based** or **time-based** rules.
