@@ -361,19 +361,15 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         pipeline.push({
             $project: {
                 _id: 0,
-                group: {
-                    $cond: {
-                        if: { $isNumber: "$_id" },
-                        then: "$_id",
-                        else: {
-                            $cond: {
-                                if: { $toString: "$_id" }, 
-                                then: { $dateToString: { format: "%Y-%m-%d", date: "$_id", timezone: groupBy?.timezone ?? 'UTC' } },
-                                else: "$_id"
-                            }
+                group: groupBy?.type === 'date_trunc'
+                    ? {
+                        $cond: {
+                            if: { $eq: [{ $type: "$_id" }, "date"] },
+                            then: { $dateToString: { format: "%Y-%m-%d", date: "$_id", timezone: groupBy?.timezone ?? 'UTC' } },
+                            else: "$_id"
                         }
                     }
-                },
+                    : "$_id",
                 ...Object.fromEntries(
                     Object.keys(groupStage)
                     .filter(k => k !== '_id')

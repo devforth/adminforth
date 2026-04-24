@@ -386,7 +386,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
         case 'min':   selectParts.push(`MIN(${f}) AS \`${alias}\``); break;
         case 'max':   selectParts.push(`MAX(${f}) AS \`${alias}\``); break;
         case 'median': 
-          selectParts.push(`GROUP_CONCAT(${f}) AS \`${alias}\``); 
+          selectParts.push(`GROUP_CONCAT(${f} ORDER BY ${f} ASC SEPARATOR ',') AS \`${alias}\``); 
           medianAliases.push(alias);
           break;
       }
@@ -396,7 +396,9 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     let query = `SELECT ${selectParts.join(', ')} FROM \`${tableName}\` ${where}`;
     if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
 
-    await this.client.execute("SET SESSION group_concat_max_len = 1000000;");
+    if (medianAliases.length > 0) {
+      await this.client.execute("SET SESSION group_concat_max_len = 1000000;");
+    }
 
     const [rows]: any = await this.client.execute(query, filterValues);
 
