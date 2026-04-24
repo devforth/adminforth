@@ -397,23 +397,39 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
 
     if (medianAliases.length > 0) {
-      await this.client.execute("SET SESSION group_concat_max_len = 1000000;");
-    }
+      let connection;
+      let originalMaxLen = null;
+      try {
+        connection = await this.client.getConnection();
+        
+        const [originalLenRows]: any = await connection.execute("SELECT @@SESSION.group_concat_max_len as original_len");
+        originalMaxLen = originalLenRows[0].original_len;
+        
+        await connection.execute("SET SESSION group_concat_max_len = 1000000");
+        
+        const [rows]: any = await connection.execute(query, filterValues);
 
-    const [rows]: any = await this.client.execute(query, filterValues);
-
-    if (medianAliases.length > 0) {
-      return rows.map(row => {
-        medianAliases.forEach(alias => {
-          const raw = row[alias];
-          const nums = raw ? raw.split(',').map(Number).filter(n => !isNaN(n)) : [];
-          row[alias] = this.calculateMedian(nums);
+        return rows.map((row: any) => {
+          medianAliases.forEach(alias => {
+            const raw = row[alias];
+            const nums = raw ? raw.split(',').map(Number).filter((n: number) => !isNaN(n)) : [];
+            row[alias] = this.calculateMedian(nums);
+          });
+          return row;
         });
-        return row;
-      });
-    }
 
-    return rows;
+      } finally {
+        if (connection) {
+          if (originalMaxLen !== null) {
+            await connection.execute(`SET SESSION group_concat_max_len = ${originalMaxLen}`);
+          }
+          connection.release();
+        }
+      }
+    } else {
+      const [rows]: any = await this.client.execute(query, filterValues);
+      return rows;
+    }
   }
 
   async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
