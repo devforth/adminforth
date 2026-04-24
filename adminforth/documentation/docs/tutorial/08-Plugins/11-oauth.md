@@ -1,3 +1,8 @@
+---
+title: OAuth Authentication
+slug: /tutorial/Plugins/oauth
+---
+
 # OAuth Authentication
 
 The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, Facebook or other OAuth2 provider accounts. 

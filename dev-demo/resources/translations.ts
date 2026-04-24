@@ -1,5 +1,5 @@
 
-import CompletionAdapterOpenAIChatGPT from "../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js";
+import CompletionAdapterOpenAIResponses from "../../adapters/adminforth-completion-adapter-openai-responses/index.js";
 import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth/index.js";
 import I18nPlugin from "../../plugins/adminforth-i18n/index.js";
 import { randomUUID } from 'crypto';
@@ -38,7 +38,7 @@ export default {
       completedFieldName: 'completedLangs',
       ...(process.env.OPENAI_API_KEY ? 
         { 
-        completeAdapter: new CompletionAdapterOpenAIChatGPT({
+        completeAdapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-5-mini',
         }),
