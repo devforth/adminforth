@@ -127,6 +127,21 @@ You can specify any GPT model you need. The default is `gpt-5-nano`.
 
 This adapter uses the OpenAI `responses` API.
 
+OpenAI-compatible providers can use the same adapter by setting `baseUrl`:
+
+```ts
+new CompletionAdapterOpenAIResponses({
+  openAiApiKey: process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN as string,
+  baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
+  model: 'gpt-oss-20b',
+  extraRequestBodyParameters: {
+    store: false,
+  },
+}),
+```
+
+
+
 ## Google Gemini Completion Adapter
 
 ```bash
