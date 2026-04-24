@@ -17,7 +17,7 @@
         <div class="text-center">
           <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#E8F1F8] mb-5 relative dark:bg-[#16537E]/20">
           
-          <IconExclamationCircle class="w-10 h-10 text-[#16537E]" />
+          <IconClipboardDocumentSolid class="w-10 h-10 text-[#16537E]" />
           
           <div class="absolute bottom-1 right-1 bg-[#16537E] rounded-full w-[18px] h-[18px] flex items-center justify-center border-2 border-white dark:border-gray-800">
               <span class="text-white text-[10px] font-medium">!</span>
@@ -72,7 +72,7 @@
 import { watch, ref } from 'vue';
 import { useModalStore } from '@/stores/modal';
 import { Modal } from '@/afcl';
-import { IconExclamationCircle} from '@iconify-prerendered/vue-heroicons';
+import { IconClipboardDocumentSolid } from '@iconify-prerendered/vue-heroicons';
 
 
 const modalRef = ref();
