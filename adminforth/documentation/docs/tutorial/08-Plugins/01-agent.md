@@ -470,6 +470,14 @@ This way allows to extend your agent with literally any custom instructions and 
 
 ## Standard skills
 
+The plugin ships with bundled skills from `plugins/adminforth-agent/custom/skills/`. These are available out of the box and can be combined with your own custom skills.
+
+| Folder | Skill name | Description |
+| --- | --- | --- |
+| `analyze_data` | `analyze_data` | Analyze AdminForth resource data, summarize trends, and create charts from fetched rows. Prefer server-side aggregation when possible and return Vega-Lite specs for charts. |
+| `fetch_data` | `fetch_data` | Fetch one or more exact records with filters after inspecting the resource schema. This skill is for finding rows, not for aggregations. |
+| `mutate_data` | `mutate_data` | Create, update, delete, or run actions on records. Before any mutation it must show the exact target row and ask the user for confirmation. |
+
 
 ## Persistent checkpointer
 
