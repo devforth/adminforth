@@ -181,7 +181,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
@@ -193,6 +193,7 @@ import { getIcon } from '@/utils';
 import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { Spinner } from '@/afcl';
+import websocket from '@/websocket';
 
 const route = useRoute();
 const router = useRouter();
@@ -200,8 +201,10 @@ const loading = ref(true);
 const { t } = useI18n();
 const { confirm, alert, show } = useAdminforth();
 const coreStore = useCoreStore();
+const SHOW_PAGE_TOPIC_PREFIX = '/showPage/';
 
 const actionLoadingStates = ref<Record<string, boolean>>({});
+const subscribedShowPageTopic = ref<string | null>(null);
 
 const customActions = computed(() => {
   return coreStore.resource?.options?.actions?.filter((a: any) => a.showIn?.showThreeDotsMenu) || [];
@@ -219,7 +222,34 @@ const skeletonRowsCount = computed(() => {
   return finalCount > 0 ? finalCount : 10;
 });
 
+const showPageTopic = computed(() => {
+  return `${SHOW_PAGE_TOPIC_PREFIX}${String(route.params.resourceId)}/${String(route.params.primaryKey)}`;
+});
+
+function applyShowPageUpdates(data: { resourceId: string; recordId: string; updates: Record<string, any> }) {
+  if (String(data.resourceId) !== String(route.params.resourceId)) {
+    return;
+  }
+  if (String(data.recordId) !== String(route.params.primaryKey)) {
+    return;
+  }
+  if (!coreStore.record) {
+    return;
+  }
+
+  Object.entries(data.updates).forEach(([attribute, value]) => {
+    coreStore.record[attribute] = value;
+  });
+}
+
+function subscribeToShowPageUpdates() {
+  websocket.unsubscribeByPrefix(SHOW_PAGE_TOPIC_PREFIX);
+  subscribedShowPageTopic.value = showPageTopic.value;
+  websocket.subscribe(subscribedShowPageTopic.value, applyShowPageUpdates);
+}
+
 onMounted(async () => {
+  subscribeToShowPageUpdates();
   loading.value = true;
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string,
@@ -234,6 +264,13 @@ onMounted(async () => {
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   }
   loading.value = false;
+});
+
+onUnmounted(() => {
+  if (!subscribedShowPageTopic.value) {
+    return;
+  }
+  websocket.unsubscribe(subscribedShowPageTopic.value);
 });
 
 const groups = computed(() => {
