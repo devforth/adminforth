@@ -1572,7 +1572,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation.',
       request_schema: aggregateRequestSchema,
       response_schema: aggregateResponseSchema,
-      handler: async ({ body, adminUser }) => {
+      handler: async ({ body, adminUser, headers }) => {
         const { resourceId, aggregations, filters, groupBy } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -1618,11 +1618,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         try {
+          const userTimeZone = headers['X-TimeZone'];
+          const aggregateGroupBy = groupBy?.type === 'date_trunc' && userTimeZone
+            ? { ...groupBy, timezone: userTimeZone }
+            : groupBy;
+
           const data = await this.adminforth.connectors[resource.dataSource].aggregate({
             resource,
             filters: normalizedFilters as IAdminForthAndOrFilter,
             aggregations,
-            groupBy,
+            groupBy: aggregateGroupBy,
           });
           return { data };
         } catch (e) {

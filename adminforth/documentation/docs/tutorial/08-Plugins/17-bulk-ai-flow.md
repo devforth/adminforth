@@ -1,3 +1,8 @@
+---
+title: Bulk AI Flow
+slug: /tutorial/Plugins/bulk-ai-flow
+---
+
 # Bulk AI Flow
 
 This plugin allows filling fields in multiple selected records based on data from other fields using LLM.
@@ -52,7 +57,7 @@ Migrate prisma schema:
 pnpm makemigration --name add-apartment-image-url ; pnpm migrate:local
 ```
 
-We will also attach [upload plugin](/docs/tutorial/Plugins/05-0-upload/) to this field.
+We will also attach [upload plugin](/docs/tutorial/Plugins/upload/) to this field.
 
 
 Add credentials in your `.env` file:
@@ -199,12 +204,12 @@ This is the most basic plugin usage. You can connect any text completion adapter
 Normalize user names by translating them from any language to English for internal processing.
 
 ```ts
-import CompletionAdapterOpenAIChatGPT from '@adminforth/completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Translate surnames',
-  textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+  textCompleteAdapter: new CompletionAdapterOpenAIResponses({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-5-nano',
     extraRequestBodyParameters: {

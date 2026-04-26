@@ -1,6 +1,6 @@
 
 import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
-import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 import I18nPlugin from "@adminforth/i18n";
 import { randomUUID } from 'crypto';
 
@@ -52,7 +52,7 @@ export default {
       // will hel to filter out incomplete translations
       completedFieldName: 'completedLangs',
 
-      completeAdapter: new CompletionAdapterOpenAIChatGPT({
+      completeAdapter: new CompletionAdapterOpenAIResponses({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
         model: 'gpt-4o-mini',
         expert: {

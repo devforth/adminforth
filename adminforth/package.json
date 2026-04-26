@@ -1,7 +1,24 @@
 {
   "name": "adminforth",
   "version": "1.6.2",
-  "description": "OpenSource Vue3 powered forth-generation admin panel",
+  "description": "OpenSource Agent-Native forth-generation admin panel",
+  "keywords": [
+    "adminforth",
+    "agent",
+    "ai-agent",
+    "skill.md",
+    "tool-calling",
+    "agent-native",
+    "ai-native",
+    "ai-first",
+    "admin-panel",
+    "backoffice",
+    "crud",
+    "nodejs",
+    "typescript",
+    "vue",
+    "tailwind"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -63,7 +80,7 @@
       "require": "./dist/index.js"
     }
   },
-  "author": "devforth.io",
+  "author": "DevForth (https://devforth.io)",
   "license": "MIT",
   "type": "module",
   "dependencies": {
