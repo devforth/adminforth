@@ -22,6 +22,14 @@ type AdminForthFilterNormalizationResult = {
   normalizedFilters?: AdminForthFilterInput;
 };
 
+async function publishShowPageUpdate(resource: AdminForthResource, recordId: string, updates: Record<string, any>) {
+  await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, {
+    resourceId: resource.resourceId,
+    recordId,
+    updates,
+  });
+}
+
 
 export default class AdminForthBaseConnector implements IAdminForthDataSourceConnectorBase {
 
@@ -578,6 +586,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     afLogger.trace(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
 
     await this.updateRecordOriginalValues({ resource, recordId, newValues: recordWithOriginalValues });
+    await publishShowPageUpdate(resource, recordId, newValues);
 
     return { ok: true };
   }
