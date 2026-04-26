@@ -35,7 +35,7 @@
         v-if="checkboxes.length"
         data-tooltip-target="tooltip-remove-all"
         class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText af-button-shadow 
-          focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder h-[34px]
+          focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder h-[2.125rem]
           hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 
           focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
           dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
@@ -58,7 +58,7 @@
           :key="action.id"
           @click="startBulkActionInner(action.id!)"
           class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText
-            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[34px]
+            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[2.125rem]
             border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover 
             hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 af-button-shadow
             focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
@@ -91,7 +91,7 @@
           :key="action.id"
           @click="startCustomBulkActionInner(action.id!)"
           class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText
-            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[34px]
+            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[2.125rem]
             border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover 
             hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 af-button-shadow
             focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
@@ -112,7 +112,7 @@
 
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-create-button flex items-center py-1 h-[34px] px-3 text-sm af-button-shadow
+        class="af-create-button flex items-center py-1 h-[2.125rem] px-3 text-sm af-button-shadow
           font-medium text-lightPrimaryContrast transition-all focus:outline-none 
           bg-lightPrimary hover:bg-lightPrimary/80 dark:bg-darkPrimary dark:hover:bg-darkPrimary/80 
           rounded border border-lightPrimary/90 focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing 
@@ -124,7 +124,7 @@
       </RouterLink>
 
       <button
-        class="af-filter-button flex gap-1 items-center py-1 h-[34px] px-3 me-2 af-button-shadow text-sm font-medium 
+        class="af-filter-button flex gap-1 items-center py-1 h-[2.125rem] px-3 me-2 af-button-shadow text-sm font-medium 
           text-lightListViewButtonText transition-all focus:outline-none bg-lightListViewButtonBackground rounded border 
           border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
           focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 

@@ -91,6 +91,10 @@ export default class OperationalResource implements IOperationalResource {
   }
 
   async update(primaryKey: any, record: any): Promise<any> {
+    if (Object.keys(record).length === 0) {
+      return { ok: true };
+    }
+
     return await this.dataConnector.updateRecord({ 
       resource: this.resourceConfig,
       recordId: primaryKey,

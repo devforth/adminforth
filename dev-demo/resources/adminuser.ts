@@ -13,6 +13,28 @@ import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/
 import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
 import CompletionAdapterOpenAIResponses from '../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 
+const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
+const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
+const openAiResponsesApiKey = ovhAiEndpointsAccessToken || process.env.OPENAI_API_KEY;
+const usesOvhAiEndpoints = Boolean(ovhAiEndpointsAccessToken);
+
+function createAgentCompletionAdapter(
+  model: string,
+  effort: 'low' | 'medium' | 'xhigh',
+) {
+  return new CompletionAdapterOpenAIResponses({
+    openAiApiKey: openAiResponsesApiKey as string,
+    baseUrl: usesOvhAiEndpoints ? OVH_AI_ENDPOINTS_BASE_URL : undefined,
+    model: usesOvhAiEndpoints ? 'gpt-oss-120b' : model,
+    extraRequestBodyParameters: {
+      ...(usesOvhAiEndpoints ? { store: false } : {}),
+      reasoning: {
+        effort,
+      },
+    },
+  });
+}
+
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
 }
@@ -202,39 +224,15 @@ export default {
       modes: [
         {
           name: 'Balanced',
-          completionAdapter: new CompletionAdapterOpenAIResponses({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5.4-mini',
-            extraRequestBodyParameters: {
-              reasoning: {
-                effort: 'medium',
-              },
-            },
-          }),
+          completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'medium'),
         },
         {
           name: 'Fast',
-          completionAdapter: new CompletionAdapterOpenAIResponses({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5.4-mini',
-            extraRequestBodyParameters: {
-              reasoning: {
-                effort: 'low',
-              },
-            },
-          }),
+          completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'low'),
         },
         {
           name: 'Smart Thinking',
-          completionAdapter: new CompletionAdapterOpenAIResponses({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5.4',
-            extraRequestBodyParameters: {
-              reasoning: {
-                effort: 'xhigh',
-              },
-            },
-          }),
+          completionAdapter: createAgentCompletionAdapter('gpt-5.4', 'xhigh'),
         },
       ],
       maxTokens: 10000,

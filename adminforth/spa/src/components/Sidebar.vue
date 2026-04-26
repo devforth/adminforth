@@ -165,7 +165,7 @@
      </ul>
 
 
-      <div id="dropdown-cta" class="p-4 mt-6 w-[230px] rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+      <div id="dropdown-cta" class="p-4 mt-6 w-[14.375rem] rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
         v-if="(ctaBadge && !isSidebarIconOnly) || (ctaBadge && isSidebarIconOnly && isSidebarHovering)"
       >
@@ -188,7 +188,7 @@
             </svg>
           </button>
         </div>
-        <p class="mb-3 text-sm " v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
+        <p class="mb-3 text-sm" v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
         <p class="mb-3 text-sm fill-lightNavbarText dark:fill-darkPrimary text-lightNavbarText dark:text-darkNavbarPrimary" v-else>
           {{ ctaBadge.text }}  
         </p>
