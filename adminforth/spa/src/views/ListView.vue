@@ -7,6 +7,7 @@
         :show="filtersShow"
         @hide="filtersShow = false"
         :filtersStore="filtersStore"
+        :resourceId="coreStore.resource?.resourceId"
       />
     </Teleport>
 
