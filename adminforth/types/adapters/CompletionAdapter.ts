@@ -7,12 +7,42 @@ export type CompletionStreamEvent = {
   source?: "summary" | "text";
 };
 
+export type CompletionReasoningEffort =
+  | "none"
+  | "minimal"
+  | "low"
+  | "medium"
+  | "high"
+  | "xhigh";
+
 export type CompletionTool<Input = Record<string, any>, Output = any> = {
   name: string;
   input_schema: JSONSchemaType<Input>;
   description?: string;
   handler: (input: Input) => Promise<Output> | Output;
 };
+
+export type CompletionRequest = {
+  content: string;
+  maxTokens: number;
+  outputSchema?: any;
+  reasoningEffort?: CompletionReasoningEffort;
+  tools?: CompletionTool[];
+  onChunk?: (
+    chunk: string,
+    event?: CompletionStreamEvent,
+  ) => void | Promise<void>;
+};
+
+export type CompletionAdapterLangChainAgentPurpose =
+  | "primary"
+  | "summary";
+
+export type CompletionAdapterLangChainAgentSpec = {
+  model: unknown;
+  middleware?: unknown[];
+};
+
 export interface CompletionAdapter {
 
   /**
@@ -23,24 +53,10 @@ export interface CompletionAdapter {
 
   /**
    * This method should return a text completion based on the provided content.
-   * @param content - The input text to complete
-   * @param maxTokens - The maximum number of tokens to generate
-   * @param outputSchema - Optional structured output schema for the response
-   * @param reasoningEffort - Optional parameter to indicate the level of reasoning effort for the completion
-   * @param onChunk - Optional callback invoked for each streamed chunk or reasoning event
+   * @param request - Completion request options
    * @returns A promise that resolves to an object containing the completed text and other metadata
    */
-  complete(
-    content: string,
-    maxTokens: number,
-    outputSchema?: any,
-    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh',
-    tools?: CompletionTool[],
-    onChunk?: (
-      chunk: string,
-      event?: CompletionStreamEvent,
-    ) => void | Promise<void>,
-  ): Promise<{
+  complete(request: CompletionRequest): Promise<{
     content?: string;
     finishReason?: string;
     error?: string;
@@ -52,4 +68,12 @@ export interface CompletionAdapter {
    * @returns The number of tokens in the input content
    */
   measureTokensCount(content: string): Promise<number> | number;
+}
+
+export interface LangChainAgentCompletionAdapter extends CompletionAdapter {
+  getLangChainAgentSpec(params: {
+    maxTokens: number;
+    purpose: CompletionAdapterLangChainAgentPurpose;
+  }): Promise<CompletionAdapterLangChainAgentSpec>
+    | CompletionAdapterLangChainAgentSpec;
 }

@@ -1,3 +1,8 @@
+---
+title: Quick Filters
+slug: /tutorial/Plugins/quick-filters
+---
+
 # Quick filters
 Allows you to add search input or select with preseted filters at the list view
 

@@ -333,7 +333,7 @@ onMounted(async () => {
   await loadMenu(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
-
+  document.documentElement.setAttribute('data-theme', theme.value);
   menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }

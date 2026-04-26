@@ -1,3 +1,8 @@
+---
+title: User Soft Delete
+slug: /tutorial/Plugins/user-soft-delete
+---
+
 # User soft delete
 
 Allows to deactivate users accound without deleting it.

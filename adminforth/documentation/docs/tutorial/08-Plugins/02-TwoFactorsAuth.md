@@ -1,3 +1,8 @@
+---
+title: Two-Factor Authentication Plugin
+slug: /tutorial/Plugins/two-factors-auth
+---
+
 # Two-Factor Authentication Plugin
 
 The Two-Factor Authentication Plugin provides an additional layer of security to the application by requiring users to provide a second form of authentication in addition to their password. This plugin supports  authenticator apps.

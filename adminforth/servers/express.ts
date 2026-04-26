@@ -55,6 +55,12 @@ async function parseExpressCookie(req): Promise<
 }
 
 const EXPRESS_ROUTE_SCHEMA = Symbol('adminforth.express.withSchema');
+const EXPRESS_REGEXP_LEADING_SLASH_RE = /^\\\//;
+const EXPRESS_REGEXP_OPTIONAL_TRAILING_SLASH_RE = /\\\/\?\(\?=\\\/\|\$\)\$$/;
+const EXPRESS_REGEXP_PARAM_CAPTURE_RE = /\(\?:\(\[\^\\\/]\+\?\)\)/g;
+const EXPRESS_REGEXP_ESCAPED_SLASH_RE = /\\\//g;
+const EXPRESS_REGEXP_TRAILING_DOLLAR_RE = /\$$/;
+const EXPRESS_REGEXP_LEADING_CARET_RE = /^\^/;
 
 type RegisteredExpressRouteSchema = IAdminForthExpressRouteSchema & {
   request?: AnySchemaObject;
@@ -89,6 +95,16 @@ function normalizeExpressRuntimeSchema(schema: unknown): AnySchemaObject | undef
   }
 
   return schema as AnySchemaObject;
+}
+
+function normalizeExpressLayerRegexpSource(regexpSource: string): string {
+  return regexpSource
+    .replace(EXPRESS_REGEXP_LEADING_SLASH_RE, '/')
+    .replace(EXPRESS_REGEXP_OPTIONAL_TRAILING_SLASH_RE, '')
+    .replace(EXPRESS_REGEXP_PARAM_CAPTURE_RE, ':param')
+    .replace(EXPRESS_REGEXP_ESCAPED_SLASH_RE, '/')
+    .replace(EXPRESS_REGEXP_TRAILING_DOLLAR_RE, '')
+    .replace(EXPRESS_REGEXP_LEADING_CARET_RE, '');
 }
 
 const respondNoServer = (title, explanation) => {
@@ -255,7 +271,10 @@ class ExpressServer implements IExpressHttpServer {
   serve(app) {
     this.expressApp = app;
     this.patchSchemaAwareRouteRegistration();
-    this.registerSchemaAwareExistingRoutes();
+    const stack = (this.expressApp as any)?._router?.stack;
+    if (Array.isArray(stack)) {
+      this.registerSchemaAwareStack(stack, '');
+    }
     this.setupWsServer();
     this.adminforth.setupEndpoints(this);
     this.setupOpenApiRoutes();
@@ -374,24 +393,25 @@ class ExpressServer implements IExpressHttpServer {
       }) as any;
     });
 
-    this.schemaAwareRouteRegistrationPatched = true;
-  }
+    const originalUse = this.expressApp.use?.bind(this.expressApp);
+    if (originalUse) {
+      this.expressApp.use = ((...args) => {
+        const [firstArg, ...restArgs] = args;
+        const path = typeof firstArg === 'string' || Array.isArray(firstArg)
+          ? firstArg
+          : '';
+        const handlers = path ? restArgs : args;
 
-  registerSchemaAwareExistingRoutes() {
-    const stack = (this.expressApp as any)?._router?.stack;
-    if (!Array.isArray(stack)) {
-      return;
+        this.flattenHandlers(handlers).forEach((handler) => {
+          if (Array.isArray((handler as any)?.stack)) {
+            this.registerSchemaAwareStack((handler as any).stack, path);
+          }
+        });
+        return originalUse(...args);
+      }) as any;
     }
 
-    stack.forEach((layer) => {
-      if (!layer.route) {
-        return;
-      }
-
-      const methods = Object.keys(layer.route.methods || {}).filter((method) => layer.route.methods[method]);
-      const handlers = (layer.route.stack || []).map((routeLayer) => routeLayer.handle);
-      this.registerSchemaAwareRoute(methods, layer.route.path, handlers);
-    });
+    this.schemaAwareRouteRegistrationPatched = true;
   }
 
   registerSchemaAwareRoute(methods, path, handlers) {
@@ -433,8 +453,61 @@ class ExpressServer implements IExpressHttpServer {
     });
   }
 
+  registerSchemaAwareStack(stack, prefix) {
+    const prefixes = this.flattenPaths(prefix);
+
+    stack.forEach((layer) => {
+      if (layer.route) {
+        const methods = Object.keys(layer.route.methods || {}).filter((method) => layer.route.methods[method]);
+        const handlers = (layer.route.stack || []).map((routeLayer) => routeLayer.handle);
+        this.registerSchemaAwareRoute(methods, this.combineRoutePaths(prefixes, layer.route.path), handlers);
+        return;
+      }
+
+      const nestedStack = layer.handle?.stack;
+      if (!Array.isArray(nestedStack)) {
+        return;
+      }
+
+      const layerPath = this.extractLayerPath(layer);
+      const nestedPrefix = this.combineRoutePaths(prefixes, layerPath);
+      this.registerSchemaAwareStack(nestedStack, nestedPrefix);
+    });
+  }
+
+  combineRoutePaths(prefixes, paths) {
+    return prefixes.flatMap((prefix) => this.flattenPaths(paths).map((path) => {
+      if (!prefix) return path || '/';
+      if (!path || path === '/') return prefix;
+      return `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}${path.startsWith('/') ? path : `/${path}`}`;
+    }));
+  }
+
+  extractLayerPath(layer) {
+    if (typeof layer.path === 'string') {
+      return layer.path;
+    }
+
+    const regexpSource = layer.regexp?.source;
+    if (typeof regexpSource !== 'string') {
+      return '';
+    }
+
+    if (layer.regexp?.fast_slash) {
+      return '';
+    }
+
+    return normalizeExpressLayerRegexpSource(regexpSource);
+  }
+
   flattenHandlers(handlers) {
-    return handlers.flatMap((handler) => Array.isArray(handler) ? this.flattenHandlers(handler) : [handler]);
+    return handlers.flat(Infinity);
+  }
+
+  flattenPaths(paths) {
+    const flattened = (Array.isArray(paths) ? paths : [paths]).flat(Infinity);
+    const stringPaths = flattened.filter((path): path is string => typeof path === 'string');
+    return stringPaths.length ? stringPaths : [''];
   }
 
   setupOpenApiRoutes() {

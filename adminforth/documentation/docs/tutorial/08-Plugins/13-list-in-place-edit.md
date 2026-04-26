@@ -1,3 +1,8 @@
+---
+title: List In-Place Edit
+slug: /tutorial/Plugins/list-in-place-edit
+---
+
 # List in place edit
 
 The List in Place Edit plugin allows you to edit records directly in the list view.
