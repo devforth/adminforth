@@ -5,7 +5,12 @@ import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
 import { afLogger, dbLogger } from '../modules/logger.js';
 
-const { Client } = pkg;
+const { Client, types } = pkg;
+
+// postgres-date (used by pg for OID 1114/1082) parses no-TZ strings with new Date(y,m,d,...)
+// which treats them as LOCAL server time. Return raw strings so getFieldValue can parse as UTC.
+types.setTypeParser(1114, (val) => val); // TIMESTAMP WITHOUT TIME ZONE
+types.setTypeParser(1082, (val) => val); // DATE
 
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
@@ -200,7 +205,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 return null;
             }
             if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-                return dayjs(value).toISOString();
+                return dayjs(value.replace(' ', 'T') + 'Z').toISOString();
             } else if (field._underlineType == 'varchar') {
                 return dayjs(value).toISOString();
             } else {
@@ -212,7 +217,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             if (!value) {
                 return null;
             }
-            return dayjs(value).toISOString().split('T')[0];
+            return value;
         }
 
         if (field.type == AdminForthDataTypes.BOOLEAN) {
