@@ -490,6 +490,13 @@ async function validateUsingUserValidationFunction(editableColumnsInner: AdminFo
   }
 }
 
+watch(customComponentsInValidity, () => {
+  editableColumns.value?.forEach(column => {
+    checkIfColumnHasError(column);
+  });
+  isValid.value = checkIfAnyColumnHasErrors();
+});
+
 defineExpose({
   columnError,
   editableColumns,
