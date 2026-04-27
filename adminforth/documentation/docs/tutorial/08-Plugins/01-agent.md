@@ -43,7 +43,7 @@ async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): P
 }
 
 export default {
-  dataSource: 'sqlite',
+  dataSource: 'maindb',
   table: 'sessions',
   resourceId: 'sessions',
   label: 'Sessions',
@@ -102,7 +102,7 @@ async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): P
 }
 
 export default {
-  dataSource: 'sqlite',
+  dataSource: 'maindb',
   table: 'turns',
   resourceId: 'turns',
   label: 'Turns',
@@ -514,7 +514,7 @@ import { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput } from 'adminforth';
 
 export default {
-  dataSource: 'sqlite',
+  dataSource: 'maindb',
   table: 'checkpoints',
   resourceId: 'checkpoints',
   label: 'Checkpoints',
