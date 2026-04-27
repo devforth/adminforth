@@ -22,8 +22,8 @@
           </div>
         </div>
           
-          <h3 v-if="props.title" class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
-            {{ title }}
+          <h3 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
+            There are unsaved changes.
           </h3>
           
           <div class="mb-2 text-[15px] text-gray-600 dark:text-gray-300">
@@ -70,9 +70,6 @@ import { useModalStore } from '@/stores/modal';
 import { Modal } from '@/afcl';
 import { IconClipboardDocumentSolid } from '@iconify-prerendered/vue-heroicons';
 
-const props = defineProps<{
-  title?: string
-}>()
 
 const modalRef = ref();
 const modalStore = useModalStore();
