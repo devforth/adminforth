@@ -707,7 +707,16 @@ export function generateMessageHtmlForRecordChange(changedFields: Record<string,
   }).join('');
 
   const listHtml = items ? `<ul class="mt-2 list-disc list-inside">${items}</ul>` : '';
-  const messageHtml = `<div>${escapeHtml(t('There are unsaved changes. Are you sure you want to leave this page?'))}${listHtml}</div>`;
+  const messageHtml = `
+    <div class="flex flex-col gap-y-2 text-center">
+      <div class="text-gray-500 dark:text-gray-400">
+        ${listHtml}
+      </div>
+      <p class="font-medium text-gray-900 dark:text-white mt-4"> 
+        ${escapeHtml(t('Are you sure you want to leave this page?'))}
+      </p>
+    </div>
+  `;
   return messageHtml; 
 }
 
