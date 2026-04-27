@@ -15,11 +15,9 @@
         </button>
 
         <div class="text-center">
-          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#E8F1F8] mb-5 relative dark:bg-[#16537E]/20">
-          
-          <IconClipboardDocumentSolid class="w-10 h-10 text-[#16537E]" />
-          
-          <div class="absolute bottom-1 right-1 bg-[#16537E] rounded-full w-[18px] h-[18px] flex items-center justify-center border-2 border-white dark:border-gray-800">
+          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 relative dark:bg-red-900/20">
+            <IconClipboardDocumentSolid class="w-10 h-10 text-red-500" />
+          <div class="absolute bottom-1 right-1 bg-red-500 rounded-full w-[18px] h-[18px] flex items-center justify-center border-2 border-white dark:border-gray-800">
               <span class="text-white text-[10px] font-medium">!</span>
           </div>
         </div>
@@ -44,13 +42,11 @@
               @click="()=>{ modalStore.onAcceptFunction(true);modalStore.togleModal()}" 
               type="button" 
               class="flex-1 flex items-center justify-center py-2.5 px-4 text-sm font-medium transition-all focus:outline-none 
-                    text-lightPrimaryContrast bg-lightPrimary hover:bg-lightPrimary/80 
-                    dark:bg-darkPrimary dark:hover:bg-darkPrimary/80 
-                    border border-lightPrimary/90 dark:border-darkPrimary/80 
+                    text-white bg-red-600 hover:bg-red-700 
+                    dark:bg-red-500 dark:hover:bg-red-600 
+                    border border-red-700 dark:border-red-600 
                     rounded-lg shadow-sm focus:z-10 focus:ring-4 
-                    focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
-                    dark:text-darkPrimaryContrast dark:hover:text-darkListViewButtonTextHover 
-                    dark:hover:bg-darkListViewButtonBackgroundHover gap-1">
+                    focus:ring-red-100 dark:focus:ring-red-900 gap-1">
                 Leave without saving
             </button>
           </div>
