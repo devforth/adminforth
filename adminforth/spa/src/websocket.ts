@@ -106,20 +106,35 @@ setInterval(() => {
 
 export default {
   subscribe(topic: string, callback: (data: any) => void): void {
+    const isFirstSubscription = !subscriptions[topic];
     if (!subscriptions[topic]) {
       subscriptions[topic] = [];
     }
     subscriptions[topic].push(callback);
-    if (state.status === 'connected') {
+    if (isFirstSubscription && state.status === 'connected') {
       doPhysicalSubscribe(topic);
     }
   },
 
   unsubscribe(topic: string): void {
+    if (!subscriptions[topic]) {
+      return;
+    }
     delete subscriptions[topic];
     if (state.status === 'connected') {
       doPhysicalUnsubscribe(topic);
     }
+  },
+
+  unsubscribeByPrefix(prefix: string): void {
+    Object.keys(subscriptions)
+      .filter((topic) => topic.startsWith(prefix))
+      .forEach((topic) => {
+        delete subscriptions[topic];
+        if (state.status === 'connected') {
+          doPhysicalUnsubscribe(topic);
+        }
+      });
   },
 
   unsubscribeAll(): void {
