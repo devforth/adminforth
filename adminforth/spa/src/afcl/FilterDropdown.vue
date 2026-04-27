@@ -2,46 +2,38 @@
   <div class="afcl-select afcl-select-wrapper relative inline-block af-button-shadow rounded" ref="internalSelect" 
     :class="{'opacity-50': readonly}"
   >
-    <div class="relative">
-    <button 
-      ref="inputEl" 
-      type="button" 
-      @click="inputClick" 
-      class="group block w-full pl-3 pr-10 text-left cursor-pointer 
-      text-sm font-medium transition-all rounded border af-button-shadow outline-none
-      bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder  
-      dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
-      hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
-      dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
-      :class="classesForInput"
-    >
-      <span v-if="displayLabel">
-        {{ displayLabel }}
-      </span>
-      <span 
-        v-else 
-        class="opacity-100 transition-colors"
-        :class="[
-          'text-lightListViewButtonText dark:text-darkListViewButtonText',
-          'group-hover:text-lightListViewButtonTextHover dark:group-hover:text-darkListViewButtonTextHover'
-        ]"
+    <div class="relative w-fit">
+      <button 
+        ref="dropdownFilterEl" 
+        type="button" 
+        @click="dropdownClick" 
+        class="group h-[34px] inline-flex items-center justify-between min-w-max px-3 py-2 text-left cursor-pointer 
+        text-sm font-medium transition-all rounded border outline-none gap-x-2
+        bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder  
+        dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+        hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover"
       >
-        {{ filter?.name || placeholder || $t('Select...') }}
-      </span>
-    </button>
+        <span v-if="displayLabel" class="whitespace-nowrap">
+          {{ displayLabel }}
+        </span>
+        <span 
+          v-else 
+          class="opacity-100 transition-colors whitespace-nowrap"
+        >
+          {{ filter?.name || placeholder || $t('Select...') }}
+        </span>
 
-      <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
-        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
+        <IconCaretDownSolid class="h-4 w-4 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in flex-shrink-0"
           :class="{ 'transform rotate-180': showDropdown }"
         />
-      </div>
+      </button>
     </div>
 
     <teleport to="body" v-if="teleportToBody && showDropdown">
       <div 
         ref="dropdownEl" 
         :style="getDropdownPosition" 
-        class="fixed z-[1000] bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
+        class="fixed z-[1000] w-max min-w-fit bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
           dark:border-gray-600 rounded-md text-base ring-1 ring-black ring-opacity-5 overflow-hidden focus:outline-none sm:text-sm max-h-64 flex flex-col"
       >
         <div class="py-1 overflow-y-auto grow" @scroll="handleDropdownScroll">
@@ -91,13 +83,12 @@ const props = defineProps({
   placeholder: String,
   readonly: Boolean,
   teleportToBody: Boolean,
-  classesForInput: String,
 });
 
 const emit = defineEmits(['update:modelValue', 'scroll-near-end']);
 
 const showDropdown = ref(false);
-const inputEl = ref<HTMLElement | null>(null);
+const dropdownFilterEl = ref<HTMLElement | null>(null);
 const dropdownEl = ref<HTMLElement | null>(null);
 const internalSelect = ref<HTMLElement | null>(null);
 
@@ -118,17 +109,17 @@ const clearSelection = () => {
   showDropdown.value = false;
 };
 
-const inputClick = () => {
+const dropdownClick = () => {
   if (!props.readonly) showDropdown.value = !showDropdown.value;
 };
 
 const getDropdownPosition = computed(() => {
-  if (!inputEl.value) return {};
-  const rect = inputEl.value.getBoundingClientRect();
+  if (!dropdownFilterEl.value) return {};
+  const rect = dropdownFilterEl.value.getBoundingClientRect();
   return {
     top: `${rect.bottom + window.scrollY + 4}px`,
-    left: `${rect.left + window.scrollX}px`,
-    width: `${rect.width}px`
+    left: `${rect.right + window.scrollX - (dropdownEl.value?.offsetWidth || rect.width)}px`,
+    minWidth: `${rect.width}px`
   };
 });
 
