@@ -295,11 +295,17 @@ Each item in `modes` defines a user-selectable preset in the chat UI. The select
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
 
-## Persistent checkpointer
+## Persistent agent memory
 
-If you do not configure `checkpointResource`, the plugin falls back to an in-memory `MemorySaver`. This is fine for local testing, but checkpoints are lost on process restart.
+The plugin stores visible chat history in the `sessions` and `turns` resources. This is what users see in the chat sidebar and in old conversations.
 
-If you want persistent LangGraph checkpoints between requests, add a dedicated resource and pass it via `checkpointResource`.
+The agent also needs its own internal conversation state to continue an existing chat. If you do not configure `checkpointResource`, that internal state is kept only in the Node.js process memory. This is fine for local testing and for new chats, but it is not durable:
+
+- after a server restart, users can still see old chat messages because `sessions` and `turns` are stored in your database
+- after a server restart, users can continue an old chat, but the agent will treat it like a new conversation because its internal state was lost
+- new chats will work normally again until the next restart
+
+For production, configure `checkpointResource` so the agent can safely continue old chats after restarts and deployments.
 
 You can use your own table and field names. The plugin does not require a specific schema name, only a mapping for these logical fields:
 
