@@ -27,3 +27,4 @@ export { default as Textarea } from './Textarea.vue';
 export { default as ButtonGroup } from './ButtonGroup.vue';
 export { default as Card } from './Card.vue';
 export { default as Modal } from './Modal.vue';
+export { default as FilterDropdown } from './FilterDropdown.vue';
