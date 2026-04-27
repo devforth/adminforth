@@ -763,11 +763,12 @@ Now, update the settings of the Two-Factor Authentication plugin:
 
   plugins: [
     new TwoFactorsAuthPlugin ({ 
-      keyValueAdapter: new RamKeyValueAdapter(),
       twoFaSecretFieldName: 'secret2fa', 
       timeStepWindow: 1,       
       //diff-add
       passkeys: {
+        //diff-add
+        keyValueAdapter: new RamKeyValueAdapter(),
         //diff-add
         credentialResourceID: "passkeys",
         //diff-add
