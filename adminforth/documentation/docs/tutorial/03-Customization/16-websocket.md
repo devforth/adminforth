@@ -20,6 +20,18 @@ On server you can publish data to the topic by calling
 admin.websocket.publish('/topic-name', {some: 'data'});
 ```
 
+If you need to unsubscribe from a whole family of topics, for example when route changes can leave old dynamic subscriptions behind, you can use `unsubscribeByPrefix`:
+
+```javascript
+import websocket from '@/websocket';
+
+websocket.unsubscribeByPrefix('/topic-name/');
+```
+
+This will unsubscribe from all topics whose name starts with the prefix.
+
+It is useful for dynamic topics like `/topic-name/<resourceId>/<recordId>` where a stale subscription can update the wrong page if component unmount does not happen exactly when you expect.
+
 Let's consider a real-world example.
 
 ## Usage example
