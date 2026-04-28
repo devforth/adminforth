@@ -135,6 +135,7 @@
     <component
       v-for="c in coreStore?.config?.globalInjections?.everyPageBottom || []"
       :is="getCustomComponent(c)"
+      :adminUser="coreStore.adminUser || null"
       :meta="c.meta"
     />
   </div>

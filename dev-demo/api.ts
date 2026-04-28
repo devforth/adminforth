@@ -1,6 +1,7 @@
 import { Express, Response } from "express";
 import { IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
+import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
 
 const DASHBOARD_CAR_SOURCES = [
   { resourceId: 'cars_sl', label: 'SQLite' },
@@ -170,6 +171,17 @@ export function initApi(app: Express, admin: IAdminForth) {
           });
         }
       )
+    )
+  );
+  app.get(`${admin.config.baseUrl}/api/test2faCall/`,
+    admin.express.authorize(
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        console.log('Received test2faCall');
+        const { adminUser } = _req;
+        const t2fa = admin.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+        const verifyResult = await t2fa.verifyAuto(adminUser);
+        res.json({ message: "2FA call received!" });
+      }
     )
   );
 }
