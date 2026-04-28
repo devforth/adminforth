@@ -164,6 +164,12 @@ export type ConfirmParams = {
      * The title to display in the dialog
      */
     title?: string;
+
+    /**
+     * The message to display in the dialog as a warning that action is irreversible
+     */
+    guardMessage?: string;
+    
     /**
      * The message to display in the dialog
      */

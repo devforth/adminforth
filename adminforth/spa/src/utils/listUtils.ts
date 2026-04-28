@@ -60,7 +60,7 @@ export async function startBulkAction(actionId: string, resource: AdminForthReso
 
   if (action?.confirm) {
     const confirmed = await confirm({
-      message: action.confirm,
+      title: action.confirm,
     });
     if (!confirmed) {
       return;
