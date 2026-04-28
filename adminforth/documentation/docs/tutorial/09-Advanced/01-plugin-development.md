@@ -506,6 +506,38 @@ Default value of activationOrder for most plugins is `0`. Plugins with higher ac
 
 To ensure that plugin activates before some other plugins set `activationOrder` to negative value.
 
+## Making plugin global
+
+If you want to make your plugin to be global and add it to the main `index.ts` in `globalPlugins` section, you need to use `pluginsScope: 'global'` and `modifyGlobalConfig` instead of `modifyResourceConfig`:
+
+
+```ts title="./your-global-plugin/index.ts"
+
+  ...
+
+  export default class YourPugin extends AdminForthPlugin {
+    options: PluginOptions;
+    //diff-add
+    pluginsScope: 'global'
+
+  ...
+
+  //diff-remove
+  async modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+    //diff-remove
+    super.modifyResourceConfig(adminforth, resourceConfig);
+  //diff-add
+  modifyGlobalConfig(adminforth: IAdminForth) {
+    //diff-add
+    super.modifyGlobalConfig(adminforth);
+
+  }
+
+  ...
+  
+```
+
+
 ## Splitting frontend logic into multiple files
 
 In case your plugin `.vue` files getting too big, you can split them into multiple files (components).
