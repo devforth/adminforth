@@ -17,7 +17,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   pluginInstanceId: string;
   customFolderPath: string;
   pluginOptions: any;
-  resourceConfig: AdminForthResource;
+  resourceConfig?: AdminForthResource;
   className: string;
   activationOrder: number = 0;
   pluginsScope: 'resource' | 'global' = 'resource';
