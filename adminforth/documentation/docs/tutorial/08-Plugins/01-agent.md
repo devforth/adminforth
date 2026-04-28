@@ -123,7 +123,7 @@ export default {
     },
     {
       name: 'created_at',
-      type: AdminForthDataTypes.DATE,
+      type: AdminForthDataTypes.DATETIME,
       fillOnCreate: () => (new Date()).toISOString(),
       showIn: {
         edit: false,

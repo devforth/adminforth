@@ -782,6 +782,7 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
 
       const answer = await confirm({
         title: t('There are unsaved changes'),
+        guardMessage: t('Your changes will not be saved'),
         messageHtml,
         yes: t('Leave without saving'),
         no: t('Stay and continue'),
