@@ -22,8 +22,8 @@
           </div>
         </div>
           
-          <h3 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
-            There are unsaved changes.
+          <h3 v-if="modalStore?.modalContent?.title" class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
+            {{ modalStore.modalContent.title }}
           </h3>
           
           <div class="mb-2 text-[15px] text-gray-600 dark:text-gray-300">
@@ -35,7 +35,7 @@
 
           <div class="flex justify-center gap-4 w-full">
             <button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" class="flex-1 py-2.5 px-4 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-                Stay and continue
+                {{ modalStore?.modalContent?.cancelText }}
             </button>
             
             <button 
@@ -47,7 +47,7 @@
                     border border-red-700 dark:border-red-600 
                     rounded-lg shadow-sm focus:z-10 focus:ring-4 
                     focus:ring-red-100 dark:focus:ring-red-900 gap-1">
-                Leave without saving
+                {{ modalStore?.modalContent?.acceptText }}
             </button>
           </div>
 
