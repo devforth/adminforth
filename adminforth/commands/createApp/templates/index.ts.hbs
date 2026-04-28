@@ -6,6 +6,7 @@ import path from 'path';
 import { Filters } from 'adminforth';
 import { initApi } from './api.js';
 import { logger } from 'adminforth';
+import { globalPlugins } from './globalPlugins.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -65,6 +66,7 @@ export const admin = new AdminForth({
       resourceId: 'adminuser'
     }
   ],
+  globalPlugins: globalPlugins,
 });
 
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
