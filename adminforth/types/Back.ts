@@ -154,6 +154,11 @@ export interface IExpressHttpServer extends IHttpServer {
   listen(port: number, host: string, callback: Function): void;
 
   /**
+   * Returns an internal HTTP origin for same-process/server API calls.
+   */
+  getInternalApiOrigin(): string | undefined;
+
+  /**
    * Method (middleware) to wrap express endpoints with authorization check.
    * Adds adminUser to request object if user is authorized. Drops request with 401 status if user is not authorized.
    * @param callable : Function which will be called if user is authorized.

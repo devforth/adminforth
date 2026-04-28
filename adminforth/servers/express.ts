@@ -10,6 +10,7 @@ import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
 import http from 'http';
+import type { AddressInfo } from 'net';
 import { randomUUID } from 'crypto';
 import { listify } from '../modules/utils.js';
 import { afLogger } from '../modules/logger.js';
@@ -283,6 +284,16 @@ class ExpressServer implements IExpressHttpServer {
 
   listen(...args) {
     this.server.listen(...args);
+  }
+
+  getInternalApiOrigin(): string | undefined {
+    const address = this.server?.address();
+
+    if (!address || typeof address === 'string') {
+      return undefined;
+    }
+
+    return `http://127.0.0.1:${(address as AddressInfo).port}`;
   }
 
   async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: HttpExtra) {
