@@ -227,8 +227,52 @@ plugins: [
 
 So such users will have suggestion to setup 2FA, but will be able to skip it with "Skip for now" button.
 
+## Calling 2FA modal from backend
+If you wan't to call 2FA verification modal from the backend for verification, you can use
 
-## Step-Up MFA (Two-Factor re-authentication on critical operations)
+```ts
+t2fa.verifyAuto(adminUser);
+```
+This method opens 2FA verification modal at the frontend and then returns verification result.
+ 
+Here is an example:
+
+```ts title="./api.ts"
+  //diff-add
+  app.get(`${admin.config.baseUrl}/api/test2faCall/`,
+  //diff-add
+    admin.express.authorize(
+      //diff-add
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        //diff-add
+        const { adminUser } = _req;
+        //diff-add
+        //diff-add
+        const t2fa = admin.getPluginByClassName('TwoFactorsAuthPlugin');
+        //diff-add
+        const verifyResult = await t2fa.verifyAuto(adminUser);
+        //diff-add
+        if (verifyResult.ok) {
+          //diff-add
+          //some critical action
+          //diff-add
+          res.json({ ok: "true" });
+        //diff-add
+        }
+        //diff-add
+        res.json({ok: "false", message: "Verification failed"})
+      //diff-add
+      }
+    //diff-add
+    )
+  //diff-add
+  );
+```
+
+Under the hood, this metod uses websocket.
+
+## Manual Step-Up MFA (Two-Factor re-authentication on critical operations)
+But if you websocket doesn't work in you application, or you wan't to perform verification manually, here are manual verification examples
 
 ### Request 2FA on custom Actions
 
@@ -719,11 +763,12 @@ Now, update the settings of the Two-Factor Authentication plugin:
 
   plugins: [
     new TwoFactorsAuthPlugin ({ 
-      keyValueAdapter: new RamKeyValueAdapter(),
       twoFaSecretFieldName: 'secret2fa', 
       timeStepWindow: 1,       
       //diff-add
       passkeys: {
+        //diff-add
+        keyValueAdapter: new RamKeyValueAdapter(),
         //diff-add
         credentialResourceID: "passkeys",
         //diff-add

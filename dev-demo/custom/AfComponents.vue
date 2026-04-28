@@ -389,6 +389,9 @@
       Refresh badge
     </Button>
 
+    <Button @click="doTest2faCall">
+      Test 2FA API Call
+    </Button>
   </div>
 
 
@@ -541,6 +544,14 @@ async function callHelloWorldApi() {
     console.log('API response:', response);
   } catch (error) {
     console.error('API error:', error);
+  }
+}
+
+async function doTest2faCall() {
+  try {
+    const response = await callApi({ path: '/api/test2faCall/', method: 'GET' });
+  } catch (error) {
+    console.error('2FA API error:', error);
   }
 }
 </script>
