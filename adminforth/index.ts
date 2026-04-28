@@ -7,7 +7,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, formatHugePluginError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -237,13 +237,18 @@ class AdminForth implements IAdminForth {
   activatePlugins() {
     afLogger.trace('🔌🔌🔌 Activating plugins');
     const allPluginInstances = [];
+    const globalPlugins = this.config.globalPlugins || [];
     for (let resource of this.config.resources) {
       afLogger.trace(`🔌 Checking plugins for resource: ${resource.resourceId}`);
       for (let pluginInstance of resource.plugins || []) {
         afLogger.trace(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+        if (pluginInstance.pluginsScope === 'global') {
+          throw new Error(formatHugePluginError(`Move plugin ${pluginInstance.constructor.name} to index.ts config.globalPlugins array`));
+        }
         allPluginInstances.push({pi: pluginInstance, resource});
       }
     }
+    allPluginInstances.push(...globalPlugins.map((pluginInstance) => ({pi: pluginInstance, resource: null})));
     afLogger.trace(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
     
     let activationLoopCounter = 0;
@@ -272,8 +277,12 @@ class AdminForth implements IAdminForth {
       unactivatedPlugins.forEach(
         ({pi: pluginInstance, resource}, index) => {
           afLogger.trace(`Activating plugin: ${pluginInstance.constructor.name}`);
-          afLogger.trace(`🔌 Activating plugin ${index + 1}/${unactivatedPlugins.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
-          pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
+          afLogger.trace(`🔌 Activating plugin ${index + 1}/${unactivatedPlugins.length}: ${pluginInstance.constructor.name} for resource ${resource ? resource.resourceId : 'global'}`);
+          if (pluginInstance.pluginsScope === 'global'){
+            pluginInstance.modifyGlobalConfig(this);
+          } else {
+            pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
+          }
           afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
           
           const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);

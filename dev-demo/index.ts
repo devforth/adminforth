@@ -31,6 +31,8 @@ import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
 import { logger } from '../adminforth/modules/logger.js';
 
+import { globalPlugins } from './globalPlugins.js';
+
 const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
@@ -229,6 +231,7 @@ export const admin = new AdminForth({
       resourceId: 'turns',
     }
   ],
+  globalPlugins: globalPlugins,
 });
 
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
