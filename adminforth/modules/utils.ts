@@ -536,3 +536,25 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
     }
     return null;
   }
+
+  export function formatHugePluginError(message: string) {
+    const RED = '\x1b[31m';
+    const BG = '\x1b[41m';
+    const WHITE = '\x1b[97m';
+    const BOLD = '\x1b[1m';
+    const RESET = '\x1b[0m';
+
+    const horizontal = '═'.repeat(100);
+
+    return `
+  ${BG}${WHITE}${BOLD}
+  ╔${horizontal}╗
+  ║${' '.repeat(100)}║
+  ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
+  ║${' '.repeat(100)}║
+  ║  ${message.padEnd(98)}║
+  ║${' '.repeat(100)}║
+  ╚${horizontal}╝
+  ${RESET}
+`;
+  }
