@@ -309,8 +309,8 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
     async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
         resource: AdminForthResource;
         filters: IAdminForthAndOrFilter;
-        aggregations: any;
-        groupBy?: any;
+        aggregations: { [alias: string]: IAggregationRule };
+        groupBy?: IGroupByRule;
     }): Promise<Array<{ group?: string, [key: string]: any }>> {
 
         const collection = this.client.db().collection(resource.table);
@@ -320,27 +320,33 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         let groupId: any = null;
 
         if (groupBy?.type === 'field') {
-            groupId = `$${groupBy.field}`;
+            const g = groupBy as IGroupByField;
+            groupId = `$${g.field}`;
         }
 
         if (groupBy?.type === 'date_trunc') {
-            const tz = groupBy.timezone ?? 'UTC';
-            const dateTruncSpec: any = { date: `$${groupBy.field}`, unit: groupBy.truncation, timezone: tz,};
-            if (groupBy.truncation === 'week') {
+            const g = groupBy as IGroupByDateTrunc;
+            const tz = g.timezone ?? 'UTC';
+            const dateTruncSpec: any = { 
+                date: `$${g.field}`, 
+                unit: g.truncation, 
+                timezone: tz,
+            };
+            if (g.truncation === 'week') {
                 dateTruncSpec.startOfWeek = 'Mon';
             }
-            groupId = { $dateTrunc: dateTruncSpec,};
+            groupId = { $dateTrunc: dateTruncSpec };
         }
 
-        const groupStage: any = {
+        const groupStage: Record<string, any> = {
             _id: groupId,
         };
 
-        for (const [alias, rule] of Object.entries(aggregations) as any) {
+        for (const [alias, rule] of Object.entries(aggregations)) {
             switch (rule.operation) {
                 case 'count': groupStage[alias] = { $sum: 1 }; break;
                 case 'sum': groupStage[alias] = { $sum: { $toDouble: `$${rule.field}` } }; break;
-                case 'avg': groupStage[alias] = { $avg: { $toDouble:  `$${rule.field}` } }; break;
+                case 'avg': groupStage[alias] = { $avg: { $toDouble: `$${rule.field}` } }; break;
                 case 'min': groupStage[alias] = { $min: { $toDouble: `$${rule.field}` } }; break;
                 case 'max': groupStage[alias] = { $max: { $toDouble: `$${rule.field}` } }; break;
                 case 'median': groupStage[alias] = { $push: { $toDouble: `$${rule.field}` } }; break;
@@ -358,18 +364,23 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         pipeline.push({
             $project: {
                 _id: 0,
-                group: !groupBy ? "$$REMOVE" : groupBy.type === 'date_trunc' ? {
+                group: !groupBy ? "$$REMOVE" : (groupBy.type === 'date_trunc' ? {
                     $cond: {
                         if: { $eq: [{ $type: "$_id" }, "date"] },
-                            then: { $dateToString: { format: "%Y-%m-%d", date: "$_id", timezone: groupBy?.timezone ?? 'UTC' } },
-                            else: "$_id"
-                        }
+                        then: { 
+                            $dateToString: { 
+                                format: "%Y-%m-%d", 
+                                date: "$_id", 
+                                timezone: (groupBy as IGroupByDateTrunc).timezone ?? 'UTC' 
+                            } 
+                        },
+                        else: "$_id"
                     }
-                    : "$_id",
+                } : "$_id"),
                 ...Object.fromEntries(
                     Object.keys(groupStage)
-                    .filter(k => k !== '_id')
-                    .map(k => [k, `$${k}`])
+                        .filter(k => k !== '_id')
+                        .map(k => [k, `$${k}`])
                 ),
             },
         });
@@ -385,7 +396,9 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
         const result = await collection.aggregate(pipeline).toArray();
 
-        const medianAliases = Object.keys(aggregations).filter(alias => aggregations[alias].operation === 'median');
+        const medianAliases = Object.keys(aggregations).filter(
+            alias => aggregations[alias].operation === 'median'
+        );
 
         return result.map(row => {
             medianAliases.forEach(alias => {
