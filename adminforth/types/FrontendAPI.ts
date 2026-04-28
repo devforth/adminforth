@@ -161,6 +161,10 @@ export interface FrontendAPIInterface {
 
 export type ConfirmParams = {
     /**
+     * The title to display in the dialog
+     */
+    title?: string;
+    /**
      * The message to display in the dialog
      */
     message?: string;

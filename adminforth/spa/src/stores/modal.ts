@@ -32,7 +32,7 @@ export const useModalStore = defineStore('modal', () => {
   }
   function setModalContent(content: ModalContentType) {
     modalContent.value = {
-      title: content.title || 'title',
+      title: content.title || '',
       content: content.content || '',
       contentHTML: content.contentHTML || '',
       acceptText: content.acceptText || 'acceptText',
