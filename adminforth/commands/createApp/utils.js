@@ -355,6 +355,11 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
       src: 'custom/package.json.hbs',
       dest: 'custom/package.json',
       data: {}
+    },
+    {
+      src: 'globalPlugins.ts.hbs',
+      dest: 'globalPlugins.ts',
+      data: {},
     }
   ];
 
