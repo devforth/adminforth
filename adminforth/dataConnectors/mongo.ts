@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
 import { Decimal128, Double } from 'bson';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import { afLogger } from '../modules/logger.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
@@ -304,6 +304,108 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             // mongodb should ignore raw SQL, but allow raw NoSQL
             .filter((f) => (f as IAdminForthSingleFilter).insecureRawSQL === undefined)
             .map((f) => this.getFilterQuery(resource, f)));
+    }
+
+    async getAggregateWithOriginalTypes({ resource, filters, aggregations, groupBy }: {
+        resource: AdminForthResource;
+        filters: IAdminForthAndOrFilter;
+        aggregations: { [alias: string]: IAggregationRule };
+        groupBy?: IGroupByRule;
+    }): Promise<Array<{ group?: string, [key: string]: any }>> {
+
+        const collection = this.client.db().collection(resource.table);
+
+        const match = filters?.subFilters?.length ? this.getFilterQuery(resource, filters) : {};
+
+        let groupId: any = null;
+
+        if (groupBy?.type === 'field') {
+            const g = groupBy as IGroupByField;
+            groupId = `$${g.field}`;
+        }
+
+        if (groupBy?.type === 'date_trunc') {
+            const g = groupBy as IGroupByDateTrunc;
+            const tz = g.timezone ?? 'UTC';
+            const dateTruncSpec: any = { 
+                date: `$${g.field}`, 
+                unit: g.truncation, 
+                timezone: tz,
+            };
+            if (g.truncation === 'week') {
+                dateTruncSpec.startOfWeek = 'Mon';
+            }
+            groupId = { $dateTrunc: dateTruncSpec };
+        }
+
+        const groupStage: Record<string, any> = {
+            _id: groupId,
+        };
+
+        for (const [alias, rule] of Object.entries(aggregations)) {
+            switch (rule.operation) {
+                case 'count': groupStage[alias] = { $sum: 1 }; break;
+                case 'sum': groupStage[alias] = { $sum: { $toDouble: `$${rule.field}` } }; break;
+                case 'avg': groupStage[alias] = { $avg: { $toDouble: `$${rule.field}` } }; break;
+                case 'min': groupStage[alias] = { $min: { $toDouble: `$${rule.field}` } }; break;
+                case 'max': groupStage[alias] = { $max: { $toDouble: `$${rule.field}` } }; break;
+                case 'median': groupStage[alias] = { $push: { $toDouble: `$${rule.field}` } }; break;
+            }
+        }
+
+        const pipeline: any[] = [];
+
+        if (Object.keys(match).length) {
+            pipeline.push({ $match: match });
+        }
+
+        pipeline.push({ $group: groupStage });
+
+        pipeline.push({
+            $project: {
+                _id: 0,
+                group: !groupBy ? "$$REMOVE" : (groupBy.type === 'date_trunc' ? {
+                    $cond: {
+                        if: { $eq: [{ $type: "$_id" }, "date"] },
+                        then: { 
+                            $dateToString: { 
+                                format: "%Y-%m-%d", 
+                                date: "$_id", 
+                                timezone: (groupBy as IGroupByDateTrunc).timezone ?? 'UTC' 
+                            } 
+                        },
+                        else: "$_id"
+                    }
+                } : "$_id"),
+                ...Object.fromEntries(
+                    Object.keys(groupStage)
+                        .filter(k => k !== '_id')
+                        .map(k => [k, `$${k}`])
+                ),
+            },
+        });
+
+        const calculateMedian = (arr: any[]) => {
+            if (!Array.isArray(arr) || arr.length === 0) return null;
+            const sorted = [...arr].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 === 0 
+                ? (sorted[mid - 1] + sorted[mid]) / 2 
+                : sorted[mid];
+        };
+
+        const result = await collection.aggregate(pipeline).toArray();
+
+        const medianAliases = Object.keys(aggregations).filter(
+            alias => aggregations[alias].operation === 'median'
+        );
+
+        return result.map(row => {
+            medianAliases.forEach(alias => {
+                row[alias] = calculateMedian(row[alias]);
+            });
+            return row;
+        });
     }
     
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
