@@ -351,10 +351,11 @@ export function protectAgainstXSS(value: string) {
     ALLOWED_ATTR: [
       "data-list",
       "src","srcset","alt","title","width","height","loading",
-      "controls","autoplay","loop","muted","poster","playsinline",
-      "class","style",
-      "data-*","aria-*"
-    ]
+      "controls","autoplay","loop","muted","poster","playsinline","type",
+      "class","style"
+    ],
+    ALLOW_DATA_ATTR: true,
+    ALLOW_ARIA_ATTR: true
   });
 }
 
