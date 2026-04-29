@@ -37,7 +37,6 @@
     "vue3-json-viewer": "^2.2.2"
   },
   "devDependencies": {
-    "ajv": "^8.18.0",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tsconfig/node20": "^20.1.4",
@@ -47,6 +46,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/eslint-config-typescript": "^13.0.0",
     "@vue/tsconfig": "^0.5.1",
+    "ajv": "^8.18.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.23.0",
