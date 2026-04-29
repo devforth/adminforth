@@ -54,7 +54,11 @@ const maxFormatted = computed(() => {
   return isNaN(v) ? 100 : Math.ceil(v);
 });
 
-const normalize = (val: any) => (val === "" || val === null || val === undefined) ? null : Number(val);
+const normalize = (val: any) => {
+  if (val === "" || val === null || val === undefined) return null;
+  const numericValue = Number(val);
+  return isNaN(numericValue) ? null : numericValue;
+};
 
 const start = ref<number | null>(normalize(props.valueStart));
 const end = ref<number | null>(normalize(props.valueEnd));
