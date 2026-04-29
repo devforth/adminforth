@@ -30,7 +30,7 @@ And finally add it to list of plugins:
         //diff-add
         {
           //diff-add
-          name: 'Listed',
+          name: 'Listing',
           //diff-add
           enum: [
             //diff-add
