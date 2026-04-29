@@ -5,6 +5,7 @@ import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
 import { afLogger, dbLogger } from '../modules/logger.js';
 
+const { Pool } = pkg;
 const { Client, types } = pkg;
 
 // postgres-date (used by pg for OID 1114/1082) parses no-TZ strings with new Date(y,m,d,...)
@@ -16,7 +17,7 @@ types.setTypeParser(1082, (val) => val); // DATE
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     async setupClient(url: string): Promise<void> {
-        this.client = new Client({
+        this.client = new Pool({
             connectionString: url
         });
         try {

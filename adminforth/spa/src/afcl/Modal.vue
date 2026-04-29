@@ -104,6 +104,10 @@ async function close() {
   isModalOpen.value = false;
 }
 
+defineOptions({
+  inheritAttrs: false,
+})
+
 defineExpose({
   open: open,
   close: close,
