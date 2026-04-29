@@ -5,13 +5,13 @@ import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
 import { afLogger, dbLogger } from '../modules/logger.js';
 
-const { Client } = pkg;
+const { Pool } = pkg;
 
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     async setupClient(url: string): Promise<void> {
-        this.client = new Client({
+        this.client = new Pool({
             connectionString: url
         });
         try {
