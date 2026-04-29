@@ -52,9 +52,9 @@ When user clicks the "Save" button on edit page, AdminForth makes a request to t
 
 ![Saving data on edit page](image-27.png)
 
-Practically you can use `edit.beforeSave` hook to modify the data or populate new fields before it is saved to the database.
+Practically you can use `hooks.edit.beforeSave` hook to modify the data or populate new fields before it is saved to the database.
 
-> 👆 Note: according to diagram you should understand that interrupting flow from `edit.afterSave` does not prevent data modification in DB
+> 👆 Note: according to diagram you should understand that interrupting flow from `hooks.edit.afterSave` does not prevent data modification in DB
 
 ## Saving data on create page
 

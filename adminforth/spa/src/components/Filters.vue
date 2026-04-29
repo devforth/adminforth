@@ -195,6 +195,7 @@ const props = defineProps<{
   filters?: AdminforthFilterStore['filters'],
   show: Boolean,
   columnsMinMax: ColumnMinMaxValue,
+  resourceId?: string,
   filtersStore: AdminforthFilterStoreUnwrapped
 }>();
 
@@ -235,7 +236,7 @@ async function loadMoreOptions(columnName: string, searchTerm = '') {
     columnName,
     searchTerm,
     columns: props.columns,
-    resourceId: router.currentRoute.value.params.resourceId as string,
+    resourceId: props.resourceId ?? router.currentRoute.value.params.resourceId as string,
     columnOptions,
     columnLoadingState,
     columnOffsets,
