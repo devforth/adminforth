@@ -8,6 +8,7 @@ import auditLogsResource from "./resources/auditLogs"
 import translations from "./resources/translations";
 import sessionsResource from './resources/agent_resources/sessions';
 import turnsResource from './resources/agent_resources/turns';
+import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
 
@@ -65,6 +66,7 @@ new AdminForth({
     translations,
     sessionsResource,
     turnsResource,
+    jobs_resource,
   ],
   menu: [
 
