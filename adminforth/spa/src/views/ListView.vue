@@ -235,8 +235,6 @@ import {
 import Filters from '@/components/Filters.vue';
 import { useAdminforth } from '@/adminforth';
 
-const { t } = useI18n();
-
 const filtersShow = ref(false);
 const { list, alert } = useAdminforth();
 const coreStore = useCoreStore();

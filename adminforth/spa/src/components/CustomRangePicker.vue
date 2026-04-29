@@ -31,7 +31,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
+import { computed, ref, watch } from "vue";
 import debounce from 'debounce'
 import RangePicker from './RangePicker.vue';
 
@@ -54,14 +54,15 @@ const maxFormatted = computed(() => {
   return isNaN(v) ? 100 : Math.ceil(v);
 });
 
-const start = ref<number | null>(
-  props.valueStart === "" || props.valueStart === null ? null : Number(props.valueStart)
-);
-const end = ref<number | null>(
-  props.valueEnd === "" || props.valueEnd === null ? null : Number(props.valueEnd)
-);
+const normalize = (val: any) => (val === "" || val === null || val === undefined) ? null : Number(val);
 
-const sliderValue = ref<[number, number]>([minFormatted.value, maxFormatted.value]);
+const start = ref<number | null>(normalize(props.valueStart));
+const end = ref<number | null>(normalize(props.valueEnd));
+
+const sliderValue = ref<[number, number]>([
+  start.value ?? minFormatted.value, 
+  end.value ?? maxFormatted.value
+]);
 
 function setSliderValues(s: number | null, e: number | null) {
   sliderValue.value = [s ?? minFormatted.value, e ?? maxFormatted.value];
@@ -69,44 +70,25 @@ function setSliderValues(s: number | null, e: number | null) {
 
 watch([start, end], () => {
   setSliderValues(start.value, end.value);
-});
+}, { immediate: true });
 
 const updateFromSlider = debounce((value: [number, number]) => {
   start.value = value[0] === minFormatted.value ? null : value[0];
   end.value = value[1] === maxFormatted.value ? null : value[1];
 }, 500);
 
-function updateStartFromProps() {
-  const normalized = (props.valueStart === "" || props.valueStart === null || props.valueStart === undefined) 
-    ? null : Number(props.valueStart);
-  if (normalized !== start.value) {
-    start.value = normalized;
-  }
-}
-
-function updateEndFromProps() {
-  const normalized = (props.valueEnd === "" || props.valueEnd === null || props.valueEnd === undefined) 
-    ? null : Number(props.valueEnd);
-  if (normalized !== end.value) {
-    end.value = normalized;
-  }
-}
-
-onMounted(() => {
-  updateStartFromProps();
-  updateEndFromProps();
-
-  watch(() => props.valueStart, updateStartFromProps);
-  watch(() => props.valueEnd, updateEndFromProps);
+watch(() => props.valueStart, (newVal) => {
+  const v = normalize(newVal);
+  if (v !== start.value) start.value = v;
 });
 
-watch(start, (newVal) => {
-  emit('update:valueStart', newVal);
-})
+watch(() => props.valueEnd, (newVal) => {
+  const v = normalize(newVal);
+  if (v !== end.value) end.value = v;
+});
 
-watch(end, (newVal) => {
-  emit('update:valueEnd', newVal);
-})
+watch(start, (newVal) => emit('update:valueStart', newVal));
+watch(end, (newVal) => emit('update:valueEnd', newVal));
 
 watch([minFormatted, maxFormatted], () => {
   setSliderValues(start.value, end.value);
