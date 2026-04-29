@@ -224,7 +224,7 @@ import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } f
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip, Spinner } from '@/afcl'
 import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
-
+import { useI18n } from 'vue-i18n';
 
 import {
   IconBanOutline,
@@ -234,6 +234,8 @@ import {
 
 import Filters from '@/components/Filters.vue';
 import { useAdminforth } from '@/adminforth';
+
+const { t } = useI18n();
 
 const filtersShow = ref(false);
 const { list, alert } = useAdminforth();

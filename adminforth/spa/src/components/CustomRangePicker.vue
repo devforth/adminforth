@@ -18,7 +18,7 @@
       v-model="end"
     >
 
-    <div v-if="min && max" class="w-full px-2.5">
+    <div v-if="min !== undefined && max !== undefined" class="w-full px-2.5">
       <RangePicker
         :dot-size="20"
         height="7.99px"
@@ -36,91 +36,79 @@ import debounce from 'debounce'
 import RangePicker from './RangePicker.vue';
 
 const props = defineProps<{
-  valueStart: number | null,
-  valueEnd: number | null,
-  min: number,
-  max: number,
+  valueStart: number | null | string,
+  valueEnd: number | null | string,
+  min: number | string | undefined,
+  max: number | string | undefined,
 }>()
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
-const minFormatted = computed(() => Math.floor(<number>props.min));
-const maxFormatted = computed(() => Math.ceil(<number>props.max));
+const minFormatted = computed(() => {
+  const v = Number(props.min);
+  return isNaN(v) ? 0 : Math.floor(v);
+});
 
+const maxFormatted = computed(() => {
+  const v = Number(props.max);
+  return isNaN(v) ? 100 : Math.ceil(v);
+});
 
-const start = ref<number | null>(props.valueStart);
-const end = ref<number | null>(props.valueEnd);
+const start = ref<number | null>(
+  props.valueStart === "" || props.valueStart === null ? null : Number(props.valueStart)
+);
+const end = ref<number | null>(
+  props.valueEnd === "" || props.valueEnd === null ? null : Number(props.valueEnd)
+);
 
 const sliderValue = ref<[number, number]>([minFormatted.value, maxFormatted.value]);
 
-watch([start, end], () => {
-  if ( !start.value && end.value ) {
-    setSliderValues(minFormatted.value, end.value);
-  } else if ( start.value && !end.value ) {
-    setSliderValues(start.value, maxFormatted.value);
-  } else if ( !start.value && !end.value ) {
-    setSliderValues(minFormatted.value, maxFormatted.value);
-  } else {
-    setSliderValues(start.value, end.value);
-  }
-})
+function setSliderValues(s: number | null, e: number | null) {
+  sliderValue.value = [s ?? minFormatted.value, e ?? maxFormatted.value];
+}
 
-const updateFromSlider =
-    debounce((value: [number, number]) => {
-      start.value = value[0] === minFormatted.value ? null : value[0];
-      end.value = value[1] === maxFormatted.value ? null : value[1];
-    }, 500);
+watch([start, end], () => {
+  setSliderValues(start.value, end.value);
+});
+
+const updateFromSlider = debounce((value: [number, number]) => {
+  start.value = value[0] === minFormatted.value ? null : value[0];
+  end.value = value[1] === maxFormatted.value ? null : value[1];
+}, 500);
+
+function updateStartFromProps() {
+  const normalized = (props.valueStart === "" || props.valueStart === null || props.valueStart === undefined) 
+    ? null : Number(props.valueStart);
+  if (normalized !== start.value) {
+    start.value = normalized;
+  }
+}
+
+function updateEndFromProps() {
+  const normalized = (props.valueEnd === "" || props.valueEnd === null || props.valueEnd === undefined) 
+    ? null : Number(props.valueEnd);
+  if (normalized !== end.value) {
+    end.value = normalized;
+  }
+}
 
 onMounted(() => {
   updateStartFromProps();
   updateEndFromProps();
 
-  watch(() => props.valueStart, (value) => {
-    updateStartFromProps();
-  });
+  watch(() => props.valueStart, updateStartFromProps);
+  watch(() => props.valueEnd, updateEndFromProps);
+});
 
-  watch(() => props.valueEnd, (value) => {
-    updateEndFromProps();
-  });
+watch(start, (newVal) => {
+  emit('update:valueStart', newVal);
 })
 
-function updateStartFromProps() {
-  if (props.valueStart == start.value) {
-    return;
-  }
-  start.value = props.valueStart;
-  setSliderValues(start.value, end.value)
-}
-
-function updateEndFromProps() {
-  if (props.valueEnd == end.value) {
-    return;
-  }
-  end.value = props.valueEnd;
-  setSliderValues(start.value, end.value)
-}
-
-watch(start, () => {
-  emit('update:valueStart', start.value)
+watch(end, (newVal) => {
+  emit('update:valueEnd', newVal);
 })
 
-watch(end, () => {
-  emit('update:valueEnd', end.value);
+watch([minFormatted, maxFormatted], () => {
+  setSliderValues(start.value, end.value);
 })
-
-watch([minFormatted,maxFormatted], () => {
-  if ( !start.value && end.value ) {
-    setSliderValues(minFormatted.value, end.value);
-  } else if ( start.value && !end.value ) {
-    setSliderValues(start.value, maxFormatted.value);
-  } else if ( !start.value && !end.value ) {
-    setSliderValues(minFormatted.value, maxFormatted.value);
-  } else {
-    setSliderValues(start.value, end.value);
-  }
-})
-
-function setSliderValues(start: any, end: any) {
-  sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
-}
 </script>
