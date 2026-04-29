@@ -57,6 +57,7 @@ model translations {
     // we need both indexes on en_string+category and separately on category
     @@index([en_string, category])
     @@index([category])
+    @@index([completedLangs])
 }
 
 model sessions {
@@ -73,4 +74,16 @@ model turns {
   created_at DateTime
   prompt     String?
   response   String?
+}
+
+model jobs {
+  id          String @id
+  created_at  DateTime
+  finished_at DateTime?
+  started_by  String
+  name        String
+  state       String?
+  progress    String
+  status      String
+  job_handler_name String
 }
