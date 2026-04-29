@@ -582,7 +582,7 @@ async function onClick(e: any, row: any) {
 
 async function deleteRecord(row: any) {
   const data = await confirm({
-    message: t('Are you sure you want to delete this item?'),
+    title: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
     no: t('Cancel'),
   });
