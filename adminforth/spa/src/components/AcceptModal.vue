@@ -33,7 +33,7 @@
             </div>
           </div>
 
-          <hr class="border-t border-gray-100 dark:border-gray-700 my-6">
+          <hr class="border-t-2 border-gray-300 dark:border-gray-700 my-6">
 
           <div class="flex justify-center gap-4 w-full">
             <button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" class="flex-1 py-2.5 px-4 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
