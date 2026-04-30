@@ -372,7 +372,7 @@ import CallActionWrapper from '@/components/CallActionWrapper.vue'
 const coreStore = useCoreStore();
 const { t } = useI18n();
 const { alert, confirm } = useAdminforth();
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   page: number,
   resource: AdminForthResourceFrontend | null,
   rows: any[] | null,
@@ -389,7 +389,9 @@ const props = defineProps<{
   customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration[]
   tableRowReplaceInjection?: AdminForthComponentDeclaration,
   isVirtualScrollEnabled: boolean
-}>();
+}>(), {
+  sort: () => []
+});
 
 //select between all rows or rows, that should be rendered in virtual scroll
 const rowsToRender = computed(() => {
@@ -582,7 +584,7 @@ async function onClick(e: any, row: any) {
 
 async function deleteRecord(row: any) {
   const data = await confirm({
-    message: t('Are you sure you want to delete this item?'),
+    title: t('Are you sure you want to delete this item?'),
     yes: t('Delete'),
     no: t('Cancel'),
   });
