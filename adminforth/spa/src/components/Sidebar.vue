@@ -34,7 +34,7 @@
           v-if="coreStore.config?.showBrandNameInSidebar && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))"
           class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
         >
-          {{ coreStore.config?.brandName }}
+          {{ coreStore.config?.brandName?.length > 10 ? coreStore.config.brandName.slice(0, 10) + '...' : coreStore.config?.brandName }}
         </span>
         <div v-if="!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)" class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
           <component 
