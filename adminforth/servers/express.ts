@@ -458,6 +458,7 @@ class ExpressServer implements IExpressHttpServer {
           description: schema.description,
           request_schema: schema.request,
           response_schema: schema.response,
+          meta: schema.meta,
           handler: async () => null,
         });
       });
