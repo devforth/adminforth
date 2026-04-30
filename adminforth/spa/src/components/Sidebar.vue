@@ -33,7 +33,6 @@
         <span 
           v-if="coreStore.config?.showBrandNameInSidebar && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))"
           class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText truncate max-w"
-          :title="coreStore.config?.brandName"
         >
           {{ coreStore.config?.brandName }}
         </span>
