@@ -6,7 +6,7 @@ import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
 import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
-import sanitizeHtml  from 'sanitize-html'
+import DOMPurify  from 'dompurify'
 import debounce from 'debounce';
 import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
@@ -337,26 +337,25 @@ export function humanifySize(size: number) {
 }
 
 export function protectAgainstXSS(value: string) {
-  return sanitizeHtml(value, {
-    allowedTags: [
-      "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
-      "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
-      "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
-      "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
-      "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
-      "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
-      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", 'img', 'video', 'source'
+  return DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: [
+      "address","article","aside","footer","header","h1","h2","h3","h4",
+      "h5","h6","hgroup","main","nav","section","blockquote","dd","div",
+      "dl","dt","figcaption","figure","hr","li","ol","p","pre",
+      "ul","a","abbr","b","bdi","bdo","br","cite","code","data","dfn",
+      "em","i","kbd","mark","q","rb","rp","rt","rtc","ruby","s","samp",
+      "small","span","strong","sub","sup","time","u","var","wbr","caption",
+      "col","colgroup","table","tbody","td","tfoot","th","thead","tr",
+      "img","video","source"
     ],
-    allowedAttributes: {
-      'li': [ 'data-list' ],
-      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
-      'video': [ 'src', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'width', 'height', 'autoplay', 'playsinline' ],
-      'source': [ 'src', 'type' ],
-      // Allow  markup on spans (classes & styles), and
-      // generic data/aria/style attributes on any element. (e.g. for KaTeX-related previews)
-      'span': [ 'class', 'style' ],
-      '*': [ 'data-*', 'aria-*', 'style' ]
-    },
+    ALLOWED_ATTR: [
+      "data-list",
+      "src","srcset","alt","title","width","height","loading",
+      "controls","autoplay","loop","muted","poster","playsinline","type",
+      "class","style"
+    ],
+    ALLOW_DATA_ATTR: true,
+    ALLOW_ARIA_ATTR: true
   });
 }
 
