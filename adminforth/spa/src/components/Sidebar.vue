@@ -32,9 +32,10 @@
         <img v-if="coreStore.config?.iconOnlySidebar?.logo" :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) }" />
         <span 
           v-if="coreStore.config?.showBrandNameInSidebar && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))"
-          class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
+          class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText truncate max-w"
+          :title="coreStore.config?.brandName"
         >
-          {{ coreStore.config?.brandName?.length > 10 ? coreStore.config.brandName.slice(0, 10) + '...' : coreStore.config?.brandName }}
+          {{ coreStore.config?.brandName }}
         </span>
         <div v-if="!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering)" class="flex items-center gap-2 w-auto" :class="{'w-full justify-end': coreStore.config?.showBrandLogoInSidebar === false}">
           <component 
