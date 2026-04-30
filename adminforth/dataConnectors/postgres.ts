@@ -12,6 +12,7 @@ const { Client, types } = pkg;
 // which treats them as LOCAL server time. Return raw strings so getFieldValue can parse as UTC.
 types.setTypeParser(1114, (val) => val); // TIMESTAMP WITHOUT TIME ZONE
 types.setTypeParser(1082, (val) => val); // DATE
+types.setTypeParser(1700, (val) => val === null ? null : parseFloat(val).toString()); // NUMERIC/DECIMAL
 
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
