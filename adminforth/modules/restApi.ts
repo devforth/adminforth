@@ -2238,6 +2238,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
         }
+
+        const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, recordId);
+        if (!record){
+            return { error: `Record with ${recordId} not found` };
+        }
         const { allowedActions } = await interpretResource(
           adminUser, 
           resource, 
@@ -2257,16 +2262,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         if (action.url) {
+          const redirectUrl = typeof action.url === 'function'
+            ? await action.url({ record, recordId, adminUser, resource })
+            : action.url;
           return {
             actionId,
             recordId,
+            record,
             resourceId,
-            redirectUrl: action.url
+            redirectUrl,
           }
         }
-
         const actionResponse = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, response, extra: {...extra, cookies: cookies, headers: headers} });
-        
         return {
           actionId,
           recordId,

@@ -1423,7 +1423,7 @@ export interface AdminForthActionInput {
     adminUser: AdminUser;
     standardAllowedActions: AllowedActions;
   }) => boolean | Promise<boolean>);
-  url?: string;
+  url?: string | ((params: { adminUser: AdminUser; resource: AdminForthResource; recordId: string, record: any }) => string);
   bulkHandler?: (params: {
       adminforth: IAdminForth;
       resource: AdminForthResource;

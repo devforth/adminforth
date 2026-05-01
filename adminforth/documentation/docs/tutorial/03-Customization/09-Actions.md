@@ -190,7 +190,7 @@ Example to generate dynamic URL:
 {
   name: 'View on Google',
   icon: 'flowbite:external-link-solid',
-  url: async ({record, adminuser}) => `https://google.com/search?q=Apartment ${record.title}`,
+  url: async ({record, recordId, adminUser, resource }) => `https://google.com/search?q=Apartment ${record.title}`,
   showIn: {
     list: true,
     showButton: true
@@ -198,7 +198,7 @@ Example to generate dynamic URL:
 }
 ```
 
-> ☝️ Note: Though url function might be async we recommend to omit long awaits, or ideally don't use them at all, cause slow execution of this hoock might be a subject of bottleneck for resource pages rendering. For bult actions the async functions would be called in parallel to optimize loading speed.
+> ☝️ Note: Though url function might be async we recommend to omit long awaits, or ideally don't use them at all, cause slow execution of this hook might be a subject of bottleneck for resource pages rendering. For built actions the async functions would be called in parallel to optimize loading speed.
 
 
 ### Deep-level redirects.
@@ -207,14 +207,14 @@ Using `url` prop described above is recommended way to implementing URL navigati
 
 However, rearely you might also like to decide whether to redirect only after performing some logic (conditionally). This way is not recommended for most of cases, because it is not compatible with action native features (we can't know URL before executing action body):
 
-```
+
 ```ts
 {
   name: 'View on Google',
   icon: 'flowbite:external-link-solid',
   action: async ({ recordId }) => {
     if (await testSomething(recordId)) {
-        return { ok: true, redirectURL: 'https://google.com/search?q=apartment' };
+        return { ok: true, redirectUrl: 'https://google.com/search?q=apartment' };
     };
     return { ok: true, successMessage: 'Done' };
   },
