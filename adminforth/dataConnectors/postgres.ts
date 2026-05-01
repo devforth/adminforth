@@ -13,6 +13,7 @@ const { Client, types } = pkg;
 types.setTypeParser(1114, (val) => val); // TIMESTAMP WITHOUT TIME ZONE
 types.setTypeParser(1082, (val) => val); // DATE
 
+
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
     async setupClient(url: string): Promise<void> {
@@ -212,7 +213,6 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field: ${field.name} in table: ${field.table}`);
             }
         }
-
 
         if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
