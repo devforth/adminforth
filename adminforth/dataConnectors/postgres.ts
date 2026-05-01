@@ -213,6 +213,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             }
         }
 
+
         if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
                 return null;
