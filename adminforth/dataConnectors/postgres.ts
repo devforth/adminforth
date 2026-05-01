@@ -12,8 +12,6 @@ const { Client, types } = pkg;
 // which treats them as LOCAL server time. Return raw strings so getFieldValue can parse as UTC.
 types.setTypeParser(1114, (val) => val); // TIMESTAMP WITHOUT TIME ZONE
 types.setTypeParser(1082, (val) => val); // DATE
-types.setTypeParser(1700, (val) => val === null ? null : parseFloat(val).toString()); // NUMERIC/DECIMAL
-
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -213,6 +211,11 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             } else {
                 throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field: ${field.name} in table: ${field.table}`);
             }
+        }
+
+        if (field.type === AdminForthDataTypes.DECIMAL) {
+            const parsed = Number(value);
+            return isNaN(parsed) ? value : parsed;
         }
 
         if (field.type == AdminForthDataTypes.DATE) {
