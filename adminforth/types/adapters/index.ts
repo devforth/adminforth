@@ -15,3 +15,13 @@ export type { ImageVisionAdapter } from './ImageVisionAdapter.js';
 export type { OAuth2Adapter } from './OAuth2Adapter.js';
 export type { StorageAdapter } from './StorageAdapter.js';
 export type { CaptchaAdapter } from './CaptchaAdapter.js';
+export type {
+	AudioAdapter,
+	SpeechToTextAdapter,
+	SpeechToTextInput,
+	SpeechToTextResult,
+	TextToSpeechAdapter,
+	TextToSpeechInput,
+	TextToSpeechResult,
+	TtsAudioFormat,
+} from './AudioAdapter.js';
