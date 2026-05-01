@@ -4,7 +4,6 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
 import { afLogger, dbLogger } from '../modules/logger.js';
-import { Decimal } from 'decimal.js';
 
 const { Pool } = pkg;
 const { Client, types } = pkg;
@@ -213,7 +212,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 throw new Error(`AdminForth does not support row type: ${field._underlineType} for timestamps, use VARCHAR (with iso strings) or TIMESTAMP/INT (with unix timestamps). Issue in field: ${field.name} in table: ${field.table}`);
             }
         }
-        
+
         if (field.type == AdminForthDataTypes.DATE) {
             if (!value) {
                 return null;
