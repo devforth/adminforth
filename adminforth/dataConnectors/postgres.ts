@@ -4,6 +4,7 @@ import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirection
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
 import { afLogger, dbLogger } from '../modules/logger.js';
+import { Decimal } from 'decimal.js';
 
 const { Pool } = pkg;
 const { Client, types } = pkg;
@@ -215,16 +216,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
 
         if (field.type === AdminForthDataTypes.DECIMAL) {
             if (value !== null && value !== undefined) {
-                
-                if (value.includes('.')) {
-                    
-                    let trimmed = value.replace(/0+$/, '');
-                    
-                    if (trimmed.endsWith('.')) {
-                        return trimmed.slice(0, -1); 
-                    }
-                    return trimmed;
-                }
+                return new Decimal(value).toSignificantDigits().toString();
             }
             return value;
         }

@@ -99,6 +99,7 @@
     "chalk": "^5.4.1",
     "connection-string": "^4.4.0",
     "dayjs": "^1.11.11",
+    "decimal.js": "^10.6.0",
     "dotenv": "^16.4.5",
     "esm": "^3.2.25",
     "execa": "^9.5.2",
