@@ -163,9 +163,12 @@ Instead of defining an `action` handler, you can specify a `url` that the user w
 }
 ```
 
+> ☝️ Note: You cannot specify both `action` and `url` for the same action - only one should be used.
+
 The URL can be:
 - A relative path within your admin panel (starting with '/')
 - An absolute URL (starting with 'http://' or 'https://')
+- function which creates URL based on record fields
 
 To open the URL in a new tab, append `target=_blank` as a query parameter. If the URL already has query parameters, use `&target=_blank`; otherwise use `?target=_blank`:
 
@@ -181,7 +184,46 @@ To open the URL in a new tab, append `target=_blank` as a query parameter. If th
 }
 ```
 
-> ☝️ Note: You cannot specify both `action` and `url` for the same action - only one should be used.
+Example to generate dynamic URL:
+
+```ts
+{
+  name: 'View on Google',
+  icon: 'flowbite:external-link-solid',
+  url: async ({record, adminuser}) => `https://google.com/search?q=Apartment ${record.title}`,
+  showIn: {
+    list: true,
+    showButton: true
+  }
+}
+```
+
+> ☝️ Note: Though url function might be async we recommend to omit long awaits, or ideally don't use them at all, cause slow execution of this hoock might be a subject of bottleneck for resource pages rendering. For bult actions the async functions would be called in parallel to optimize loading speed.
+
+
+### Deep-level redirects.
+
+Using `url` prop described above is recommended way to implementing URL navigation from actions (internal or external), because URLs are rendered into direct anchour tag and support all anchour features (like Open in new tab). 
+
+However, rearely you might also like to decide whether to redirect only after performing some logic (conditionally). This way is not recommended for most of cases, because it is not compatible with action native features (we can't know URL before executing action body):
+
+```
+```ts
+{
+  name: 'View on Google',
+  icon: 'flowbite:external-link-solid',
+  action: async ({ recordId }) => {
+    if (await testSomething(recordId)) {
+        return { ok: true, redirectURL: 'https://google.com/search?q=apartment' };
+    };
+    return { ok: true, successMessage: 'Done' };
+  },
+  showIn: {
+    list: true,
+    showButton: true
+  }
+}
+```
 
 ## Custom Component
 
