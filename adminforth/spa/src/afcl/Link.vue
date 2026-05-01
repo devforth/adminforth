@@ -3,7 +3,7 @@
     v-if="isExternal"
     v-bind="$attrs"
     :href="to"
-    target="_blank"
+    :target="target"
     rel="noopener noreferrer"
     :class="linkClasses"
   >
@@ -14,6 +14,7 @@
     v-else
     v-bind="$attrs"
     :to="to"
+    :target="target"
     :class="linkClasses"
   >
     <slot></slot>
@@ -25,6 +26,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{
   to: string,
+  target?: 'blank' | 'self' | 'parent' | 'top'
 }>();
 
 const isExternal = computed(() => {
