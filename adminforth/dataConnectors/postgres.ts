@@ -214,8 +214,19 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         }
 
         if (field.type === AdminForthDataTypes.DECIMAL) {
-            const parsed = Number(value);
-            return isNaN(parsed) ? value : parsed;
+            if (value !== null && value !== undefined) {
+                
+                if (value.includes('.')) {
+                    
+                    let trimmed = value.replace(/0+$/, '');
+                    
+                    if (trimmed.endsWith('.')) {
+                        return trimmed.slice(0, -1); 
+                    }
+                    return trimmed;
+                }
+            }
+            return value;
         }
 
         if (field.type == AdminForthDataTypes.DATE) {
