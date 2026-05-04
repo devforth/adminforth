@@ -99,7 +99,6 @@
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :readonly="(column.editReadonly && source === 'edit') || readonly"      
       :modelValue="value?.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1')"
       @update:modelValue="(val: string | number) => $emit('update:modelValue', val !== null ? String(val) : '')"
     />
