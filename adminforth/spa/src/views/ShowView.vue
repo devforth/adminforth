@@ -311,6 +311,7 @@ const otherColumns = computed(() => {
 async function deleteRecord() {
   const data = await confirm({
     title: t('Are you sure you want to delete this item?'),
+    message: t(`This process is irreversible.`),
     yes: t('Delete'),
     no: t('Cancel'),
   });
