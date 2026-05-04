@@ -91,15 +91,21 @@
     />
     <Input
       v-else-if="(type || column.type) === 'decimal'"
+      ref="input"
       type="number"
+      inputmode="decimal"
       step="any"
       class="w-40"
       placeholder="0.0"
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :modelValue="String(value)"
-      @update:modelValue="(val: any) => $emit('update:modelValue', val)"
+      :readonly="(column.editReadonly && source === 'edit') || readonly"
+      
+      :modelValue="value !== null && value !== undefined ? parseFloat(value) : ''"
+      
+      @update:modelValue="$emit('update:modelValue', $event)"
+      
       @blur="$emit('update:modelValue', value ? parseFloat(value).toString() : '')"
     />
     <Input
