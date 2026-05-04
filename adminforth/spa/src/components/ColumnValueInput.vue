@@ -101,11 +101,8 @@
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
-      
       :modelValue="value !== null && value !== undefined ? parseFloat(value) : ''"
-      
       @update:modelValue="$emit('update:modelValue', $event)"
-      
       @blur="$emit('update:modelValue', value ? parseFloat(value).toString() : '')"
     />
     <Input
@@ -212,6 +209,7 @@
 
   const columnLoadingState = inject('columnLoadingState', {} as any);
   const onSearchInput = inject('onSearchInput', {} as any);
+
   const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
 const input = ref<HTMLInputElement | null>(null);
