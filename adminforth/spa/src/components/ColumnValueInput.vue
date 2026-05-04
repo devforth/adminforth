@@ -95,18 +95,22 @@
       type="text"
       inputmode="decimal"
       class="w-40"
+      placeholder="0.0"
+      :fullWidth="true"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
       :modelValue="isEditing ? value : cleanDecimalValue(value)"
       @focus="() => {
         isEditing = true;
         $emit('update:modelValue', cleanDecimalValue(value));
       }"
-      @update:modelValue="val => $emit('update:modelValue', val.replace(',', '.').replace(/[^\d.]/g, ''))"
+      @update:modelValue="(val: string) => $emit('update:modelValue', val.replace(',', '.').replace(/[^\d.]/g, ''))"
       @blur="() => {
         isEditing = false;
         $emit('update:modelValue', cleanDecimalValue(value));
-      }"
+      }" 
     />
-        <Input
+    <Input
       v-else-if="(type || column.type) === 'float'"
       ref="input"
       type="number"
