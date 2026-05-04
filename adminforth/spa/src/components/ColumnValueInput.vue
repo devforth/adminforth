@@ -99,8 +99,8 @@
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :modelValue="value?.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1')"
-      @update:modelValue="(val: string | number) => $emit('update:modelValue', val !== null ? String(val) : '')"
+      :modelValue="value == null ? null : value.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1')"
+      @update:modelValue="(val: string | number | null | undefined) => $emit('update:modelValue', val == null || (typeof val === 'number' && Number.isNaN(val)) ? '' : String(val))"
     />
     <Input
       v-else-if="(type || column.type) === 'float'"
