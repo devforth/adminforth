@@ -99,9 +99,8 @@
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :modelValue="value !== null && value !== undefined ? parseFloat(value) : ''"
+      :modelValue="value?.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1')"
       @update:modelValue="$emit('update:modelValue', $event)"
-      @blur="$emit('update:modelValue', value ? parseFloat(value).toString() : '')"
     />
     <Input
       v-else-if="(type || column.type) === 'float'"
