@@ -94,7 +94,11 @@
       type="number"
       step="any"
       class="w-40"
-      :modelValue="value ? parseFloat(value) : ''"
+      placeholder="0.0"
+      :fullWidth="true"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
+      :modelValue="String(value)"
       @update:modelValue="(val: any) => $emit('update:modelValue', val)"
       @blur="$emit('update:modelValue', value ? parseFloat(value).toString() : '')"
     />
