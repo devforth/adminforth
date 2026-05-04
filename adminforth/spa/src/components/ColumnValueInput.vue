@@ -99,7 +99,6 @@
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :readonly="(column.editReadonly && source === 'edit') || readonly"
       :modelValue="value !== null && value !== undefined ? parseFloat(value) : ''"
       @update:modelValue="$emit('update:modelValue', $event)"
       @blur="$emit('update:modelValue', value ? parseFloat(value).toString() : '')"
