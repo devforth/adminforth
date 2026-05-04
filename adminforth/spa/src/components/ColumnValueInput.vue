@@ -94,7 +94,6 @@
       ref="input"
       type="number"
       inputmode="decimal"
-      step="any"
       class="w-40"
       placeholder="0.0"
       :fullWidth="true"
