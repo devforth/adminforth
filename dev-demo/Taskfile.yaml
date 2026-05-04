@@ -55,6 +55,7 @@ vars:
     - "adminforth-completion-adapter-openai-responses"
     - "adminforth-completion-adapter-antropic-messages"
     - "adminforth-completion-adapter-google-gemini"
+    - "adminforth-audio-adapter-openai"
 
 
 tasks:
