@@ -91,17 +91,12 @@
     />
     <Input
       v-else-if="(type || column.type) === 'decimal'"
-      ref="input"
-      type="text"
-      inputmode="decimal"
+      type="number"
+      step="any"
       class="w-40"
-      :modelValue="cleanDecimalValue(value)"
-      placeholder="0.0"
-      :fullWidth="true"
-      :prefix="column.inputPrefix"
-      :suffix="column.inputSuffix"
-      @update:modelValue="(val: string) => $emit('update:modelValue', val.replace(',', '.').replace(/[^\d.]/g, ''))"
-      @blur="$emit('update:modelValue', cleanDecimalValue(value))"
+      :modelValue="value ? parseFloat(value) : ''"
+      @update:modelValue="(val: any) => $emit('update:modelValue', val)"
+      @blur="$emit('update:modelValue', value ? parseFloat(value).toString() : '')"
     />
     <Input
       v-else-if="(type || column.type) === 'float'"
@@ -210,8 +205,6 @@
   const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
 const input = ref<HTMLInputElement | null>(null);
-  const cleanDecimalValue = (v: any) => v?.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1') || '';
-
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [
       { label: t('Yes'), value: true },
