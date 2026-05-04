@@ -281,3 +281,88 @@ Create INDEX is just for example, you have to use your migrator / ORM to create 
 First one covers performance for the first query, second one for the second query. 
 If you did not understand how indexes are created: **get sorted tuple of all fields in filters + all fields in sort,
 in order they appear in filters and sort**.
+
+## Get aggregated data from database
+The aggregate method allows you to compute statistical summaries over database records instead of returning raw rows. It is useful for building analytics, dashboards, charts, and reporting endpoints.
+
+You can combine:
+- filters (to narrow down dataset)
+- aggregates (to compute metrics like count, average, sum, median)
+- grouping (to split results by field or time periods)
+This lets you answer questions like:
+- How many apartments are listed per day?
+- What is the average price per country?
+- What is the total revenue per category?
+
+### Available aggregates
+- Aggregates.count()
+-  Aggregates.avg(field)
+- Aggregates.sum(field)
+- Aggregates.median(field)
+
+### Available grouping
+- GroupBy.Field(field)
+- GroupBy.DateTrunc(field, unit, timezone)
+
+Example:
+```ts
+GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv')
+```
+
+### Response format
+```ts
+[
+  {
+    group: string,
+    count?: number | string,
+    avgPrice?: number | null,
+    sum?: number | null,
+    medianPrice?: number | null,
+  }
+]
+```
+
+### Get daily apartment stats (count, avg, sum, median) for listed apartments
+```ts
+const rows = await admin.resource('apartments').aggregate(
+  Filters.EQ('listed', true),
+  {
+    count: Aggregates.count(),
+    avgPrice: Aggregates.avg('price'),
+    sum: Aggregates.sum('price'),
+    medianPrice: Aggregates.median('price'),
+  },
+  GroupBy.DateTrunc('created_at', 'day', 'Europe/Kyiv'),
+);
+```
+
+What’s happening here:
+- Filters.EQ('listed', true)
+→ only apartments that are listed (listed = true)
+- aggregates:
+count() → number of records in each group
+avg('price') → average price
+sum('price') → total price
+median('price') → median price
+- GroupBy.DateTrunc('created_at', 'day', 'Europe/Kyiv')
+→ groups data by day (with timezone applied)
+
+### Get apartment stats grouped by country
+```ts
+const rows = await admin.resource('apartments').aggregate(
+  [],
+  {
+    count: Aggregates.count(),
+    avgPrice: Aggregates.avg('price'),
+    sum: Aggregates.sum('price'),
+    medianPrice: Aggregates.median('price'),
+  },
+  GroupBy.Field('country'),
+);
+```
+
+What is happening here:
+- [] → no filters (all records)
+- GroupBy.Field('country')
+→ grouping by country
+- same aggregates (count, avg, sum, median)
