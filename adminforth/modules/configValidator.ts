@@ -437,7 +437,7 @@ export default class ConfigValidator implements IConfigValidator {
       }
 
       const shownInNonBulk = action.showIn.list || action.showIn.listThreeDotsMenu || action.showIn.showButton || action.showIn.showThreeDotsMenu;
-      if (shownInNonBulk && !action.action && !action.url) {
+      if (shownInNonBulk && !action.bulkHandler && !action.action && !action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" has showIn enabled for non-bulk locations (list, listThreeDotsMenu, showButton, showThreeDotsMenu) but has no "action" or "url" handler. Either add an "action" handler or set those showIn flags to false.`);
       }
     });
