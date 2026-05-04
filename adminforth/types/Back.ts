@@ -63,6 +63,7 @@ export interface IAdminForthEndpointOptions {
   response_schema?: AnySchemaObject,
   responce_schema?: AnySchemaObject,
   meta?: Record<string, unknown>,
+  target?: 'json' | 'upload',
   handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
 }
 
