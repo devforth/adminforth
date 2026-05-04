@@ -61,6 +61,7 @@ export async function startBulkAction(actionId: string, resource: AdminForthReso
   if (action?.confirm) {
     const confirmed = await confirm({
       title: action.confirm,
+      message: t(`Deleting ${checkboxes.value.length} ${checkboxes.value.length === 1 ? 'item' : 'items'}. This process is irreversible.`),
     });
     if (!confirmed) {
       return;
