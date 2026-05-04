@@ -417,15 +417,18 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.id) {
         action.id = md5hash(action.name);
       }
+
+      const defaultListValue = !!(action.action || action.url);
+
       if (!action.showIn) {
         action.showIn = {
-          list: true,
+          list: defaultListValue,
           listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
-        action.showIn.list = action.showIn.list ?? true;
+        action.showIn.list = action.showIn.list ?? defaultListValue;
         action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
@@ -437,7 +440,7 @@ export default class ConfigValidator implements IConfigValidator {
       }
 
       const shownInNonBulk = action.showIn.list || action.showIn.listThreeDotsMenu || action.showIn.showButton || action.showIn.showThreeDotsMenu;
-      if (shownInNonBulk && !action.bulkHandler && !action.action && !action.url) {
+      if (shownInNonBulk && !action.action && !action.url) {
         errors.push(`Resource "${res.resourceId}" action "${action.name}" has showIn enabled for non-bulk locations (list, listThreeDotsMenu, showButton, showThreeDotsMenu) but has no "action" or "url" handler. Either add an "action" handler or set those showIn flags to false.`);
       }
     });
