@@ -96,6 +96,10 @@
       inputmode="decimal"
       class="w-40"
       :modelValue="cleanDecimalValue(value)"
+      placeholder="0.0"
+      :fullWidth="true"
+      :prefix="column.inputPrefix"
+      :suffix="column.inputSuffix"
       @update:modelValue="(val: string) => $emit('update:modelValue', val.replace(',', '.').replace(/[^\d.]/g, ''))"
       @blur="$emit('update:modelValue', cleanDecimalValue(value))"
     />
