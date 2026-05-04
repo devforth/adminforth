@@ -112,6 +112,7 @@
     "jsonwebtoken": "^9.0.2",
     "listr2": "^8.2.5",
     "mongodb": "6.6",
+    "multer": "^2.1.1",
     "mysql2": "^3.14.2",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.5",

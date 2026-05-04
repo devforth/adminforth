@@ -15,6 +15,7 @@ import { randomUUID } from 'crypto';
 import { listify } from '../modules/utils.js';
 import { afLogger } from '../modules/logger.js';
 import * as z from 'zod';
+import multer from 'multer';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -62,6 +63,7 @@ const EXPRESS_REGEXP_PARAM_CAPTURE_RE = /\(\?:\(\[\^\\\/]\+\?\)\)/g;
 const EXPRESS_REGEXP_ESCAPED_SLASH_RE = /\\\//g;
 const EXPRESS_REGEXP_TRAILING_DOLLAR_RE = /\$$/;
 const EXPRESS_REGEXP_LEADING_CARET_RE = /^\^/;
+type MulterParser = (req: any, res: any, callback: (error?: unknown) => void) => void;
 
 type RegisteredExpressRouteSchema = IAdminForthExpressRouteSchema & {
   request?: AnySchemaObject;
@@ -154,9 +156,13 @@ class ExpressServer implements IExpressHttpServer {
   adminforth: IAdminForth;
   server: http.Server;
   schemaAwareRouteRegistrationPatched = false;
+  uploadParser: MulterParser;
 
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
+    this.uploadParser = multer({
+      storage: multer.memoryStorage(),
+    }).any();
   }
 
   setupSpaServer() {
@@ -543,6 +549,7 @@ class ExpressServer implements IExpressHttpServer {
       request_schema,
       response_schema,
       responce_schema,
+      target='json'
     } = options;
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
@@ -572,17 +579,39 @@ class ExpressServer implements IExpressHttpServer {
       // AdminForth API endpoints accept only application/json for POST, PUT, PATCH, DELETE
       // If you need other content types, use a custom server endpoint.
       const method = (req.method || '').toUpperCase();
+      const contentTypeHeader = (req.headers?.['content-type'] || '').toString();
       if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        const contentTypeHeader = (req.headers?.['content-type'] || '').toString();
-        const isJson = contentTypeHeader.toLowerCase().startsWith('application/json');
-        if (!isJson) {
+        const expectedContentType = target === 'upload' ? 'multipart/form-data' : 'application/json';
+        const hasExpectedContentType = contentTypeHeader.toLowerCase().startsWith(expectedContentType);
+        if (!hasExpectedContentType) {
           const passed = contentTypeHeader || 'undefined';
-          res.status(415).send(`AdminForth API endpoints support only requests with Content/Type: application/json, when you passed: ${passed}. Please use custom server endpoint if you really need this content type`);
+          res.status(415).send(`AdminForth API endpoint supports only requests with Content-Type: ${expectedContentType}, when you passed: ${passed}. Please use custom server endpoint if you really need this content type`);
+          return;
+        }
+      }
+      if (target === 'upload') {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            this.uploadParser(req, res, (error?: unknown) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve();
+            });
+          });
+          if (!(req as any).file && Array.isArray((req as any).files) && (req as any).files.length) {
+            (req as any).file = (req as any).files[0];
+          }
+        } catch (error) {
+          afLogger.error(`Failed to parse multipart form-data body, ${error}`);
+          res.status(400).send('Invalid multipart/form-data body');
           return;
         }
       }
       let body = req.body || {};
-      if (typeof body === 'string') {
+      if (typeof body === 'string' && target === 'json') {
         try {
           body = JSON.parse(body);
         } catch (e) {
