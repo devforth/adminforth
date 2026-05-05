@@ -1,5 +1,5 @@
 ---
-description: "Hooks are powerful tools to modify the data before it is saved to the database, execute something after data were saved or deleted, change the query before fetching items from the database, modify the fetched data before it is displayed in the list and show, and prevent the request to db depending on some condition."
+description: "Guide to AdminForth lifecycle hooks for list, show, create, edit, and delete flows, including request interception, response shaping, and save-time side effects."
 image: "/ogs/hooks.png"  # Path to the OG image
 ---
 

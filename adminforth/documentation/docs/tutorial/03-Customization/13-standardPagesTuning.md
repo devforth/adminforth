@@ -1,3 +1,6 @@
+---
+description: "Guide to tuning standard AdminForth list, show, edit, and create pages with field groups, sorting, sticky columns, conditional display, defaults, and layout options."
+---
 
 # Standard pages tuning
 

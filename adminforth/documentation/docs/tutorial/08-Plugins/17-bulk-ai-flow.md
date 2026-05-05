@@ -1,5 +1,6 @@
 ---
 title: Bulk AI Flow
+description: "Guide to the Bulk AI Flow plugin, including text and vision modes, prompt configuration, per-record context, editable prompts, and batch content generation."
 slug: /tutorial/Plugins/bulk-ai-flow
 ---
 

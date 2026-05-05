@@ -1,3 +1,7 @@
+---
+description: "Reference page for the Upload plugin API, covering backend buffer uploads, uploads to new or existing records, and presigned browser upload flows."
+---
+
 # Upload API
 
 The Upload plugin exposes an API for both backend-only uploads and direct browser uploads using presigned URLs. You can:

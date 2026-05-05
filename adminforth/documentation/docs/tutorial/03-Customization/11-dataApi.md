@@ -1,3 +1,7 @@
+---
+description: "Guide to the AdminForth Data API for querying, creating, updating, and deleting records programmatically, including filters, sorting, aggregations, and raw queries."
+---
+
 # Data API
 
 AdminForth Data API is a minimal set of methods to manipulate the data in the database. 

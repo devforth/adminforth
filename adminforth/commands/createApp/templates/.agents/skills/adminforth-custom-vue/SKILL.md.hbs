@@ -1,0 +1,340 @@
+---
+name: adminforth-custom-vue
+description: "Use when implementing AdminForth custom Vue UI: field components, page injections, login or global injections, meta-driven component declarations, and frontend packages inside custom/."
+user-invocable: true
+---
+
+# AdminForth Custom Vue Workflow
+
+## When to Use
+
+- Editing files under `custom/`.
+- Adding custom field renderers or editors via `column.components`.
+- Adding resource page injections, login injections, or global layout injections.
+- Passing `meta` into reusable Vue components.
+- Installing frontend packages used only by custom AdminForth Vue code.
+
+## `custom/` Directory and `@@/`
+
+- `custom/` is the frontend workspace for AdminForth custom Vue code.
+- By default, `@@/Something.vue` means “resolve this path from `customComponentsDir` on the backend”, and `customComponentsDir` defaults to `./custom`.
+- Example: `@@/reports/OrdersHeader.vue` maps to `./custom/reports/OrdersHeader.vue`.
+- The same `@@/` prefix also works for assets and helper files that are bundled into the SPA.
+
+## Frontend Packages in `custom/`
+
+- Install frontend-only dependencies inside `custom/`, not in the app root.
+
+```bash
+cd custom
+{{packageManager}} install apexcharts vue3-apexcharts
+```
+
+- If `custom/package.json` does not exist yet, initialize the folder first.
+
+```bash
+cd custom
+{{packageManager}} init
+```
+
+## Organizing Components
+
+- You can freely create subfolders and split components into smaller children.
+- Example structure:
+
+```text
+custom/
+  reports/
+    OrdersTopPanel.vue
+    parts/
+      OrdersTotals.vue
+      OrdersFilters.vue
+```
+
+- Example parent component using subcomponents:
+
+```vue
+<template>
+  <section class="grid gap-4 md:grid-cols-2">
+    <OrdersTotals :record="record" />
+    <OrdersFilters :meta="meta" />
+  </section>
+</template>
+
+<script setup lang="ts">
+import OrdersTotals from './parts/OrdersTotals.vue';
+import OrdersFilters from './parts/OrdersFilters.vue';
+
+defineProps<{
+  record?: any;
+  meta?: any;
+}>();
+</script>
+```
+
+- In AdminForth config you still reference only the entry component:
+
+```ts
+beforeBreadcrumbs: '@@/reports/OrdersTopPanel.vue'
+```
+
+## Short vs Full Component Declaration
+
+- Short declaration is just a file string:
+
+```ts
+show: '@@/RoomsCell.vue'
+```
+
+- Full declaration lets you pass `meta`:
+
+```ts
+show: {
+  file: '@@/RoomsCell.vue',
+  meta: {
+    filler: '🟨',
+  },
+}
+```
+
+- Use full declaration when the same component should behave differently in different places.
+- `meta` is passed into the Vue component as a prop.
+- Common `meta` use cases are reusable display options, plugin settings, `thinEnoughToShrinkTable`, `afOrder`, or custom page layout flags.
+
+## Field Component Spots
+
+- `components.show`: custom value renderer on show page.
+- `components.showRow`: replaces the full show-table row.
+- `components.create`: custom editor on create page.
+- `components.edit`: custom editor on edit page.
+- `components.list`: custom value renderer in list cells.
+- `components.filter`: custom filter input.
+
+## Field Component Props and Emits
+
+- `show` and `list` components should expect `column`, `record`, `resource`, `adminUser`, and optional `meta`.
+- In practice, custom `edit` and `create` components receive `column`, `value`, `record`, `resource`, `adminUser`, `readonly`, and optional `meta`.
+- Custom `edit` and `create` components can emit:
+  - `update:value` to change the current field value.
+  - `update:recordFieldValue` to change another field in the same record.
+  - `update:inValidity` to report custom validation state.
+  - `update:emptiness` to report custom emptiness rules.
+- If you update hidden technical fields through `update:recordFieldValue`, the target column may need `allowModifyWhenNotShowInCreate` or `allowModifyWhenNotShowInEdit`.
+
+## Custom Edit Component Example
+
+```vue
+<template>
+  <div class="grid gap-2">
+    <Input
+      :model-value="localValue"
+      :readonly="readonly"
+      :placeholder="meta?.placeholder || column.label"
+      @update:model-value="onInput"
+    />
+
+    <p v-if="errorMessage" class="text-sm text-red-600">
+      {{ errorMessage }}
+    </p>
+
+    <p v-else-if="isEmpty" class="text-sm text-amber-600">
+      Value is currently empty
+    </p>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import Input from '@/afcl/Input.vue';
+import type {
+  AdminForthResourceColumnCommon,
+  AdminForthResourceCommon,
+  AdminUser,
+} from '@/types/Common';
+
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon;
+  value: string | null | undefined;
+  record: Record<string, any>;
+  meta?: { minLength?: number; placeholder?: string };
+  resource: AdminForthResourceCommon;
+  adminUser: AdminUser;
+  readonly: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:value', value: string): void;
+  (e: 'update:recordFieldValue', payload: { fieldName: string; fieldValue: any }): void;
+  (e: 'update:inValidity', value: string | false): void;
+  (e: 'update:emptiness', value: boolean): void;
+}>();
+
+const localValue = ref(props.value ?? '');
+const WHITESPACE_RE = /\s+/g;
+
+const isEmpty = computed(() => localValue.value.trim() === '');
+const errorMessage = computed(() => {
+  const minLength = props.meta?.minLength ?? 3;
+  if (isEmpty.value) {
+    return false;
+  }
+  return localValue.value.trim().length < minLength
+    ? `Minimum length is ${minLength}`
+    : false;
+});
+
+onMounted(syncState);
+
+function onInput(nextValue: string) {
+  localValue.value = nextValue;
+  emit('update:value', nextValue);
+  emit('update:recordFieldValue', {
+    fieldName: 'slug',
+    fieldValue: nextValue.toLowerCase().trim().replace(WHITESPACE_RE, '-'),
+  });
+  syncState();
+}
+
+function syncState() {
+  // for edit/create components where emptiness is not obvious (e.g. image was not uploaded), always emit emptiness when it change  
+  emit('update:emptiness', isEmpty.value);
+
+  // for custom validity (e.g. upload still in progress), emit error message or false for valid
+  emit('update:inValidity', errorMessage.value || false);
+}
+</script>
+```
+
+## Custom List and Show Example with `meta`
+
+```ts
+{
+  name: 'number_of_rooms',
+  components: {
+    show: {
+      file: '@@/RoomsCell.vue',
+      meta: { filler: '🟨', suffix: 'rooms' },
+    },
+    list: {
+      file: '@@/RoomsCell.vue',
+      meta: { filler: '🟦', suffix: 'r' },
+    },
+  },
+}
+```
+
+```vue
+<template>
+  <div class="flex items-center gap-2">
+    <span>
+      {{ meta?.filler?.repeat(record.number_of_rooms || 0) }}
+    </span>
+    <span>{{ record.number_of_rooms }} {{ meta?.suffix }}</span>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type {
+  AdminForthResourceColumnCommon,
+  AdminForthResourceCommon,
+  AdminUser,
+} from '@/types/Common';
+
+defineProps<{
+  column: AdminForthResourceColumnCommon;
+  record: Record<string, any>;
+  meta?: { filler?: string; suffix?: string };
+  resource: AdminForthResourceCommon;
+  adminUser: AdminUser;
+}>();
+</script>
+```
+
+## Resource Page Injection Spots
+
+- `pageInjections.list.beforeBreadcrumbs`
+- `pageInjections.list.afterBreadcrumbs`
+- `pageInjections.list.beforeActionButtons`
+- `pageInjections.list.bottom`
+- `pageInjections.list.threeDotsDropdownItems`
+- `pageInjections.list.customActionIcons`
+- `pageInjections.list.customActionIconsThreeDotsMenuItems`
+- `pageInjections.list.tableBodyStart`
+- `pageInjections.list.tableRowReplace`
+- `pageInjections.show.beforeBreadcrumbs`
+- `pageInjections.show.afterBreadcrumbs`
+- `pageInjections.show.bottom`
+- `pageInjections.show.threeDotsDropdownItems`
+- `pageInjections.edit.beforeBreadcrumbs`
+- `pageInjections.edit.afterBreadcrumbs`
+- `pageInjections.edit.bottom`
+- `pageInjections.edit.threeDotsDropdownItems`
+- `pageInjections.create.beforeBreadcrumbs`
+- `pageInjections.create.afterBreadcrumbs`
+- `pageInjections.create.bottom`
+- `pageInjections.create.threeDotsDropdownItems`
+
+## Login and Global Injection Spots
+
+- `customization.loginPageInjections.panelHeader`
+- `customization.loginPageInjections.underInputs`
+- `customization.loginPageInjections.underLoginButton`
+- `customization.globalInjections.userMenu`
+- `customization.globalInjections.header`
+- `customization.globalInjections.sidebar`
+- `customization.globalInjections.sidebarTop`
+- `customization.globalInjections.everyPageBottom`
+
+## Top Injection Example
+
+```ts
+options: {
+  pageInjections: {
+    list: {
+      beforeBreadcrumbs: {
+        file: '@@/reports/OrdersTopPanel.vue',
+        meta: {
+          title: 'Orders overview',
+        },
+      },
+    },
+  },
+}
+```
+
+## List Injection Shrink Behavior
+
+- On list pages, AdminForth tries to keep the table itself scrollable when there are no large top or bottom injections.
+- That shrink behavior is affected by four list injection spots: `beforeBreadcrumbs`, `afterBreadcrumbs`, `beforeActionButtons`, and `bottom`.
+- If none of those four spots are used, the table tries to shrink into the viewport and vertical scrolling happens inside the table area.
+- If any of those spots are used, AdminForth assumes the page may now need extra vertical space, so the table stops shrinking and page scrolling moves to the document body instead.
+- If your injected panel is actually compact, set `meta.thinEnoughToShrinkTable: true` on that injection.
+- Important: every injection in those four spots must set `thinEnoughToShrinkTable: true`, otherwise the table will still stay in non-shrinking mode.
+
+```ts
+options: {
+  pageInjections: {
+    list: {
+      bottom: {
+        file: '@@/reports/OrdersSummary.vue',
+        meta: {
+          thinEnoughToShrinkTable: true,
+        },
+      },
+    },
+  },
+}
+```
+
+## Row-Level List Injection Notes
+
+- `tableBodyStart` renders extra `<tr>` rows near the start of the table body and receives `resource`, `adminUser`, and `meta`.
+- `tableRowReplace` replaces the default `<tr>` for each record and receives `record`, `resource`, `adminUser`, and `meta`.
+- `customActionIcons` and `customActionIconsThreeDotsMenuItems` are per-record spots and receive `record`, `resource`, `adminUser`, `meta`, and `updateRecords`.
+
+## Practical Rules
+
+- Prefer simple string declarations until you actually need `meta`.
+- Reuse one component with multiple full declarations instead of cloning similar files.
+- Keep page injections small unless the layout intentionally becomes page-scrolling.
+- Keep custom edit and create components explicit about validity and emptiness if the default input heuristics are not enough.

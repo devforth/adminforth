@@ -1,3 +1,7 @@
+---
+description: "Guide to the AdminForth logger, including custom log messages, log levels, and SPA debugging for frontend troubleshooting."
+---
+
 # Usage of the logger
 
 There are cases when you might want to debug an Adminforth app or add custom logs.

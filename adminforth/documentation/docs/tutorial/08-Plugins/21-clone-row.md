@@ -1,5 +1,6 @@
 ---
 title: Clone Row
+description: "Guide to the Clone Row plugin, which opens the create flow with values copied from an existing record so users can duplicate rows quickly."
 slug: /tutorial/Plugins/clone-row
 ---
 

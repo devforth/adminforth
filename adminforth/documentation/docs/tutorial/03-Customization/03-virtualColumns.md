@@ -1,3 +1,6 @@
+---
+description: "Guide to defining virtual columns for list, show, filter, edit, and create flows, including raw SQL and raw NoSQL query examples."
+---
 
 # Virtual columns
 

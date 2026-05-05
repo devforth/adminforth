@@ -1,3 +1,7 @@
+---
+description: "Guide to deploying AdminForth in Docker, including Dockerfile setup, image builds, CI automation, SSL termination, and SQLite-specific notes."
+---
+
 # Deploy in Docker
 
 In general you can already run your `index.ts` file which we created in [Getting Started](/docs/tutorial/001-gettingStarted.md)

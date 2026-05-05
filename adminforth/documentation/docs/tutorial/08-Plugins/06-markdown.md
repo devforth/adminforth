@@ -1,5 +1,6 @@
 ---
 title: Markdown
+description: "Guide to the Markdown plugin, including editor setup, image handling, top-panel customization, and show-page rendering options."
 slug: /tutorial/Plugins/markdown
 ---
 

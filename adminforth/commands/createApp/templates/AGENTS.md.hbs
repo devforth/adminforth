@@ -1,0 +1,71 @@
+# AdminForth App Guide
+
+## Package manager
+
+This scaffold was generated with `{{packageManager}}`. Use `{{packageManager}}` commands in this project unless you intentionally migrate the tooling.
+
+## Project map
+
+- `index.ts` is the main AdminForth configuration and server entrypoint.
+- `api.ts` is for custom Express APIs and request/response schemas.
+- `resources/*.ts` defines resources, columns, labels, permissions, hooks, and display behavior.
+- `custom/` is for custom Vue components, pages, injections, and static assets.
+{{#if prismaDbUrl}}- `schema.prisma` is the schema and migration source if you use Prisma for this app.{{/if}}
+- `.env.local` stores local non-sensitive defaults. `.env` stores secrets. In production prefer real environment variables or a secret manager.
+
+## Docs sources for agents
+
+- Use `https://adminforth.dev/llms.txt` for quick navigation across the AdminForth docs corpus.
+- Use `https://adminforth.dev/llms-full.txt` (`llms full`) for the full single-file AdminForth reference.
+- Prefer these sources before broad web search when the task is mainly about AdminForth APIs, plugins, adapters, or customization.
+
+## Common commands
+
+- Install dependencies: `{{packageManager}} install`
+- Start the app locally: `{{packageManagerRun}} dev`
+{{#if prismaDbUrl}}- Apply local migrations: `{{packageManagerRun}} migrate:local`
+- Create a new migration and apply it locally: `{{packageManagerRun}} makemigration{{packageManagerScriptArgSeparator}}--name <change-name>`{{/if}}
+
+## AdminForth workflow
+
+- AdminForth connects to existing database and gives a back-office over the data (CRUD, filtering, sorting, etc).
+- One table or collection maps to one resource. 
+- Resource config database type agnostic (same for all db types).
+- Add new resources in `resources/`, register them in `index.ts`, and add menu entries if you want them visible in the sidebar.
+- Resource config should mandatory list all column names which AdminFramework should be aware of, column name should match the name in the database table/collection.
+- For relational schema-based dbs types of columns in resource are optional and used for overriding where possible, however AdminForth by default fetches physycal types and manual specification is not required. 
+- For NoSQL or schemaless dbs types of columns in resource are required for AdminForth to work.
+- AdminForth does not manage database schema. By default project ships Prisma but developer can use own migration tool, and update only through `resources/*.ts` and `index.ts`.
+- Always create `recordLabel` to change on UI how one record is represented across the app. Try to include the most identifying information but human-readable in the label but keep it short for readability (avoid IDs if possible).
+- Use  `fillOnCreate` to fill with default values on record creation on backend. Avoid showIn.create=true + fillOnCreate for the same field.
+- Use `suggestOnCreate` to prefill input with a suggested value on the frontend.
+- Use `enum`, `minLength`, `maxLength` in column config to enforce validation rules.
+
+- Use AdminForth Data API for simple CRUD, filtering, sorting, and counts. For joins, aggregations, or heavier queries, use custom ORM or query builder.
+- Use `api.ts` for custom business endpoints that do not fit standard resource CRUD.
+- Use `custom/` for custom pages, field rendering, injections, and other Vue-side customization.
+
+### Access control
+
+- Keep access control explicit and backend-enforced. Menu visibility is only UX and is not a permission boundary.
+- For permission-specific implementation details, examples, and routing between `allowedActions`, `showIn[x]`, and hooks, use the `adminforth-permissions` skill.
+
+### Hooks
+
+- Hooks run on the backend as part of AdminForth request flows, so keep them focused and fast.
+- For hook stage selection, show-vs-edit behavior, and implementation examples, use the `adminforth-hooks` skill.
+
+## Engineering conventions
+
+- Trust typed internal contracts. Do not add duplicate validation for values already guaranteed by schema, types, or backend responses.
+- Validate once at the boundary, not repeatedly in downstream consumers.
+- Prefer small explicit helpers and named constants over speculative fallback logic.
+- Extract reusable or non-trivial regexes into named constants instead of scattering inline regexes through business logic.
+- Keep changes minimal, DRY, and YAGNI.
+
+## Before you change the app
+
+- If you add a new resource, register it in `index.ts` and add it to the menu if needed.
+{{#if prismaDbUrl}}- If you change `schema.prisma`, create and apply a migration locally before testing the UI.{{/if}}
+- If you add custom frontend code under `custom/`, install any extra frontend packages in `custom/package.json`.
+- Default local login is `adminforth` / `adminforth` unless you changed the seeded admin user.
