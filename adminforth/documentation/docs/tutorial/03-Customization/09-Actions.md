@@ -1,3 +1,7 @@
+---
+description: "Guide to defining AdminForth actions for single records and bulk flows, including UI options, handlers, confirmation dialogs, and custom execution logic."
+---
+
 # Actions
 
 ## Single record actions

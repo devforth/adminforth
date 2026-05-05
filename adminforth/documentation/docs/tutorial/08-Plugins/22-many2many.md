@@ -1,5 +1,6 @@
 ---
 title: Many to Many
+description: "Guide to the Many2Many plugin, including junction-table setup, editable relationships on both resources, and cleanup behavior for related records."
 slug: /tutorial/Plugins/many2many
 ---
 

@@ -1,5 +1,6 @@
 ---
 title: Import Export
+description: "Guide to the Import-Export plugin for CSV-based data transfer, including installation, import flow, export flow, and resource-level usage."
 slug: /tutorial/Plugins/import-export
 ---
 

@@ -1,3 +1,7 @@
+---
+description: "Guide to developing AdminForth plugins, including plugin concepts, boilerplate, implementation structure, installation, and activation order."
+---
+
 # Plugin development guide
 
 Creating a plugin is a powerful way to extend AdminForth functionality.

@@ -1,5 +1,6 @@
 ---
 title: Open Signup
+description: "Guide to the Open Signup plugin, including public registration flow, installation, basic setup, and optional email verification."
 slug: /tutorial/Plugins/open-signup
 ---
 

@@ -1,3 +1,7 @@
+---
+description: "Guide to AdminForth security settings, including session lifetime, password policies, trusted proxy configuration, HTTPS, CSRF scope, and hardening recommendations."
+---
+
 # Security
 
 Security and privacy if adminforth users is one of the most important aspects of AdminForth.

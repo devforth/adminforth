@@ -1,5 +1,6 @@
 ---
 title: User Soft Delete
+description: "Guide to the User Soft Delete plugin, including schema changes, setup, and deactivating admin users without permanently deleting their accounts."
 slug: /tutorial/Plugins/user-soft-delete
 ---
 

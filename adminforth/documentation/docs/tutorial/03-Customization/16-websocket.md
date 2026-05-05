@@ -1,3 +1,6 @@
+---
+description: "Guide to AdminForth WebSocket usage, including client subscriptions, publish authorization, initial loading, and real-time updates for custom pages or components."
+---
 
 # Websocket
 

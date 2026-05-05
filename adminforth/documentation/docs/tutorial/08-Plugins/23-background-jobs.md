@@ -1,5 +1,6 @@
 ---
 title: Background Jobs
+description: "Guide to the Background Jobs plugin, including job setup, execution, UI monitoring, custom state rendering, and frontend APIs for job details."
 slug: /tutorial/Plugins/background-jobs
 ---
 

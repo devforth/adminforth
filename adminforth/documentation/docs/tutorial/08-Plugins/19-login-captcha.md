@@ -1,5 +1,6 @@
 ---
 title: Login Captcha
+description: "Guide to the Login Captcha plugin, including adapter setup, login form protection, and captcha-verified authentication flow."
 slug: /tutorial/Plugins/login-captcha
 ---
 

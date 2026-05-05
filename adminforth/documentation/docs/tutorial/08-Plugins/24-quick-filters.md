@@ -1,5 +1,6 @@
 ---
 title: Quick Filters
+description: "Guide to the Quick Filters plugin, which adds one-click predefined filters or search inputs to list pages for faster navigation across common record subsets."
 slug: /tutorial/Plugins/quick-filters
 ---
 

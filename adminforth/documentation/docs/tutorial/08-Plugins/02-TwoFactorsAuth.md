@@ -1,5 +1,6 @@
 ---
 title: Two-Factor Authentication Plugin
+description: "Guide to the Two-Factor Authentication plugin, including installation, TOTP or passkey setup, rollout rules, and per-user exceptions for stronger admin login security."
 slug: /tutorial/Plugins/two-factors-auth
 ---
 
