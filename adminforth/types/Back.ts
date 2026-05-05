@@ -98,6 +98,7 @@ export interface IRegisteredApiSchema {
   meta?: Record<string, unknown>;
   request_schema?: AnySchemaObject;
   response_schema?: AnySchemaObject;
+  handler?: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>;
 }
 
 export interface IAdminForthApiValidationError {

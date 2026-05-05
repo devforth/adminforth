@@ -59,6 +59,7 @@ class OpenApiRegistry implements IOpenApiRegistry {
       request_schema: options.request_schema,
       response_schema: responseSchema,
       meta: options.meta,
+      handler: options.handler,
     };
     const compiledRoute: CompiledApiSchema = {
       ...route,
