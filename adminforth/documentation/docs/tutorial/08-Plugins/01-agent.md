@@ -700,9 +700,9 @@ If your existing checkpoint table already uses different column names, keep your
 
 ## Reverse proxy and CDN configuration for streaming
 
-The agent streams responses from `<baseURL>/adminapi/v1/agent/response` using server-sent events, where `<baseURL>` is your AdminForth base path or an empty string when deployed at the domain root. If your proxy buffers responses, the UI will receive the answer only after generation is finished.
+The agent streams responses from `<baseURL>/adminapi/v1/agent/response` using server-sent events, where `<baseURL>` is your AdminForth base path or an empty string when deployed at the domain root. Voice mode also streams from `<baseURL>/adminapi/v1/agent/speech-response` after uploading the recorded audio. If your proxy buffers responses, the UI will receive the answer only after generation is finished.
 
-For Nginx, disable response buffering on this endpoint. The critical line is `proxy_buffering off;`.
+For Nginx, disable response buffering on both endpoints. The critical line is `proxy_buffering off;`.
 
 ```nginx
 location <baseURL>/adminapi/v1/agent/response {
@@ -714,9 +714,19 @@ location <baseURL>/adminapi/v1/agent/response {
   proxy_buffering off;  # required for streaming
   proxy_pass http://127.0.0.1:3500;
 }
+
+location <baseURL>/adminapi/v1/agent/speech-response {
+  proxy_http_version 1.1;
+  proxy_read_timeout 600s;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header Host $http_host;
+  proxy_set_header Connection "";
+  proxy_buffering off;  # required for streaming voice responses
+  proxy_pass http://127.0.0.1:3500;
+}
 ```
 
-Traefik forwards streaming responses immediately by default. The line that must stay off this route is any buffering middleware attachment such as `traefik.http.routers.adminforth-agent.middlewares=buffering@docker`. If your main router uses extra middlewares, create a dedicated router for the agent stream endpoint and do not attach buffering to it:
+Traefik forwards streaming responses immediately by default. The line that must stay off these routes is any buffering middleware attachment such as `traefik.http.routers.adminforth-agent.middlewares=buffering@docker`. If your main router uses extra middlewares, create a dedicated router for the agent stream endpoints and do not attach buffering to it:
 
 ```yaml title='./compose.yml'
 services:
@@ -730,7 +740,7 @@ services:
       - "traefik.http.routers.adminforth.tls.certresolver=myresolver"
       - "traefik.http.routers.adminforth.middlewares=secure-headers,buffering@docker"
 
-      - "traefik.http.routers.adminforth-agent.rule=Path(`<baseURL>/adminapi/v1/agent/response`)"
+      - "traefik.http.routers.adminforth-agent.rule=Path(`<baseURL>/adminapi/v1/agent/response`) || Path(`<baseURL>/adminapi/v1/agent/speech-response`)"
       - "traefik.http.routers.adminforth-agent.priority=100"
       - "traefik.http.routers.adminforth-agent.service=adminforth"
       - "traefik.http.routers.adminforth-agent.tls=true"
@@ -740,12 +750,13 @@ services:
       # - "traefik.http.routers.adminforth-agent.middlewares=buffering@docker"
 ```
 
-  Replace `<baseURL>` with the same base path you use for AdminForth. For example, when `ADMIN_BASE_URL = '/admin/'`, the endpoint becomes `/admin/adminapi/v1/agent/response`.
+  Replace `<baseURL>` with the same base path you use for AdminForth. For example, when `ADMIN_BASE_URL = '/admin/'`, the endpoints become `/admin/adminapi/v1/agent/response` and `/admin/adminapi/v1/agent/speech-response`.
 
 ### CDN
 
-  Cloudflare by default buffers responses, which breaks streaming. To fix it, create a page rule for your domain with a "Response Body Buffering" setting turned off for the agent stream endpoint (`<baseURL>/adminapi/v1/agent/response`).
+  Cloudflare by default buffers responses, which breaks streaming. To fix it, create a page rule for your domain with a "Response Body Buffering" setting turned off for the agent stream endpoints (`<baseURL>/adminapi/v1/agent/response` and `<baseURL>/adminapi/v1/agent/speech-response`).
+
+  If Cloudflare returns a 403 response with `cf-mitigated: challenge` for `<baseURL>/adminapi/v1/agent/speech-response`, the request was blocked before it reached AdminForth. Create a WAF or bot rule exception for authenticated requests to this endpoint, because browser `fetch` calls with `multipart/form-data` cannot complete an HTML challenge page.
 
 ![alt text](image-6.png)
-
 
