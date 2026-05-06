@@ -274,7 +274,7 @@ const getResourceDataRequestSchema: AnySchemaObject = {
     filters: commonFiltersSchema,
     columns: {
       type: 'array',
-      description: 'Optional list of resource column names to include in returned rows. Omit it to return all visible columns.',
+      description: 'Optional list of resource column names to include in returned rows. When set, the response is projected to exactly these resource columns and computed helper fields such as _label and _clickUrl are omitted.',
       minItems: 1,
       uniqueItems: true,
       items: { type: 'string' },

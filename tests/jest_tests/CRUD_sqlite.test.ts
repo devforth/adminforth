@@ -714,6 +714,182 @@ describe('POST /get_resource_data', () => {
     });
   });
 
+  it('keeps computed helper fields when columns are not requested', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createdRecordId }],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]._label).toBe('🚘 Abobus amogus 🚗');
+  });
+
+  it('returns exactly requested columns and omits computed helper fields', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createdRecordId }],
+        columns: ['model', 'price'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toEqual({
+      model: 'Abobus amogus',
+      price: 1234,
+    });
+    expect(res.body.data[0]._label).toBeUndefined();
+    expect(res.body.data[0]._clickUrl).toBeUndefined();
+  });
+
+  it('returns an error for unknown requested columns', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [],
+        columns: ['missing_column'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe('Column missing_column not found in resource cars_sl');
+  });
+
+  it('supports selecting only a virtual column without leaking internal fallback columns', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'adminuser',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'email', operator: 'eq', value: 'adminforth' }],
+        columns: ['password'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toEqual({});
+  });
+
+  it('projects requested foreign columns after reference post-processing', async () => {
+    const adminUserRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'adminuser',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'email', operator: 'eq', value: 'adminforth' }],
+        columns: ['id'],
+      });
+
+    expect(adminUserRes.status).toEqual(200);
+    expect(adminUserRes.body.error).toBeUndefined();
+    const adminUserId = adminUserRes.body.data[0].id;
+
+    const updateRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: createdRecordId,
+        meta: {},
+        record: {
+          seller_id: adminUserId,
+        },
+      });
+
+    expect(updateRes.status).toEqual(200);
+    expect(updateRes.body.error).toBeUndefined();
+
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createdRecordId }],
+        columns: ['seller_id'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toEqual({
+      seller_id: {
+        label: '👤 adminforth',
+        pk: adminUserId,
+      },
+    });
+  });
+
+  it('projects polymorphic foreign columns without leaking polymorphic discriminator columns', async () => {
+    const createRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        resourceId: 'polymorphic_car_refs',
+        record: {
+          record_id: createdRecordId,
+          image_path: 'test-image.png',
+        },
+        requiredColumnsToSkip: [],
+        meta: {},
+      });
+
+    expect(createRes.status).toEqual(200);
+    expect(createRes.body.error).toBeUndefined();
+
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'polymorphic_car_refs',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createRes.body.newRecordId }],
+        columns: ['record_id'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toEqual({
+      record_id: {
+        label: '🚘 Abobus amogus 🚗',
+        pk: createdRecordId,
+      },
+    });
+    expect(res.body.data[0].resource_id).toBeUndefined();
+  });
+
   describe('POST /get_resource', () => {
     beforeAll(async () => {
       const res = await agent
