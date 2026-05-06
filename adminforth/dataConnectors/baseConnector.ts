@@ -261,12 +261,13 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
   }
 
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
     sort: IAdminForthSort[],
     filters: IAdminForthAndOrFilter,
+    columns?: AdminForthResourceColumn[],
   }): Promise<any[]> {
     throw new Error('Method not implemented.');
   }
@@ -595,13 +596,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
-  async getData({ resource, limit, offset, sort, filters, getTotals }: { 
+  async getData({ resource, limit, offset, sort, filters, getTotals, columns }: { 
     resource: AdminForthResource, 
     limit: number, 
     offset: number, 
     sort: { field: string, direction: AdminForthSortDirections }[], 
     filters: IAdminForthAndOrFilter,
     getTotals: boolean,
+    columns?: AdminForthResourceColumn[],
   }): Promise<{ data: any[], total: number }> {
     let normalizedFilters = filters;
 
@@ -613,7 +615,8 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       normalizedFilters = filterValidation.normalizedFilters as IAdminForthAndOrFilter;
     }
 
-    const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters: normalizedFilters })];
+    const dataSourceColumns = columns ?? resource.dataSourceColumns;
+    const promises: Promise<any>[] = [this.getDataWithOriginalTypes({ resource, limit, offset, sort, filters: normalizedFilters, columns: dataSourceColumns })];
     if (getTotals) {
       promises.push(this.getCount({ resource, filters }));
     } else {
@@ -624,7 +627,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     // call getFieldValue for each field
     data.map((record) => {
-      for (const col of resource.dataSourceColumns) {
+      for (const col of dataSourceColumns) {
         record[col.name] = this.getFieldValue(col, record[col.name]);
       }
     });

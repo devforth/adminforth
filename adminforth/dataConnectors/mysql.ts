@@ -453,14 +453,14 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     return rows;
   }
 
-  async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
-    const columns = resource.dataSourceColumns.map((col: { name: string }) => `${col.name}`).join(', ');
+  async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }): Promise<any[]> {
+    const selectedColumns = (columns ?? resource.dataSourceColumns).map((col: { name: string }) => `${col.name}`).join(', ');
     const tableName = resource.table;
     
     const { sql: where, values: filterValues } = this.whereClauseAndValues(filters);
 
     const orderBy = sort.length ? `ORDER BY ${sort.map((s: { field: string; direction: AdminForthSortDirections }) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-    let selectQuery = `SELECT ${columns} FROM ${tableName}`;
+    let selectQuery = `SELECT ${selectedColumns} FROM ${tableName}`;
     if (where) selectQuery += ` ${where}`;
     if (orderBy) selectQuery += ` ${orderBy}`;
     if (limit) selectQuery += ` LIMIT ${limit}`;
