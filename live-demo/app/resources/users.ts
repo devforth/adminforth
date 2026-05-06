@@ -54,7 +54,7 @@ export default {
       audioAdapter: new OpenAIAudioAdapter({
         apiKey: openAiApiKey,
         defaultVoice: 'alloy',
-        defaultSpeed: 1.5,
+        defaultSpeed: 1.25,
       }),
       placeholderMessages: async ({ httpExtra }: any) => getLocalizedPlaceholderMessages({
         completionAdapter: fastCompletionAdapter as any,
