@@ -354,11 +354,11 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
       dest: '.agents/skills/adminforth-hooks/SKILL.md',
       data: {},
     },
-    // {
-    //   src: '.agents/skills/adminforth-custom-vue/SKILL.md.hbs',
-    //   dest: '.agents/skills/adminforth-custom-vue/SKILL.md',
-    //   data: {},
-    // },
+    {
+      src: '.agents/skills/adminforth-custom-vue/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-custom-vue/SKILL.md',
+      data: {},
+    },
     {
       // We'll write .env using the same content as .env.sample
       src: '.env.local.hbs',
