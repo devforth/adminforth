@@ -763,3 +763,22 @@ and:
 `ChatGptPlugin` is the class name that is defined inside `index.ts`.
 So if we want to access plugin files from a custom component, we should use the path:
 >`@/custom/plugins/*Plugin class name*/*File name*`
+
+
+## How to add files to the public folder of spa
+
+There might be cases, when you'll need to add some files, like icons or audio files to the public folder of spa.
+
+To do so, you need in custom folder create `public` folder like:
+`plugins/custom/public/...`
+
+```text
+plugin/
+├── custom
+│   ├── public/
+
+```
+
+And then, in bundled spa folder, files will be stored in path:
+
+`spa/public/plugins/**your plugin class name**/`
