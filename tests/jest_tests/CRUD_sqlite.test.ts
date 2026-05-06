@@ -730,9 +730,10 @@ describe('POST /get_resource_data', () => {
     expect(res.status).toEqual(200);
     expect(res.body.error).toBeUndefined();
     expect(res.body.data[0]._label).toBe('🚘 Abobus amogus 🚗');
+    expect(res.body.data[0]._clickUrl).toBe(`/resource/cars_sl/show/${createdRecordId}`);
   });
 
-  it('returns exactly requested columns and omits computed helper fields', async () => {
+  it('returns requested columns with computed list helper fields', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/get_resource_data')
@@ -751,9 +752,9 @@ describe('POST /get_resource_data', () => {
     expect(res.body.data[0]).toEqual({
       model: 'Abobus amogus',
       price: 1234,
+      _label: '🚘 Abobus amogus 🚗',
+      _clickUrl: `/resource/cars_sl/show/${createdRecordId}`,
     });
-    expect(res.body.data[0]._label).toBeUndefined();
-    expect(res.body.data[0]._clickUrl).toBeUndefined();
   });
 
   it('returns an error for unknown requested columns', async () => {
@@ -790,7 +791,9 @@ describe('POST /get_resource_data', () => {
 
     expect(res.status).toEqual(200);
     expect(res.body.error).toBeUndefined();
-    expect(res.body.data[0]).toEqual({});
+    expect(res.body.data[0]).toEqual({
+      _label: '👤 adminforth',
+    });
   });
 
   it('projects requested foreign columns after reference post-processing', async () => {
@@ -841,11 +844,12 @@ describe('POST /get_resource_data', () => {
 
     expect(res.status).toEqual(200);
     expect(res.body.error).toBeUndefined();
-    expect(res.body.data[0]).toEqual({
+    expect(res.body.data[0]).toMatchObject({
       seller_id: {
         label: '👤 adminforth',
         pk: adminUserId,
       },
+      _label: '🚘 Abobus amogus 🚗',
     });
   });
 
@@ -881,12 +885,13 @@ describe('POST /get_resource_data', () => {
 
     expect(res.status).toEqual(200);
     expect(res.body.error).toBeUndefined();
-    expect(res.body.data[0]).toEqual({
+    expect(res.body.data[0]).toMatchObject({
       record_id: {
         label: '🚘 Abobus amogus 🚗',
         pk: createdRecordId,
       },
     });
+    expect(res.body.data[0]._label.startsWith('Polymorphic car refs ')).toBe(true);
     expect(res.body.data[0].resource_id).toBeUndefined();
   });
 
