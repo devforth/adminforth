@@ -274,7 +274,7 @@ const getResourceDataRequestSchema: AnySchemaObject = {
     filters: commonFiltersSchema,
     columns: {
       type: 'array',
-      description: 'Optional list of resource column names to include in returned rows. When set, the response is projected to exactly these resource columns and computed helper fields such as _label and _clickUrl are omitted.',
+      description: 'Optional list of resource column names to include in returned rows. For list requests, computed row helper fields such as _label and _clickUrl are still returned when available.',
       minItems: 1,
       uniqueItems: true,
       items: { type: 'string' },
@@ -1316,6 +1316,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
         const selectedColumnNameSet = selectedColumnNames ? new Set(selectedColumnNames) : undefined;
+        const shouldAddListHelpers = source === 'list';
         const selectedDataSourceColumnNameSet = selectedColumnNames
           ? new Set(selectedColumnNames.filter((columnName) => resource.dataSourceColumns.some((col) => col.name === columnName)))
           : undefined;
@@ -1331,7 +1332,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        const selectedDataSourceColumns = selectedDataSourceColumnNameSet
+        const selectedDataSourceColumns = selectedDataSourceColumnNameSet && !shouldAddListHelpers
           ? (
               resource.dataSourceColumns.some((col) => selectedDataSourceColumnNameSet.has(col.name))
                 ? resource.dataSourceColumns.filter((col) => selectedDataSourceColumnNameSet.has(col.name))
@@ -1382,7 +1383,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         // for foreign keys, add references
         await Promise.all(
           resource.columns.filter((col) => (
-            col.foreignResource && (!selectedColumnNameSet || selectedColumnNameSet.has(col.name))
+            col.foreignResource && (!selectedColumnNameSet || shouldAddListHelpers || selectedColumnNameSet.has(col.name))
           )).map(async (col) => {
             let targetDataMap = {};
 
@@ -1493,7 +1494,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
-        const pkField = resource.columns.find((col) => col.primaryKey)?.name;
         // remove all columns which are not defined in resources, or defined but backendOnly
         {
           const ctx = {
@@ -1516,12 +1516,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 delete item[key];
               }
             }
-            if (!selectedColumnNameSet) {
+            if (!selectedColumnNameSet || shouldAddListHelpers) {
               item._label = resource.recordLabel(item);
             }
           }
         }
-        if (!selectedColumnNameSet && source === 'list' && resource.options.listTableClickUrl) {
+        if (shouldAddListHelpers && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
                 item._clickUrl = await resource.options.listTableClickUrl(item, adminUser, resource);
@@ -1551,7 +1551,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (selectedColumnNameSet) {
           for (const item of data.data) {
             for (const key of Object.keys(item)) {
-              if (!selectedColumnNameSet.has(key)) {
+              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl') {
                 delete item[key];
               }
             }
