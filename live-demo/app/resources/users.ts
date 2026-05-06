@@ -52,7 +52,7 @@ export default {
     }), 
     new AdminForthAgent({
       audioAdapter: new OpenAIAudioAdapter({
-        apiKey: process.env.OPENAI_API_KEY,
+        apiKey: openAiApiKey,
       }),
       placeholderMessages: async ({ httpExtra }: any) => getLocalizedPlaceholderMessages({
         completionAdapter: fastCompletionAdapter as any,
