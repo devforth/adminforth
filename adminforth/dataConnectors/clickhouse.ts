@@ -510,14 +510,15 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }));
     }
 
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: { 
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }: { 
         resource: AdminForthResource, 
         limit: number, 
         offset: number, 
         sort: { field: string, direction: AdminForthSortDirections }[], 
         filters: IAdminForthAndOrFilter,
+        columns?: AdminForthResourceColumn[],
     }): Promise<Array<{ group?: string, [key: string]: any }>> {
-      const columns = resource.dataSourceColumns.map((col) => {
+      const selectedColumns = (columns ?? resource.dataSourceColumns).map((col) => {
         // for decimal cast to string
         if (col.type == AdminForthDataTypes.DECIMAL) {
           return `toString(${col.name}) as ${col.name}`
@@ -532,7 +533,7 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
 
-      const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT {limit:Int} OFFSET {offset:Int}`;
+      const q = `SELECT ${selectedColumns} FROM ${tableName} ${where} ${orderBy} LIMIT {limit:Int} OFFSET {offset:Int}`;
       const d = {
         ...params,
         limit,
