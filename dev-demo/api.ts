@@ -20,7 +20,7 @@ type DashboardCarRecord = {
   engine_type: string;
   body_type: string;
 };
-
+ 
 function toNumber(value: string | number | null): number {
   if (typeof value === 'number') {
     return value;
