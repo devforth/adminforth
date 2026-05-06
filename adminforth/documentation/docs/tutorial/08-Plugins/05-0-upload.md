@@ -1,5 +1,6 @@
 ---
 title: Upload
+description: "Guide to the Upload plugin, including storage adapter setup, file and image fields, previews, transformations, and image generation integration."
 slug: /tutorial/Plugins/upload
 ---
 

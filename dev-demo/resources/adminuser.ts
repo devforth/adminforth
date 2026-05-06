@@ -12,6 +12,7 @@ import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
 import CompletionAdapterOpenAIResponses from '../../adapters/adminforth-completion-adapter-openai-responses/index.js';
+import OpenAIAudioAdapter from '../../adapters/adminforth-audio-adapter-openai/index.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
@@ -215,6 +216,9 @@ export default {
       },
     }),
     new AdminForthAgent({
+      audioAdapter: new OpenAIAudioAdapter({
+        apiKey: process.env.OPENAI_API_KEY,
+      }),
       placeholderMessages: async ({ adminUser, httpExtra }) => {
         return [
           "What is a cars count in SQLite",

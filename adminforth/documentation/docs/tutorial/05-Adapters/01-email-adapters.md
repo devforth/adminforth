@@ -1,3 +1,7 @@
+---
+description: "Reference page for AdminForth email adapters, with setup instructions for AWS SES and Mailgun integrations used by plugins that send transactional email."
+---
+
 # Email Adapters
 
 Used to send emails.

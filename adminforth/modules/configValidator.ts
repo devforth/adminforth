@@ -417,15 +417,18 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.id) {
         action.id = md5hash(action.name);
       }
+
+      const defaultListValue = !!(action.action || action.url);
+
       if (!action.showIn) {
         action.showIn = {
-          list: true,
+          list: defaultListValue,
           listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
-        action.showIn.list = action.showIn.list ?? true;
+        action.showIn.list = action.showIn.list ?? defaultListValue;
         action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;

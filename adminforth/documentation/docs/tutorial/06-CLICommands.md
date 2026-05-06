@@ -1,3 +1,7 @@
+---
+description: "Reference page for the AdminForth CLI, including create-app, create-plugin, generate-models, bundle, and other commands used to scaffold and maintain projects."
+---
+
 # CLI Commands
 
 > **CLI Reference**: A list of all available CLI commands for AdminForth.

@@ -1,5 +1,6 @@
 ---
 title: Email Invite
+description: "Guide to the Email Invite plugin, including SES or Mailgun setup, invitation sending flows, email confirmation handling, and basic usage."
 slug: /tutorial/Plugins/email-invite
 ---
 

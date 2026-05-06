@@ -1,5 +1,6 @@
 ---
 title: Foreign Inline List
+description: "Guide to the Foreign Inline List plugin, which embeds related resource lists inside a show page with filters, foreign-key setup, and cascade-delete options."
 slug: /tutorial/Plugins/foreign-inline-list
 ---
 

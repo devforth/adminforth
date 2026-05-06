@@ -66,7 +66,7 @@ export enum ActionCheckSource {
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
-  BulkActionRequest = 'bulkActionRequest',
+  BulkActionRequest = 'bulkActionRequest',  // @deprecated beacuse whole bulk action is deprecated in favor of custom actions, never use this value in new code
   CustomActionRequest = 'customActionRequest',
 }
 

@@ -1,3 +1,7 @@
+---
+description: "Guide to configuring the AdminForth sidebar and header, including icons, grouping, visibility rules, gaps, dividers, and custom links."
+---
+
 # Menu & Header
 
 

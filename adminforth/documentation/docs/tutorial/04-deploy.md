@@ -1,3 +1,7 @@
+---
+description: "Guide to deploying AdminForth in Docker, including Dockerfile setup, image builds, CI automation, SSL termination, and SQLite-specific notes."
+---
+
 # Deploy in Docker
 
 In general you can already run your `index.ts` file which we created in [Getting Started](/docs/tutorial/001-gettingStarted.md)
@@ -115,13 +119,18 @@ docker compose -p stack-my-app -f compose.yml up -d --build --remove-orphans --w
 If you want to deploy your AdminForth application to a sub-folder like `https://mydomain.com/admin` you
 should do the following:
 
-1) Open `index.ts` file and change `ADMIN_BASE_URL` constant to your subpath:
+1) Open `index.ts` file and set the same subpath in `ADMIN_BASE_URL` and `baseUrl`:
 
 ```ts title='./index.ts'
 //diff-remove
 const ADMIN_BASE_URL = '';
 //diff-add
 const ADMIN_BASE_URL = '/admin/';
+
+export const admin = new AdminForth({
+  baseUrl: ADMIN_BASE_URL,
+  ...
+});
 ```
 
 2) Open `compose.yml` file and change `traefik.http.routers.adminforth.rule` to your subpath:
@@ -141,11 +150,18 @@ Now you can access your AdminForth application by going to `https://mydomain.com
 
 If you want to automate the deployment process with CI follow [our docker - traefik guide](https://devforth.io/blog/onlogs-open-source-simplified-web-logs-viewer-for-dockers/)
 
-# Nginx version
+## Nginx version
 
-If you are using Nginx instead of traefik, here is siple proxy pass config:
+If you are using Nginx instead of traefik, proxy both regular HTTP traffic and AdminForth websocket endpoint.
 
-```
+AdminForth websocket always uses `<baseUrl>/afws`, where `<baseUrl>` is the same value you pass to `baseUrl: ADMIN_BASE_URL` in `index.ts`.
+
+- If `ADMIN_BASE_URL = ''`, use `/afws`.
+- If `ADMIN_BASE_URL = '/admin/'`, use `/admin/afws`.
+
+For root deployment, the config can look like this:
+
+```nginx
 server {
   listen 80;
   server_name demo.adminforth.dev;
@@ -163,6 +179,17 @@ server {
   gzip_min_length 2000;
   gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/vnd.ms-fontobject application/x-font-ttf font/opentype image/svg+xml image/x-icon;
 
+  location /afws {
+    proxy_http_version 1.1;
+    proxy_read_timeout 220s;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+    proxy_pass http://127.0.0.1:3500;
+  }
+
   location / {
       proxy_read_timeout 220s;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -172,6 +199,35 @@ server {
   }
 }
 ```
+
+If you deploy AdminForth under a subpath, use the same prefix in Nginx locations. For example, when `ADMIN_BASE_URL = '/admin/'`, the websocket path becomes `/admin/afws`:
+
+```nginx
+server {
+  ...
+
+  location /admin/afws {
+      proxy_http_version 1.1;
+      proxy_read_timeout 220s;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass http://127.0.0.1:3500;
+  }
+
+  location /admin/ {
+      proxy_read_timeout 220s;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass http://127.0.0.1:3500;
+  }
+}
+```
+
+If websocket upgrade is not configured on the correct `<baseUrl>/afws` path, realtime AdminForth features will not work behind Nginx.
 
 # Environment variables best practices
 

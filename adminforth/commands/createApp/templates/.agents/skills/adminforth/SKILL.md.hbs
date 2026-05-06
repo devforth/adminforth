@@ -1,0 +1,42 @@
+---
+name: adminforth
+description: "Use for general AdminForth app work: resources, index.ts, api.ts, schema.prisma, custom UI, Data API, adapters, plugins, and overall project structure. Use specialized skills for permissions, hooks, and custom Vue work."
+user-invocable: true
+---
+
+# AdminForth App Workflow
+
+## When to Use
+
+- Editing `index.ts`, `api.ts`, `resources/*.ts`, `custom/**`, environment files, or deployment files.
+- Adding a resource, menu item, custom page, component, custom API, plugin, or adapter.
+- Deciding whether logic belongs in resource config, the Data API, a custom Express route, or frontend customization.
+- Use `adminforth-permissions` when the task is mainly about access control.
+- Use `adminforth-hooks` when the task is mainly about lifecycle hooks.
+- Use `adminforth-custom-vue` when the task is mainly about components under `custom/`, field renderers, or page/login/global injections.
+
+## Project Map
+
+- `index.ts`: main AdminForth config, resource registration, menu, and server startup.
+- `api.ts`: custom Express endpoints. Prefer schema-aware handlers so request and response shapes stay explicit.
+- `resources/*.ts`: table or collection definitions, columns, labels, filters, and resource-level behavior.
+- `custom/`: Vue components, custom pages, injections, and static assets.
+{{#if prismaDbUrl}}- `schema.prisma`: optional schema and migration source when this app uses Prisma.{{/if}}
+- `.env.local` and `.env`: local config and secrets.
+
+## Recommended Workflow
+
+1. Change the database schema with Prisma or your own migration tool. AdminForth itself does not change the database schema for you.
+2. Add or update the matching resource in `resources/*.ts`.
+3. Register the resource and menu entry in `index.ts`.
+4. Prefer resource config for labels, field visibility, defaults, and validation before reaching for custom code.
+5. Use AdminForth Data API for simple CRUD, filtering, sorting, and counts. Use your own ORM or query builder for joins, aggregations, or more complex queries.
+6. Put custom business endpoints in `api.ts`.
+7. Put custom UI in `custom/`.
+
+## Commands
+
+- Install: `{{packageManager}} install`
+- Start local development: `{{packageManagerRun}} dev`
+{{#if prismaDbUrl}}- Apply local migrations: `{{packageManagerRun}} migrate:local`
+- Create a migration: `{{packageManagerRun}} makemigration{{packageManagerScriptArgSeparator}}--name <change-name>`{{/if}}

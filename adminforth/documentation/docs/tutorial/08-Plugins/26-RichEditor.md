@@ -1,5 +1,6 @@
 ---
 title: Rich Editor
+description: "Guide to the Rich Editor plugin, including editor setup, multiple editors in one resource, completion features, and image handling in rich-text fields."
 slug: /tutorial/Plugins/rich-editor
 ---
 
