@@ -62,6 +62,8 @@ export interface IAdminForthEndpointOptions {
   request_schema?: AnySchemaObject,
   response_schema?: AnySchemaObject,
   responce_schema?: AnySchemaObject,
+  meta?: Record<string, unknown>,
+  target?: 'json' | 'upload',
   handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
 }
 
@@ -82,14 +84,21 @@ export interface IAdminForthExpressRouteSchema {
    * JSON schema or Zod schema describing the JSON response body for a custom Express route.
    */
   response?: AdminForthExpressSchemaInput;
+
+  /**
+   * Internal metadata for AdminForth integrations. This is not rendered in the OpenAPI document.
+   */
+  meta?: Record<string, unknown>;
 }
 
 export interface IRegisteredApiSchema {
   method: string;
   path: string;
   description?: string;
+  meta?: Record<string, unknown>;
   request_schema?: AnySchemaObject;
   response_schema?: AnySchemaObject;
+  handler?: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>;
 }
 
 export interface IAdminForthApiValidationError {
@@ -1416,7 +1425,7 @@ export interface AdminForthActionInput {
     adminUser: AdminUser;
     standardAllowedActions: AllowedActions;
   }) => boolean | Promise<boolean>);
-  url?: string;
+  url?: string | ((params: { adminUser: AdminUser; resource: AdminForthResource; recordId: string, record: any }) => string);
   bulkHandler?: (params: {
       adminforth: IAdminForth;
       resource: AdminForthResource;

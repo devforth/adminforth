@@ -51,6 +51,7 @@ export * from './modules/filtersTools.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
+export { default as AdminForthBaseConnector } from './dataConnectors/baseConnector.js';
 
 
 class AdminForth implements IAdminForth {
@@ -417,9 +418,10 @@ class AdminForth implements IAdminForth {
       'mysql': MysqlConnector,
       'qdrant': QdrantConnector,
     };
-    if (!this.config.databaseConnectors) {
-      this.config.databaseConnectors = {...this.connectorClasses};
-    }
+    this.config.databaseConnectors = {
+      ...this.connectorClasses,
+      ...this.config.databaseConnectors,
+    };
     this.config.dataSources.forEach((ds) => {
       const dbType = ds.url.split(':')[0];
       if (!this.config.databaseConnectors[dbType]) {

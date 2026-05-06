@@ -1,3 +1,6 @@
+---
+description: "Guide to AdminForth access control with allowed actions, role-based rules, field visibility, and resource-specific restrictions based on users or record values."
+---
 
 # Limiting actions access
 

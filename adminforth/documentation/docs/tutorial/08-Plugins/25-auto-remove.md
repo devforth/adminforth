@@ -1,5 +1,6 @@
 ---
 title: Auto Remove Plugin
+description: "Guide to the Auto Remove plugin, including count-based and time-based cleanup rules for logs, temporary records, demo data, and other disposable resources."
 slug: /tutorial/Plugins/auto-remove
 ---
 

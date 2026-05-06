@@ -260,11 +260,26 @@ async function scaffoldProject(ctx, options, cwd) {
   return projectDir;  // Return the new directory path
 }
 
+function getPackageManagerTemplateData(useNpm, nodeMajor) {
+  return {
+    packageManager: useNpm ? 'npm' : 'pnpm',
+    packageManagerRun: useNpm ? 'npm run' : 'pnpm',
+    packageManagerScriptArgSeparator: useNpm ? ' -- ' : ' ',
+    packageManagerExec: useNpm ? 'npx' : 'pnpm exec',
+    packageManagerEnvDev: useNpm ? 'npm run _env:dev --' : 'pnpm _env:dev',
+    packageManagerEnvProd: useNpm ? 'npm run _env:prod --' : 'pnpm _env:prod',
+    dockerBaseImage: useNpm ? `node:${nodeMajor}-slim` : 'devforth/node20-pnpm:latest',
+    dockerAdditionalManifestFiles: useNpm ? 'package-lock.json' : 'pnpm-lock.yaml pnpm-workspace.yaml',
+    dockerPackageInstallSubcommand: useNpm ? 'ci' : 'i',
+  };
+}
+
 async function writeTemplateFiles(dirname, cwd, useNpm, options) {
   const { 
     dbUrl, prismaDbUrl, appName, provider, nodeMajor,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
+  const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
 
   // Build a list of files to generate
   const templateTasks = [
@@ -312,7 +327,37 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl, appName, sqliteFile, useNpm },
+      data: { dbUrl, prismaDbUrl, appName, sqliteFile },
+    },
+    {
+      src: 'AGENTS.md.hbs',
+      dest: 'AGENTS.md',
+      data: { prismaDbUrl },
+    },
+    {
+      src: 'CLAUDE.md.hbs',
+      dest: 'CLAUDE.md',
+      data: {},
+    },
+    {
+      src: '.agents/skills/adminforth/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth/SKILL.md',
+      data: { prismaDbUrl },
+    },
+    {
+      src: '.agents/skills/adminforth-permissions/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-permissions/SKILL.md',
+      data: {},
+    },
+    {
+      src: '.agents/skills/adminforth-hooks/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-hooks/SKILL.md',
+      data: {},
+    },
+    {
+      src: '.agents/skills/adminforth-custom-vue/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-custom-vue/SKILL.md',
+      data: {},
     },
     {
       // We'll write .env using the same content as .env.sample
@@ -340,7 +385,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     {
       src: 'Dockerfile.hbs',
       dest: 'Dockerfile',
-      data: { nodeMajor, useNpm },
+      data: {},
     },
     {
       src: 'package.json.hbs',
@@ -348,7 +393,6 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
       data: { 
         appName,
         adminforthVersion: adminforthVersion,
-        useNpm
       },
     },
     {
@@ -378,13 +422,16 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     if (task.condition === false) continue;
 
     const destPath = path.join(cwd, task.dest);
-    // fse.ensureDirSync(path.dirname(destPath));
+    await fse.ensureDir(path.dirname(destPath));
 
     if (task.empty) {
       await fs.promises.writeFile(destPath, '');
     } else {
       const templatePath = path.join(dirname, 'templates', task.src);
-      const compiled = renderHBSTemplate(templatePath, task.data);
+      const compiled = renderHBSTemplate(templatePath, {
+        ...packageManagerTemplateData,
+        ...task.data,
+      });
       await fs.promises.writeFile(destPath, compiled);
     }
   }

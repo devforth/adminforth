@@ -1,5 +1,6 @@
 ---
 title: Inline Create
+description: "Guide to the Inline Create plugin, which lets users create records directly from the list page and configure which resources use the inline form."
 slug: /tutorial/Plugins/inline-create
 ---
 

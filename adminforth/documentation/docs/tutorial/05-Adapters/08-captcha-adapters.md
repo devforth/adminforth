@@ -1,3 +1,7 @@
+---
+description: "Reference page for AdminForth captcha adapters, including Cloudflare Turnstile and Google reCAPTCHA setup for login protection flows."
+---
+
 # Captcha Adapters
 
 Used to add captcha to the login screen.

@@ -1,5 +1,6 @@
 ---
 title: List In-Place Edit
+description: "Guide to the List In-Place Edit plugin, which makes selected list fields editable directly in the table without opening the edit page."
 slug: /tutorial/Plugins/list-in-place-edit
 ---
 

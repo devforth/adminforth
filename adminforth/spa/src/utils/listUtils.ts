@@ -3,6 +3,7 @@ import { callAdminForthApi } from '@/utils';
 import { type AdminForthResourceFrontend } from '../types/Common';
 import { useAdminforth } from '@/adminforth';
 import { showErrorTost } from '@/composables/useFrontendApi'
+import { useI18n } from 'vue-i18n';
 
 let getResourceDataLastAbortController: AbortController | null = null;
 export async function getList(resource: AdminForthResourceFrontend, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
@@ -57,10 +58,12 @@ export async function startBulkAction(actionId: string, resource: AdminForthReso
   bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>) {
   const action = resource?.options?.bulkActions?.find(a => a.id === actionId);
   const { confirm, alert } = useAdminforth();
+  const { t } = useI18n();
 
   if (action?.confirm) {
     const confirmed = await confirm({
       title: action.confirm,
+      message: t(`Deleting ${checkboxes.value.length} ${checkboxes.value.length === 1 ? 'item' : 'items'}. This process is irreversible.`),
     });
     if (!confirmed) {
       return;

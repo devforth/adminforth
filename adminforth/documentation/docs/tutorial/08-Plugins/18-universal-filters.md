@@ -1,5 +1,6 @@
 ---
 title: Universal Search (Legacy)
+description: "Guide to the legacy Universal Search plugin, including installation, options, debounce behavior, and how it searches across configured fields."
 slug: /tutorial/Plugins/universal-search
 ---
 

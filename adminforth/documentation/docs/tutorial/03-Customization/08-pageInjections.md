@@ -1,3 +1,6 @@
+---
+description: "Guide to injecting custom Vue UI into AdminForth login, list, show, edit, and create pages, including dropdown items, custom action icons, and row replacements."
+---
 
 # Page Injections
 

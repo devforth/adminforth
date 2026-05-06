@@ -22,7 +22,11 @@ const config: Config = {
   projectName: 'devforth.github.io', // Usually your repo name.
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
 
   scripts: [
     {
@@ -97,6 +101,13 @@ const config: Config = {
         },
         parametersFormat: "table",
         enumMembersFormat: "table",
+      },
+    ],
+    [
+      'docusaurus-plugin-llms',
+      {
+        generateMarkdownFiles: true,
+        ignoreFiles: ['api/**'],
       },
     ],
     // [

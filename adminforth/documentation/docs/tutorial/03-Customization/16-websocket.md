@@ -1,7 +1,12 @@
+---
+description: "Guide to AdminForth WebSocket usage, including client subscriptions, publish authorization, initial loading, and real-time updates for custom pages or components."
+---
 
 # Websocket
 
 AdminForth provide own build-in websocket interface which allows to stream some data to frontend from backend.
+
+If in production you run through a reverse proxy such as Nginx, ensure websocket upgrade is enabled on the `/afws` path under your AdminForth base URL, otherwise websocket will not work. See [Deploy in Docker > Nginx version](/docs/tutorial/deploy#nginx-version).
 
 In two words, to subscribe to a topic from any frontend component you need to do next
 

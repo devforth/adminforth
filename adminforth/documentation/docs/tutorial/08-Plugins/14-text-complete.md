@@ -1,5 +1,6 @@
 ---
 title: Text Complete
+description: "Guide to the Text Complete plugin, including LLM adapter setup, prompt configuration, and AI-assisted text generation for resource fields."
 slug: /tutorial/Plugins/text-complete
 ---
 

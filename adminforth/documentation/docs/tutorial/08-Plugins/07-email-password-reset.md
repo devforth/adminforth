@@ -1,5 +1,6 @@
 ---
 title: Email Password Reset
+description: "Guide to the Email Password Reset plugin, including SES or Mailgun setup, reset-flow wiring, and password reset page customization."
 slug: /tutorial/Plugins/email-password-reset
 ---
 

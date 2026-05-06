@@ -1,3 +1,7 @@
+---
+description: "Reference page for AdminForth image analysis adapters, covering OpenAI Vision setup for plugins that read or describe image content."
+---
+
 # Image Analysis Adapters
 
 Used for AI-powered image analysis.

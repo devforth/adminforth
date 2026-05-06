@@ -1,5 +1,6 @@
 ---
 title: Foreign Inline Show
+description: "Guide to the Foreign Inline Show plugin, which embeds a related record show view inside another resource's show page using foreign-key relationships."
 slug: /tutorial/Plugins/foreign-inline-show
 ---
 

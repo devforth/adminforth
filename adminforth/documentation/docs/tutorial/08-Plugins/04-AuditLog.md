@@ -1,5 +1,6 @@
 ---
 title: Audit Log
+description: "Guide to the Audit Log plugin, including installation, log table setup, resource wiring, and tracking of admin changes, custom actions, and client metadata."
 slug: /tutorial/Plugins/audit-log
 ---
 

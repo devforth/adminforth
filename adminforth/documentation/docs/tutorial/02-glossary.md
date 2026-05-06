@@ -1,3 +1,7 @@
+---
+description: "Reference page defining core AdminForth terms such as data sources, resources, columns, records, actions, views, and other concepts used throughout the docs."
+---
+
 # Glossary
 
 ## dataSource

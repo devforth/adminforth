@@ -1,5 +1,6 @@
 ---
 title: Agent
+description: "Guide to the AdminForth Agent plugin, including installation, model and mode configuration, self-hosted usage, session storage, skills, and custom tools."
 slug: /tutorial/Plugins/agent
 sidebar_position: 0
 ---

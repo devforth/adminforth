@@ -1,5 +1,6 @@
 ---
 title: OAuth Authentication
+description: "Guide to the OAuth Authentication plugin, including provider setup, plugin configuration, email confirmation, and login flows for external identity providers."
 slug: /tutorial/Plugins/oauth
 ---
 
