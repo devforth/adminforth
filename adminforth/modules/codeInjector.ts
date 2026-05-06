@@ -82,6 +82,7 @@ class CodeInjector implements ICodeInjector {
   adminforth: AdminForth;
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
+  publicFoldersToSync: { [key: string]: string } = {};
   devServerPort: number = null;
 
   spaTmpPath(): string {
@@ -327,6 +328,17 @@ class CodeInjector implements ICodeInjector {
     return spaDir;
   }
 
+  registerPluginPublicFoldersToSync() {
+    this.publicFoldersToSync = {};
+
+    for (const plugin of this.adminforth.activatedPlugins) {
+      const pluginPublicFolderPath = path.join(plugin.customFolderPath, 'public');
+      if (fs.existsSync(pluginPublicFolderPath)) {
+        this.publicFoldersToSync[pluginPublicFolderPath] = `./plugins/${plugin.className}/`;
+      }
+    }
+  }
+
   async updatePartials({ filesUpdated }: { filesUpdated: string[] }) {
     const spaDir = this.getSpaDir();
 
@@ -477,6 +489,8 @@ class CodeInjector implements ICodeInjector {
       this.srcFoldersToSync[customCompAbsPath] = './'
     }
 
+    this.registerPluginPublicFoldersToSync();
+
     // if this.adminforth.config.customization.favicon is set, copy it to assets
     const customFav = this.adminforth.config.customization?.favicon;
     if (customFav) {
@@ -498,6 +512,16 @@ class CodeInjector implements ICodeInjector {
         dereference: true,
         // exclude if node_modules comes after /custom/ in path
         filter: (src) => !src.includes(path.join('custom', 'node_modules')),
+      });
+    }
+
+    for (const [src, dest] of Object.entries(this.publicFoldersToSync)) {
+      const to = path.join(this.spaTmpPath(), 'public', dest);
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ publicFoldersToSync: fsExtra.copy from ${src}, ${to}`);
+
+      await fsExtra.copy(src, to, {
+        recursive: true,
+        dereference: true,
       });
     }
 
@@ -860,7 +884,11 @@ class CodeInjector implements ICodeInjector {
     this.allWatchers.push(watcher);
   }
 
-  async watchCustomComponentsForCopy({ customComponentsDir, destination }) {
+  async watchCustomComponentsForCopy({ customComponentsDir, destination, targetRoot = path.join('src', 'custom') }: {
+    customComponentsDir: string,
+    destination: string,
+    targetRoot?: string,
+  }) {
     if (!customComponentsDir) {
       return;
     }
@@ -917,7 +945,7 @@ class CodeInjector implements ICodeInjector {
         process.env.HEAVY_DEBUG && console.log(`🔎 destination ${destination}`);
         const isFile = fs.lstatSync(fileOrDir).isFile();
         if (isFile) {
-          const destPath = path.join(this.spaTmpPath(), 'src', 'custom', destination, relativeFilename);
+          const destPath = path.join(this.spaTmpPath(), targetRoot, destination, relativeFilename);
           process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
           await fsExtra.copy(fileOrDir, destPath);
           return;
@@ -1031,6 +1059,13 @@ class CodeInjector implements ICodeInjector {
           await this.watchCustomComponentsForCopy({ 
             customComponentsDir: src,
             destination: dest,
+          });
+        }),
+        ...Object.entries(this.publicFoldersToSync).map(async ([src, dest]) => {
+          await this.watchCustomComponentsForCopy({
+            customComponentsDir: src,
+            destination: dest,
+            targetRoot: 'public',
           });
         }),
       ]);
