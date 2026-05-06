@@ -56,9 +56,9 @@ function normalizeCountryCode(countryCode?: string): string {
     : 'XX';
 }
 
-export function getClientCountry(httpExtra: HttpExtra): string {
+export function getClientCountry(httpExtra?: HttpExtra): string {
   return normalizeCountryCode(
-    httpExtra.headers['cf-ipcountry'] ?? httpExtra.headers['CF-IPCountry'],
+    httpExtra?.headers['cf-ipcountry'] ?? httpExtra?.headers['CF-IPCountry'],
   );
 }
 
@@ -141,7 +141,7 @@ export async function getLocalizedPlaceholderMessages({
   httpExtra,
 }: {
   completionAdapter: CompletionAdapter;
-  httpExtra: HttpExtra;
+  httpExtra?: HttpExtra;
 }): Promise<string[]> {
   const countryCode = getClientCountry(httpExtra);
   const topLanguage = getTopTerritoryLanguage(countryCode);
