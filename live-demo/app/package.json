@@ -16,8 +16,8 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^1.38.0",
-    "@adminforth/audio-adapter-openai": "^1.0.1",
+    "@adminforth/agent": "^1.39.1",
+    "@adminforth/audio-adapter-openai": "^1.2.0",
     "@adminforth/audit-log": "^1.9.18",
     "@adminforth/background-jobs": "^1.11.4",
     "@adminforth/bulk-ai-flow": "^1.24.3",
