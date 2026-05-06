@@ -428,8 +428,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return stmt.rows;
     }
 
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
-        const columns = resource.dataSourceColumns.map((col) => `"${col.name}"`).join(', ');
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }): Promise<any[]> {
+        const selectedColumns = (columns ?? resource.dataSourceColumns).map((col) => `"${col.name}"`).join(', ');
         const tableName = resource.table;
 
         const { sql: where, paramsCount, values: filterValues } = this.whereClauseAndValues(resource, filters);
@@ -437,7 +437,7 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const limitOffset = `LIMIT $${paramsCount} OFFSET $${paramsCount + 1}`;
         const d = [...filterValues, limit, offset];
         const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `"${s.field}" ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
-        const selectQuery = `SELECT ${columns} FROM "${tableName}" ${where} ${orderBy} ${limitOffset}`;
+        const selectQuery = `SELECT ${selectedColumns} FROM "${tableName}" ${where} ${orderBy} ${limitOffset}`;
         dbLogger.trace(`🪲📜 PG Q: ${selectQuery}, params: ${JSON.stringify(d)}`);
         const stmt = await this.client.query(selectQuery, d);
         const rows = stmt.rows;

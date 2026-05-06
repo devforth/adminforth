@@ -334,12 +334,13 @@ export interface IAdminForthDataSourceConnector {
    * 
    * Fields are returned from db "as is" then {@link AdminForthBaseConnector.getData} will transform each field using {@link IAdminForthDataSourceConnector.getFieldValue}
    */
-  getDataWithOriginalTypes({ resource, limit, offset, sort, filters }: {
+  getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
     sort: IAdminForthSort[], 
     filters: IAdminForthAndOrFilter,
+    columns?: AdminForthResourceColumn[],
   }): Promise<Array<any>>;
 
   /**
@@ -397,13 +398,14 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
 
   getPrimaryKey(resource: AdminForthResource): string;
 
-  getData({ resource, limit, offset, sort, filters }: {
+  getData({ resource, limit, offset, sort, filters, columns }: {
     resource: AdminForthResource,
     limit: number,
     offset: number,
     sort: IAdminForthSort[],
     filters: IAdminForthAndOrFilter,
     getTotals?: boolean,
+    columns?: AdminForthResourceColumn[],
   }): Promise<{ data: Array<any>, total: number }>;
 
   getRecordByPrimaryKey(resource: AdminForthResource, recordId: string): Promise<any>;
