@@ -397,6 +397,10 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       if (value === "" || value === null) {
         return this.setFieldValue(field, null);
       }
+      // Accept numbers from JSON/OpenAPI clients.
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return this.setFieldValue(field, String(value));
+      }
       // Accept string
       if (typeof value === "string") {
         const string = value.trim();
