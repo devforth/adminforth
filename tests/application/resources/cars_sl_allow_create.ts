@@ -5,6 +5,10 @@ const cars_sl = carsResourseTemplate("cars_sl", "sqlite", "id");
 
 export default {
   ...cars_sl,
+  options: {
+    ...(cars_sl as any).options,
+    listTableClickUrl: async (record: any, _adminUser: any, resource: any) => `/resource/${resource.resourceId}/show/${record.id}`,
+  },
   columns: [
     ...cars_sl.columns.filter(c => c.name !== "mileage" && c.name !== "photos" && c.name !== "generated_promo_picture"),
     {

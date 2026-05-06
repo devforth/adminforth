@@ -430,8 +430,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       return results.sort((a, b) => a.group.localeCompare(b.group));
     }
 
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }): Promise<any[]> {
-      const columns = resource.dataSourceColumns.map((col) => col.name).join(', ');
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }): Promise<any[]> {
+      const selectedColumns = (columns ?? resource.dataSourceColumns).map((col) => col.name).join(', ');
       const tableName = resource.table;
 
       const where = this.whereClause(filters);
@@ -440,7 +440,7 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
       
-      const q = `SELECT ${columns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
+      const q = `SELECT ${selectedColumns} FROM ${tableName} ${where} ${orderBy} LIMIT ? OFFSET ?`;
       const stmt = this.client.prepare(q);
       const d = [...filterValues, limit, offset];
 
