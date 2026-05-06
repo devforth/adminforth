@@ -5,6 +5,7 @@ import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-ope
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
 import { getLocalizedPlaceholderMessages } from './agent_resources/placeholderMessages';
+import OpenAIAudioAdapter from '@adminforth/audio-adapter-openai'
 
 const openAiApiKey = process.env.OPENAI_API_KEY as string;
 
@@ -50,6 +51,9 @@ export default {
       foreignResourceId: 'audit_logs',
     }), 
     new AdminForthAgent({
+      audioAdapter: new OpenAIAudioAdapter({
+        apiKey: process.env.OPENAI_API_KEY,
+      }),
       placeholderMessages: async ({ httpExtra }: any) => getLocalizedPlaceholderMessages({
         completionAdapter: fastCompletionAdapter as any,
         httpExtra,
