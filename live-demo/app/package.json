@@ -16,7 +16,8 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^1.33.1",
+    "@adminforth/agent": "^1.38.0",
+    "@adminforth/audio-adapter-openai": "^1.0.0",
     "@adminforth/audit-log": "^1.9.18",
     "@adminforth/background-jobs": "^1.11.4",
     "@adminforth/bulk-ai-flow": "^1.24.3",
@@ -37,7 +38,7 @@
     "@adminforth/two-factors-auth": "^3.2.1",
     "@adminforth/upload": "^2.15.8",
     "@prisma/client": "^6.6.0",
-    "adminforth": "^2.50.0",
+    "adminforth": "^2.52.0",
     "better-sqlite3": "^10.0.0",
     "cldr-core": "^48.2.0",
     "express": "^4.19.2"
