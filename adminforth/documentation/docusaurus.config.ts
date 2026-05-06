@@ -99,8 +99,9 @@ const config: Config = {
           "title.indexPage": "TypeDoc API",
           "title.memberPage": "{name}",
         },
+        useCustomAnchors: true,
         parametersFormat: "table",
-        enumMembersFormat: "table",
+        enumMembersFormat: "list",
       },
     ],
     [
