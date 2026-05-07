@@ -4,6 +4,7 @@ export type SpeechToTextInput = {
   mimeType: string;
   language?: string;
   prompt?: string;
+  abortSignal?: AbortSignal;
 };
 
 export type SpeechToTextResult = {
@@ -34,6 +35,7 @@ export type TextToSpeechInput<Voice extends string = string> = {
   format?: TtsAudioFormat;
   speed?: number;
   instructions?: string;
+  abortSignal?: AbortSignal;
   stream?: false;
 };
 
