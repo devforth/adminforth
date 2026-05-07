@@ -136,11 +136,18 @@
       >
         <IconFilterOutline class="w-4 h-4"/>
         {{ $t('Filter') }}
-        <span
-          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-          v-if="filtersStore.visibleFiltersCount">
-            {{ filtersStore.visibleFiltersCount }}
-        </span>
+        <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
+          <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
+              {{ filtersStore.visibleFiltersCount }}
+          </span>
+          
+          <div 
+            @click.stop="filtersStore.clearFilters()"
+            class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+          >
+            <IconCloseOutline class="w-4 h-4 text-red-500" />
+          </div>
+        </div>
       </button>
 
       <ThreeDotsMenu 
@@ -230,7 +237,8 @@ import { useI18n } from 'vue-i18n';
 import {
   IconBanOutline,
   IconFilterOutline,
-  IconPlusOutline
+  IconPlusOutline,
+  IconCloseOutline
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
