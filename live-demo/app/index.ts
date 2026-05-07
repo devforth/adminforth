@@ -1,4 +1,5 @@
 import express from 'express';
+import type { Request, Response } from 'express';
 import AdminForth, { Filters } from 'adminforth';
 import type { AdminUser } from 'adminforth';
 import fs from 'fs';
@@ -181,7 +182,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         },
       },
       admin.express.authorize(
-        async (req, res) => {
+        async (req: Request, res: Response) => {
         const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
