@@ -18,8 +18,8 @@ importers:
         specifier: ^1.9.18
         version: 1.9.18(adminforth@2.53.6(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/auto-remove':
-        specifier: ^1.0.0
-        version: 1.0.7(adminforth@2.53.6(@types/node@25.3.5)(typescript@5.9.3))
+        specifier: ^1.0.8
+        version: 1.0.8(adminforth@2.53.6(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/background-jobs':
         specifier: ^1.11.4
         version: 1.11.4(adminforth@2.53.6(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))
@@ -118,8 +118,8 @@ packages:
     peerDependencies:
       adminforth: ^2.42.0
 
-  '@adminforth/auto-remove@1.0.7':
-    resolution: {integrity: sha512-OoFQ9F2BVOV+r/PjAlkk6yONmmtA4xOVipY33TP8NLv51o84LGF5S3hWQ/QETvQOUiMTPUtSzR1/EC18kEDI8w==}
+  '@adminforth/auto-remove@1.0.8':
+    resolution: {integrity: sha512-UxYPlLvQVkS7i7jby6AnCIIawndMcKcpyHYVm8MJ6Flgi/Unt8h52xs3a59XMtkzcpDB2coS247Eb+NhPmXKRw==}
     peerDependencies:
       adminforth: ^2.42.0
 
@@ -2977,7 +2977,7 @@ snapshots:
       adminforth: 2.53.6(@types/node@25.3.5)(typescript@5.9.3)
       dayjs: 1.11.20
 
-  '@adminforth/auto-remove@1.0.7(adminforth@2.53.6(@types/node@25.3.5)(typescript@5.9.3))':
+  '@adminforth/auto-remove@1.0.8(adminforth@2.53.6(@types/node@25.3.5)(typescript@5.9.3))':
     dependencies:
       adminforth: 2.53.6(@types/node@25.3.5)(typescript@5.9.3)
 
