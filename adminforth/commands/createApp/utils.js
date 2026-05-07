@@ -366,7 +366,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     },
     {
       // We'll write .env using the same content as .env.sample
-      src: '.env.local.hbs',
+      src: '.env.hbs',
       dest: '.env',
       data: {dbUrl, prismaDbUrl},
     },
