@@ -1,11 +1,9 @@
-FROM node:22-alpine
+FROM node:20-alpine
 WORKDIR /code/
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml /code/
-# RUN npm i -g corepack@0.31.0
+RUN npm i -g corepack@0.31.0
 RUN corepack enable
-RUN pnpm config set ignore-scripts false
-RUN pnpm approve-builds --all
-RUN pnpm install --frozen-lockfile
+RUN pnpm i  
 ADD . /code/
 RUN pnpm bundleNow
 
