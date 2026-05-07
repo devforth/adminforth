@@ -1,11 +1,12 @@
 import AuditLogPlugin from '@adminforth/audit-log';
 import { AdminForthDataTypes } from 'adminforth'
+import type { AdminForthResourceInput } from 'adminforth';
 import { randomUUID } from 'crypto';
 import importExport from '@adminforth/import-export';
 
 
 
-export default {
+const auditLogsResource: AdminForthResourceInput = {
   dataSource: 'maindb', 
   table: 'audit_logs',
   columns: [
@@ -43,4 +44,6 @@ export default {
         }
     }),
   ],
-}
+};
+
+export default auditLogsResource;
