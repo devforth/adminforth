@@ -23,7 +23,7 @@ services:
       CRON: "0 6 * * 0"
       DATABASE_TYPE: "sqlite"
       DATABASE_PATH: "/code/db/live.sqlite"
-      GLACIER_BUCKET_NAME: "glacierizer-adminforth-live-demo-backups  "
+      GLACIER_BUCKET_NAME: "glacierizer-adminforth-live-demo-backups"
       GLACIER_STORAGE_CLASS: "flexible"
       GLACIER_EXPIRE_AFTER: 90
       AWS_DEFAULT_REGION: "eu-central-1"
