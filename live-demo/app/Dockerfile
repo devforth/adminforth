@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /code/
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml /code/
 # RUN npm i -g corepack@0.31.0
