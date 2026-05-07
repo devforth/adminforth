@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM devforth/node20-pnpm:latest
 WORKDIR /code/
 ADD package.json pnpm-lock.yaml pnpm-workspace.yaml /code/
 RUN pnpm i -g corepack@0.31.0
