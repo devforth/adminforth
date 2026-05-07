@@ -58,7 +58,7 @@ export const admin = new AdminForth({
       }
       const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
       return imageUrl;
-    },
+    }, 
   },
   customization: {
     brandName: "dev-demo",
