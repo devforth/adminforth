@@ -1,6 +1,6 @@
-import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthDataTypes, Filters,  AdminForthResource, AdminForthResourceColumn  } from 'adminforth';
+import AdminForth, { Filters } from 'adminforth';
+import type { AdminUser } from 'adminforth';
 import fs from 'fs';
 import usersResource from "./resources/users";
 import apartmentsResource from "./resources/apartments";
@@ -8,6 +8,7 @@ import auditLogsResource from "./resources/auditLogs"
 import translations from "./resources/translations";
 import sessionsResource from './resources/agent_resources/sessions';
 import turnsResource from './resources/agent_resources/turns';
+import checkpointsResource from './resources/agent_resources/checkpoints';
 import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
@@ -66,6 +67,7 @@ new AdminForth({
     translations,
     sessionsResource,
     turnsResource,
+    checkpointsResource,
     jobs_resource,
   ],
   menu: [

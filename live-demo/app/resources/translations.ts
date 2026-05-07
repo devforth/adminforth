@@ -1,21 +1,22 @@
 
-import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "adminforth";
+import AdminForth, { AdminForthDataTypes } from "adminforth";
+import type { AdminForthResourceInput } from "adminforth";
 import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 import I18nPlugin from "@adminforth/i18n";
 import { randomUUID } from 'crypto';
 
-const blockDemoUsers = async ({ record, adminUser, resource }) => {
+const blockDemoUsers = async ({ adminUser }: { adminUser: any }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
   return { ok: true };
 }
 
-const isAdmin = ({ adminUser }) => {
+const isAdmin = async ({ adminUser }: { adminUser: any }) => {
   return adminUser.dbUser && adminUser.dbUser.role === 'superadmin';
 }
 
-export default {
+const translationsResource: AdminForthResourceInput = {
   dataSource: "maindb",
   table: "translations",
   resourceId: "translations",
@@ -55,8 +56,7 @@ export default {
       completeAdapter: new CompletionAdapterOpenAIResponses({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
         model: 'gpt-5.4-mini',
-        expert: {
-          // for UI translation it is better to lower down the temperature from default 0.7. Less creative and more accurate
+        extraRequestBodyParameters: {
           temperature: 0.5,
         },
       }),
@@ -121,4 +121,6 @@ export default {
       type: AdminForthDataTypes.STRING,
     }
   ],
-} as AdminForthResourceInput;
+};
+
+export default translationsResource;
