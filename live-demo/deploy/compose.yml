@@ -14,7 +14,25 @@ services:
       - ADMIN_PASSWORD=${VAULT_ADMIN_PASSWORD}
     volumes:
       - af-db:/code/db/
-      
+ 
+  glacierizer-live-demo:
+    image: devforth/docker-database-glacierizer:sqlite
+    network_mode: host
+    restart: always
+    environment:
+      CRON: "0 6 * * 0"
+      DATABASE_TYPE: "sqlite"
+      DATABASE_PATH: "/code/db/live.sqlite"
+      GLACIER_BUCKET_NAME: "glacierizer-adminforth-live-demo-backups  "
+      GLACIER_STORAGE_CLASS: "flexible"
+      GLACIER_EXPIRE_AFTER: 90
+      AWS_DEFAULT_REGION: "eu-central-1"
+      AWS_ACCESS_KEY_ID: "${VAULT_AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${VAULT_AWS_SECRET_ACCESS_KEY}"
+      MANUAL_MANAGEMENT_PORT: "33397"
+    volumes:
+      - af-db:/code/db/
+
 networks:
   default:
     driver: bridge
