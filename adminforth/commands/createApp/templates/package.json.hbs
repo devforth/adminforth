@@ -11,9 +11,11 @@
     "dev": "{{packageManagerEnvDev}} tsx watch index.ts",
     "prod": "{{packageManagerEnvProd}} tsx index.ts",
     "start": "{{packageManagerRun}} dev",
+    {{#if includePrismaMigrations}}
     "makemigration": "{{packageManagerEnvDev}} npx --yes prisma migrate dev --create-only",
     "migrate:local": "{{packageManagerEnvDev}} npx --yes prisma migrate deploy",
     "migrate:prod": "{{packageManagerEnvProd}} npx --yes prisma migrate deploy",
+    {{/if}}
     "_env:dev": "dotenvx run -f .env -f .env.local --",
     "_env:prod": "dotenvx run -f .env.prod --"
   },
