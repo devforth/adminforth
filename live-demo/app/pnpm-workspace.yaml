@@ -1,2 +1,9 @@
+ignoredBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - adminforth
+  - classic-level
+  - esbuild
+  - prisma
 onlyBuiltDependencies:
   - better-sqlite3
