@@ -171,6 +171,8 @@
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
       @update:records="getListInner"
+      :pageSizeOptions="PAGE_SIZE_OPTIONS"
+      @update:pageSize="pageSize = $event"
       :sort="sort"
       :pageSize="pageSize"
       :totalRows="totalRows"
@@ -261,8 +263,19 @@ const customActionLoadingStates = ref<{[key: string]: boolean}>({});
 const DEFAULT_PAGE_SIZE = 10;
 
 
-const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
-const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
+const PAGE_SIZE_OPTIONS = computed(() => {
+  const array = coreStore.resource?.options?.listPageSizeOptions;
+  
+  if (!array || array.length === 0) return undefined;
+  
+  return array.map(size => ({ label: size.toString(), value: size }));
+});
+
+const pageSize = ref(DEFAULT_PAGE_SIZE);
+
+const isVirtualScrollEnabled = computed(() =>
+  coreStore.resource?.options?.listVirtualScrollEnabled || false
+);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
 const isPageLoaded = ref(false);
@@ -426,7 +439,16 @@ async function init() {
   }
   // page init should be also in same tick 
   if (route.query.page) {
-    page.value = parseInt(route.query.page as string);
+      page.value = parseInt(route.query.page as string);
+    }
+    if (route.query.pageSize) {
+    const parsedPageSize = parseInt(route.query.pageSize as string);
+    // Перевіряємо наявність опцій перед використанням .includes
+    if (PAGE_SIZE_OPTIONS.value && PAGE_SIZE_OPTIONS.value.some(o => o.value === parsedPageSize)) {
+      pageSize.value = parsedPageSize;
+    }
+  } else if (coreStore.resource?.options?.listPageSize) {
+    pageSize.value = coreStore.resource.options.listPageSize;
   }
 
   // getList(); - Not needed here, watch will trigger it
@@ -446,7 +468,7 @@ async function init() {
   }
 }
 
-watch([page, sort, () => filtersStore.filters], async () => {
+watch([page, pageSize, sort, () => filtersStore.filters], async () => {
   // console.log('🔄️ page/sort/filter change fired, page:', page.value);
   await getListInner();
 }, { deep: true });
@@ -511,6 +533,15 @@ onUnmounted(() => {
 
 watch([page], async () => {
   setQuery({ page: page.value });
+});
+
+watch(pageSize, async () => {
+  page.value = 1;
+
+  setQuery({
+    page: 1,
+    pageSize: pageSize.value,
+  });
 });
 
 watch([sort], async () => {

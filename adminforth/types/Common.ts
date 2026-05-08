@@ -472,6 +472,7 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
+      listPageSizeOptions?: number[],
       
       /**
        * Whether to use virtual scroll in list view.

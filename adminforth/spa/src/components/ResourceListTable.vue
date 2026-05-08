@@ -340,6 +340,20 @@
         </span> 
       </template>
     </span>
+    <div v-if="totalRows > 0 && pageSizeOptionsComputed?.length" 
+      class="flex items-center gap-2 ml-auto" > 
+      <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText"> 
+        {{ $t('Rows per page') }} 
+      </span> 
+      <Select v-model="pageSizeInternal" 
+        :options="pageSizeOptionsComputed" 
+        :searchDisabled="true" 
+        class="text-sm w-[68px]" 
+        classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm rounded-md cursor-pointer af-button-shadow
+        bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder
+        dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder"
+      /> 
+    </div>
   </div>
 </template>
 
@@ -368,6 +382,7 @@ import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import Select from '@/afcl/Select.vue';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -378,6 +393,7 @@ const props = withDefaults(defineProps<{
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
+  pageSizeOptions?: { label: string; value: any }[];
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
@@ -405,6 +421,7 @@ const rowsToRender = computed(() => {
 // emits, update page
 const emits = defineEmits([
   'update:page',
+  'update:pageSize',
   'update:sort',
   'update:checkboxes',
   'update:records'
@@ -414,6 +431,16 @@ const emits = defineEmits([
 const checkboxesInternal: Ref<any[]> = ref([]);
 const pageInput = ref('1');
 const page = ref(1);
+
+const pageSizeInternal = ref(props.pageSize);
+
+const pageSizeOptionsComputed = computed(() => {
+  if (!props.pageSizeOptions || props.pageSizeOptions.length === 0) {
+    return undefined;
+  }
+  return props.pageSizeOptions;
+});
+
 const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
 
 const showListActionsThreeDots = computed(() => {
@@ -463,6 +490,14 @@ watch(() => props.page, (newPage) => {
   // this check prevents cursor jumping on manual input
   if (page.value !== newPage) pageInput.value = newPage.toString();
   page.value = newPage;
+});
+
+watch(() => props.pageSize, (newPageSize) => {
+  pageSizeInternal.value = newPageSize;
+});
+
+watch(pageSizeInternal, (newPageSize) => {
+  emits('update:pageSize', newPageSize);
 });
 
 const rowRefs = useTemplateRef<HTMLElement[]>('rowRefs');
