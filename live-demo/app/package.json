@@ -16,7 +16,7 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^1.41.2",
+    "@adminforth/agent": "^1.42.0",
     "@adminforth/audio-adapter-openai": "^1.3.0",
     "@adminforth/audit-log": "^1.9.18",
     "@adminforth/auto-remove": "^1.0.8",
