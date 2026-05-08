@@ -87,7 +87,8 @@
                         </div>
                         
                         <component 
-                          v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
+                          v-for="(c, index) in coreStore?.config?.loginPageInjections?.underInputs || []"
+                          :key="`under-inputs-${index}`"
                           :is="getCustomComponent(formatComponent(c))"
                           :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
@@ -106,7 +107,8 @@
                           {{ $t('Login to your account') }}
                         </Button>
                         <component 
-                          v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
+                          v-for="(c, index) in coreStore?.config?.loginPageInjections?.underLoginButton || []"
+                          :key="`under-login-button-${index}`"
                           :is="getCustomComponent(formatComponent(c))"
                           :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
@@ -125,17 +127,14 @@
 <script setup lang="ts">
 
 import { getCustomComponent, formatComponent } from '@/utils';
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { Button, Checkbox, Input } from '@/afcl';
-import { useI18n } from 'vue-i18n';
 import ErrorMessage from '@/components/ErrorMessage.vue';
-
-const { t } = useI18n();
 
 const passwordInput = ref<InstanceType<typeof Input> | null>(null);
 const usernameInput = ref<InstanceType<typeof Input> | null>(null);
@@ -143,7 +142,6 @@ const rememberMeValue= ref(false);
 const username = ref('');
 const password = ref('');
 
-const route = useRoute();
 const router = useRouter();
 const inProgress = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
@@ -159,18 +157,6 @@ const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
 });
 
-
-onBeforeMount(() => {
-  if (localStorage.getItem('isAuthorized') === 'true') {
-    // if route has next param, redirect
-    coreStore.fetchMenuAndResource();
-    if (route.query.next) {
-      router.push(route.query.next.toString());
-    } else {
-      router.push({ name: 'home' });
-    }
-  }
-})
 
 onMounted(async () => {
   coreStore.getLoginFormConfig();
