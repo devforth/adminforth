@@ -393,7 +393,7 @@ const props = withDefaults(defineProps<{
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
-  pageSizeOptions?: { label: string; value: any }[];
+  pageSizeOptions?: { label: string; value: any }[] | number[] | null;  
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
@@ -436,9 +436,18 @@ const pageSizeInternal = ref(props.pageSize);
 
 const pageSizeOptionsComputed = computed(() => {
   if (!props.pageSizeOptions || props.pageSizeOptions.length === 0) {
-    return undefined;
+    return null;
   }
-  return props.pageSizeOptions;
+  
+  const firstItem = props.pageSizeOptions[0];
+  if (typeof firstItem === 'object' && firstItem !== null) {
+    return props.pageSizeOptions as { label: string; value: any }[];
+  }
+
+  return (props.pageSizeOptions as number[]).map(size => ({
+    label: size.toString(),
+    value: size
+  }));
 });
 
 const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
