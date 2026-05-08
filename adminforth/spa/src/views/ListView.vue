@@ -143,7 +143,7 @@
           
           <div 
             @click.stop="filtersStore.clearFilters()"
-            class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+            class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
           >
             <IconCloseOutline class="w-4 h-4 text-red-500" />
           </div>
