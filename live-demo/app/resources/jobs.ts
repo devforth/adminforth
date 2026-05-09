@@ -7,7 +7,7 @@ async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Pr
   return adminUser.dbUser.role === 'superadmin';
 }
 
-export default {
+const jobsResource: AdminForthResourceInput = {
   dataSource: 'maindb',
   table: 'jobs',
   resourceId: 'jobs',
@@ -105,4 +105,6 @@ export default {
       jobHandlerField: 'job_handler_name',
     })
   ]
-} as AdminForthResourceInput;
+};
+
+export default jobsResource;

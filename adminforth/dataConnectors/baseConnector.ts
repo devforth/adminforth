@@ -167,6 +167,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
       const fieldObj = resource.dataSourceColumns.find((col) => col.name == normalizedFilter.field);
       if (!fieldObj) {
+        const resourceColumn = resource.columns.find((col) => col.name == normalizedFilter.field);
+        if (resourceColumn?.virtual) {
+          return { ok: true, error: '', normalizedFilters: normalizedFilter };
+        }
+
         const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), normalizedFilter.field);
         
         let isPolymorphicTarget = false;
@@ -191,6 +196,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         // ensure rightField exists in resource
         const rightFieldObj = resource.dataSourceColumns.find((col) => col.name == normalizedFilter.rightField);
         if (!rightFieldObj) {
+          const rightResourceColumn = resource.columns.find((col) => col.name == normalizedFilter.rightField);
+          if (rightResourceColumn?.virtual) {
+            return { ok: true, error: '', normalizedFilters: normalizedFilter };
+          }
+
           const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), normalizedFilter.rightField as string);
           throw new Error(`Field '${normalizedFilter.rightField}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }

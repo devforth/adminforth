@@ -16,9 +16,10 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^1.43.0",
+    "@adminforth/agent": "^1.43.3",
     "@adminforth/audio-adapter-openai": "^1.2.0",
     "@adminforth/audit-log": "^1.9.18",
+    "@adminforth/auto-remove": "^1.0.8",
     "@adminforth/background-jobs": "^1.11.4",
     "@adminforth/bulk-ai-flow": "^1.24.3",
     "@adminforth/chat-gpt": "^1.0.20",
