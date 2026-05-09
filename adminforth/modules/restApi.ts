@@ -272,6 +272,13 @@ const getResourceDataRequestSchema: AnySchemaObject = {
     },
     sort: commonSortSchema,
     filters: commonFiltersSchema,
+    columns: {
+      type: 'array',
+      description: 'Optional list of resource column names to include in returned rows. For list requests, computed row helper fields such as _label and _clickUrl are still returned when available.',
+      minItems: 1,
+      uniqueItems: true,
+      items: { type: 'string' },
+    },
   },
   additionalProperties: true,
   allOf: [
@@ -1296,6 +1303,42 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
         const { limit, offset, filters, sort } = body;
+        const selectedColumnNames = body.columns
+          ? [...new Set(body.columns as string[])]
+          : undefined;
+
+        if (selectedColumnNames) {
+          const resourceColumnNames = new Set(resource.columns.map((col) => col.name));
+          const invalidColumnName = selectedColumnNames.find((columnName) => !resourceColumnNames.has(columnName));
+
+          if (invalidColumnName) {
+            return { error: `Column ${invalidColumnName} not found in resource ${resourceId}` };
+          }
+        }
+        const selectedColumnNameSet = selectedColumnNames ? new Set(selectedColumnNames) : undefined;
+        const shouldAddListHelpers = source === 'list';
+        const selectedDataSourceColumnNameSet = selectedColumnNames
+          ? new Set(selectedColumnNames.filter((columnName) => resource.dataSourceColumns.some((col) => col.name === columnName)))
+          : undefined;
+
+        if (selectedDataSourceColumnNameSet) {
+          for (const col of resource.columns) {
+            if (
+              selectedColumnNameSet.has(col.name) &&
+              col.foreignResource?.polymorphicOn
+            ) {
+              selectedDataSourceColumnNameSet.add(col.foreignResource.polymorphicOn);
+            }
+          }
+        }
+
+        const selectedDataSourceColumns = selectedDataSourceColumnNameSet && !shouldAddListHelpers
+          ? (
+              resource.dataSourceColumns.some((col) => selectedDataSourceColumnNameSet.has(col.name))
+                ? resource.dataSourceColumns.filter((col) => selectedDataSourceColumnNameSet.has(col.name))
+                : resource.dataSourceColumns.filter((col) => col.primaryKey || col.name === resource.dataSourceColumns[0]?.name)
+            )
+          : undefined;
 
         // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
         const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
@@ -1334,11 +1377,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           filters: normalizedFilters as IAdminForthAndOrFilter,
           sort: sortFiltered,
           getTotals: source === 'list',
+          columns: selectedDataSourceColumns,
         });
 
         // for foreign keys, add references
         await Promise.all(
-          resource.columns.filter((col) => col.foreignResource).map(async (col) => {
+          resource.columns.filter((col) => (
+            col.foreignResource && (!selectedColumnNameSet || shouldAddListHelpers || selectedColumnNameSet.has(col.name))
+          )).map(async (col) => {
             let targetDataMap = {};
 
             if (col.foreignResource.resourceId) {
@@ -1448,7 +1494,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
-        const pkField = resource.columns.find((col) => col.primaryKey)?.name;
         // remove all columns which are not defined in resources, or defined but backendOnly
         {
           const ctx = {
@@ -1471,10 +1516,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 delete item[key];
               }
             }
-            item._label = resource.recordLabel(item);
+            if (!selectedColumnNameSet || shouldAddListHelpers) {
+              item._label = resource.recordLabel(item);
+            }
           }
         }
-        if (source === 'list' && resource.options.listTableClickUrl) {
+        if (shouldAddListHelpers && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
                 item._clickUrl = await resource.options.listTableClickUrl(item, adminUser, resource);
@@ -1498,6 +1545,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const hookRespError = hookResponseError(resp);
           if (hookRespError) {
             return hookRespError;
+          }
+        }
+
+        if (selectedColumnNameSet) {
+          for (const item of data.data) {
+            for (const key of Object.keys(item)) {
+              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl') {
+                delete item[key];
+              }
+            }
           }
         }
 

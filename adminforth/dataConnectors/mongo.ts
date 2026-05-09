@@ -408,13 +408,14 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         });
     }
     
-    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters }:
+    async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }:
         { 
             resource: AdminForthResource, 
             limit: number, 
             offset: number, 
             sort: { field: string, direction: AdminForthSortDirections }[], 
             filters: IAdminForthAndOrFilter,
+            columns?: Array<{ name: string }>,
         }
     ): Promise<any[]> {
 
@@ -429,7 +430,11 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             return [s.field, this.SortDirectionsMap[s.direction]];
         });
 
-        const result = await collection.find(query)
+        const projection = columns
+            ? Object.fromEntries(columns.map((col) => [col.name, 1]))
+            : undefined;
+
+        const result = await collection.find(query, projection ? { projection } : undefined)
             .sort(sortArray)
             .skip(offset)
             .limit(limit)
