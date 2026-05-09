@@ -1,5 +1,5 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
-import type { AdminForthResource } from 'adminforth';
+import type { AdminForthResource, AdminForthResourceInput } from 'adminforth';
 import AdminForthAgent from '@adminforth/agent';
 import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
@@ -32,7 +32,7 @@ const blockDemoUsers = async ({ adminUser }: { adminUser: any }) => {
   }
   return { ok: true };
 }  
-export default { 
+const usersResource: AdminForthResourceInput = { 
   dataSource: 'maindb', 
   table: 'users',
   resourceId: 'users',
@@ -51,11 +51,11 @@ export default {
       foreignResourceId: 'audit_logs',
     }), 
     new AdminForthAgent({
-      audioAdapter: new OpenAIAudioAdapter({
-        apiKey: openAiApiKey,
-        defaultVoice: 'alloy',
-        defaultSpeed: 1.25,
-      }),
+      // audioAdapter: new OpenAIAudioAdapter({
+      //   apiKey: openAiApiKey,
+      //   defaultVoice: 'alloy',
+      //   defaultSpeed: 1.25,
+      // }),
       placeholderMessages: async ({ httpExtra }: any) => getLocalizedPlaceholderMessages({
         completionAdapter: fastCompletionAdapter as any,
         httpExtra,
@@ -90,6 +90,22 @@ export default {
         createdAtField: 'created_at',
         promptField: 'prompt',
         responseField: 'response',
+      },
+      checkpointResource: {
+        resourceId: 'agent_checkpoints',
+        idField: 'id',
+        threadIdField: 'thread_id',
+        checkpointNamespaceField: 'checkpoint_namespace',
+        checkpointIdField: 'checkpoint_id',
+        parentCheckpointIdField: 'parent_checkpoint_id',
+        rowKindField: 'row_kind',
+        taskIdField: 'task_id',
+        sequenceField: 'sequence',
+        createdAtField: 'created_at',
+        checkpointPayloadField: 'checkpoint_payload',
+        metadataPayloadField: 'metadata_payload',
+        writesPayloadField: 'writes_payload',
+        schemaVersionField: 'schema_version',
       },
       stickByDefault: true,
     }),
@@ -164,4 +180,6 @@ export default {
         beforeSave: blockDemoUsers,
     },
   }
-}
+};
+
+export default usersResource;

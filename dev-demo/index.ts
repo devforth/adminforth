@@ -58,7 +58,7 @@ export const admin = new AdminForth({
       }
       const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
       return imageUrl;
-    },
+    }, 
   },
   customization: {
     brandName: "dev-demo",
@@ -278,7 +278,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
     logger.info('Bundling AdminForth SPA done.');
   });
-
+ 
   admin.express.serve(app);
 
   const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');

@@ -314,7 +314,41 @@ completionAdapter: new CompletionAdapterOpenAIResponses({
 OVH AI Endpoints still does not fully support the OpenAI `responses` API, so `useComplitionApi: false` may work unstably there.
 
 
+## Turn on audio chat support
+If you want to have an ability to talk with agent usng voice, you can setup it:
 
+1) Install audio adapter:
+
+```bash
+pnpm add @adminforth/audio-adapter-openai
+```
+
+2) Import it in your users resource and add to the plugin config
+
+```ts title="./resources/adminuser.ts"
+  //diff-add
+  import OpenAIAudioAdapter from '@adminforth/audio-adapter-openai'
+
+  ...
+
+
+  new AdminForthAgent({
+    ...
+    //diff-add
+    audioAdapter: new OpenAIAudioAdapter({
+      //diff-add
+      apiKey: process.env.OPENAI_API_KEY as string,,
+      //diff-add
+      defaultVoice: 'alloy',
+      //diff-add
+      defaultSpeed: 1.25,
+    //diff-add
+    }),
+    ...
+  }),
+  ...
+
+```
 
 ## Writing own skills
 

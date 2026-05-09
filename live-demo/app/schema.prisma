@@ -76,6 +76,25 @@ model turns {
   response   String?
 }
 
+model agent_checkpoints {
+  id                    String   @id
+  thread_id             String
+  checkpoint_namespace  String
+  checkpoint_id         String
+  parent_checkpoint_id  String?
+  row_kind              String
+  task_id               String?
+  sequence              Int
+  created_at            DateTime
+  checkpoint_payload    String?
+  metadata_payload      String?
+  writes_payload        String?
+  schema_version        Int
+
+  @@index([thread_id, checkpoint_namespace, checkpoint_id])
+  @@index([created_at])
+}
+
 model jobs {
   id          String @id
   created_at  DateTime
