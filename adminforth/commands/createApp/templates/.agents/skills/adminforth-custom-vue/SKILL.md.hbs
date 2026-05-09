@@ -134,7 +134,7 @@ show: {
     />
 
     <p v-if="errorMessage" class="text-sm text-red-600">
-      {{ errorMessage }}
+      \{{ errorMessage }}
     </p>
 
     <p v-else-if="isEmpty" class="text-sm text-amber-600">
@@ -227,9 +227,9 @@ function syncState() {
 <template>
   <div class="flex items-center gap-2">
     <span>
-      {{ meta?.filler?.repeat(record.number_of_rooms || 0) }}
+      \{{ meta?.filler?.repeat(record.number_of_rooms || 0) }}
     </span>
-    <span>{{ record.number_of_rooms }} {{ meta?.suffix }}</span>
+    <span>\{{ record.number_of_rooms }} \{{ meta?.suffix }}</span>
   </div>
 </template>
 

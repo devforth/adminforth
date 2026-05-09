@@ -56,6 +56,7 @@ export function parseArgumentsIntoOptions(rawArgs) {
     appName: args['--app-name'],
     db: args['--db'],
     useNpm: args['--use-npm'],
+    includePrismaMigrations: args['--include-prisma-migrations'],
   };
 }
 
@@ -93,12 +94,27 @@ export async function promptForMissingOptions(options) {
     });
   }
 
+  if (!options.includePrismaMigrations) {
+    questions.push({
+      type: 'select',
+      name: 'includePrismaMigrations',
+      message: 'Include Prisma migrations? >',
+      choices: [
+        { name: 'Yes', value: true },
+        { name: 'No', value: false },
+      ],
+      default: true,
+    });
+
+  }
+
   const answers = await inquirer.prompt(questions);
   return {
       ...options,
       appName: options.appName || answers.appName,
       db: options.db || answers.db,
       useNpm: options.useNpm || answers.useNpm,
+      includePrismaMigrations: options.includePrismaMigrations || answers.includePrismaMigrations,
   };
 }
 
@@ -246,7 +262,7 @@ async function scaffoldProject(ctx, options, cwd) {
   await fse.copy(sourceAssetsDir, targetAssetsDir);
 
   // Write templated files
-  await writeTemplateFiles(dirname, projectDir, options.useNpm, {
+  await writeTemplateFiles(dirname, projectDir, options.useNpm, options.includePrismaMigrations, {
     dbUrl: connectionString.toString(),
     dbUrlProd: connectionStringProd,
     prismaDbUrl,
@@ -274,7 +290,7 @@ function getPackageManagerTemplateData(useNpm, nodeMajor) {
   };
 }
 
-async function writeTemplateFiles(dirname, cwd, useNpm, options) {
+async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
   const { 
     dbUrl, prismaDbUrl, appName, provider, nodeMajor,
     dbUrlProd, prismaDbUrlProd, sqliteFile
@@ -286,17 +302,6 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     {
       src: 'tsconfig.json.hbs',
       dest: 'tsconfig.json',
-      data: {},
-    },
-    {
-      src: 'schema.prisma.hbs',
-      dest: 'schema.prisma',
-      data: { provider },
-      condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
-    },
-    {
-      src:  'prisma.config.ts.hbs',
-      dest: 'prisma.config.ts',
       data: {},
     },
     {
@@ -354,14 +359,14 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
       dest: '.agents/skills/adminforth-hooks/SKILL.md',
       data: {},
     },
-    // {
-    //   src: '.agents/skills/adminforth-custom-vue/SKILL.md.hbs',
-    //   dest: '.agents/skills/adminforth-custom-vue/SKILL.md',
-    //   data: {},
-    // },
+    {
+      src: '.agents/skills/adminforth-custom-vue/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-custom-vue/SKILL.md',
+      data: {},
+    },
     {
       // We'll write .env using the same content as .env.sample
-      src: '.env.local.hbs',
+      src: '.env.hbs',
       dest: '.env',
       data: {dbUrl, prismaDbUrl},
     },
@@ -393,6 +398,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
       data: { 
         appName,
         adminforthVersion: adminforthVersion,
+        includePrismaMigrations,
       },
     },
     {
@@ -414,6 +420,22 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
         dest: 'custom/pnpm-lock.yaml',
         data: {},
       }
+    )
+  }
+
+  if (includePrismaMigrations) {
+    templateTasks.push(
+      {
+        src: 'schema.prisma.hbs',
+        dest: 'schema.prisma',
+        data: { provider },
+        condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
+      },
+      {
+        src:  'prisma.config.ts.hbs',
+        dest: 'prisma.config.ts',
+        data: {},
+      },
     )
   }
 

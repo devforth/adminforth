@@ -11,9 +11,11 @@
     "dev": "{{packageManagerEnvDev}} tsx watch index.ts",
     "prod": "{{packageManagerEnvProd}} tsx index.ts",
     "start": "{{packageManagerRun}} dev",
+    {{#if includePrismaMigrations}}
     "makemigration": "{{packageManagerEnvDev}} npx --yes prisma migrate dev --create-only",
     "migrate:local": "{{packageManagerEnvDev}} npx --yes prisma migrate deploy",
     "migrate:prod": "{{packageManagerEnvProd}} npx --yes prisma migrate deploy",
+    {{/if}}
     "_env:dev": "dotenvx run -f .env -f .env.local --",
     "_env:prod": "dotenvx run -f .env.prod --"
   },
@@ -27,7 +29,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "typescript": "5.4.5",
+    "typescript": "6.0.3",
     "tsx": "4.11.2",
     "@types/express": "^4.17.21",
     "@types/node": "latest",
