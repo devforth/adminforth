@@ -51,11 +51,11 @@ const usersResource: AdminForthResourceInput = {
       foreignResourceId: 'audit_logs',
     }), 
     new AdminForthAgent({
-      audioAdapter: new OpenAIAudioAdapter({
-        apiKey: openAiApiKey,
-        defaultVoice: 'alloy',
-        defaultSpeed: 1.25,
-      }),
+      // audioAdapter: new OpenAIAudioAdapter({
+      //   apiKey: openAiApiKey,
+      //   defaultVoice: 'alloy',
+      //   defaultSpeed: 1.25,
+      // }),
       placeholderMessages: async ({ httpExtra }: any) => getLocalizedPlaceholderMessages({
         completionAdapter: fastCompletionAdapter as any,
         httpExtra,
