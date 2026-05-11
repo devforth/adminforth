@@ -327,8 +327,22 @@ export default {
       options: {
         ...
         listPageSize: 10,
+        // listPageSizeOptions can be a static array
         //diff-add
         listPageSizeOptions: [10, 20, 50],
+        // OR a function for dynamic options based on user role
+        //diff-add
+        listPageSizeOptions: ({ adminUser }) => {
+          //diff-add
+          if (adminUser?.dbUser?.role === 'superadmin') {
+            //diff-add
+            return [50, 100, 500];
+            //diff-add
+          }
+          //diff-add
+          return [10, 20, 50];
+          //diff-add
+        },
       }
     }
   ]
