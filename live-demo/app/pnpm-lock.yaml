@@ -21,8 +21,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/background-jobs':
-        specifier: ^1.11.4
-        version: 1.11.4(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))
+        specifier: ^1.11.5
+        version: 1.11.5(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))
       '@adminforth/bulk-ai-flow':
         specifier: ^1.24.3
         version: 1.24.3(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))
@@ -123,8 +123,8 @@ packages:
     peerDependencies:
       adminforth: ^2.42.0
 
-  '@adminforth/background-jobs@1.11.4':
-    resolution: {integrity: sha512-S6bAvG04b0H18qbCOypHMESfcZOVWYCfEKIyaZJJGlXBWQXihXOgvdymcylZOaFgwIVqRuv4C5E99M6p/WoUkA==}
+  '@adminforth/background-jobs@1.11.5':
+    resolution: {integrity: sha512-gDU1ohptDWeQYlvRWctz2gxsB7lmjukROhJLELn2Y8XawMj2P5WwuYlrMvFs5kf1Lf71cxtEPyyPAuLA8iNFlw==}
     peerDependencies:
       adminforth: ^2.50.0
 
@@ -2931,7 +2931,7 @@ snapshots:
     dependencies:
       adminforth: 2.55.3(@types/node@25.3.5)(typescript@5.9.3)
 
-  '@adminforth/background-jobs@1.11.4(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))':
+  '@adminforth/background-jobs@1.11.5(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 14.3.0(vue@3.5.34(typescript@5.9.3))
       adminforth: 2.55.3(@types/node@25.3.5)(typescript@5.9.3)
