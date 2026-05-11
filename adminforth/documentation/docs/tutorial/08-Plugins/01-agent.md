@@ -284,6 +284,216 @@ Each item in `modes` defines a user-selectable preset in the chat UI. The select
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
 
+## Debugging agent turns
+
+Agent debug traces are optional and are intended for auditability and debugging. When enabled, they let you reconstruct why an agent produced a response or made a change by storing the full execution sequence for the turn: LLM steps, tool calls, tool inputs and outputs, token usage, and cache information.
+
+By default, only the user prompt and agent response are persisted. Full debug traces are not stored unless you configure a `debugField`, because they can be large and may significantly increase database size.
+
+Add a `debug` JSON column to the turns resource:
+
+```ts title="./resources/agent_resources/turns.ts"
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput, AdminUser } from 'adminforth';
+import { randomUUID } from 'crypto';
+
+async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
+
+export default {
+  dataSource: 'maindb',
+  table: 'turns',
+  resourceId: 'turns',
+  label: 'Turns',
+  columns: [
+    {
+      name: 'id',
+      primaryKey: true,
+      type: AdminForthDataTypes.STRING,
+      fillOnCreate: () => randomUUID(),
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'session_id',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      fillOnCreate: () => (new Date()).toISOString(),
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'prompt',
+      type: AdminForthDataTypes.TEXT,
+    },
+    {
+      name: 'response',
+      type: AdminForthDataTypes.TEXT,
+    },
+    //diff-add
+    {
+      //diff-add
+      name: 'debug',
+      //diff-add
+      type: AdminForthDataTypes.JSON,
+      //diff-add
+      components: {
+        //diff-add
+        show: {
+          //diff-add
+          file: '@@/TurnDebugShow.vue',
+        //diff-add
+        },
+      //diff-add
+      },
+      //diff-add
+      showIn: {
+        //diff-add
+        list: false,
+        //diff-add
+        show: true,
+        //diff-add
+        edit: false,
+        //diff-add
+        create: false,
+        //diff-add
+        filter: false,
+      //diff-add
+      },
+    //diff-add
+    },
+  ],
+  options: {
+    allowedActions: {
+      list: allowedForSuperAdmins,
+      show: allowedForSuperAdmins,
+      create: false,
+      edit: false,
+      delete: false,
+    },
+  },
+} as AdminForthResourceInput;
+```
+
+Add the matching field to your schema:
+
+```prisma title="./schema.prisma"
+model turns {
+  id         String   @id
+  session_id String
+  created_at DateTime
+  prompt     String?
+  response   String?
+  debug      Json? //diff-add
+}
+```
+
+If you use SQLite with Prisma, store the same field as text:
+
+```prisma title="./schema.prisma"
+model turns {
+  id         String   @id
+  session_id String
+  created_at DateTime
+  prompt     String?
+  response   String?
+  debug      String? //diff-add
+}
+```
+
+AdminForth should still define this resource column as `AdminForthDataTypes.JSON`; the SQLite connector serializes it into the text column and parses it back for the renderer.
+
+Run migration:
+
+```bash
+pnpm makemigration --name add-adminforth-agent-turn-debug ; pnpm migrate:local
+```
+
+Tell the plugin where to store debug data:
+
+```ts title="./resources/adminuser.ts"
+new AdminForthAgent({
+  modes: [
+    ...
+  ],
+  sessionResource: {
+    resourceId: 'sessions',
+    idField: 'id',
+    titleField: 'title',
+    turnsField: 'turns',
+    askerIdField: 'asker_id',
+    createdAtField: 'created_at',
+  },
+  turnResource: {
+    resourceId: 'turns',
+    idField: 'id',
+    sessionIdField: 'session_id',
+    createdAtField: 'created_at',
+    promptField: 'prompt',
+    responseField: 'response',
+    //diff-add
+    debugField: 'debug',
+  },
+})
+```
+
+The `debugField` value must match the turns resource column name. You can use another column name, but then use the same name in the resource, database schema, and `debugField`.
+
+Create a renderer in your app custom folder:
+
+```vue title="./custom/TurnDebugShow.vue"
+<template>
+  <div class="space-y-3">
+    <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+      <div class="font-semibold text-slate-900 dark:text-white">Agent Debug</div>
+      <div class="mt-1">
+        {{ debugSequences.length }} sequences,
+        {{ totalToolCalls }} tool calls,
+        {{ totalCachedTokens.toLocaleString() }} cached prompt tokens
+      </div>
+    </div>
+
+    <JsonViewer :value="debugSequences" :expandDepth="2" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { JsonViewer } from '@/afcl';
+import type { AdminForthResourceColumnCommon } from '@/types/Common';
+
+type DebugToolCall = {
+  toolName: string;
+};
+
+type DebugSequence = {
+  cachedTokens: number;
+  toolCalls: DebugToolCall[];
+};
+
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon;
+  record: Record<string, DebugSequence[]>;
+}>();
+
+const debugSequences = computed(() => props.record[props.column.name] ?? []);
+const totalToolCalls = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequence.toolCalls.length, 0),
+);
+const totalCachedTokens = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequence.cachedTokens, 0),
+);
+</script>
+```
+
 # Using with self-hosted models
 
 `CompletionAdapterOpenAIResponses` when works with agent plugin, under the hood uses the LangChain internal proxy called `OpenAIChat` (in LangChain they call it "provider"). This proxy is capable with a fresh versions of OpenAI-compatible Responses APIs, for example [self-hosted latest versions of vLLM installations](https://devforth.io/insights/self-hosted-gpt-real-response-time-token-throughput-and-cost-on-l4-l40s-and-h100-for-gpt-oss-20b/)
@@ -793,4 +1003,3 @@ services:
   If Cloudflare returns a 403 response with `cf-mitigated: challenge` for `<baseURL>/adminapi/v1/agent/speech-response`, the request was blocked before it reached AdminForth. Create a WAF or bot rule exception for authenticated requests to this endpoint, because browser `fetch` calls with `multipart/form-data` cannot complete an HTML challenge page.
 
 ![alt text](image-6.png)
-
