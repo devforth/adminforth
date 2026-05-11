@@ -32,35 +32,35 @@ const translationsResource: AdminForthResourceInput = {
     },
   },
   plugins: [
-    new I18nPlugin({
-      supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],      // names of the fields in the resource which will store translations
-      translationFieldNames: {
-        en: 'en_string',
-        uk: 'uk_string',
-        ja: 'ja_string',
-        fr: 'fr_string',
-        de: 'de_string',
-      },
+    // new I18nPlugin({
+    //   supportedLanguages: ['en', 'uk', 'ja', 'fr', 'de'],      // names of the fields in the resource which will store translations
+    //   translationFieldNames: {
+    //     en: 'en_string',
+    //     uk: 'uk_string',
+    //     ja: 'ja_string',
+    //     fr: 'fr_string',
+    //     de: 'de_string',
+    //   },
 
-      // name of the field which will store the category of the string
-      // this helps to categorize strings and deliver them efficiently
-      categoryFieldName: 'category',
+    //   // name of the field which will store the category of the string
+    //   // this helps to categorize strings and deliver them efficiently
+    //   categoryFieldName: 'category',
 
-      // optional field to store the source (e.g. source file name)
-      sourceFieldName: 'source',
+    //   // optional field to store the source (e.g. source file name)
+    //   sourceFieldName: 'source',
 
-      // optional field store list of completed translations
-      // will hel to filter out incomplete translations
-      completedFieldName: 'completedLangs',
+    //   // optional field store list of completed translations
+    //   // will hel to filter out incomplete translations
+    //   completedFieldName: 'completedLangs',
 
-      completeAdapter: new CompletionAdapterOpenAIResponses({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-5.4-mini',
-        extraRequestBodyParameters: {
-          temperature: 0.5,
-        },
-      }),
-    }),
+    //   completeAdapter: new CompletionAdapterOpenAIResponses({
+    //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+    //     model: 'gpt-5.4-mini',
+    //     extraRequestBodyParameters: {
+    //       temperature: 0.5,
+    //     },
+    //   }),
+    // }),
 
   ],
   options: {

@@ -94,15 +94,15 @@ export default {
     },
   ],
   plugins: [
-    new BackgroundJobsPlugin({
-      createdAtField: 'created_at',
-      finishedAtField: 'finished_at',
-      startedByField: 'started_by',
-      stateField: 'state',
-      progressField: 'progress',
-      statusField: 'status',
-      nameField: 'name',
-      jobHandlerField: 'job_handler_name',
-    })
+    // new BackgroundJobsPlugin({
+    //   createdAtField: 'created_at',
+    //   finishedAtField: 'finished_at',
+    //   startedByField: 'started_by',
+    //   stateField: 'state',
+    //   progressField: 'progress',
+    //   statusField: 'status',
+    //   nameField: 'name',
+    //   jobHandlerField: 'job_handler_name',
+    // })
   ]
 } as AdminForthResourceInput;
