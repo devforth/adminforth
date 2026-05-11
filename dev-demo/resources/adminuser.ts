@@ -215,50 +215,50 @@ export default {
         },
       },
     }),
-    // new AdminForthAgent({
-    //   audioAdapter: new OpenAIAudioAdapter({
-    //     apiKey: process.env.OPENAI_API_KEY,
-    //   }),
-    //   placeholderMessages: async ({ adminUser, httpExtra }) => {
-    //     return [
-    //       "What is a cars count in SQLite",
-    //       "Build average car price by days chart in SQLite",
-    //     ]
-    //   },
-    //   modes: [
-    //     {
-    //       name: 'Balanced',
-    //       completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'medium'),
-    //     },
-    //     {
-    //       name: 'Fast',
-    //       completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'low'),
-    //     },
-    //     {
-    //       name: 'Smart Thinking',
-    //       completionAdapter: createAgentCompletionAdapter('gpt-5.4', 'xhigh'),
-    //     },
-    //   ],
-    //   maxTokens: 10000,
-    //   reasoning: 'none',
-    //   sessionResource: {
-    //     resourceId: 'sessions',
-    //     idField: 'id',
-    //     titleField: 'title',
-    //     turnsField: 'turns',
-    //     askerIdField: 'asker_id',
-    //     createdAtField: 'created_at',
-    //   },
-    //   turnResource: {
-    //     resourceId: 'turns',
-    //     idField: 'id',
-    //     sessionIdField: 'session_id',
-    //     createdAtField: 'created_at',
-    //     promptField: 'prompt',
-    //     responseField: 'response',
-    //     debugField: 'dubbug',
-    //   },
-    // }),
+    new AdminForthAgent({
+      audioAdapter: new OpenAIAudioAdapter({
+        apiKey: process.env.OPENAI_API_KEY,
+      }),
+      placeholderMessages: async ({ adminUser, httpExtra }) => {
+        return [
+          "What is a cars count in SQLite",
+          "Build average car price by days chart in SQLite",
+        ]
+      },
+      modes: [
+        {
+          name: 'Balanced',
+          completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'medium'),
+        },
+        {
+          name: 'Fast',
+          completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'low'),
+        },
+        {
+          name: 'Smart Thinking',
+          completionAdapter: createAgentCompletionAdapter('gpt-5.4', 'xhigh'),
+        },
+      ],
+      maxTokens: 10000,
+      reasoning: 'none',
+      sessionResource: {
+        resourceId: 'sessions',
+        idField: 'id',
+        titleField: 'title',
+        turnsField: 'turns',
+        askerIdField: 'asker_id',
+        createdAtField: 'created_at',
+      },
+      turnResource: {
+        resourceId: 'turns',
+        idField: 'id',
+        sessionIdField: 'session_id',
+        createdAtField: 'created_at',
+        promptField: 'prompt',
+        responseField: 'response',
+        debugField: 'dubbug',
+      },
+    }),
   ],
   hooks: {
     create: {
