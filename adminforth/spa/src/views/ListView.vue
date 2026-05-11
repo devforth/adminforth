@@ -544,12 +544,15 @@ watch([page], async () => {
   setQuery({ page: page.value });
 });
 
-watch(pageSize, async () => {
+watch(pageSize, async (newSize, oldSize) => {
+  if (newSize === oldSize) return;
+  if (initInProcess) return;
+
   page.value = 1;
 
   setQuery({
     page: 1,
-    pageSize: pageSize.value,
+    pageSize: newSize,
   });
 });
 
