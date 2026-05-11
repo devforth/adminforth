@@ -262,6 +262,13 @@ const customActionLoadingStates = ref<{[key: string]: boolean}>({});
 
 const DEFAULT_PAGE_SIZE = 10;
 
+watch(() => coreStore.resource?.resourceId, () => {
+  if (coreStore.resource?.options?.listPageSize) {
+    pageSize.value = coreStore.resource.options.listPageSize;
+  } else {
+    pageSize.value = DEFAULT_PAGE_SIZE;
+  }
+});
 
 const PAGE_SIZE_OPTIONS = computed(() => {
   const array = coreStore.resource?.options?.listPageSizeOptions;
