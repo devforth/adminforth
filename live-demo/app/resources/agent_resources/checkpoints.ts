@@ -1,6 +1,6 @@
 import { AdminForthDataTypes } from 'adminforth';
 import type { AdminForthResourceInput, AdminUser } from 'adminforth';
-import AutoRemovePlugin from '@adminforth/auto-remove';
+// import AutoRemovePlugin from '@adminforth/auto-remove';
 
 async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -75,12 +75,12 @@ const checkpointsResource: AdminForthResourceInput = {
     },
   ],
   plugins: [
-    new AutoRemovePlugin({
-      createdAtField: 'created_at',
-      mode: 'time-based',
-      deleteOlderThan: '3d',
-      interval: '1d',
-    }),
+    // new AutoRemovePlugin({
+    //   createdAtField: 'created_at',
+    //   mode: 'time-based',
+    //   deleteOlderThan: '3d',
+    //   interval: '1d',
+    // }),
   ],
   options: {
     allowedActions: {
