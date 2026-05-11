@@ -349,6 +349,7 @@
         v-model="pageSizeInternal" 
         :options="pageSizeOptionsComputed" 
         :searchDisabled="true" 
+        :disableTogleOfSelectedItem="true"  
         :style="{ width: selectDynamicWidth }"
         :placeholder="pageSizeInternal?.toString()"        
         class="text-sm " 
