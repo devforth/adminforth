@@ -16,7 +16,7 @@
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
         autocomplete="off" data-custom="no-autofill"
         :placeholder="
-        selectedItems.length && !multiple ? '' :  (showDropdown && !searchDisabled ? $t('Search') : placeholder || $t('Select...')) 
+          selectedItems.length && !multiple ? '' :  (showDropdown && !searchDisabled ? $t('Search') : placeholder || $t('Select...')) 
         "
       />
 

@@ -449,7 +449,7 @@ async function init() {
   }
   // page init should be also in same tick 
   if (route.query.page) {
-      page.value = parseInt(route.query.page as string);
+    page.value = parseInt(route.query.page as string);
     }
     if (route.query.pageSize) {
     const parsedPageSize = parseInt(route.query.pageSize as string);
