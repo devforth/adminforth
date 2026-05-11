@@ -472,7 +472,7 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
-      listPageSizeOptions?: number[] | ((args: { adminUser: any, adminforth: any }) => number[] | Promise<number[]>);
+      listPageSizeOptions?: number[] | ((args: { adminUser: AdminUser, adminforth: IAdminForth }) => number[] | Promise<number[]>);
       
       /**
        * Whether to use virtual scroll in list view.

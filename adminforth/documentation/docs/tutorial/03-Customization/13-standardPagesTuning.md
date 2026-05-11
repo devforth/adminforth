@@ -320,7 +320,7 @@ export default {
 ```
 
 ### List Page Size Options
-You can  define available pagination sizes using options.listPageSizeOptions. This allows users to choose how many records they want to see per page in the list view.
+You can define available pagination sizes using options.listPageSizeOptions. This allows users to choose how many records they want to see per page in the list view.
 ```typescript title="./resources/apartments.ts"
 export default {
       resourceId: 'aparts',
@@ -360,7 +360,7 @@ Page size switching is implemented via a select dropdown (select input) in the t
 - Chooses a value (e.g. 20)
 - Table reloads with the new page size
 > ☝️Notes 
-If listPageSizeOptions is not provided, a default set of page sizes will be used. The selected value updates the table immediately and triggers a data refetch. This option works together with listPageSize, which defines both the default value and the available options at the same time.
+If `listPageSizeOptions` is not provided (or resolves to an empty array), the page size select is not shown. The selected value updates the table immediately and triggers a data refetch. Use `listPageSize` to define the initial number of records per page, and `listPageSizeOptions` to define which page sizes the user can switch between.
 
 ### Virtual scroll
 
