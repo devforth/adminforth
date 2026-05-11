@@ -283,9 +283,7 @@ const PAGE_SIZE_OPTIONS = computed(() => {
 
 const pageSize = ref(DEFAULT_PAGE_SIZE);
 
-const isVirtualScrollEnabled = computed(() =>
-  coreStore.resource?.options?.listVirtualScrollEnabled || false
-);
+const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
 const isPageLoaded = ref(false);
