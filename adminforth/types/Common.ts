@@ -472,6 +472,12 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
+
+      /**
+        * Available page size options for list view, provided as an array of page sizes
+        * or a function returning them. When set together with `listPageSize`, the page
+        * size should be one of the values returned here.
+        */
       listPageSizeOptions?: number[] | ((args: { adminUser: AdminUser, adminforth: IAdminForth }) => number[] | Promise<number[]>);
       
       /**
