@@ -152,12 +152,15 @@ async function seedDatabase() {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   // if script is executed directly e.g. node index.ts or npm start
+  console.log('Starting app...', new Date().toLocaleTimeString());
   const app = express()
   app.use(express.json());
   const port = 3500;
 
   // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
+  console.log('Check if we need to bundle AdminForth...', new Date().toLocaleTimeString());
   if (process.env.NODE_ENV === 'development') {
+    console.log('Bundling AdminForth, please wait...', new Date().toLocaleTimeString());
     await admin.bundleNow({ hotReload: true});
     console.log('Bundling AdminForth done');
   }
@@ -272,10 +275,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     )
   );
   
-
+  console.log('Discovering databases and seeding data if needed, please wait...', new Date().toLocaleTimeString());
   // serve after you added all api
   admin.express.serve(app)
+  console.log('AdminForth middleware added to express app', new Date().toLocaleTimeString());
   admin.discoverDatabases().then(async () => {
+    console.log('Database discovered', new Date().toLocaleTimeString());
     //
     // !!! IMPORTANT !!!
     // NEVER COMMIT ANY COMMANDS TO INSERT USER WITH superadmin ROLE HERE!!!
@@ -297,9 +302,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
 
     await seedDatabase();
+    console.log('Database seeding done, starting server...', new Date().toLocaleTimeString());
   });
 
-
+  console.log('Starting express server...', new Date().toLocaleTimeString());
   admin.express.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
     console.log(`\n⚡ AdminForth is available at http://localhost:${port}${ADMIN_BASE_URL}\n`)
