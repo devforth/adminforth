@@ -262,14 +262,6 @@ const customActionLoadingStates = ref<{[key: string]: boolean}>({});
 
 const DEFAULT_PAGE_SIZE = 10;
 
-watch(() => coreStore.resource?.resourceId, () => {
-  if (coreStore.resource?.options?.listPageSize) {
-    pageSize.value = coreStore.resource.options.listPageSize;
-  } else {
-    pageSize.value = DEFAULT_PAGE_SIZE;
-  }
-});
-
 const PAGE_SIZE_OPTIONS = computed(() => {
   const array = coreStore.resource?.options?.listPageSizeOptions;
   
@@ -281,7 +273,34 @@ const PAGE_SIZE_OPTIONS = computed(() => {
   }));
 });
 
-const pageSize = ref(DEFAULT_PAGE_SIZE);
+const pageSize = computed({
+  get() {
+    if (route.query.pageSize) {
+      const parsed = parseInt(route.query.pageSize as string);
+      if (PAGE_SIZE_OPTIONS.value?.some(o => o.value === parsed)) {
+        return parsed;
+      }
+    }
+
+    if (coreStore.resource?.options?.listPageSize) {
+      return coreStore.resource.options.listPageSize;
+    }
+
+    return DEFAULT_PAGE_SIZE;
+  },
+  
+  set(newSize) {
+    if (initInProcess) return;
+    
+    page.value = 1;
+
+    setQuery({
+      page: 1,
+      pageSize: newSize,
+    });
+  }
+});
+
 
 const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
@@ -449,14 +468,6 @@ async function init() {
   if (route.query.page) {
     page.value = parseInt(route.query.page as string);
     }
-    if (route.query.pageSize) {
-    const parsedPageSize = parseInt(route.query.pageSize as string);
-    if (PAGE_SIZE_OPTIONS.value && PAGE_SIZE_OPTIONS.value.some((o: { value: number }) => o.value === parsedPageSize)) {
-      pageSize.value = parsedPageSize;
-    }
-  } else if (coreStore.resource?.options?.listPageSize) {
-    pageSize.value = coreStore.resource.options.listPageSize;
-  }
 
   // getList(); - Not needed here, watch will trigger it
   columnsMinMax.value = await callAdminForthApi({
@@ -540,18 +551,6 @@ onUnmounted(() => {
 
 watch([page], async () => {
   setQuery({ page: page.value });
-});
-
-watch(pageSize, async (newSize, oldSize) => {
-  if (newSize === oldSize) return;
-  if (initInProcess) return;
-
-  page.value = 1;
-
-  setQuery({
-    page: 1,
-    pageSize: newSize,
-  });
 });
 
 watch([sort], async () => {
