@@ -349,7 +349,8 @@
         v-model="pageSizeInternal" 
         :options="pageSizeOptionsComputed" 
         :searchDisabled="true" 
-        :style="{ width: selectDynamicWidth }"        
+        :style="{ width: selectDynamicWidth }"
+        :placeholder="pageSizeInternal?.toString()"        
         class="text-sm " 
         classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm rounded-md cursor-pointer af-button-shadow
         bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder
