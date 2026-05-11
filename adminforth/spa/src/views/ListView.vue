@@ -273,9 +273,12 @@ watch(() => coreStore.resource?.resourceId, () => {
 const PAGE_SIZE_OPTIONS = computed(() => {
   const array = coreStore.resource?.options?.listPageSizeOptions;
   
-  if (!array || array.length === 0) return undefined;
+  if (!Array.isArray(array)) return undefined;
   
-  return array.map(size => ({ label: size.toString(), value: size }));
+  return array.map((size: number) => ({ 
+    label: size.toString(), 
+    value: size 
+  }));
 });
 
 const pageSize = ref(DEFAULT_PAGE_SIZE);
@@ -450,8 +453,7 @@ async function init() {
     }
     if (route.query.pageSize) {
     const parsedPageSize = parseInt(route.query.pageSize as string);
-    // Перевіряємо наявність опцій перед використанням .includes
-    if (PAGE_SIZE_OPTIONS.value && PAGE_SIZE_OPTIONS.value.some(o => o.value === parsedPageSize)) {
+    if (PAGE_SIZE_OPTIONS.value && PAGE_SIZE_OPTIONS.value.some((o: { value: number }) => o.value === parsedPageSize)) {
       pageSize.value = parsedPageSize;
     }
   } else if (coreStore.resource?.options?.listPageSize) {
