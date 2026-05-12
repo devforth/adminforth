@@ -147,6 +147,10 @@ class CodeInjector implements ICodeInjector {
 
 
   async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    if (!dir) {
+      return false;
+    }
+
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     try {
