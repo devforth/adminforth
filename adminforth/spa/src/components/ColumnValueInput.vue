@@ -99,8 +99,8 @@
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :modelValue="String(value)"
-      @update:modelValue="$emit('update:modelValue', String($event))"
+      :modelValue="value == null ? null : value.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1')"
+      @update:modelValue="(val: string | number | null | undefined) => $emit('update:modelValue', val == null || (typeof val === 'number' && Number.isNaN(val)) ? '' : String(val))"
     />
     <Input
       v-else-if="(type || column.type) === 'float'"
@@ -206,10 +206,10 @@
 
   const columnLoadingState = inject('columnLoadingState', {} as any);
   const onSearchInput = inject('onSearchInput', {} as any);
+
   const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
 const input = ref<HTMLInputElement | null>(null);
-
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [
       { label: t('Yes'), value: true },
