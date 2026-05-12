@@ -1389,11 +1389,6 @@ packages:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
 
-  acorn@8.16.0:
-    resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
   adminforth@2.55.4:
     resolution: {integrity: sha512-0L37GIprppl0EanyhUbWKtVaVYBmYVGxzEv/3VEpg3l2f1YFcMMA5e0qSgln6u7olCYqqkvftpjjzw1pmsrZBw==}
     hasBin: true
@@ -4974,8 +4969,6 @@ snapshots:
     dependencies:
       mime-types: 2.1.35
       negotiator: 0.6.3
-
-  acorn@8.16.0: {}
 
   adminforth@2.55.4(@types/node@25.3.5)(typescript@5.9.3):
     dependencies:
