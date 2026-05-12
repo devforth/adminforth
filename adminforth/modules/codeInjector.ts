@@ -102,9 +102,18 @@ class CodeInjector implements ICodeInjector {
     const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
     process.env.HEAVY_DEBUG && console.log(`Icon package names: ${iconPackageNames.join(', ')}`);
     const iconPackages = (
-      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), name: pkg})))
+      await Promise.allSettled(
+        iconPackageNames.map(
+          async (pkg) => (
+            { 
+              pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), 
+              name: pkg
+            }
+          )
+        )
+      )
     );
-    
+    process.env.HEAVY_DEBUG && console.log(`Icon packages load results: ${iconPackages.map(res => res.status === 'fulfilled' ? res.value.name : 'error:' + res.reason).join(', ')}`);
     const loadedIconPackages = iconPackages.filter(isFulfilled).map((res) => res.value).reduce((acc, { pkg, name }) => {
       acc[name.slice(`@iconify-prerendered/vue-`.length)] = pkg;
       return acc;
