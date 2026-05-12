@@ -173,6 +173,7 @@
       @update:records="getListInner"
       @update:pageSize="(newSize) => { pageSize = newSize; page = 1; }"
       :sort="sort"
+      :pageSizeOptions="resolvedPageSizeOptions"
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
@@ -236,6 +237,8 @@ import {
 
 import Filters from '@/components/Filters.vue';
 import { useAdminforth } from '@/adminforth';
+
+const adminforth = useAdminforth();
 
 const filtersShow = ref(false);
 const { list, alert } = useAdminforth();
@@ -408,11 +411,27 @@ function clearAutoRefresher() {
   }
 }
 
+const resolvedPageSizeOptions = ref<number[]>([]);
+
 async function init() {
   
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string
   });
+
+  const optionsRaw = coreStore.resource?.options?.listPageSizeOptions;
+
+  if (typeof optionsRaw === 'function') {
+    resolvedPageSizeOptions.value = await optionsRaw({
+      adminUser: coreStore.adminUser,
+      adminforth: adminforth
+    });
+  } else if (Array.isArray(optionsRaw)) {
+    resolvedPageSizeOptions.value = optionsRaw;
+  } else {
+    resolvedPageSizeOptions.value = [];
+  }
+
 
   syncPageSize();
 
