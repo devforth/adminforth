@@ -430,8 +430,20 @@ const emits = defineEmits([
 ]);
 
 const pageSizeOptionsComputed = computed(() => {
-  const options = props.resource?.options?.listPageSizeOptions || [10, 20, 50, 100];
-  return options.map(size => ({
+  let options = props.resource?.options?.listPageSizeOptions;
+  
+  if (!options || options.length === 0) {
+    return [];
+  }
+
+  let combinedOptions = [...options];
+
+  if (props.pageSize && !combinedOptions.includes(props.pageSize)) {
+    combinedOptions.push(props.pageSize);
+    combinedOptions.sort((a, b) => a - b);
+  }
+
+  return combinedOptions.map(size => ({
     value: size,
     label: size.toString()
   }));
@@ -443,6 +455,10 @@ const selectDynamicWidth = computed(() => {
   const length = pageSizeInternal.value?.toString().length || 2;
   return `${length + 5}ch`;
 })
+
+watch(() => props.pageSize, (newVal) => {
+  pageSizeInternal.value = newVal;
+});
 
 watch(() => pageSizeInternal.value, (newSize) => {
   if (newSize) {
