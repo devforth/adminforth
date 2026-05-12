@@ -7,7 +7,8 @@
     "start": "tsx --env-file=.env --watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
-    "startLive": "prisma migrate deploy && tsx index.ts",
+    "build": "tsup index.ts --format esm --clean",
+    "startLive": "prisma migrate deploy && node dist/index.js",
     "migrate": "prisma migrate deploy",
     "makemigration": "prisma migrate dev"
   },
@@ -47,6 +48,7 @@
   "devDependencies": {
     "dotenv": "^16.4.5",
     "prisma": "^6.1.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.11.2",
     "typescript": "^5.4.5"
   }
