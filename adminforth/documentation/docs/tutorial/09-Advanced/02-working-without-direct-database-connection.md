@@ -20,140 +20,39 @@ You can register your own connector class under any custom protocol key using th
 
 ## Example: connecting to a GraphQL API
 
-If you don't have an app yet, create one with the CLI:
+This example uses **two completely separate applications**:
+
+| App | Role | Port |
+|---|---|---|
+| `my-api` | GraphQL backend — owns the database, exposes CRUD over HTTP | `3001` |
+| `myadmin` | AdminForth admin panel — never touches the DB, calls the API | `3500` |
+
+AdminForth never sees the database URL. All reads and writes go through the GraphQL API.
+
+### Part 1 — The backend API (`my-api`)
+
+The full backend source is available as a separate repository. Follow the setup instructions there to get a GraphQL API running on `http://localhost:3001` before continuing.
+
+> **Backend example repository:** [devforth/adminforth-graphql-api-example](https://github.com/devforth/adminforth-graphql-api-example)
+
+Once the API is running, continue with Part 2 below.
+
+### Part 2 — The AdminForth app (`myadmin`)
+
+If you don't have an AdminForth app yet, create one:
 
 ```bash
 npx adminforth create-app --app-name myadmin --db "sqlite://.db.sqlite"
 cd myadmin
 ```
 
-We will add a GraphQL API for **Apartments** data (fields: `id`, `name`, `price`, `country`, `created_at`) and write a connector that wires up full create, edit, and delete in AdminForth — without AdminForth ever touching your database directly.
+The `--db` flag is only used to scaffold the project. In the steps below you will replace the local database with the GraphQL API, so `myadmin` ends up with no direct database connection at all.
 
-### Step 1: Install dependencies
+#### Step 1: Create the connector
 
-```bash
-pnpm add graphql graphql-request @prisma/adapter-better-sqlite3
-pnpm add -D prisma @types/better-sqlite3
-```
+Create `./datasources/graphqlConnector.ts`. This is a fully generic connector — it reads each resource's API config from `options.meta` at startup, so you never need to edit this file when adding new entities:
 
-- `graphql` + `graphql-request` — GraphQL server and client.
-- `@prisma/adapter-better-sqlite3` — Prisma v7 driver adapter for SQLite.
-
-### Step 2: Add the Apartment model to your Prisma schema
-
-```prisma title="./schema.prisma"
-model Apartment {
-  id         String   @id
-  name       String
-  price      Float
-  country    String
-  created_at DateTime @default(now())
-}
-```
-
-
-Generate and run the migration, then regenerate the Prisma client:
-
-```bash
-pnpm makemigration --name add_apartment_table && pnpm migrate:local && pnpm prisma generate
-```
-
-### Step 3: Add a GraphQL endpoint to your server
-
-Add this to your existing `api.ts`. Prisma handles the database — AdminForth never touches it directly. `created_at` is set by the database automatically on insert, so the `createApartment` mutation does not accept it.
-
-```ts title="./api.ts"
-import { buildSchema, graphql as gqlExecute } from 'graphql';
-import { randomUUID } from 'crypto';
-import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-
-// Prisma v7 requires an explicit driver adapter.
-const adapter = new PrismaBetterSqlite3({ url: process.env.PRISMA_DATABASE_URL! });
-const prisma = new PrismaClient({ adapter });
-
-const schema = buildSchema(`
-  type Apartment {
-    id: ID!
-    name: String!
-    price: Float!
-    country: String!
-    created_at: String!
-  }
-  type Query {
-    apartments: [Apartment!]!
-  }
-  type Mutation {
-    createApartment(name: String!, price: Float!, country: String!): Apartment!
-    updateApartment(id: ID!, name: String, price: Float, country: String): Apartment!
-    deleteApartment(id: ID!): Boolean!
-  }
-`);
-
-// Prisma returns created_at as a Date — serialize to ISO string for GraphQL.
-const serialize = (row: any) => ({ ...row, created_at: row.created_at.toISOString() });
-
-const rootValue = {
-  apartments: async () => {
-    const rows = await prisma.apartment.findMany({ orderBy: { created_at: 'desc' } });
-    return rows.map(serialize);
-  },
-  createApartment: async ({ name, price, country }: any) => {
-    const row = await prisma.apartment.create({ data: { id: randomUUID(), name, price, country } });
-    return serialize(row);
-  },
-  updateApartment: async ({ id, name, price, country }: any) => {
-    const row = await prisma.apartment.update({
-      where: { id },
-      data: {
-        ...(name    !== undefined && { name }),
-        ...(price   !== undefined && { price }),
-        ...(country !== undefined && { country }),
-      },
-    });
-    return serialize(row);
-  },
-  deleteApartment: async ({ id }: any) => {
-    try {
-      await prisma.apartment.delete({ where: { id } });
-      return true;
-    } catch {
-      return false;
-    }
-  },
-};
-
-export function initApi(app: Express, admin: IAdminForth) {
-  // Must be registered BEFORE admin.express.serve(app).
-  app.post('/graphql', async (req, res) => {
-    const { query, variables } = req.body;
-    const result = await gqlExecute({ schema, source: query, rootValue, variableValues: variables });
-    res.json({ data: result.data, errors: result.errors });
-  });
-
-  // ...rest of your routes
-}
-```
-
-:::warning Register the route before `admin.express.serve(app)`
-`admin.express.serve(app)` catches all unmatched routes. If your `app.post('/graphql', ...)` is registered after it, Express never reaches it and returns 404.
-
-```ts title="./index.ts"
-// ✅ correct order
-initApi(app, admin);          // registers /graphql first
-admin.express.serve(app);     // catches everything else
-
-// ❌ wrong order
-admin.express.serve(app);     // catches /graphql before it's registered
-initApi(app, admin);
-```
-:::
-
-### Step 4: Create the connector
-
-Create `./datasources/apartmentsConnector.ts`:
-
-```ts title="./datasources/apartmentsConnector.ts"
+```ts title="./datasources/graphqlConnector.ts"
 import { AdminForthBaseConnector, AdminForthDataTypes, AdminForthFilterOperators } from 'adminforth';
 import type {
   AdminForthResource,
@@ -162,62 +61,154 @@ import type {
   IAdminForthSort,
   AdminForthConfig,
 } from 'adminforth';
-import { GraphQLClient, gql } from 'graphql-request';
 
-// A list page triggers getData + getCount + getMinMaxForColumns — all within
-// milliseconds of each other. Cache the raw fetch so all three share one call.
+// A list page fires getData + getCount + getMinMaxForColumns within milliseconds.
+// Cache the raw fetch so all three share one network call.
 const FETCH_CACHE_TTL_MS = 500;
 
-export default class ApartmentsGraphqlConnector extends AdminForthBaseConnector {
-  private gqlClient!: GraphQLClient;
-  private _cache: { records: any[]; ts: number } | null = null;
+// Minimal gql tag — provides syntax highlighting only, no transformation.
+export const gql = (strings: TemplateStringsArray, ...values: any[]) =>
+  strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
 
-  // Called once on startup. `url` is the datasource URL from your config,
-  // including the custom protocol prefix. Strip it to get the real HTTP(S) URL.
+export interface GraphqlApiDef {
+  /** Name of the primary key column, e.g. `'id'`. */
+  primaryKey: string;
+  /** Root GraphQL query field that returns an array, e.g. `'apartments'`. */
+  queryName: string;
+  /** Space-separated field names to select, e.g. `'id name price country created_at'`. */
+  selection: string;
+  mutations?: {
+    create?: {
+      /** Full GQL mutation document string. */
+      gql: string;
+      /** Extract the mutation's input variables from the AdminForth record. */
+      variables: (record: any) => Record<string, any>;
+      /** Root field on the result that contains `{ id }`, e.g. `'createApartment'`. */
+      resultField: string;
+    };
+    update?: {
+      gql: string;
+      /** Extract variables from (recordId, changedFields). */
+      variables: (id: string, newValues: any) => Record<string, any>;
+    };
+    delete?: {
+      gql: string;
+      /** Root field on the result that holds the success boolean, e.g. `'deleteApartment'`. */
+      resultField: string;
+    };
+  };
+}
+
+/**
+ * Generic AdminForth connector for any GraphQL API.
+ *
+ * Each resource provides its API config in `options.meta`.
+ * Register this class under a custom protocol key in `databaseConnectors`.
+ */
+export default class GraphqlConnector extends AdminForthBaseConnector {
+  private gqlEndpoint!: string;
+
+  // Per-table record cache keyed by table name.
+  private _cache: Map<string, { records: any[]; ts: number }> = new Map();
+
+  // API configs populated from resource.options.meta during discoverFields.
+  private _apiConfigs: Map<string, GraphqlApiDef> = new Map();
+
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
+
+  /**
+   * Strip the custom protocol prefix so the URL becomes a real HTTP(S) URL:
+   *   graphql+http://127.0.0.1:3500/graphql  →  http://127.0.0.1:3500/graphql
+   *   graphql://api.example.com/graphql       →  https://api.example.com/graphql
+   */
   async setupClient(url: string): Promise<void> {
-    const httpUrl = url
-      .replace('apartments+http://', 'http://')   // local / dev
-      .replace('apartments://', 'https://');       // production
-    this.gqlClient = new GraphQLClient(httpUrl);
+    this.gqlEndpoint = url.includes('+http://')
+      ? 'http://' + url.split('+http://')[1]
+      : 'https://' + url.split('://').slice(1).join('://');
   }
 
-  // Declare which columns exist in the API response and their AdminForth types.
+  // ── Internal HTTP ─────────────────────────────────────────────────────────────
+
+  private async gqlRequest(query: string, variables?: Record<string, any>): Promise<any> {
+    const res = await fetch(this.gqlEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} from ${this.gqlEndpoint}`);
+    const json: any = await res.json();
+    if (json.errors?.length) throw new Error(json.errors[0]?.message ?? 'GraphQL error');
+    return json.data;
+  }
+
+  // ── Schema discovery ─────────────────────────────────────────────────────────
+
+  async getAllTables(): Promise<string[]> {
+    return [];
+  }
+
+  async getAllColumnsInTable(
+    tableName: string,
+  ): Promise<Array<{ name: string; isPrimaryKey?: boolean }>> {
+    const def = this._apiConfigs.get(tableName);
+    if (!def) return [{ name: 'id', isPrimaryKey: true }];
+    return def.selection.trim().split(/\s+/).map((name) => ({
+      name,
+      isPrimaryKey: name === def.primaryKey,
+    }));
+  }
+
   async discoverFields(
-    _resource: AdminForthResource,
+    resource: AdminForthResource,
     _config: AdminForthConfig,
   ): Promise<{ [key: string]: AdminForthResourceColumn }> {
-    // AdminForthResourceColumn includes fields that AdminForth fills in during
-    // normalization (e.g. computed showIn shape). We only provide the input-level
-    // subset here, which is all discoverFields needs. The double cast makes the
-    // narrowing explicit rather than suppressing it silently with `as any`.
-    return {
-      id:         { name: 'id',         type: AdminForthDataTypes.STRING,   primaryKey: true },
-      name:       { name: 'name',       type: AdminForthDataTypes.STRING   },
-      price:      { name: 'price',      type: AdminForthDataTypes.FLOAT    },
-      country:    { name: 'country',    type: AdminForthDataTypes.STRING   },
-      created_at: { name: 'created_at', type: AdminForthDataTypes.DATETIME },
-    } as unknown as { [key: string]: AdminForthResourceColumn };
+    const apiConfig: GraphqlApiDef | undefined = (resource.options as any)?.meta;
+    if (!apiConfig) {
+      throw new Error(
+        `GraphqlConnector: resource '${resource.resourceId}' is missing options.meta. ` +
+        `Add { primaryKey, queryName, selection, mutations } to options.meta.`
+      );
+    }
+    this._apiConfigs.set(resource.table, apiConfig);
+
+    const result: { [key: string]: AdminForthResourceColumn } = {};
+    for (const name of apiConfig.selection.trim().split(/\s+/)) {
+      result[name] = { name, type: AdminForthDataTypes.STRING, primaryKey: name === apiConfig.primaryKey };
+    }
+    return result;
   }
 
-  // Convert raw API values to AdminForth types after each read.
-  // DATETIME fields come back as ISO strings — convert to Date objects.
+  // ── Type conversion (called per-cell by the base class) ──────────────────────
+
   getFieldValue(field: AdminForthResourceColumn, value: any): any {
-    if (field.type === AdminForthDataTypes.DATETIME && value) {
-      return new Date(value);
-    }
+    if (field.type === AdminForthDataTypes.DATETIME && value) return new Date(value);
     return value;
   }
 
-  // Convert AdminForth values back to the format the API accepts before each write.
   setFieldValue(field: AdminForthResourceColumn, value: any): any {
-    if (field.type === AdminForthDataTypes.DATETIME && value instanceof Date) {
-      return value.toISOString();
-    }
+    if (field.type === AdminForthDataTypes.DATETIME && value instanceof Date) return value.toISOString();
     return value;
   }
 
-  // Client-side filter helper — used because the API returns all records at once.
-  // Replace with server-side filtering variables if your API supports it.
+  // ── Read ─────────────────────────────────────────────────────────────────────
+
+  private async fetchAll(tableName: string): Promise<any[]> {
+    const def = this.apiDef(tableName);
+    const now = Date.now();
+    const cached = this._cache.get(tableName);
+    if (cached && now - cached.ts < FETCH_CACHE_TTL_MS) return cached.records;
+
+    const query = `query { ${def.queryName} { ${def.selection} } }`;
+    try {
+      const data = await this.gqlRequest(query);
+      const records = data[def.queryName];
+      this._cache.set(tableName, { records, ts: Date.now() });
+      return records;
+    } catch (err: any) {
+      throw new Error(`GraphqlConnector[${tableName}]: fetch failed — ${err.message}`);
+    }
+  }
+
   private applyFilters(records: any[], filters: IAdminForthAndOrFilter): any[] {
     if (!filters?.subFilters?.length) return records;
     return records.filter((record) =>
@@ -244,36 +235,8 @@ export default class ApartmentsGraphqlConnector extends AdminForthBaseConnector 
     );
   }
 
-  // Fetches all records from the API. Results are cached for FETCH_CACHE_TTL_MS
-  // so that getDataWithOriginalTypes, getCount, and getMinMaxForColumns all share
-  // a single network call per page load.
-  private async fetchAll(): Promise<any[]> {
-    const now = Date.now();
-    if (this._cache && now - this._cache.ts < FETCH_CACHE_TTL_MS) {
-      return this._cache.records;
-    }
-    const query = gql`
-      query {
-        apartments { id name price country created_at }
-      }
-    `;
-    try {
-      const data: any = await this.gqlClient.request(query);
-      this._cache = { records: data.apartments, ts: Date.now() };
-      return this._cache.records;
-    } catch (err: any) {
-      throw new Error(`ApartmentsGraphqlConnector: failed to fetch apartments — ${err.message}`);
-    }
-  }
-
-  // Fetch all records and apply filter/sort/pagination in memory.
-  // If your API supports server-side filtering, pass the filter tree as query variables instead.
   async getDataWithOriginalTypes({
-    resource: _resource,
-    limit,
-    offset,
-    sort,
-    filters,
+    resource, limit, offset, sort, filters,
   }: {
     resource: AdminForthResource;
     limit: number;
@@ -281,9 +244,8 @@ export default class ApartmentsGraphqlConnector extends AdminForthBaseConnector 
     sort: IAdminForthSort[];
     filters: IAdminForthAndOrFilter;
   }): Promise<any[]> {
-    let records = await this.fetchAll();
+    let records = await this.fetchAll(resource.table);
     records = this.applyFilters(records, filters);
-
     if (sort?.length) {
       const { field, direction } = sort[0];
       records = records.sort((a, b) => {
@@ -292,29 +254,26 @@ export default class ApartmentsGraphqlConnector extends AdminForthBaseConnector 
         return 0;
       });
     }
-
     return records.slice(offset, offset + limit);
   }
 
   async getCount({
-    resource: _resource,
-    filters,
+    resource, filters,
   }: {
     resource: AdminForthResource;
     filters: IAdminForthAndOrFilter;
   }): Promise<number> {
-    const records = await this.fetchAll();
+    const records = await this.fetchAll(resource.table);
     return this.applyFilters(records, filters).length;
   }
 
   async getMinMaxForColumnsWithOriginalTypes({
-    resource: _resource,
-    columns,
+    resource, columns,
   }: {
     resource: AdminForthResource;
     columns: AdminForthResourceColumn[];
   }): Promise<{ [key: string]: { min: any; max: any } }> {
-    const records = await this.fetchAll();
+    const records = await this.fetchAll(resource.table);
     const result: any = {};
     for (const col of columns) {
       const vals = records.map((r) => r[col.name]).filter((v) => v != null);
@@ -326,142 +285,283 @@ export default class ApartmentsGraphqlConnector extends AdminForthBaseConnector 
     return result;
   }
 
-  // POST to the API. Return the primary key of the created record.
-  // created_at is omitted — the server sets it automatically.
+  // ── Write ────────────────────────────────────────────────────────────────────
+
   async createRecordOriginalValues({
-    resource: _resource,
-    record,
+    resource, record,
   }: {
     resource: AdminForthResource;
     record: any;
   }): Promise<string> {
-    const mutation = gql`
-      mutation CreateApartment($name: String!, $price: Float!, $country: String!) {
-        createApartment(name: $name, price: $price, country: $country) {
-          id
-        }
-      }
-    `;
+    const mut = this.apiDef(resource.table).mutations?.create;
+    if (!mut) throw new Error(`GraphqlConnector[${resource.table}]: no create mutation defined`);
     try {
-      const data: any = await this.gqlClient.request(mutation, {
-        name:    record.name,
-        price:   record.price,
-        country: record.country,
-      });
-      return data.createApartment.id;
+      const data = await this.gqlRequest(mut.gql, mut.variables(record));
+      this._cache.delete(resource.table);
+      return data[mut.resultField].id;
     } catch (err: any) {
-      throw new Error(`ApartmentsGraphqlConnector: createApartment failed — ${err.message}`);
+      throw new Error(`GraphqlConnector[${resource.table}]: create failed — ${err.message}`);
     }
   }
 
-  // PATCH to the API with only the changed fields.
   async updateRecordOriginalValues({
-    resource: _resource,
-    recordId,
-    newValues,
+    resource, recordId, newValues,
   }: {
     resource: AdminForthResource;
     recordId: string;
     newValues: any;
   }): Promise<void> {
-    const mutation = gql`
-      mutation UpdateApartment($id: ID!, $name: String, $price: Float, $country: String) {
-        updateApartment(id: $id, name: $name, price: $price, country: $country) {
-          id
-        }
-      }
-    `;
+    const mut = this.apiDef(resource.table).mutations?.update;
+    if (!mut) throw new Error(`GraphqlConnector[${resource.table}]: no update mutation defined`);
     try {
-      await this.gqlClient.request(mutation, {
-        id:      recordId,
-        name:    newValues.name,
-        price:   newValues.price,
-        country: newValues.country,
-      });
+      await this.gqlRequest(mut.gql, mut.variables(recordId, newValues));
+      this._cache.delete(resource.table);
     } catch (err: any) {
-      throw new Error(`ApartmentsGraphqlConnector: updateApartment failed — ${err.message}`);
+      throw new Error(`GraphqlConnector[${resource.table}]: update failed — ${err.message}`);
     }
   }
 
-  // DELETE via the API. Return true on success.
   async deleteRecord({
-    resource: _resource,
-    recordId,
+    resource, recordId,
   }: {
     resource: AdminForthResource;
     recordId: string;
   }): Promise<boolean> {
-    const mutation = gql`
-      mutation DeleteApartment($id: ID!) {
-        deleteApartment(id: $id)
-      }
-    `;
+    const mut = this.apiDef(resource.table).mutations?.delete;
+    if (!mut) throw new Error(`GraphqlConnector[${resource.table}]: no delete mutation defined`);
     try {
-      const data: any = await this.gqlClient.request(mutation, { id: recordId });
-      return data.deleteApartment;
+      const data = await this.gqlRequest(mut.gql, { id: recordId });
+      this._cache.delete(resource.table);
+      return data[mut.resultField];
     } catch (err: any) {
-      throw new Error(`ApartmentsGraphqlConnector: deleteApartment failed — ${err.message}`);
+      throw new Error(`GraphqlConnector[${resource.table}]: delete failed — ${err.message}`);
     }
   }
 
-  // These two methods are used during AdminForth schema discovery. Return values
-  // must match what discoverFields returns — same table name and same column names.
-  async getAllTables(): Promise<string[]> {
-    return ['apartments'];
-  }
+  // ── Internal ─────────────────────────────────────────────────────────────────
 
-  async getAllColumnsInTable(
-    _tableName: string,
-  ): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any }>> {
-    return [
-      { name: 'id',         isPrimaryKey: true },
-      { name: 'name' },
-      { name: 'price' },
-      { name: 'country' },
-      { name: 'created_at' },
-    ];
+  private apiDef(tableName: string): GraphqlApiDef {
+    const def = this._apiConfigs.get(tableName);
+    if (!def) throw new Error(
+      `GraphqlConnector: no config for '${tableName}'. Ensure options.meta is set on the resource.`
+    );
+    return def;
   }
 }
 ```
 
-### Step 5: Register the connector and add the resource
+#### Step 2: Create the resource files
+
+Each resource declares its GraphQL queries and mutations in `options.meta`. The connector reads this config during startup — no entity-specific code lives in the connector itself.
 
 Create `./resources/apartments.ts`:
 
 ```ts title="./resources/apartments.ts"
-import type { AdminForthResource } from 'adminforth';
+import { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput } from 'adminforth';  
+import { gql } from '../datasources/graphqlConnector.js';
 
 export default {
-  dataSource: 'apartments',
+  dataSource: 'myApi',
   table: 'apartments',
   resourceId: 'apartments',
   label: 'Apartments',
+  options: {
+    meta: {
+      primaryKey: 'id',
+      queryName: 'apartments',
+      selection: 'id name price country created_at',
+      mutations: {
+        create: {
+          gql: gql`
+            mutation CreateApartment($name: String!, $price: Float!, $country: String!) {
+              createApartment(name: $name, price: $price, country: $country) { id }
+            }
+          `,
+          variables: (r: any) => ({ name: r.name, price: r.price, country: r.country }),
+          resultField: 'createApartment',
+        },
+        update: {
+          gql: gql`
+            mutation UpdateApartment($id: ID!, $name: String, $price: Float, $country: String) {
+              updateApartment(id: $id, name: $name, price: $price, country: $country) { id }
+            }
+          `,
+          variables: (id: string, v: any) => ({ id, name: v.name, price: v.price, country: v.country }),
+        },
+        delete: {
+          gql: gql`
+            mutation DeleteApartment($id: ID!) { deleteApartment(id: $id) }
+          `,
+          resultField: 'deleteApartment',
+        },
+      },
+    },
+  },
+  columns: [
+    {
+      name: 'id',
+      type: AdminForthDataTypes.STRING,
+      primaryKey: true,
+      showIn: { list: false, show: true, create: false, edit: false, filter: false },
+    },
+    { name: 'name',    type: AdminForthDataTypes.STRING,   label: 'Name',         required: { create: true, edit: true } },
+    { name: 'price',   type: AdminForthDataTypes.FLOAT,    label: 'Price ($/mo)', required: { create: true, edit: true } },
+    { name: 'country', type: AdminForthDataTypes.STRING,   label: 'Country',      required: { create: true, edit: true } },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      label: 'Created At',
+      showIn: { list: true, show: true, filter: true, create: false, edit: false },
+    },
+  ],
+} as AdminForthResourceInput;
+```
+
+:::tip Types are required
+The connector defaults every column to `STRING`. Set `type` explicitly on columns that need numeric (`FLOAT`, `INTEGER`) or date (`DATETIME`) handling — otherwise AdminForth won't coerce values before sending them to your API.
+:::
+
+The generated `usersResource` points to the original local database. Replace it with a full resource that points to `myApi`. Create `./resources/adminuser.ts`:
+
+```ts title="./resources/adminuser.ts"
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput, AdminForthResource, AdminUser } from 'adminforth';
+import { randomUUID } from 'crypto';
+import { logger } from 'adminforth';
+import { gql } from '../datasources/graphqlConnector.js';
+
+async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
+
+export default {
+  dataSource: 'myApi',
+  table: 'adminuser',
+  resourceId: 'adminuser',
+  label: 'Admin Users',
+  recordLabel: (r) => `👤 ${r.email}`,
+  options: {
+    allowedActions: {
+      edit: allowedForSuperAdmin,
+      delete: allowedForSuperAdmin,
+    },
+    meta: {
+      primaryKey: 'id',
+      queryName: 'adminUsers',
+      selection: 'id email password_hash role created_at',
+      mutations: {
+        create: {
+          gql: gql`
+            mutation CreateAdminUser($id: ID!, $email: String!, $password_hash: String!, $role: String!) {
+              createAdminUser(id: $id, email: $email, password_hash: $password_hash, role: $role) { id }
+            }
+          `,
+          variables: (r: any) => ({ id: r.id, email: r.email, password_hash: r.password_hash, role: r.role }),
+          resultField: 'createAdminUser',
+        },
+        update: {
+          gql: gql`
+            mutation UpdateAdminUser($id: ID!, $email: String, $password_hash: String, $role: String) {
+              updateAdminUser(id: $id, email: $email, password_hash: $password_hash, role: $role) { id }
+            }
+          `,
+          variables: (id: string, v: any) => ({ id, email: v.email, password_hash: v.password_hash, role: v.role }),
+        },
+        delete: {
+          gql: gql`
+            mutation DeleteAdminUser($id: ID!) { deleteAdminUser(id: $id) }
+          `,
+          resultField: 'deleteAdminUser',
+        },
+      },
+    },
+  },
   columns: [
     {
       name: 'id',
       primaryKey: true,
-      showIn: { list: false, show: true, create: false, edit: false, filter: false },
+      type: AdminForthDataTypes.STRING,
+      fillOnCreate: ({ initialRecord, adminUser }) => randomUUID(),
+      showIn: { edit: false, create: false },
     },
-    { name: 'name',       label: 'Name',         required: { create: true, edit: true } },
-    { name: 'price',      label: 'Price ($/mo)',  required: { create: true, edit: true } },
-    { name: 'country',    label: 'Country',       required: { create: true, edit: true } },
+    {
+      name: 'email',
+      required: true,
+      isUnique: true,
+      type: AdminForthDataTypes.STRING,
+      validation: [
+        {
+          regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+          message: 'Email is not valid, must be in format example@test.com'
+        },
+      ]
+    },
     {
       name: 'created_at',
-      label: 'Created At',
-      // Hide on create/edit — the server sets this field automatically.
-      showIn: { list: true, show: true, filter: true, create: false, edit: false },
+      type: AdminForthDataTypes.DATETIME,
+      showIn: { edit: false, create: false },
+      fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
+    {
+      name: 'role',
+      type: AdminForthDataTypes.STRING,
+      enum: [
+        { value: 'superadmin', label: 'Super Admin' },
+        { value: 'user', label: 'User' },
+      ]
+    },
+    {
+      name: 'password',
+      virtual: true,
+      required: { create: true },
+      editingNote: { edit: 'Leave empty to keep password unchanged' },
+      type: AdminForthDataTypes.STRING,
+      showIn: { show: false, list: false, filter: false },
+      masked: true,
+      minLength: 8,
+      validation: [AdminForth.Utils.PASSWORD_VALIDATORS.UP_LOW_NUM],
+    },
+    {
+      name: 'password_hash',
+      type: AdminForthDataTypes.STRING,
+      backendOnly: true,
+      showIn: { all: false }
+    }
   ],
-} as AdminForthResource;
+  hooks: {
+    create: {
+      beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        return { ok: true };
+      }
+    },
+    edit: {
+      beforeSave: async ({ oldRecord, updates, adminUser, resource }: { oldRecord: any, updates: any, adminUser: AdminUser, resource: AdminForthResource }) => {
+        if (oldRecord.id === adminUser.dbUser.id && updates.role) {
+          return { ok: false, error: 'You cannot change your own role' };
+        }
+        if (updates.password) {
+          updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
+        }
+        return { ok: true }
+      },
+    },
+  },
+} as AdminForthResourceInput;
 ```
 
-Then wire it up in `index.ts`:
+#### Step 3: Wire everything up in `index.ts`
+
+Update `index.ts` — register the connector, replace the local datasource with `myApi`, and add the resources:
 
 ```ts title="./index.ts"
 //diff-add
-import ApartmentsGraphqlConnector from './datasources/apartmentsConnector.js';
+import GraphqlConnector from './datasources/graphqlConnector.js';
 //diff-add
 import apartmentsResource from './resources/apartments.js';
+//diff-add
+import usersResource from './resources/adminuser.js';
 
 export const admin = new AdminForth({
   // ...existing config...
@@ -469,18 +569,21 @@ export const admin = new AdminForth({
 //diff-add
   databaseConnectors: {
 //diff-add
-    'apartments+http': ApartmentsGraphqlConnector,
+    'graphql+http': GraphqlConnector,   // graphql+http:// → http://  (dev)
+//diff-add
+    'graphql':      GraphqlConnector,   // graphql://      → https:// (prod)
 //diff-add
   },
 
   dataSources: [
+//diff-remove
     { id: 'maindb', url: `${process.env.DATABASE_URL}` },
 //diff-add
     {
 //diff-add
-      id: 'apartments',
+      id: 'myApi',
 //diff-add
-      url: 'apartments+http://localhost:3500/graphql',
+      url: 'graphql+http://localhost:3001/graphql',
 //diff-add
     },
   ],
@@ -507,13 +610,20 @@ export const admin = new AdminForth({
 });
 ```
 
-### Step 6: Run
+With this setup, every resource — including admin users — is backed by the GraphQL API. The `myadmin` app has no database connection of its own.
+
+#### Step 4: Run both services
 
 ```bash
-pnpm start
+# Terminal 1 — backend API
+cd my-api && npx tsx index.ts
+
+# Terminal 2 — AdminForth
+cd myadmin && pnpm start
 ```
 
-Open [http://localhost:3500](http://localhost:3500). The **Apartments** section is backed entirely by your GraphQL API — AdminForth never connects to the database directly.
+Open [http://localhost:3500](http://localhost:3500). Both **Users** and **Apartments** are backed entirely by your GraphQL API — `myadmin` never connects to a database directly.
+
 
 ## Adapting to REST
 
@@ -542,7 +652,7 @@ Called once during AdminForth initialization. `url` is the value from `dataSourc
 
 #### `discoverFields(resource, config): Promise<{ [colName: string]: AdminForthResourceColumn }>`
 
-Called during schema discovery. Return a map of column name → column definition. Each entry needs at minimum `name` and `type` (`AdminForthDataTypes.*`). Mark the primary key column with `primaryKey: true`.
+Called during schema discovery. Return a map of column name → base column definition. The `GraphqlConnector` implementation reads `resource.options.meta` to get the field list and defaults every type to `STRING`; the resource's `columns` config then overrides types, labels, and display options on top.
 
 #### `getFieldValue(field, value): any`
 
