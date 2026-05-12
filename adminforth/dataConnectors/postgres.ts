@@ -205,8 +205,14 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
             if (!value) {
                 return null;
             }
-            if (field._underlineType == 'timestamp' || field._underlineType == 'int') {
-                return dayjs(value.replace(' ', 'T') + 'Z').toISOString();
+            if (field._underlineType == 'timestamp') {
+                if (typeof value == 'string') {
+                    const normalizedValue = value.includes(' ') ? `${value.replace(' ', 'T')}Z` : value;
+                    return dayjs(normalizedValue).toISOString();
+                }
+                return dayjs(value).toISOString();
+            } else if (field._underlineType == 'int') {
+                return dayjs.unix(+value).toISOString();
             } else if (field._underlineType == 'varchar') {
                 return dayjs(value).toISOString();
             } else {

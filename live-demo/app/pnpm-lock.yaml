@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.43.6
-        version: 1.43.6(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.19.0)
+        specifier: ^1.43.13
+        version: 1.43.13(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.19.0)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.2.0
         version: 1.3.0(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)
@@ -21,8 +21,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))
       '@adminforth/background-jobs':
-        specifier: ^1.11.4
-        version: 1.11.4(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))
+        specifier: ^1.11.5
+        version: 1.11.5(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))
       '@adminforth/bulk-ai-flow':
         specifier: ^1.24.3
         version: 1.24.3(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))
@@ -105,8 +105,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.43.6':
-    resolution: {integrity: sha512-1Uf5BwDK+Af7HtMWsfObJBbR+PtWbAwRusuFkM9AtQjg+DUgPybh19YEAC79di5cfhogYMagYH7g1ZVOXND3xA==}
+  '@adminforth/agent@1.43.13':
+    resolution: {integrity: sha512-eDyIR0Yx6MwWamz2UjX8J+JWYYsSLdOh9OLqesw6KVw72540R9/9AN/RgwTuGuNhPG7ZJRaXqpB2RDGFjrvBsA==}
 
   '@adminforth/audio-adapter-openai@1.3.0':
     resolution: {integrity: sha512-4ndEwvpQnzvcXnBYWuQVNVtaI3SyeAw6183LbA2DzLwy+tkSABQ87j2xJyGV0mb/GCFkfcy0kOL77k/yhmOV1Q==}
@@ -123,8 +123,8 @@ packages:
     peerDependencies:
       adminforth: ^2.42.0
 
-  '@adminforth/background-jobs@1.11.4':
-    resolution: {integrity: sha512-S6bAvG04b0H18qbCOypHMESfcZOVWYCfEKIyaZJJGlXBWQXihXOgvdymcylZOaFgwIVqRuv4C5E99M6p/WoUkA==}
+  '@adminforth/background-jobs@1.11.5':
+    resolution: {integrity: sha512-gDU1ohptDWeQYlvRWctz2gxsB7lmjukROhJLELn2Y8XawMj2P5WwuYlrMvFs5kf1Lf71cxtEPyyPAuLA8iNFlw==}
     peerDependencies:
       adminforth: ^2.50.0
 
@@ -2877,7 +2877,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.43.6(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.19.0)':
+  '@adminforth/agent@1.43.13(@types/node@25.3.5)(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.19.0)':
     dependencies:
       '@langchain/core': 1.1.45(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0)
       '@langchain/langgraph': 1.3.0(@langchain/core@1.1.45(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(ws@8.19.0))(openai@6.34.0(ws@8.19.0)(zod@4.3.6))(vue@3.5.34(typescript@5.9.3))(ws@8.19.0)(zod@4.3.6)
@@ -2931,7 +2931,7 @@ snapshots:
     dependencies:
       adminforth: 2.55.3(@types/node@25.3.5)(typescript@5.9.3)
 
-  '@adminforth/background-jobs@1.11.4(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))':
+  '@adminforth/background-jobs@1.11.5(adminforth@2.55.3(@types/node@25.3.5)(typescript@5.9.3))(vue@3.5.34(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 14.3.0(vue@3.5.34(typescript@5.9.3))
       adminforth: 2.55.3(@types/node@25.3.5)(typescript@5.9.3)
