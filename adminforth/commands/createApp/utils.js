@@ -37,6 +37,8 @@ function detectAdminforthVersion() {
 }
 
 const adminforthVersion = detectAdminforthVersion();
+const SUPPORTED_DB_URL_SCHEMES = ['sqlite://', 'postgresql://', 'mongodb://', 'mysql://', 'clickhouse://'];
+const PRISMA_MIGRATION_DB_PROTOCOLS = ['sqlite', 'postgres', 'postgresql', 'mysql'];
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -56,7 +58,6 @@ export function parseArgumentsIntoOptions(rawArgs) {
     appName: args['--app-name'],
     db: args['--db'],
     useNpm: args['--use-npm'],
-    includePrismaMigrations: args['--include-prisma-migrations'],
   };
 }
 
@@ -94,8 +95,19 @@ export async function promptForMissingOptions(options) {
     });
   }
 
-  if (!options.includePrismaMigrations) {
-    questions.push({
+  const answers = await inquirer.prompt(questions);
+  const resolvedOptions = {
+      ...options,
+      appName: options.appName || answers.appName,
+      db: options.db || answers.db,
+      useNpm: options.useNpm || answers.useNpm,
+  };
+
+  if (
+    resolvedOptions.includePrismaMigrations === undefined &&
+    isPrismaMigrationDbUrl(resolvedOptions.db)
+  ) {
+    const prismaAnswer = await inquirer.prompt([{
       type: 'select',
       name: 'includePrismaMigrations',
       message: 'Include Prisma migrations? >',
@@ -104,18 +116,13 @@ export async function promptForMissingOptions(options) {
         { name: 'No', value: false },
       ],
       default: true,
-    });
-
+    }]);
+    resolvedOptions.includePrismaMigrations = prismaAnswer.includePrismaMigrations;
+  } else {
+    resolvedOptions.includePrismaMigrations = Boolean(resolvedOptions.includePrismaMigrations);
   }
 
-  const answers = await inquirer.prompt(questions);
-  return {
-      ...options,
-      appName: options.appName || answers.appName,
-      db: options.db || answers.db,
-      useNpm: options.useNpm || answers.useNpm,
-      includePrismaMigrations: options.includePrismaMigrations || answers.includePrismaMigrations,
-  };
+  return resolvedOptions;
 }
 
 function checkNodeVersion(minRequiredVersion = 20) {
@@ -134,6 +141,15 @@ function parseConnectionString(dbUrl) {
   return new ConnectionString(dbUrl);
 }
 
+function isPrismaMigrationDbUrl(dbUrl) {
+  try {
+    const connectionString = parseConnectionString(dbUrl);
+    return PRISMA_MIGRATION_DB_PROTOCOLS.includes(connectionString.protocol);
+  } catch {
+    return false;
+  }
+}
+
 function detectDbProvider(protocol) {
   if (protocol.startsWith('sqlite')) {
     return 'sqlite';
@@ -143,25 +159,27 @@ function detectDbProvider(protocol) {
     return 'mongodb';
   } else if (protocol.startsWith('mysql')) {
     return 'mysql';
+  } else if (protocol.startsWith('clickhouse')) {
+    return 'clickhouse';
   }
 
-  const message = `Unknown database provider for ${protocol}. Only SQLite, PostgreSQL, and MongoDB are supported now.`;
+  const message = `Unknown database provider for ${protocol}. Supported database URL schemes: ${SUPPORTED_DB_URL_SCHEMES.join(', ')}.`;
   throw new Error(message);
 }
 
 function generateDbUrlForPrisma(connectionString) {
+  if (!PRISMA_MIGRATION_DB_PROTOCOLS.includes(connectionString.protocol))
+    return null;
   if (connectionString.protocol.startsWith('sqlite'))
     return `file:${connectionString.host}`;
-  if (connectionString.protocol.startsWith('mongodb'))
-    return null;
   return connectionString.toString();
 }
 
 function generateDbUrlForPrismaProd(connectionString) {
+  if (!PRISMA_MIGRATION_DB_PROTOCOLS.includes(connectionString.protocol))
+    return null;
   if (connectionString.protocol.startsWith('sqlite'))
     return `file:/code/db/${connectionString.host}`;
-  if (connectionString.protocol.startsWith('mongodb'))
-    return null;
   return connectionString.toString();
 }
 
@@ -400,7 +418,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
       data: { 
         appName,
         adminforthVersion: adminforthVersion,
-        includePrismaMigrations,
+        includePrismaMigrations: Boolean(resolvedPrismaDbUrl),
       },
     },
     {
@@ -425,7 +443,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     )
   }
 
-  if (includePrismaMigrations) {
+  if (resolvedPrismaDbUrl) {
     templateTasks.push(
       {
         src: 'schema.prisma.hbs',
@@ -506,7 +524,7 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
-  if (options.includePrismaMigrations)
+  if (options.includePrismaMigrations && !skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration --name init && pnpm migrate:local')}\n`;
@@ -528,7 +546,7 @@ function generateFinalInstructionsNpm(skipPrismaSetup, options) {
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
-  if (options.includePrismaMigrations)
+  if (options.includePrismaMigrations && !skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;

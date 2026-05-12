@@ -6,7 +6,7 @@
       backgroundCustomClasses="z-[998]"
       modalCustomClasses="z-[999] flex items-center justify-center" 
     >
-      <div class="relative p-6 sm:p-8 w-[440px] bg-white rounded-lg shadow-xl dark:bg-gray-800" >
+      <div class="relative p-6 sm:p-8 sm:w-[440px] rounded-lg shadow-xl dark:bg-gray-800" >
         
         <button type="button" @click="modalStore.togleModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors dark:hover:text-white" >
           <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
