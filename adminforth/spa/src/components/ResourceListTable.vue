@@ -352,7 +352,7 @@
         :disableTogleOfSelectedItem="true"  
         :style="{ width: selectDynamicWidth }"
         :placeholder="pageSizeInternal?.toString()"        
-        class="text-sm" 
+        class="text-sm min-w-20" 
         classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm rounded-md cursor-pointer af-button-shadow bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder"
       /> 
     </div>
@@ -433,8 +433,8 @@ const emits = defineEmits([
 const pageSizeOptionsComputed = computed(() => {
   let combinedOptions = [...props.pageSizeOptions]; 
 
-  if (props.pageSize && !combinedOptions.includes(props.pageSize)) {
-    combinedOptions.push(props.pageSize);
+  if (props.resource?.options?.listPageSize && !combinedOptions.includes(props.resource?.options?.listPageSize)) {
+    combinedOptions.push(props.resource?.options?.listPageSize);
     combinedOptions.sort((a, b) => a - b);
   }
 
