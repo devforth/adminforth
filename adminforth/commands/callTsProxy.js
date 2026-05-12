@@ -47,10 +47,10 @@ export function callTsProxy(tsCode, silent=false) {
       env: getEnvWithLocalBin(currentDirectory),
     });
     let stderr = "";
-    let stdoutLogs = [];
+    let stdout = "";
 
     child.stdout.on("data", (data) => {
-      stdoutLogs.push(data.toString());
+      stdout += data.toString();
     });
 
     child.stderr.on("data", (data) => {
@@ -62,17 +62,18 @@ export function callTsProxy(tsCode, silent=false) {
     });
 
     child.on("close", (code) => {
-      const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>>'));
-      if (!tsProxyResult) {
-        reject(new Error(`Invalid JSON from tsproxy. stdout: ${stdoutLogs.join("")}, stderr: ${stderr}`));
+      const resultStart = stdout.indexOf('>>>>>>>');
+      const resultEnd = stdout.lastIndexOf('<<<<<<<');
+      if (resultStart === -1 || resultEnd === -1 || resultEnd < resultStart) {
+        reject(new Error(`Invalid JSON from tsproxy. stdout: ${stdout}, stderr: ${stderr}`));
         return;
       }
-      const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>>') + 7, tsProxyResult.lastIndexOf('<<<<<<<'));
-      const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>>'));
+      const preparedStdout = stdout.slice(resultStart + 7, resultEnd);
+      const preparedStdoutLogs = stdout.slice(0, resultStart);
       if (code === 0) {
         try {
-          for (const log of preparedStdoutLogs) {
-            console.log(log);
+          if (preparedStdoutLogs) {
+            process.stdout.write(preparedStdoutLogs);
           }
           const parsed = JSON.parse(preparedStdout);
           if (!silent) {

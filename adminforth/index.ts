@@ -522,7 +522,7 @@ class AdminForth implements IAdminForth {
 
   async getAllColumnsInTable(
     tableName: string,
-    dataSourceId?: string
+    requestedDataSourceId?: string
   ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean; isUUID?: boolean; }> }> {
     const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean;  isUUID?: boolean; }> } = {};
   
@@ -532,7 +532,7 @@ class AdminForth implements IAdminForth {
   
     await Promise.all(
       Object.entries(this.connectors)
-        .filter(([connectorDataSourceId]) => !dataSourceId || connectorDataSourceId === dataSourceId)
+        .filter(([dataSourceId]) => !requestedDataSourceId || dataSourceId === requestedDataSourceId)
         .map(async ([dataSourceId, connector]) => {
         if (typeof connector.getAllColumnsInTable === 'function') {
           try {
