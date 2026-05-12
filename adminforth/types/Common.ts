@@ -514,7 +514,14 @@ export interface AdminForthResourceInputCommon {
       /**
        * Whether to refresh existing list rows automatically every N seconds.
        */
-      listRowsAutoRefreshSeconds?: number, 
+      listRowsAutoRefreshSeconds?: number,
+
+      /**
+       * Custom metadata for the resource. Can be used by custom connectors to store
+       * entity-specific configuration (e.g. API queries, mutations, endpoints).
+       * AdminForth itself does not use this field — it is passed through to the connector.
+       */
+      meta?: any,
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.
