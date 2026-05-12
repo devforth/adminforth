@@ -32,7 +32,7 @@ jobs:
         run: |
           pnpm i
           cd documentation
-          pnpm i
+          npm ci
 
       - name: Build and deploy docs
         run: pnpm rollout-doc
