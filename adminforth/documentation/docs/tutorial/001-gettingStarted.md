@@ -51,7 +51,7 @@ CLI options:
 > Format is `<scheme>://<username>:<password>@<host>:<port>/<database>`. Examples:
 >
 > - SQLite — `sqlite://.db.sqlite`. If database not yet exists it will be created
-> - PostgreSQL — `postgres://user:password@localhost:5432/dbname`
+> - PostgreSQL — `postgresql://user:password@localhost:5432/dbname`
 > - MongoDB — `mongodb://localhost:27017/dbname`
 > - Clickhouse — `clickhouse://localhost:8123/dbname`
 > - MySQL — `mysql://user:password@localhost:3306/dbname`
