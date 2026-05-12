@@ -9,7 +9,8 @@
   "description": "",
   "scripts": {
     "dev": "{{packageManagerEnvDev}} tsx watch index.ts",
-    "prod": "{{packageManagerEnvProd}} tsx index.ts",
+    "build": "{{packageManagerEnvProd}} tsup index.ts --format esm --clean",
+    "prod": "{{packageManagerEnvProd}} node dist/index.js",
     "start": "{{packageManagerRun}} dev",
     {{#if includePrismaMigrations}}
     "makemigration": "{{packageManagerEnvDev}} npx --yes prisma migrate dev --create-only",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "typescript": "6.0.3",
+    "tsup": "^8.5.1",
     "tsx": "4.11.2",
     "@types/express": "^4.17.21",
     "@types/node": "latest"{{#if includePrismaMigrations}},
