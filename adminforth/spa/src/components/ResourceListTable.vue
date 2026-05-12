@@ -395,6 +395,7 @@ const props = withDefaults(defineProps<{
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
+  pageSizeOptions: number[],
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
@@ -430,7 +431,7 @@ const emits = defineEmits([
 ]);
 
 const pageSizeOptionsComputed = computed(() => {
-  let options = props.resource?.options?.listPageSizeOptions;
+  let options = props.pageSizeOptions; 
   
   if (!options || options.length === 0) {
     return [];
@@ -468,16 +469,6 @@ watch(() => pageSizeInternal.value, (newSize) => {
   }
 });
 
-onMounted(() => {
-  const savedSize = localStorage.getItem(`pageSize_${props.resource?.resourceId}`);
-  if (savedSize) {
-    const sizeNum = parseInt(savedSize);
-    if (props.resource?.options?.listPageSizeOptions?.includes(sizeNum)) {
-      pageSizeInternal.value = sizeNum;
-      emits('update:pageSize', sizeNum);
-    }
-  }
-});
 
 const checkboxesInternal: Ref<any[]> = ref([]);
 const pageInput = ref('1');

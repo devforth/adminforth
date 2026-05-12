@@ -478,8 +478,7 @@ export interface AdminForthResourceInputCommon {
         * or a function returning them. When set together with `listPageSize`, the page
         * size should be one of the values returned here.
         */
-      listPageSizeOptions?: number[];
-      
+      listPageSizeOptions?: number[] | ((args: { adminUser: any, adminforth: any }) => number[] | Promise<number[]>);      
       /**
        * Whether to use virtual scroll in list view.
        */
