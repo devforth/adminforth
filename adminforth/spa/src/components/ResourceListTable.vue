@@ -340,6 +340,22 @@
         </span> 
       </template>
     </span>
+    <div v-if="totalRows > 0 && pageSizeOptionsComputed?.length" 
+      class="flex items-center gap-2 ml-auto" > 
+      <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText whitespace-nowrap"> 
+        {{ $t('Rows per page') }} 
+      </span> 
+      <Select 
+        v-model="pageSizeInternal" 
+        :options="pageSizeOptionsComputed" 
+        :searchDisabled="true" 
+        :disableTogleOfSelectedItem="true"  
+        :style="{ width: selectDynamicWidth }"
+        :placeholder="pageSizeInternal?.toString()"        
+        class="text-sm min-w-20" 
+        classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm rounded-md cursor-pointer af-button-shadow bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder"
+      /> 
+    </div>
   </div>
 </template>
 
@@ -368,6 +384,7 @@ import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import { Select } from '@/afcl';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
@@ -378,6 +395,7 @@ const props = withDefaults(defineProps<{
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
+  pageSizeOptions: number[],
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
@@ -407,9 +425,44 @@ const emits = defineEmits([
   'update:page',
   'update:sort',
   'update:checkboxes',
-  'update:records'
+  'update:records',
+  'update:pageSize'
 
 ]);
+
+const pageSizeOptionsComputed = computed(() => {
+  let combinedOptions = [...props.pageSizeOptions]; 
+
+  if (props.resource?.options?.listPageSize && !combinedOptions.includes(props.resource?.options?.listPageSize)) {
+    combinedOptions.push(props.resource?.options?.listPageSize);
+    combinedOptions.sort((a, b) => a - b);
+  }
+
+  return combinedOptions.map(size => ({
+    value: size,
+    label: size.toString()
+  }));
+});
+
+const pageSizeInternal = ref<number | null>(null);
+
+const selectDynamicWidth = computed(() => {
+  const length = pageSizeInternal.value?.toString().length || 2;
+  return `${length + 5}ch`;
+})
+
+watch(() => props.pageSize, (newVal) => {
+  pageSizeInternal.value = newVal;
+});
+
+watch(() => pageSizeInternal.value, (newSize) => {
+  if (newSize) {
+    localStorage.setItem(`pageSize_${props.resource?.resourceId}`, newSize.toString());
+    emits('update:pageSize', newSize);
+    page.value = 1;
+  }
+});
+
 
 const checkboxesInternal: Ref<any[]> = ref([]);
 const pageInput = ref('1');
