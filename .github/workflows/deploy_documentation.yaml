@@ -35,4 +35,4 @@ jobs:
           npm ci
 
       - name: Build and deploy docs
-        run: pnpm rollout-doc
+        run: GIT_USER=${{ github.actor }} pnpm rollout-doc
