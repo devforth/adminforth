@@ -8,6 +8,27 @@ import dotenv from "dotenv";
 const currentFilePath = import.meta.url;
 const currentFileFolder = path.dirname(currentFilePath).replace("file:", "");
 
+function getLocalBinPath(currentDirectory) {
+  return path.join(currentDirectory, "node_modules", ".bin");
+}
+
+function getLocalBinExecutable(currentDirectory, command) {
+  const extension = process.platform === "win32" ? ".cmd" : "";
+  const executablePath = path.join(getLocalBinPath(currentDirectory), `${command}${extension}`);
+  return fs.existsSync(executablePath) ? executablePath : command;
+}
+
+function getEnvWithLocalBin(currentDirectory) {
+  const pathKey = process.platform === "win32" ? "Path" : "PATH";
+  const localBinPath = getLocalBinPath(currentDirectory);
+  const currentPath = process.env[pathKey] || "";
+
+  return {
+    ...process.env,
+    [pathKey]: [localBinPath, currentPath].filter(Boolean).join(path.delimiter),
+  };
+}
+
 export function callTsProxy(tsCode, silent=false) {
 
   const currentDirectory = process.cwd();
@@ -22,28 +43,37 @@ export function callTsProxy(tsCode, silent=false) {
 
   process.env.HEAVY_DEBUG && console.log("🌐 Calling tsproxy with code:", path.join(currentFileFolder, "proxy.ts"));
   return new Promise((resolve, reject) => {
-    const child = spawn("tsx", [path.join(currentFileFolder, "proxy.ts")], {
-      env: process.env,
+    const child = spawn(getLocalBinExecutable(currentDirectory, "tsx"), [path.join(currentFileFolder, "proxy.ts")], {
+      env: getEnvWithLocalBin(currentDirectory),
     });
     let stderr = "";
-    let stdoutLogs = [];
+    let stdout = "";
 
     child.stdout.on("data", (data) => {
-      stdoutLogs.push(data.toString());
+      stdout += data.toString();
     });
 
     child.stderr.on("data", (data) => {
       stderr += data;
     });
 
+    child.on("error", (error) => {
+      reject(error);
+    });
+
     child.on("close", (code) => {
-      const tsProxyResult = stdoutLogs.find(log => log.includes('>>>>>>>'));
-      const preparedStdout = tsProxyResult.slice(tsProxyResult.indexOf('>>>>>>>') + 7, tsProxyResult.lastIndexOf('<<<<<<<'));
-      const preparedStdoutLogs = stdoutLogs.filter(log => !log.includes('>>>>>>>'));
+      const resultStart = stdout.indexOf('>>>>>>>');
+      const resultEnd = stdout.lastIndexOf('<<<<<<<');
+      if (resultStart === -1 || resultEnd === -1 || resultEnd < resultStart) {
+        reject(new Error(`Invalid JSON from tsproxy. stdout: ${stdout}, stderr: ${stderr}`));
+        return;
+      }
+      const preparedStdout = stdout.slice(resultStart + 7, resultEnd);
+      const preparedStdoutLogs = stdout.slice(0, resultStart);
       if (code === 0) {
         try {
-          for (const log of preparedStdoutLogs) {
-            console.log(log);
+          if (preparedStdoutLogs) {
+            process.stdout.write(preparedStdoutLogs);
           }
           const parsed = JSON.parse(preparedStdout);
           if (!silent) {
