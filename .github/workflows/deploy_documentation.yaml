@@ -29,7 +29,10 @@ jobs:
           cache-dependency-path: adminforth/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm i
+        run: |
+          pnpm i
+          cd documentation
+          pnpm i
 
       - name: Build and deploy docs
         run: pnpm rollout-doc
