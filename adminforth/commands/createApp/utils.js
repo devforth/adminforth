@@ -296,6 +296,8 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
   const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
+  const resolvedPrismaDbUrl = includePrismaMigrations ? prismaDbUrl : null;
+  const resolvedPrismaDbUrlProd = includePrismaMigrations ? prismaDbUrlProd : null;
 
   // Build a list of files to generate
   const templateTasks = [
@@ -322,22 +324,22 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     {
       src: '.env.local.hbs',
       dest: '.env.local',
-      data: { dbUrl: checkIfDatabaseLocal(dbUrl) ? dbUrl : null, prismaDbUrl },
+      data: { dbUrl: checkIfDatabaseLocal(dbUrl) ? dbUrl : null, prismaDbUrl: resolvedPrismaDbUrl },
     },
     {
       src: '.env.prod.hbs',
       dest: '.env.prod',
-      data: { prismaDbUrlProd, dbUrlProd },
+      data: { prismaDbUrlProd: resolvedPrismaDbUrlProd, dbUrlProd },
     },
     {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl, appName, sqliteFile },
+      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl, appName, sqliteFile },
     },
     {
       src: 'AGENTS.md.hbs',
       dest: 'AGENTS.md',
-      data: { prismaDbUrl },
+      data: { prismaDbUrl: resolvedPrismaDbUrl },
     },
     {
       src: 'CLAUDE.md.hbs',
@@ -347,7 +349,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     {
       src: '.agents/skills/adminforth/SKILL.md.hbs',
       dest: '.agents/skills/adminforth/SKILL.md',
-      data: { prismaDbUrl },
+      data: { prismaDbUrl: resolvedPrismaDbUrl },
     },
     {
       src: '.agents/skills/adminforth-permissions/SKILL.md.hbs',
@@ -368,7 +370,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
       // We'll write .env using the same content as .env.sample
       src: '.env.hbs',
       dest: '.env',
-      data: {dbUrl, prismaDbUrl},
+      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl },
     },
     {
       src: 'adminuser.ts.hbs',
@@ -504,6 +506,7 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
+  if (options.includePrismaMigrations)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration --name init && pnpm migrate:local')}\n`;
@@ -525,6 +528,7 @@ function generateFinalInstructionsNpm(skipPrismaSetup, options) {
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
+  if (options.includePrismaMigrations)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;
