@@ -130,9 +130,16 @@ async function syncResourceColumns(filePath, content, discoveredColumns) {
     throw new Error(`Could not find resource columns array in ${filePath}`);
   }
 
+  const dynamicColumnElements = columnsArray.elements.filter((element) => !n.ObjectExpression.check(element));
+  if (dynamicColumnElements.length) {
+    throw new Error(
+      `Resource columns array in ${filePath} contains dynamic entries. ` +
+      `Please sync this resource manually because automatic column import only supports literal column objects.`
+    );
+  }
+
   const existingColumnNames = new Set(
     columnsArray.elements
-      .filter((element) => n.ObjectExpression.check(element))
       .map((element) => getObjectPropertyValue(element, "name"))
       .filter(Boolean)
   );
