@@ -106,7 +106,7 @@ class CodeInjector implements ICodeInjector {
         iconPackageNames.map(
           async (pkg) => (
             { 
-              pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), 
+              pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg, 'index.js')).href), 
               name: pkg
             }
           )
