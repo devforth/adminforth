@@ -178,7 +178,9 @@
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
       @update:records="getListInner"
+      @update:pageSize="(newSize) => { pageSize = newSize; page = 1; }"
       :sort="sort"
+      :pageSizeOptions="Array.isArray(coreStore.resource?.options?.listPageSizeOptions) ? coreStore.resource?.options?.listPageSizeOptions : []"
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
@@ -270,7 +272,23 @@ const customActionLoadingStates = ref<{[key: string]: boolean}>({});
 const DEFAULT_PAGE_SIZE = 10;
 
 
-const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
+const pageSize = ref(DEFAULT_PAGE_SIZE);
+
+const syncPageSize = () => {
+  const resourceId = route.params.resourceId;
+  const savedSize = localStorage.getItem(`pageSize_${resourceId}`);
+
+  if (savedSize) {
+    pageSize.value = parseInt(savedSize);
+  } 
+  else if (coreStore.resource?.options?.listPageSize) {
+    pageSize.value = coreStore.resource.options.listPageSize;
+  } 
+  else {
+    pageSize.value = DEFAULT_PAGE_SIZE;
+  }
+};
+
 const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
@@ -405,6 +423,9 @@ async function init() {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string
   });
+
+  syncPageSize();
+
   isPageLoaded.value = true;
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
 
@@ -455,7 +476,7 @@ async function init() {
   }
 }
 
-watch([page, sort, () => filtersStore.filters], async () => {
+watch([page, sort, pageSize, () => filtersStore.filters], async () => {
   // console.log('🔄️ page/sort/filter change fired, page:', page.value);
   await getListInner();
 }, { deep: true });
