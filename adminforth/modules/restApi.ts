@@ -1203,6 +1203,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             ),
             options: {
               ...resource.options,
+              listPageSizeOptions: typeof resource.options.listPageSizeOptions === 'function'
+                ? await resource.options.listPageSizeOptions({ adminUser, adminforth: this.adminforth })
+                : resource.options.listPageSizeOptions,
               fieldGroups: resource.options.fieldGroups?.map((group, i) => ({
                 ...group,
                 noTitle: group.noTitle ?? false,
