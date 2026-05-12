@@ -248,6 +248,7 @@ const filtersShow = ref(false);
 const { list, alert } = useAdminforth();
 const coreStore = useCoreStore();
 const filtersStore = useFiltersStore();
+const { t } = useI18n();
 
 const route = useRoute();
 
@@ -331,7 +332,7 @@ async function refreshExistingList(pk?: any) {
 }
 
 async function startBulkActionInner(actionId: string) {
-  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner);
+  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner, t);
 }
 
 async function startCustomBulkActionInner(actionId: string | number) {
