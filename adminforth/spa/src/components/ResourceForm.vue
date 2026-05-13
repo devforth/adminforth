@@ -308,6 +308,9 @@ onMounted(() => {
     if (column.type === 'json' && currentValues.value) {
       if (column.isArray?.enabled) {
         // if value is null or undefined, we should set it to empty array
+        if (column.showIn?.create === false) {
+          return;
+        }
         if (!currentValues.value[column.name]) {
           currentValues.value[column.name] = [];
         } else {
