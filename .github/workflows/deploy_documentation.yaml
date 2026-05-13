@@ -28,6 +28,11 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: adminforth/pnpm-lock.yaml
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
       - name: Install dependencies
         run: |
           pnpm i
