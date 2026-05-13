@@ -20,7 +20,7 @@ pnpm install @adminforth/google-oauth-adapter --save  # for Google OAuth
 
 ## Configuration
 
-This section provides a step-by-step guide to configure the OAuth plugin for Google authentication. See [OAuth2 Providers](#oauth2-providers) for other providers.
+This section provides a step-by-step guide to configure the OAuth plugin for Google authentication. See [OAuth2 Providers](#oauth2-providers) for other providers.1
 
 ### 1. OAuth Provider Setup (Google Example)
 
