@@ -40,4 +40,4 @@ jobs:
           npm ci
 
       - name: Build and deploy docs
-        run: GIT_USER=${{ github.actor }} pnpm rollout-doc
+        run: GIT_USER=${{ github.actor }} GIT_PASS=${{ secrets.DOCUSAURUS_DEPLOY_KEY }} pnpm rollout-doc
