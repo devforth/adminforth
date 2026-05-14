@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.43.25
-        version: 1.43.25(@types/node@25.7.0)(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.20.0)
+        specifier: ^1.43.26
+        version: 1.43.26(@types/node@25.7.0)(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.20.0)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.0
         version: 1.3.0(adminforth@2.57.0(@types/node@25.7.0)(typescript@5.9.3))(ws@8.20.0)(zod@4.4.3)
@@ -108,8 +108,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.43.25':
-    resolution: {integrity: sha512-9H1lV4GWWa+v1TDmWAzi3jYGd4lOcbr6asCPd/B2Hlg1r79ikRFHexNoJLA5CV77NcjIMMVp5YG+E1s2diPoqA==}
+  '@adminforth/agent@1.43.26':
+    resolution: {integrity: sha512-DSI+S2WHT+FNWgVjAsxUkohFd4J9py37C0f4w9f6yCPwWhXdWtS8IGrECJX/XjTeQOx8eey1XYuflaWX5hNJMQ==}
 
   '@adminforth/audio-adapter-openai@1.3.0':
     resolution: {integrity: sha512-4ndEwvpQnzvcXnBYWuQVNVtaI3SyeAw6183LbA2DzLwy+tkSABQ87j2xJyGV0mb/GCFkfcy0kOL77k/yhmOV1Q==}
@@ -3135,7 +3135,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.43.25(@types/node@25.7.0)(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.20.0)':
+  '@adminforth/agent@1.43.26(@types/node@25.7.0)(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(typescript@5.9.3)(vue@3.5.34(typescript@5.9.3))(ws@8.20.0)':
     dependencies:
       '@langchain/core': 1.1.46(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(ws@8.20.0)
       '@langchain/langgraph': 1.3.0(@langchain/core@1.1.46(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(ws@8.20.0))(openai@6.37.0(ws@8.20.0)(zod@4.4.3))(vue@3.5.34(typescript@5.9.3))(ws@8.20.0)(zod@4.4.3)
