@@ -28,6 +28,11 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: adminforth/pnpm-lock.yaml
 
+      - name: Configure Git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
       - name: Install dependencies
         run: |
           pnpm i
@@ -35,4 +40,4 @@ jobs:
           npm ci
 
       - name: Build and deploy docs
-        run: pnpm rollout-doc
+        run: GIT_USER=${{ github.actor }} GIT_PASS=${{ secrets.DOCUSAURUS_DEPLOY_KEY }} pnpm rollout-doc
