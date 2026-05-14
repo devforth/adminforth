@@ -141,7 +141,7 @@ export async function callApi({path, method, body, headers, silentError = false,
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   try {
     const r = await fetch(fullPath, options);
-    if (r.status == 401 ) {
+    if (r.status == 401 && !path.includes('/login')) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
       await redirectToLogin();
