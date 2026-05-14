@@ -40,7 +40,7 @@
     "@adminforth/two-factors-auth": "^3.3.3",
     "@adminforth/upload": "^2.15.8",
     "@prisma/client": "^6.6.0",
-    "adminforth": "^2.55.4",
+    "adminforth": "^2.57.2",
     "better-sqlite3": "^10.0.0",
     "cldr-core": "^48.2.0",
     "express": "^4.19.2"
