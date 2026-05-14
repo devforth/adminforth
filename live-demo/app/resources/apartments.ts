@@ -284,6 +284,7 @@ const apartmentsResource: AdminForthResourceInput = {
   ],
   options: {
     listPageSize: 8,
+    listPageSizeOptions: [5, 10, 15, 20],
     allowedActions:{
       edit: true,
       delete: true,
