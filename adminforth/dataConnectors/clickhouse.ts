@@ -1,10 +1,13 @@
 import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import { createClient } from '@clickhouse/client'
 
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
 import { afLogger } from '../modules/logger.js';
+
+dayjs.extend(utc);
 
 class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
   
@@ -194,8 +197,8 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           || field._underlineType.startsWith('FixedString')
           || field._underlineType.startsWith('Nullable(String)')
           || field._underlineType.startsWith('Nullable(FixedString)')) {
-          // value is iso string now, convert to unix timestamp
-          const iso = dayjs(value).format('YYYY-MM-DDTHH:mm:ss');
+          // ClickHouse DateTime has no offset in the literal, so keep ISO instants in UTC.
+          const iso = dayjs.utc(value).format('YYYY-MM-DDTHH:mm:ss');
           return iso;
         }
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {

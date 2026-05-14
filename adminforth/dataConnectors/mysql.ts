@@ -1,9 +1,12 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
 import { dbLogger, afLogger } from '../modules/logger.js';
+
+dayjs.extend(utc);
 
 class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
@@ -223,7 +226,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       if (!value) {
         return null;
       }
-      return dayjs(value).format('YYYY-MM-DD HH:mm:ss');
+      return dayjs.utc(value).format('YYYY-MM-DD HH:mm:ss');
     } else if (field.type == AdminForthDataTypes.BOOLEAN) {
       return value === null ? null : (value ? 1 : 0);
     } else if (field.type == AdminForthDataTypes.JSON) {
