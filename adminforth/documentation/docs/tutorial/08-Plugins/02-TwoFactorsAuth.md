@@ -279,7 +279,7 @@ But if you websocket doesn't work in you application, or you wan't to perform ve
 
 You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
 
-To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `get2FaConfirmationResult` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
 
 ```ts title='/custom/RequireTwoFaGate.vue'
 <template>
@@ -289,6 +289,9 @@ To do it, first, create frontend custom component which wraps and intercepts cli
 </template>
 
 <script setup lang="ts">
+  import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+
+  const { get2FaConfirmationResult } = use2faApi();
   const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
   const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
 
@@ -297,8 +300,7 @@ To do it, first, create frontend custom component which wraps and intercepts cli
       return;
     }
   
-    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
-
+    const verificationResult = await get2FaConfirmationResult(); // this will ask user to enter code
     emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
   }
 </script>
@@ -383,20 +385,19 @@ Frontend (Save Interceptor component injected via pageInjections):
 ```vue title='/custom/SaveInterceptor.vue'
 <script setup>
 import { useAdminforth } from '@/adminforth';
+import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
+const { get2FaConfirmationResult } = use2faApi();
 const { registerSaveInterceptor } = useAdminforth();
 
 registerSaveInterceptor(async ({ action, values, resource }) => {
   // action is 'create' or 'edit'
-  const modal = (window as any)?.adminforthTwoFaModal;
-  if (modal?.get2FaConfirmationResult) {
-    const confirmationResult = await modal.get2FaConfirmationResult('Confirm to save changes');
-    if (!confirmationResult) {
-      return { ok: false, error: 'Two-factor authentication cancelled' };
-    }
-    // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
-    return { ok: true, extra: { confirmationResult } };
+  const confirmationResult = await get2FaConfirmationResult('Confirm to save changes');
+  if (!confirmationResult) {
+    return { ok: false, error: 'Two-factor authentication cancelled' };
   }
+  // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
+  return { ok: true, extra: { confirmationResult } };
   else {
     throw new Error('No Two-Factor Authentication modal found, please ensure you have latest version of @adminforth/two-factors-auth installed and instantiated on resource');
   }
@@ -489,9 +490,12 @@ Imagine you have some button which does some API call
 
 <script setup lang="ts">
 import { callApi } from '@/utils';
+import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+
+const { get2FaConfirmationResult } = use2faApi();
 
 async function callAdminAPI() {
-  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+  const verificationResult = await get2FaConfirmationResult();
 
   const res = await callApi({
     path: '/myCriticalAction',
@@ -530,12 +534,14 @@ You might want to protect this call with a second factor also. To do it, we need
 <script setup lang="ts">
 import { callApi } from '@/utils';
 import { useAdminforth } from '@/adminforth';
+import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
+const { get2FaConfirmationResult } = use2faApi();
 const { alert } = useAdminforth();
 
 async function callAdminAPI() {
   // diff-add
-  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+  const verificationResult = await get2FaConfirmationResult();
 
   const res = await callApi({
     path: '/myCriticalAction',
