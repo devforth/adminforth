@@ -190,6 +190,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         }
         return JSON.stringify(value);
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
+        // SQLite does not have a native boolean type, it uses 0 and 1
+        // valid only for sqlite
         return value === null ? null : (value ? 1 : 0);
       } else if (field.type == AdminForthDataTypes.JSON) {
         // check underline type is text or string
