@@ -527,7 +527,6 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       }).join(', ');
       const tableName = resource.table;
 
-      console.log('getDataWithOriginalTypes called with filters', JSON.stringify(filters), 'and sort', JSON.stringify(sort));
       const { where, params } = this.whereClause(resource, filters);
 
       const orderBy = sort.length ? `ORDER BY ${sort.map((s) => `${s.field} ${this.SortDirectionsMap[s.direction]}`).join(', ')}` : '';
