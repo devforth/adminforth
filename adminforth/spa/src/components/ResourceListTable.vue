@@ -340,7 +340,7 @@
         </span> 
       </template>
     </span>
-    <div v-if="totalRows > 0 && pageSizeOptionsComputed?.length" 
+    <div v-if="totalRows > 0 && resource?.options?.listPageSizeOptions?.length" 
       class="flex items-center gap-2 ml-auto" > 
       <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText whitespace-nowrap"> 
         {{ $t('Rows per page') }} 

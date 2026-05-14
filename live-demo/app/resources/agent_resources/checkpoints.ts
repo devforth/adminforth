@@ -78,8 +78,8 @@ const checkpointsResource: AdminForthResourceInput = {
     new AutoRemovePlugin({
       createdAtField: 'created_at',
       mode: 'time-based',
-      deleteOlderThan: '15m',
-      interval: '5m',
+      deleteOlderThan: '3d',
+      interval: '1d',
     }),
   ],
   options: {
