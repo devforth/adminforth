@@ -159,7 +159,6 @@ async function syncResourceColumns(filePath, content, discoveredColumns) {
     tabWidth: 2,
     useTabs: false,
     trailingComma: true,
-    wrapColumn: 1,
   }).code;
 
   await fs.writeFile(filePath, newContent, "utf-8");

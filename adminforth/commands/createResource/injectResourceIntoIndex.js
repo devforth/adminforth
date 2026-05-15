@@ -23,7 +23,7 @@ export async function injectResourceIntoIndex({
   let code = await fs.readFile(indexFilePath, "utf-8");
   const ast = recast.parse(code, { parser });
 
-  const importLine = `import ${resourceId}Resource from "./resources/${table}";`;
+  const resourceImportPath = `./resources/${table}.js`;
   let alreadyImported = false;
 
   recast.visit(ast, {
@@ -31,7 +31,7 @@ export async function injectResourceIntoIndex({
       const { node } = path;
       if (
         n.ImportDeclaration.check(node) &&
-        node.source.value === `./resources/${table}`
+        node.source.value === resourceImportPath
       ) {
         alreadyImported = true;
         return false;
@@ -49,7 +49,7 @@ export async function injectResourceIntoIndex({
   ast.program.body.unshift(
     b.importDeclaration(
       [b.importDefaultSpecifier(b.identifier(`${resourceId}Resource`))],
-      b.stringLiteral(`./resources/${table}`)
+      b.stringLiteral(resourceImportPath)
     )
   );
 
@@ -104,7 +104,6 @@ export async function injectResourceIntoIndex({
     tabWidth: 2, 
     useTabs: false,
     trailingComma: true,
-    wrapColumn: 1
   }).code;
   await fs.writeFile(indexFilePath, newCode, "utf-8");
   console.log(`✅ Injected resource "${resourceId}" into index`);
