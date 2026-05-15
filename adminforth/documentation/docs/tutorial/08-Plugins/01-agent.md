@@ -614,6 +614,7 @@ type SendEmailBody = {
   userId: string;
   subject: string;
   body: string;
+  htmlBody?: string;
 };
 
 export function initApi(app: Express, admin: IAdminForth) {
@@ -629,6 +630,7 @@ export function initApi(app: Express, admin: IAdminForth) {
         userId: { type: 'string' },
         subject: { type: 'string', minLength: 1 },
         body: { type: 'string', minLength: 1 },
+        htmlBody: { type: 'string', minLength: 1 },
       },
     },
     response_schema: {
@@ -642,7 +644,7 @@ export function initApi(app: Express, admin: IAdminForth) {
       },
     },
     handler: async ({ body, response }) => {
-      const { userId, subject, body: emailBody } = body as SendEmailBody;
+      const { userId, subject, body: emailBody, htmlBody } = body as SendEmailBody;
 
       await agentEmailAdapter.validate();
 
@@ -659,7 +661,7 @@ export function initApi(app: Express, admin: IAdminForth) {
         agentSendFrom,
         user.email as string,
         emailBody,
-        renderEmailHtml(emailBody),
+        htmlBody ?? renderEmailHtml(emailBody),
         subject,
       );
 
@@ -712,9 +714,9 @@ Use `send_email_to_user` to send the final report after you have one exact targe
 # Instructions
 
 - For each resource in system use fetch data default skill to collect total count of records in each resource.
-- Create html report in format `Resource Label (resourceId): count` for each resource on a new line, sort resources by count in descending order. 
+- Create both a plain text report and an HTML report in format `Resource Label (resourceId): count` for each resource on a new line, sort resources by count in descending order.
 - Use modern, stylish but compatible html formatting in the email.
-- Call `send_email_to_user` with the resolved user primary key, the final subject, and the final plain text body.
+- Call `send_email_to_user` with the resolved user primary key, the final subject, the final plain text `body`, and the final HTML markup in `htmlBody`.
 - After the tool succeeds, tell the user the email was sent and include a short summary in chat.
 ```
 
