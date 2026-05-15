@@ -1,10 +1,36 @@
 packages:
   - spa
 
+allowBuilds:
+  '@parcel/watcher': set this to true or false
+  better-sqlite3: set this to true or false
+  esbuild: set this to true or false
+  vue-demi: set this to true or false
+
 ignoredBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - vue-demi
+
+minimumReleaseAgeExclude:
+  - micromatch@4.0.8
+  - esbuild@0.24.3
+  - private-ip@3.0.3
+  - unhead@2.1.11
+  - undici@7.24.0
+  - path-to-regexp@0.1.13
+  - picomatch@2.3.2
+  - picomatch@4.0.4
+  - yaml@2.8.3
+  - lodash-es@4.17.24
+  - lodash@4.17.24
+  - vite@6.4.2
+  - unhead@2.1.13
+  - sanitize-html@2.17.3
+  - postcss@8.5.10
+  - fast-uri@3.1.1
+  - fast-uri@3.1.2
+  - sanitize-html@2.17.4
 
 onlyBuiltDependencies:
   - better-sqlite3
