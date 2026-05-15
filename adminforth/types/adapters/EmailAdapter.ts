@@ -11,14 +11,14 @@ export interface EmailAdapter {
    * @param from - The sender's email address
    * @param to - The recipient's email address
    * @param text - The plain text version of the email
-   * @param html - The HTML version of the email
+   * @param html - The optional HTML version of the email
    * @param subject - The subject of the email
    */
   sendEmail(
     from: string,
     to: string,
     text: string,
-    html: string,
+    html: string | undefined,
     subject: string
   ): Promise<{
     error?: string;
