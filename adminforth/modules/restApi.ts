@@ -718,7 +718,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
 
         if (!userRecord) {
-          response.setStatus(401, 'Unauthorized');
+          response.setStatus(401);
           return { error: INVALID_MESSAGE };
         }
 
@@ -749,7 +749,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             });
           } 
         } else {
-          response.setStatus(401, 'Unauthorized');
+          response.setStatus(401);
           return { error: INVALID_MESSAGE };
         }
           
