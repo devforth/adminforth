@@ -53,7 +53,7 @@ vars:
     - "adminforth-key-value-adapter-leveldb"
     - "adminforth-image-generation-adapter-nano-banana"
     - "adminforth-completion-adapter-openai-responses"
-    - "adminforth-completion-adapter-antropic-messages"
+    - "adminforth-completion-adapter-anthropic-messages"
     - "adminforth-completion-adapter-google-gemini"
     - "adminforth-audio-adapter-openai"
 
