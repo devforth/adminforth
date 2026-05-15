@@ -580,16 +580,16 @@ Please send record counts to all admin users
 
 ### Writing custom tools
 
-To define a custom tool you should simply define an express API route in your app using `admin.express.withSchema` wrapper which makes the route available for the agent (clear and predictable schema is a crucial part of making the tool work well).
+To define a custom tool, register an API endpoint with `admin.express.endpoint`. The endpoint schema makes the API visible in OpenAPI, and the endpoint `handler` gives the agent a direct function it can call as a tool.
 
-If you are using `admin.express.authorize` wrapper for authorization, adminuser will be injected atomatically from user which sits on the surface and controls the agent. In other words all permissions and access rights of the agent are defined by the admin user which is controlling this agent. At the same time all actions done by agent are automatically attributed in the audit log to the admin user which is controlling the agent.
+`admin.express.withSchema` is useful when you already have a regular Express route and want it to appear in the generated OpenAPI document. However, a route registered only with `withSchema` is not a directly callable agent tool, because it does not register a direct OpenAPI handler. For agent tools, use `admin.express.endpoint`.
+
+By default, `admin.express.endpoint` applies AdminForth authorization. The endpoint handler receives `adminUser` from the user who is controlling the agent. In other words, all permissions and access rights of the agent are defined by that admin user. At the same time, actions done by the agent are automatically attributed in the audit log to the admin user who is controlling the agent.
 
 This example uses the same email adapter pattern shown in the Email Invite and Email Password Reset plugins. The transport below uses Mailgun only to keep the snippet short; you can replace it with SES or any other adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
 
 ```ts title="./api.ts"
-import type { Express, Response } from 'express';
-import { Filters, type IAdminForth, type IAdminUserExpressRequest } from 'adminforth';
-import * as z from 'zod';
+import { Filters, type IAdminForth } from 'adminforth';
 import EmailAdapterMailgun from '@adminforth/email-adapter-mailgun';
 
 const agentEmailAdapter = new EmailAdapterMailgun({
@@ -610,59 +610,67 @@ function renderEmailHtml(body: string) {
   return `<html><body><pre style="font-family: sans-serif; white-space: pre-wrap;">${escapeHtml(body)}</pre></body></html>`;
 }
 
-export function initApi(app: Express, admin: IAdminForth) {
-  app.post('/send_email_to_user',
-    admin.express.withSchema(
-      {
-        description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
-        request: z.object({
-          userId: z.string(),
-          subject: z.string().min(1),
-          body: z.string().min(1),
-        }),
-        response: z.object({
-          ok: z.boolean(),
-          email: z.string().email().optional(),
-          error: z.string().optional(),
-        }),
+type SendEmailBody = {
+  userId: string;
+  subject: string;
+  body: string;
+};
+
+export function initApi(admin: IAdminForth) {
+  admin.express.endpoint({
+    method: 'POST',
+    path: '/send_email_to_user',
+    description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
+    request_schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['userId', 'subject', 'body'],
+      properties: {
+        userId: { type: 'string' },
+        subject: { type: 'string', minLength: 1 },
+        body: { type: 'string', minLength: 1 },
       },
-      admin.express.authorize(
-        async (req: IAdminUserExpressRequest, res: Response) => {
-          const { userId, subject, body } = req.body as {
-            userId: string;
-            subject: string;
-            body: string;
-          };
+    },
+    response_schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['ok'],
+      properties: {
+        ok: { type: 'boolean' },
+        email: { type: 'string' },
+        error: { type: 'string' },
+      },
+    },
+    handler: async ({ body, response }) => {
+      const { userId, subject, body: emailBody } = body as SendEmailBody;
 
-          await agentEmailAdapter.validate();
+      await agentEmailAdapter.validate();
 
-          const user = await admin.resource('adminuser').get(
-            Filters.EQ('id', userId),
-          );
+      const user = await admin.resource('adminuser').get(
+        Filters.EQ('id', userId),
+      );
 
-          if (!user || typeof user.email !== 'string' || !user.email) {
-            res.status(404).json({ ok: false, error: 'User not found' });
-            return;
-          }
+      if (!user) {
+        response.setStatus(404, 'User not found');
+        return { ok: false, error: 'User not found' };
+      }
 
-          const result = await agentEmailAdapter.sendEmail(
-            agentSendFrom,
-            user.email,
-            body,
-            renderEmailHtml(body),
-            subject,
-          );
+      const result = await agentEmailAdapter.sendEmail(
+        agentSendFrom,
+        user.email as string,
+        emailBody,
+        renderEmailHtml(emailBody),
+        subject,
+      );
 
-          if (!result.ok) {
-            res.status(500).json({ ok: false, error: result.error ?? 'Failed to send email' });
-            return;
-          }
+      if (!result.ok) {
+        response.setStatus(500, 'Failed to send email');
+        return { ok: false, error: result.error ?? 'Failed to send email' };
+      }
 
-          res.json({ ok: true, email: user.email });
-        }
-      )
-    )
-  );
+      return { ok: true, email: user.email };
+    },
+  });
 }
 ```
 
