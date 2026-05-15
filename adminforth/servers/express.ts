@@ -5,7 +5,7 @@ import { Express } from 'express';
 import type { AnySchemaObject } from 'ajv';
 import { apiReference } from '@scalar/express-api-reference';
 import fetch from 'node-fetch';
-import { AdminUserAuthorizeFunction, IAdminForth, IAdminForthExpressRouteSchema, IExpressHttpServer, HttpExtra } from '../types/Back.js';
+import { AdminUserAuthorizeFunction, IAdminForth, IAdminForthEndpointOptions, IAdminForthExpressRouteSchema, IExpressHttpServer, HttpExtra } from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
@@ -157,6 +157,7 @@ class ExpressServer implements IExpressHttpServer {
   server: http.Server;
   schemaAwareRouteRegistrationPatched = false;
   uploadParser: MulterParser;
+  pendingEndpointRegistrations: Array<() => void> = [];
 
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
@@ -278,6 +279,7 @@ class ExpressServer implements IExpressHttpServer {
   serve(app) {
     this.expressApp = app;
     this.patchSchemaAwareRouteRegistration();
+    this.flushPendingEndpointRegistrations();
     const stack = (this.expressApp as any)?._router?.stack;
     if (Array.isArray(stack)) {
       this.registerSchemaAwareStack(stack, '');
@@ -286,6 +288,12 @@ class ExpressServer implements IExpressHttpServer {
     this.adminforth.setupEndpoints(this);
     this.setupOpenApiRoutes();
     this.setupSpaServer();
+  }
+
+  flushPendingEndpointRegistrations() {
+    this.pendingEndpointRegistrations.splice(0).forEach((registerEndpoint) => {
+      registerEndpoint();
+    });
   }
 
   listen(...args) {
@@ -539,7 +547,7 @@ class ExpressServer implements IExpressHttpServer {
     }));
   }
 
-  endpoint(options) {
+  endpoint(options: IAdminForthEndpointOptions) {
     const {
       method='GET',
       path,
@@ -698,8 +706,17 @@ class ExpressServer implements IExpressHttpServer {
       res.json(output);
     }
 
-    afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);
-    this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
+    const registerEndpoint = () => {
+      afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);
+      this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
+    };
+
+    if (this.expressApp) {
+      registerEndpoint();
+      return;
+    }
+
+    this.pendingEndpointRegistrations.push(registerEndpoint);
   }
 
 }
