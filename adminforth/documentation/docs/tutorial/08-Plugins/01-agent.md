@@ -616,7 +616,7 @@ type SendEmailBody = {
   body: string;
 };
 
-export function initApi(admin: IAdminForth) {
+export function initApi(app: Express, admin: IAdminForth) {
   admin.express.endpoint({
     method: 'POST',
     path: '/send_email_to_user',
