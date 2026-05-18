@@ -284,6 +284,36 @@ Each item in `modes` defines a user-selectable preset in the chat UI. The select
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
 
+## Chat surfaces (Telegram, etc.)
+
+By default, the Agent plugin exposes a chat surface inside the AdminForth admin UI.
+If you want to talk to the same agent from external chat products (Telegram, etc.), connect a **chat surface adapter**.
+
+The adapter is registered in the plugin config via `chatSurfaceAdapters` and the plugin exposes an HTTP webhook endpoint for it.
+
+Example (Telegram):
+
+```ts
+import AdminForthAgent from '@adminforth/agent';
+import TelegramChatSurfaceAdapter from '@adminforth/chat-surface-adapter-telegram';
+
+new AdminForthAgent({
+  // ...modes, sessionResource, turnResource, etc.
+  chatSurfaceAdapters: [
+    new TelegramChatSurfaceAdapter({
+      botToken: process.env.TELEGRAM_BOT_TOKEN as string,
+      webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+      // optional
+      adminUserTelegramIdField: 'telegramId',
+    }),
+  ],
+});
+```
+
+Next steps (Telegram bot setup, webhook URL, required `telegramId` field on the admin user resource, and all adapter options) are documented here:
+
+- Telegram Chat Surface Adapter: `/docs/tutorial/Adapters/chat-surface-adapter-telegram`
+
 ## Debugging agent turns
 
 Agent debug traces are optional and are intended for auditability and debugging. When enabled, they let you reconstruct why an agent produced a response or made a change by storing the full execution sequence for the turn: LLM steps, tool calls, tool inputs and outputs, token usage, and cache information.
