@@ -1,5 +1,12 @@
 export type { EmailAdapter } from './EmailAdapter.js';
 export type {
+	ChatSurfaceAdapter,
+	ChatSurfaceEvent,
+	ChatSurfaceEventSink,
+	ChatSurfaceIncomingMessage,
+	ChatSurfaceRequestContext,
+} from './ChatSurfaceAdapter.js';
+export type {
 	CompletionAdapter,
 	CompletionAdapterLangChainAgentPurpose,
 	CompletionAdapterLangChainAgentSpec,
