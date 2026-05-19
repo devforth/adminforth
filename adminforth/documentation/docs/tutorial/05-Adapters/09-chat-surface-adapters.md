@@ -37,6 +37,24 @@ Add this field to your `adminuser` resource:
 },
 ```
 
+Also add the matching column to your database schema and run a migration. For example, with Prisma:
+
+```prisma title="schema.prisma"
+model adminuser {
+  // existing fields
+  telegramId String?
+}
+```
+
+Then create and apply the migration using your app's migration scripts:
+
+```bash
+pnpm makemigration --name add-adminuser-telegram-id
+pnpm migrate:local
+```
+
+After the migration, set `telegramId` on the admin user record to the numeric Telegram user id that should be allowed to use the bot.
+
 If your field is named differently, configure `adminUserTelegramIdField` option (see below).
 
 Register the adapter in the Agent plugin:
