@@ -7,6 +7,8 @@
 
 * [Try live demo](https://demo.adminforth.dev/) 
 
+* [YouTube video: build agentic admin panel in a minutes](https://www.youtube.com/watch?v=4tB8uzY__uk)
+
 * [Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted) with AdminForth
 
 * [Tutorial](https://adminforth.dev/docs/tutorial/Customization/branding/)
@@ -16,7 +18,9 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/e643caad-1daa-4085-b125-cc940557a2ec"
  alt="AdminForth Dashboard" width="90%">
+
 </div>
+
 
 <br/>
 
