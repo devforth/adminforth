@@ -828,7 +828,7 @@ class AdminForth implements IAdminForth {
     actionId: string,
     recordId: string | number,
     adminUser: AdminUser,
-    extra?: Record<string, any>,
+    extra,
     response?: any,
     tr?: any,
   }) {
