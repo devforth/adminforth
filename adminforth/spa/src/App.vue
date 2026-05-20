@@ -54,32 +54,34 @@
               </svg>
             </button>
           </div>
-          <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
-            <div class="px-4 py-3" role="none">
-              <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
-                {{ coreStore.userFullname }}
-              </p>
-              <p class="text-sm font-medium text-gray-900 truncate dark:text-darkSidebarText" role="none">
-                {{ coreStore.username }}
-              </p>
-            </div>
+          <Teleport to="body">
+            <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
+              <div class="px-4 py-3" role="none">
+                <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
+                  {{ coreStore.userFullname }}
+                </p>
+                <p class="text-sm font-medium text-gray-900 truncate dark:text-darkSidebarText" role="none">
+                  {{ coreStore.username }}
+                </p>
+              </div>
 
-            <ul class="py-1" role="none">
-              <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
-                <component 
-                  :is="getCustomComponent(c)"
-                  :meta="c.meta"
-                  :adminUser="coreStore.adminUser"
-                />
-              </li>
-              <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
-                <UserMenuSettingsButton />
-              </li>
-              <li>
-                <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover w-full" role="menuitem">{{ $t('Sign out') }}</button>
-              </li>
-            </ul>
-          </div>
+              <ul class="py-1" role="none">
+                <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
+                  <component 
+                    :is="getCustomComponent(c)"
+                    :meta="c.meta"
+                    :adminUser="coreStore.adminUser"
+                  />
+                </li>
+                <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
+                  <UserMenuSettingsButton />
+                </li>
+                <li>
+                  <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover w-full" role="menuitem">{{ $t('Sign out') }}</button>
+                </li>
+              </ul>
+            </div>
+          </Teleport>
         </div>
       </div>
     </nav>
@@ -183,7 +185,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, onBeforeMount } from 'vue';
+import { computed, nextTick, onMounted, ref, watch, onBeforeMount } from 'vue';
 import { RouterView } from 'vue-router';
 import { Dropdown } from 'flowbite'
 import './index.scss'
@@ -310,11 +312,14 @@ watch(route, () => {
 });
 
 
-watch(dropdownUserButton, (dropdownUserButton) => {
+watch(dropdownUserButton, async (dropdownUserButton) => {
   if (dropdownUserButton) {
+    await nextTick();
+    const dropdownUser = document.querySelector('#dropdown-user') as HTMLElement;
+    const dropdownUserTrigger = document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement;
     const dd = new Dropdown(
-      document.querySelector('#dropdown-user') as HTMLElement,
-      document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
+      dropdownUser,
+      dropdownUserTrigger,
     );
     closeUserMenuDropdown = () => {
       dd.hide();
