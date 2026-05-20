@@ -159,7 +159,7 @@ Any 3rd-party API providers might have next reasones of pure `responses` API com
 1) If they use vLLM open-source software under the hood they might have outdated version
 2) Custom non-vLLM implmentation might have reliable chat API implementation while give less priority to responses API as it is more complex and new.
 
-We recommend you to try responses API first because it gives rich features sets, including summarization and better structured outputs.
+We recommend you to try responses API first by setting `false` in `useComplitionApi` because it gives rich features set, including summarization and better structured outputs, and if it does not work for your provider, then set it to `true` to have less features but working implementation.
 
 
 
