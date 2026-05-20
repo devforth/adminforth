@@ -1,6 +1,3 @@
-import type { AdminUser } from "../Common.js";
-import type { IAdminForth } from "../Back.js";
-
 export type ChatSurfaceRequestContext = {
   body: unknown;
   headers: Record<string, unknown>;
@@ -17,6 +14,12 @@ export type ChatSurfaceIncomingMessage = {
   userTimeZone?: string;
   modeName?: string | null;
   metadata?: Record<string, unknown>;
+};
+
+export type ChatSurfaceConnectAction = {
+  type: "url";
+  label: string;
+  url: string;
 };
 
 export type ChatSurfaceEvent =
@@ -74,11 +77,10 @@ export interface ChatSurfaceAdapter {
   ): ChatSurfaceEventSink | Promise<ChatSurfaceEventSink>;
 
   /**
-   * Maps an external surface user to an authorized AdminForth admin user.
-   * Return null to reject the incoming chat message.
+   * Creates a platform-specific action that lets a logged-in AdminForth user link
+   * their account to this external chat surface.
    */
-  resolveAdminUser(input: {
-    adminforth: IAdminForth;
-    incoming: ChatSurfaceIncomingMessage;
-  }): AdminUser | null | Promise<AdminUser | null>;
+  createConnectAction?(input: {
+    token: string;
+  }): ChatSurfaceConnectAction | Promise<ChatSurfaceConnectAction>;
 }
