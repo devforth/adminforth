@@ -54,9 +54,12 @@ export interface IAdminForthEndpointHandlerInput {
   tr: ITranslateFunction;
 }
 
-export interface IAdminForthEndpointOptions {
+export interface IAdminForthAuthenticatedEndpointHandlerInput extends IAdminForthEndpointHandlerInput {
+  adminUser: AdminUser;
+}
+
+export interface IAdminForthEndpointOptionsBase {
   method: string,
-  noAuth?: boolean,
   path: string,
   description?: string,
   request_schema?: AnySchemaObject,
@@ -64,8 +67,21 @@ export interface IAdminForthEndpointOptions {
   responce_schema?: AnySchemaObject,
   meta?: Record<string, unknown>,
   target?: 'json' | 'upload',
+}
+
+export interface IAdminForthAuthenticatedEndpointOptions extends IAdminForthEndpointOptionsBase {
+  noAuth?: false,
+  handler: (input: IAdminForthAuthenticatedEndpointHandlerInput) => void | Promise<any>,
+}
+
+export interface IAdminForthNoAuthEndpointOptions extends IAdminForthEndpointOptionsBase {
+  noAuth: true,
   handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
 }
+
+export type IAdminForthEndpointOptions =
+  | IAdminForthAuthenticatedEndpointOptions
+  | IAdminForthNoAuthEndpointOptions;
 
 export type AdminForthExpressSchemaInput = AnySchemaObject | ZodType;
 
@@ -143,7 +159,8 @@ export interface IHttpServer {
    * 
    * @param options : Object with method, path and handler properties.
    */
-  endpoint(options: IAdminForthEndpointOptions): void;
+  endpoint(options: IAdminForthAuthenticatedEndpointOptions): void;
+  endpoint(options: IAdminForthNoAuthEndpointOptions): void;
 
 }
 
