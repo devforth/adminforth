@@ -5,7 +5,16 @@ import { Express } from 'express';
 import type { AnySchemaObject } from 'ajv';
 import { apiReference } from '@scalar/express-api-reference';
 import fetch from 'node-fetch';
-import { AdminUserAuthorizeFunction, IAdminForth, IAdminForthEndpointOptions, IAdminForthExpressRouteSchema, IExpressHttpServer, HttpExtra } from '../types/Back.js';
+import {
+  AdminUserAuthorizeFunction,
+  IAdminForth,
+  IAdminForthAuthenticatedEndpointOptions,
+  IAdminForthEndpointOptions,
+  IAdminForthExpressRouteSchema,
+  IAdminForthNoAuthEndpointOptions,
+  IExpressHttpServer,
+  HttpExtra,
+} from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
@@ -547,6 +556,8 @@ class ExpressServer implements IExpressHttpServer {
     }));
   }
 
+  endpoint(options: IAdminForthAuthenticatedEndpointOptions): void;
+  endpoint(options: IAdminForthNoAuthEndpointOptions): void;
   endpoint(options: IAdminForthEndpointOptions) {
     const {
       method='GET',
