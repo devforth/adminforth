@@ -127,11 +127,14 @@ new CompletionAdapterOpenAIResponses({
 }),
 ```
 
-You can specify any GPT model you need. The default is `gpt-5-nano`.
+You can specify any GPT model you need. The default is `gpt-5-nano` as it is cheapest though may behave weakly.
 
-This adapter uses the OpenAI `responses` API.
+By default, this adapter uses the OpenAI `responses` API (`v1/responses`) unless `useComplitionApi` is set to `true`. If `useComplitionApi` is `true`, it uses the older Chat Completions API (`v1/chat/completions`). 
 
-OpenAI-compatible providers can use the same adapter by setting `baseUrl`:
+
+### Using with OpenAI-compatible API providers (for example based on self-hosted vLLM docker images)
+
+Adapter can run OpenAI-compatible providers by setting `baseUrl`, for example you can use OVH AI Endpoints:
 
 ```ts
 new CompletionAdapterOpenAIResponses({
@@ -145,17 +148,19 @@ new CompletionAdapterOpenAIResponses({
 }),
 ```
 
-For LangChain agent mode, `useComplitionApi` controls which provider API is used:
-
-- `false` uses the OpenAI `responses` API
-- `true` uses the Chat Completions API
-
 If `useComplitionApi` is omitted, the adapter keeps the current default behavior:
 
 - official OpenAI uses the `responses` API
-- custom `baseUrl` providers use the Chat Completions API
+- custom `baseUrl` providers use the Chat Completions API. 
 
-OVH AI Endpoints still does not fully support the `responses` API, so `useComplitionApi: false` may work unstably there.
+This is because many OpenAI-compatible providers do not yet support the `responses` API or support it unstably (for example OVH AI Endpoints still - Apr 2026 does not fully support the `responses`, so `useComplitionApi: false` may work unstably there, though you can re-test it by manually enabling it by setting `useComplitionApi: true` and checking if it works).
+Any 3rd-party API providers might have next reasones of pure `responses` API compatibility:
+
+1) If they use vLLM open-source software under the hood they might have outdated version
+2) Custom non-vLLM implmentation might have reliable chat API implementation while give less priority to responses API as it is more complex and new.
+
+We recommend you to try responses API first because it gives rich features sets, including summarization and better structured outputs.
+
 
 
 
