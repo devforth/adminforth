@@ -9,7 +9,7 @@ HARBOR_USERNAME='robot$adminforth-demo+wp'
 HARBOR_REGISTRY_BASE_URL=harbor.devforth.io/adminforth-demo+wp/
 docker login -u $HARBOR_USERNAME -p $VAULT_HARBOR_KEY $HARBOR_REGISTRY_BASE_URL
 
-docker compose -p stack-af-live -f compose.yml build
+docker compose -p stack-af-live -f compose.yml build --no-cache
 docker compose -p stack-af-live -f compose.yml push
 
 
@@ -23,7 +23,7 @@ export DOCKER_CERT_PATH=~/.docker/$HOST_DOMAIN
 
 
 
-docker compose -p stack-af-live -f compose.yml  up -d --pull always --remove-orphans --wait
+docker compose -p stack-af-live -f compose.yml  up -d --pull always --remove-orphans --wait --no-build
 
 docker builder prune -a -f
 docker container prune -f

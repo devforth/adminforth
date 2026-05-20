@@ -10,11 +10,11 @@
         v-show="isModalOpen" 
         v-if="!removeFromDom" 
         @click="backdropClick" 
-        class="bg-black/50 overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex"
+        class="bg-black/50 overflow-y-auto overscroll-contain overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex"
         :class="props.backgroundCustomClasses"
       >
         <!-- Modal content -->
-        <div v-bind="$attrs" class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund">
+        <div v-bind="$attrs" class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund mx-4 sm:mx-0">
 
           <!-- Modal body -->
           <div class="text-lightDialogBodyText dark:text-darkDialogBodyText">
@@ -28,14 +28,14 @@
             :class="props.modalCustomClasses"
           >
             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
-              <h2 class="text-lg font-semibold mb-4 text-lightDialogHeaderText dark:text-darkDialogHeaderText">Confirm Close</h2>
+              <h2 class="text-lg font-semibold mb-4 text-lightDialogHeaderText dark:text-darkDialogHeaderText">{{ t('Confirm Close') }}</h2>
               <p class="mb-6 text-lightDialogBodyText dark:text-darkDialogBodyText">{{ props.closeConfirmationText }}</p>
               <div class="flex justify-end">
                 <Button
                   class="me-3 !bg-gray-50 dark:!bg-gray-700 !text-lightDialogBodyText dark:!text-darkDialogBodyText hover:!bg-gray-100 dark:hover:!bg-gray-600 !border-gray-200 dark:!border-gray-600"
                   @click="showConfirmationOnClose = false"
                 >
-                  Cancel
+                  {{ t('Cancel') }}
                 </Button>
                 <Button
                   @click="
@@ -43,7 +43,7 @@
                     close();
                   "
                 >
-                  Confirm
+                  {{ t('Confirm') }}
                 </Button>
               </div>
             </div>
@@ -56,8 +56,10 @@
 <script setup lang="ts">
 import Button from "./Button.vue";
 import { ref, onMounted, nextTick, onUnmounted, computed, type Ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const isModalOpen = ref(false);
+const { t } = useI18n();
 
 const removeFromDom = computed(() => {
   return props.removeFromDomOnClose && !isModalOpen.value;

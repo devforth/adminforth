@@ -5,4 +5,5 @@ ADD package.json {{dockerAdditionalManifestFiles}} /code/
 RUN {{packageManager}} {{dockerPackageInstallSubcommand}}  
 ADD . /code/
 RUN {{packageManagerExec}} adminforth bundle
+RUN {{ packageManager }} run build
 CMD ["sh", "-c", "{{packageManagerRun}} migrate:prod && {{packageManagerRun}} prod"]

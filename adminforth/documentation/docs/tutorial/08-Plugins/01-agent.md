@@ -284,6 +284,246 @@ Each item in `modes` defines a user-selectable preset in the chat UI. The select
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
 
+## Chat surfaces (Telegram, etc.)
+
+By default, the Agent plugin exposes a chat surface inside the AdminForth admin UI.
+If you want to talk to the same agent from external chat products (Telegram, etc.), connect a **chat surface adapter**.
+
+The adapter is registered in the plugin config via `chatSurfaceAdapters` and the plugin exposes an HTTP webhook endpoint for it.
+
+Example (Telegram):
+
+```ts
+import AdminForthAgent from '@adminforth/agent';
+import TelegramChatSurfaceAdapter from '@adminforth/chat-surface-adapter-telegram';
+
+new AdminForthAgent({
+  // ...modes, sessionResource, turnResource, etc.
+  chatSurfaceAdapters: [
+    new TelegramChatSurfaceAdapter({
+      botToken: process.env.TELEGRAM_BOT_TOKEN as string,
+      webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+      // optional
+      adminUserTelegramIdField: 'telegramId',
+    }),
+  ],
+});
+```
+
+Next steps (Telegram bot setup, webhook URL, required `telegramId` field on the admin user resource, and all adapter options) are documented here:
+
+- Telegram Chat Surface Adapter: `/docs/tutorial/Adapters/chat-surface-adapter-telegram`
+
+## Debugging agent turns
+
+Agent debug traces are optional and are intended for auditability and debugging. When enabled, they let you reconstruct why an agent produced a response or made a change by storing the full execution sequence for the turn: LLM steps, tool calls, tool inputs and outputs, token usage, and cache information.
+
+By default, only the user prompt and agent response are persisted. Full debug traces are not stored unless you configure a `debugField`, because they can be large and may significantly increase database size.
+
+Add a `debug` JSON column to the turns resource:
+
+```ts title="./resources/agent_resources/turns.ts"
+import AdminForth, { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput, AdminUser } from 'adminforth';
+import { randomUUID } from 'crypto';
+
+async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
+  return adminUser.dbUser.role === 'superadmin';
+}
+
+export default {
+  dataSource: 'maindb',
+  table: 'turns',
+  resourceId: 'turns',
+  label: 'Turns',
+  columns: [
+    {
+      name: 'id',
+      primaryKey: true,
+      type: AdminForthDataTypes.STRING,
+      fillOnCreate: () => randomUUID(),
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'session_id',
+      type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'created_at',
+      type: AdminForthDataTypes.DATETIME,
+      fillOnCreate: () => (new Date()).toISOString(),
+      showIn: {
+        edit: false,
+        create: false,
+      },
+    },
+    {
+      name: 'prompt',
+      type: AdminForthDataTypes.TEXT,
+    },
+    {
+      name: 'response',
+      type: AdminForthDataTypes.TEXT,
+    },
+    //diff-add
+    {
+      //diff-add
+      name: 'debug',
+      //diff-add
+      type: AdminForthDataTypes.JSON,
+      //diff-add
+      components: {
+        //diff-add
+        show: {
+          //diff-add
+          file: '@@/TurnDebugShow.vue',
+        //diff-add
+        },
+      //diff-add
+      },
+      //diff-add
+      showIn: {
+        //diff-add
+        list: false,
+        //diff-add
+        show: true,
+        //diff-add
+        edit: false,
+        //diff-add
+        create: false,
+        //diff-add
+        filter: false,
+      //diff-add
+      },
+    //diff-add
+    },
+  ],
+  options: {
+    allowedActions: {
+      list: allowedForSuperAdmins,
+      show: allowedForSuperAdmins,
+      create: false,
+      edit: false,
+      delete: false,
+    },
+  },
+} as AdminForthResourceInput;
+```
+
+Add the matching field to your schema:
+
+```prisma title="./schema.prisma"
+model turns {
+  id         String   @id
+  session_id String
+  created_at DateTime
+  prompt     String?
+  response   String?
+  debug      Json? //diff-add
+}
+```
+
+If you use SQLite with Prisma, store the same field as text:
+
+```prisma title="./schema.prisma"
+model turns {
+  id         String   @id
+  session_id String
+  created_at DateTime
+  prompt     String?
+  response   String?
+  debug      String? //diff-add
+}
+```
+
+AdminForth should still define this resource column as `AdminForthDataTypes.JSON`; the SQLite connector serializes it into the text column and parses it back for the renderer.
+
+Run migration:
+
+```bash
+pnpm makemigration --name add-adminforth-agent-turn-debug ; pnpm migrate:local
+```
+
+Tell the plugin where to store debug data:
+
+```ts title="./resources/adminuser.ts"
+new AdminForthAgent({
+  modes: [
+    ...
+  ],
+  sessionResource: {
+    resourceId: 'sessions',
+    idField: 'id',
+    titleField: 'title',
+    turnsField: 'turns',
+    askerIdField: 'asker_id',
+    createdAtField: 'created_at',
+  },
+  turnResource: {
+    resourceId: 'turns',
+    idField: 'id',
+    sessionIdField: 'session_id',
+    createdAtField: 'created_at',
+    promptField: 'prompt',
+    responseField: 'response',
+    //diff-add
+    debugField: 'debug',
+  },
+})
+```
+
+The `debugField` value must match the turns resource column name. You can use another column name, but then use the same name in the resource, database schema, and `debugField`.
+
+Create a renderer in your app custom folder:
+
+```vue title="./custom/TurnDebugShow.vue"
+<template>
+  <div class="space-y-3">
+    <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+      <div class="font-semibold text-slate-900 dark:text-white">Agent Debug</div>
+      <div class="mt-1">
+        {{ debugSequences.length }} sequences,
+        {{ totalToolCalls }} tool calls,
+        {{ totalCachedTokens.toLocaleString() }} cached prompt tokens
+      </div>
+    </div>
+
+    <JsonViewer :value="debugSequences" :expandDepth="2" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue';
+import { JsonViewer } from '@/afcl';
+import type { AdminForthResourceColumnCommon } from '@/types/Common';
+
+type DebugToolCall = {
+  toolName: string;
+};
+
+type DebugSequence = {
+  cachedTokens: number;
+  toolCalls: DebugToolCall[];
+};
+
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon;
+  record: Record<string, DebugSequence[]>;
+}>();
+
+const debugSequences = computed(() => props.record[props.column.name] ?? []);
+const totalToolCalls = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequence.toolCalls.length, 0),
+);
+const totalCachedTokens = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequence.cachedTokens, 0),
+);
+</script>
+```
+
 # Using with self-hosted models
 
 `CompletionAdapterOpenAIResponses` when works with agent plugin, under the hood uses the LangChain internal proxy called `OpenAIChat` (in LangChain they call it "provider"). This proxy is capable with a fresh versions of OpenAI-compatible Responses APIs, for example [self-hosted latest versions of vLLM installations](https://devforth.io/insights/self-hosted-gpt-real-response-time-token-throughput-and-cost-on-l4-l40s-and-h100-for-gpt-oss-20b/)
@@ -370,16 +610,16 @@ Please send record counts to all admin users
 
 ### Writing custom tools
 
-To define a custom tool you should simply define an express API route in your app using `admin.express.withSchema` wrapper which makes the route available for the agent (clear and predictable schema is a crucial part of making the tool work well).
+To define a custom tool, register an API endpoint with `admin.express.endpoint`. The endpoint schema makes the API visible in OpenAPI, and the endpoint `handler` gives the agent a direct function it can call as a tool.
 
-If you are using `admin.express.authorize` wrapper for authorization, adminuser will be injected atomatically from user which sits on the surface and controls the agent. In other words all permissions and access rights of the agent are defined by the admin user which is controlling this agent. At the same time all actions done by agent are automatically attributed in the audit log to the admin user which is controlling the agent.
+`admin.express.withSchema` is useful when you already have a regular Express route and want it to appear in the generated OpenAPI document. However, a route registered only with `withSchema` is not a directly callable agent tool, because it does not register a direct OpenAPI handler. For agent tools, use `admin.express.endpoint`.
+
+By default, `admin.express.endpoint` applies AdminForth authorization. The endpoint handler receives `adminUser` from the user who is controlling the agent. In other words, all permissions and access rights of the agent are defined by that admin user. At the same time, actions done by the agent are automatically attributed in the audit log to the admin user who is controlling the agent.
 
 This example uses the same email adapter pattern shown in the Email Invite and Email Password Reset plugins. The transport below uses Mailgun only to keep the snippet short; you can replace it with SES or any other adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
 
 ```ts title="./api.ts"
-import type { Express, Response } from 'express';
-import { Filters, type IAdminForth, type IAdminUserExpressRequest } from 'adminforth';
-import * as z from 'zod';
+import { Filters, type IAdminForth } from 'adminforth';
 import EmailAdapterMailgun from '@adminforth/email-adapter-mailgun';
 
 const agentEmailAdapter = new EmailAdapterMailgun({
@@ -400,59 +640,69 @@ function renderEmailHtml(body: string) {
   return `<html><body><pre style="font-family: sans-serif; white-space: pre-wrap;">${escapeHtml(body)}</pre></body></html>`;
 }
 
+type SendEmailBody = {
+  userId: string;
+  subject: string;
+  body: string;
+  htmlBody?: string;
+};
+
 export function initApi(app: Express, admin: IAdminForth) {
-  app.post('/send_email_to_user',
-    admin.express.withSchema(
-      {
-        description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
-        request: z.object({
-          userId: z.string(),
-          subject: z.string().min(1),
-          body: z.string().min(1),
-        }),
-        response: z.object({
-          ok: z.boolean(),
-          email: z.string().email().optional(),
-          error: z.string().optional(),
-        }),
+  admin.express.endpoint({
+    method: 'POST',
+    path: '/send_email_to_user',
+    description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
+    request_schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['userId', 'subject', 'body'],
+      properties: {
+        userId: { type: 'string' },
+        subject: { type: 'string', minLength: 1 },
+        body: { type: 'string', minLength: 1 },
+        htmlBody: { type: 'string', minLength: 1 },
       },
-      admin.express.authorize(
-        async (req: IAdminUserExpressRequest, res: Response) => {
-          const { userId, subject, body } = req.body as {
-            userId: string;
-            subject: string;
-            body: string;
-          };
+    },
+    response_schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['ok'],
+      properties: {
+        ok: { type: 'boolean' },
+        email: { type: 'string' },
+        error: { type: 'string' },
+      },
+    },
+    handler: async ({ body, response }) => {
+      const { userId, subject, body: emailBody, htmlBody } = body as SendEmailBody;
 
-          await agentEmailAdapter.validate();
+      await agentEmailAdapter.validate();
 
-          const user = await admin.resource('adminuser').get(
-            Filters.EQ('id', userId),
-          );
+      const user = await admin.resource('adminuser').get(
+        Filters.EQ('id', userId),
+      );
 
-          if (!user || typeof user.email !== 'string' || !user.email) {
-            res.status(404).json({ ok: false, error: 'User not found' });
-            return;
-          }
+      if (!user) {
+        response.setStatus(404, 'User not found');
+        return { ok: false, error: 'User not found' };
+      }
 
-          const result = await agentEmailAdapter.sendEmail(
-            agentSendFrom,
-            user.email,
-            body,
-            renderEmailHtml(body),
-            subject,
-          );
+      const result = await agentEmailAdapter.sendEmail(
+        agentSendFrom,
+        user.email as string,
+        emailBody,
+        htmlBody ?? renderEmailHtml(emailBody),
+        subject,
+      );
 
-          if (!result.ok) {
-            res.status(500).json({ ok: false, error: result.error ?? 'Failed to send email' });
-            return;
-          }
+      if (!result.ok) {
+        response.setStatus(500, 'Failed to send email');
+        return { ok: false, error: result.error ?? 'Failed to send email' };
+      }
 
-          res.json({ ok: true, email: user.email });
-        }
-      )
-    )
-  );
+      return { ok: true, email: user.email };
+    },
+  });
 }
 ```
 
@@ -494,9 +744,9 @@ Use `send_email_to_user` to send the final report after you have one exact targe
 # Instructions
 
 - For each resource in system use fetch data default skill to collect total count of records in each resource.
-- Create html report in format `Resource Label (resourceId): count` for each resource on a new line, sort resources by count in descending order. 
+- Create both a plain text report and an HTML report in format `Resource Label (resourceId): count` for each resource on a new line, sort resources by count in descending order.
 - Use modern, stylish but compatible html formatting in the email.
-- Call `send_email_to_user` with the resolved user primary key, the final subject, and the final plain text body.
+- Call `send_email_to_user` with the resolved user primary key, the final subject, the final plain text `body`, and the final HTML markup in `htmlBody`.
 - After the tool succeeds, tell the user the email was sent and include a short summary in chat.
 ```
 
@@ -793,4 +1043,3 @@ services:
   If Cloudflare returns a 403 response with `cf-mitigated: challenge` for `<baseURL>/adminapi/v1/agent/speech-response`, the request was blocked before it reached AdminForth. Create a WAF or bot rule exception for authenticated requests to this endpoint, because browser `fetch` calls with `multipart/form-data` cannot complete an HTML challenge page.
 
 ![alt text](image-6.png)
-

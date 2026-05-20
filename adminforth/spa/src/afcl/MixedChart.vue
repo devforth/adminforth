@@ -3,8 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import ApexCharts, { type ApexOptions } from 'apexcharts';
+import type ApexCharts from 'apexcharts';
+import { type ApexOptions } from 'apexcharts';
 import { ref, onUnmounted, watch, computed } from 'vue';
+type ApexChartsConstructor = new (el: Element, options: any) => ApexCharts;
 
 const props = defineProps<{
   data: {
@@ -103,17 +105,23 @@ const chartOptions = computed(() => {
 });
 
 let apexChart: ApexCharts | null = null;
+let ApexChartsCtor: ApexChartsConstructor | null = null;
 
 
-watch(() => [chartOptions.value, chart.value], ([newOptions, newRef]) => {
+watch(() => [chartOptions.value, chart.value], async ([newOptions, newRef]) => {
   if (!newOptions || !newRef) {
     return;
+  }
+
+  if (!ApexChartsCtor) {
+    const module = await import('apexcharts') as { default: ApexChartsConstructor };
+    ApexChartsCtor = module.default;
   }
   
   if (apexChart) {
     apexChart.updateOptions(newOptions);
   } else if (chart.value) {
-    apexChart = new ApexCharts(chart.value, newOptions);
+    apexChart = new ApexChartsCtor(chart.value, newOptions);
     apexChart.render();
   }
 }, { deep: true });
