@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex gap-10">
+  <div class="flex flex-wrap gap-10 max-w-screen">
     <div class="flex flex-col max-w-[200px] m-10 mt-20 gap-10">
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 

@@ -6,6 +6,7 @@ RUN corepack prepare pnpm@latest-10 --activate
 RUN pnpm i  
 ADD . /code/
 RUN pnpm bundleNow
+RUN pnpm run build
 
 
 CMD ["pnpm", "run", "startLive"]

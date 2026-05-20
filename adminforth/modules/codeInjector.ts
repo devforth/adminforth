@@ -94,25 +94,37 @@ class CodeInjector implements ICodeInjector {
   }
 
   async checkIconNames(icons: string[]) {
+    process.env.HEAVY_DEBUG && console.log(`Checking icon names: ${icons.join(', ')}`);
     const uniqueIcons = Array.from(new Set(icons));
+    process.env.HEAVY_DEBUG && console.log(`Unique icons: ${uniqueIcons.join(', ')}`);
     const collections = new Set(icons.map((icon) => icon.split(':')[0]));
+    process.env.HEAVY_DEBUG && console.log(`Icon collections: ${Array.from(collections).join(', ')}`);
     const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
-
+    process.env.HEAVY_DEBUG && console.log(`Icon package names: ${iconPackageNames.join(', ')}`);
     const iconPackages = (
-      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), name: pkg})))
+      await Promise.allSettled(
+        iconPackageNames.map(
+          async (pkg) => (
+            { 
+              pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg, 'index.js')).href), 
+              name: pkg
+            }
+          )
+        )
+      )
     );
-
+    process.env.HEAVY_DEBUG && console.log(`Icon packages load results: ${iconPackages.map(res => res.status === 'fulfilled' ? res.value.name : 'error:' + res.reason).join(', ')}`);
     const loadedIconPackages = iconPackages.filter(isFulfilled).map((res) => res.value).reduce((acc, { pkg, name }) => {
       acc[name.slice(`@iconify-prerendered/vue-`.length)] = pkg;
       return acc;
     }, {});
-
+    process.env.HEAVY_DEBUG && console.log(`Loaded icon packages: ${Object.keys(loadedIconPackages).join(', ')}`);
     uniqueIcons.forEach((icon) => {
       const [ collection, iconName ] = icon.split(':');
       const PascalIconName = 'Icon' + iconName.split('-').map((part, index) => {
         return part[0].toUpperCase() + part.slice(1);
       }).join('');
-
+      process.env.HEAVY_DEBUG && console.log(`Checking icon: ${icon}, collection: ${collection}, iconName: ${iconName}, PascalIconName: ${PascalIconName}`);
       if (!loadedIconPackages[collection]) {
         throw new Error(`Collection ${collection} not found`);
       }
@@ -147,6 +159,10 @@ class CodeInjector implements ICodeInjector {
 
 
   async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    if (!dir) {
+      return false;
+    }
+
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     try {
