@@ -700,6 +700,9 @@ export function generateMessageHtmlForRecordChange(changedFields: Record<string,
   const items = Object.keys(changedFields || {}).map(key => {
     const column = coreStore.resource?.columns?.find((c: any) => c.name === key);
     const label = column?.label || key;
+    if (column?.masked) {
+      return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <em>${escapeHtml(t('changed'))}</em></li>`;
+    }
     const oldV = escapeHtml(changedFields[key].oldValue);
     const newV = escapeHtml(changedFields[key].newValue);
     return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <span class="af-old-value text-muted">${oldV}</span> &#8594; <span class="af-new-value">${newV}</span></li>`;
