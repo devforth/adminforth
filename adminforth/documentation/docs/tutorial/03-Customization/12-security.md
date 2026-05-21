@@ -242,3 +242,46 @@ export const admin = new AdminForth({
 ```
 
 Now, if a user’s field `status` is changed to "banned", they won’t be able to perform any actions and moreover  will be automatically logged out upon accessing the page.
+
+## RateLimiter for API
+
+### Import
+```ts 
+import { RateLimiter } from "adminforth";
+```
+
+### Usage
+```ts 
+import { RateLimiter } from "adminforth";
+
+const UserRateLimiter = new RateLimiter("20/1d");
+
+app.post(
+  `${ADMIN_BASE_URL}/api/some-api/`,
+  admin.express.authorize(async (req: any, res: any) => {
+
+    const allowed = await UserRateLimiter.consume(req.user.id);
+
+    if (!allowed) {
+      res.status(429).json({
+        error: "Rate limit exceeded"
+      });
+      return;
+    }
+
+    // your API logic here
+  })
+);
+```
+
+### Limit format
+"20/1d"
+This means that a user is allowed to make up to 20 requests within one day, and once this limit is reached, any further requests will be blocked until the 24-hour period resets.
+
+### Supported time units
+- s → seconds (10s)
+- m → minutes (5m)
+- h → hours (1h)
+- d → days (1d)
+
+> ☝ Сonsume(key) is used to check whether a specific key such as a userId, IP address, or any other identifier has exceeded its allowed request limit. If the limit has not been reached, it returns true, meaning the request is allowed to proceed.

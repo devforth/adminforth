@@ -17,45 +17,61 @@ Create a Telegram bot with BotFather and add the token to `.env`:
 
 ```env title=".env"
 TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_BOT_USERNAME=your_bot_username_without_at
 TELEGRAM_WEBHOOK_SECRET=your_random_secret
 ```
 
-The webhook secret confirms that the request came through Telegram. Your app should still map the Telegram user id to a real AdminForth admin user before running the agent.
+The webhook secret confirms that the request came through Telegram.
 
-## Admin user field `telegramId`
+## Admin user field `externalUserId`
 
-To map Telegram users to AdminForth admin users, the adapter looks up an admin user record by Telegram user id.
-By default it expects the admin user resource to have a field named `telegramId`.
+External chat accounts are linked by the Agent plugin, not by the Telegram adapter directly. The plugin stores linked external user ids in a JSON field on the AdminForth auth user resource.
 
-Add this field to your `adminuser` resource:
+By default this field is named `externalUserId`. Add it to your `adminuser` resource:
 
 ```ts
 {
-  name: 'telegramId',
-  type: AdminForthDataTypes.STRING,
-  showIn: ['show', 'edit', 'create'],
+  name: 'externalUserId',
+  type: AdminForthDataTypes.JSON,
 },
 ```
 
-Also add the matching column to your database schema and run a migration. For example, with Prisma:
+Also add the matching column to your database schema and run a migration. For example, with Prisma and PostgreSQL:
 
 ```prisma title="schema.prisma"
 model adminuser {
   // existing fields
-  telegramId String?
+  externalUserId Json?
 }
 ```
+
+For Prisma SQLite, store the same field as text:
+
+```prisma title="schema.prisma"
+model adminuser {
+  // existing fields
+  externalUserId String?
+}
+```
+
+AdminForth should still define this resource column as `AdminForthDataTypes.JSON`; the SQLite connector serializes it into the text column and parses it back.
 
 Then create and apply the migration using your app's migration scripts:
 
 ```bash
-pnpm makemigration --name add-adminuser-telegram-id
+pnpm makemigration --name add-adminuser-external-user-id
 pnpm migrate:local
 ```
 
-After the migration, set `telegramId` on the admin user record to the numeric Telegram user id that should be allowed to use the bot.
+When a Telegram account is linked, the field stores data like this:
 
-If your field is named differently, configure `adminUserTelegramIdField` option (see below).
+```json
+{
+  "telegram": "123456789"
+}
+```
+
+If your field is named differently, configure `chatExternalIdsField` on the Agent plugin.
 
 Register the adapter in the Agent plugin:
 
@@ -80,31 +96,41 @@ new AdminForthAgent({
       //diff-add
       botToken: process.env.TELEGRAM_BOT_TOKEN as string,
       //diff-add
-      webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
+      botUsername: process.env.TELEGRAM_BOT_USERNAME,
       //diff-add
-      adminUserTelegramIdField: 'telegramId',
+      webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
       //diff-add
     }),
     //diff-add
   ],
+  // optional, defaults to 'externalUserId'
+  //diff-add
+  chatExternalIdsField: 'externalUserId',
 });
 ```
+
+When `botUsername` is configured, the Agent plugin adds **Chat Surfaces** to the user menu settings pages. A logged-in AdminForth user can open that page and click **Connect**. The Telegram adapter returns a URL like:
+
+```txt
+https://t.me/<botUsername>?start=<link-token>
+```
+
+After the user starts the bot with that token, AdminForth stores the Telegram user id in `externalUserId.telegram`. The same page also supports reconnecting and disconnecting the Telegram account.
+
+You can also prefill the JSON field manually if you do not want to use the connect page.
 
 ## Adapter options
 
 All options for `new TelegramChatSurfaceAdapter(options)`:
 
 - `botToken` (string, required) — Telegram bot token from BotFather.
+- `botUsername` (string, optional) — bot username used to build the account-link URL for the **Chat Surfaces** settings page.
 - `webhookSecret` (string, optional) — secret token configured in Telegram `setWebhook`.
 - `streamingMode` (`draft` | `typing` | `off`, optional) — streaming behavior for Telegram responses.
   - Default: `draft`.
   - Note: Telegram drafts work only in private chats. In non-private chats the adapter automatically falls back from `draft` to `typing`.
 - `draftUpdateIntervalMs` (number, optional) — throttle for draft preview updates.
   - Default: `650`.
-- `adminUserTelegramIdField` (string, optional) — admin user field that stores Telegram user id.
-  - Default: `telegramId`.
-- `adminUserResourceId` (string, optional) — AdminForth resource id that stores admin users.
-  - Default: `adminuser`.
 
 The plugin exposes this webhook endpoint:
 

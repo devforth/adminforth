@@ -289,30 +289,27 @@ The plugin adds a chat surface to the admin UI, keeps session history per admin 
 By default, the Agent plugin exposes a chat surface inside the AdminForth admin UI.
 If you want to talk to the same agent from external chat products (Telegram, etc.), connect a **chat surface adapter**.
 
-The adapter is registered in the plugin config via `chatSurfaceAdapters` and the plugin exposes an HTTP webhook endpoint for it.
-
-Example (Telegram):
+Register adapters through `chatSurfaceAdapters`:
 
 ```ts
 import AdminForthAgent from '@adminforth/agent';
-import TelegramChatSurfaceAdapter from '@adminforth/chat-surface-adapter-telegram';
+import SomeChatSurfaceAdapter from '@adminforth/some-chat-surface-adapter';
 
 new AdminForthAgent({
   // ...modes, sessionResource, turnResource, etc.
   chatSurfaceAdapters: [
-    new TelegramChatSurfaceAdapter({
-      botToken: process.env.TELEGRAM_BOT_TOKEN as string,
-      webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
-      // optional
-      adminUserTelegramIdField: 'telegramId',
+    new SomeChatSurfaceAdapter({
+      // adapter-specific options
     }),
   ],
 });
 ```
 
-Next steps (Telegram bot setup, webhook URL, required `telegramId` field on the admin user resource, and all adapter options) are documented here:
+When an adapter supports account linking, the Agent plugin adds a user menu settings page named **Chat Surfaces** where logged-in users can connect, reconnect, and disconnect external accounts.
 
-- Telegram Chat Surface Adapter: `/docs/tutorial/Adapters/chat-surface-adapter-telegram`
+For Telegram setup, including required user fields, webhook URL, environment variables, and adapter options, see:
+
+- [Telegram Chat Surface Adapter](https://adminforth.dev/docs/tutorial/Adapters/chat-surface-adapter-telegram/)
 
 ## Debugging agent turns
 
