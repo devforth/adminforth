@@ -7,6 +7,7 @@ import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
 const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
+const YOUTUBE_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/4tB8uzY__uk';
 
 
 const images = [
@@ -202,6 +203,20 @@ export default function Home(): JSX.Element {
       description="OpenSource Tailwind Admin Panel extendable with Vue3 and typescript!">
       <HomepageHeader />
       <main>
+
+        <div className={styles.videoSection}>
+          <div className={styles.videoWrapper}>
+            <iframe
+              className={styles.videoFrame}
+              src={YOUTUBE_VIDEO_EMBED_URL}
+              title="AdminForth overview video"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
 
 
       <Heading as="h2" className="hero__title text--center">

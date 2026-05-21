@@ -45,6 +45,25 @@
   background: #000;
 }
 
+.videoSection {
+  width: min(100% - 2rem, 960px);
+  margin: 2rem auto 1.5rem;
+}
+
+.videoWrapper {
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #000;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+}
+
+.videoFrame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
 .cardsWrapper {
   display: grid;
   grid-template-columns: repeat(2, minmax(300px, 500px));
