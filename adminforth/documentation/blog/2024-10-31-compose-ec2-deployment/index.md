@@ -210,6 +210,8 @@ resource "null_resource" "sync_files_and_run" {
   provisioner "local-exec" {
     # heredoc syntax
     command = <<-EOF
+    set -eu
+
     rsync -t -av \
       --delete \
       --exclude 'node_modules' \
