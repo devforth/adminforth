@@ -232,6 +232,8 @@ resource "null_resource" "wait_ssh" {
   provisioner "local-exec" {
     command = <<EOT
     bash -c '
+    set -eu
+
     for i in {1..10}; do
       nc -zv ${aws_instance.ec2_instance.public_ip} 22 && echo "SSH is ready!" && exit 0
       sleep 5
@@ -258,7 +260,7 @@ resource "null_resource" "ansible_provision" {
     interpreter = ["/bin/bash", "-c"]
 
     command = <<-EOT
-      set -e
+      set -eu
       ANSIBLE_HOST_KEY_CHECKING=False ansible-galaxy collection install community.kubernetes
       ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${path.module}/../ansible/inventory.ini ${local.ansible_dir}/playbook.yaml 
     EOT
@@ -294,7 +296,7 @@ resource "null_resource" "docker_build_and_push" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      set -e
+      set -eu
       unset DOCKER_HOST
 
       REPO_URL="${aws_ecr_repository.app_repo.repository_url}"
