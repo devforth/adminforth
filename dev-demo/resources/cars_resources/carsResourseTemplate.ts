@@ -263,6 +263,20 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       }),
       new ForeignInlineListPlugin({
         foreignResourceId: 'cars_description_images',
+        modifyTableResourceConfig(resourceConfig) {
+          return {
+            ...resourceConfig,
+            options: {
+              ...resourceConfig.options,
+              allowedActions: {
+                ...resourceConfig.options?.allowedActions,
+                create: false,
+                edit: false,
+                delete: false,
+              }
+            }
+          }
+        },
       }),
       new QuickFiltersPlugin({
         filters: [
