@@ -36,7 +36,7 @@ export interface IConfigValidator {
 
 export interface IAdminForthHttpResponse {
     setHeader: (key: string, value: string) => void,
-    setStatus: (code: number, message: string) => void,
+    setStatus: (code: number, message?: string) => void,
     blobStream: () => Writable,
 };
 
