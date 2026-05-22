@@ -331,19 +331,49 @@ export default function Home(): JSX.Element {
             <Heading as="h2" className={styles.featuredOnTitle}>
               Featured on
             </Heading>
-            <a
-              href="https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework"
-              target="_blank"
-              rel="noopener"
-              className={styles.featuredOnLink}
-            >
-              <img
-                src="https://auraplusplus.com/images/badges/featured-on-light.svg"
-                alt="Featured on Aura++"
-                width="265"
-                height="58"
-              />
-            </a>
+            <div className={styles.featuredOnBadges}>
+              <a
+                href="https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://auraplusplus.com/images/badges/featured-on-light.svg"
+                  alt="Featured on Aura++"
+                  width="265"
+                  height="58"
+                />
+              </a>
+              <a
+                href="https://peerpush.net/p/adminforth"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://peerpush.net/p/adminforth/badge.png"
+                  alt="AdminForth on PeerPush"
+                  width="230"
+                />
+              </a>
+              <a
+                href="https://openhunts.com"
+                target="_blank"
+                rel="noopener"
+                title="OpenHunts Club"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://cdn.openhunts.com/badges/club.webp"
+                  alt="OpenHunts Club Member"
+                  width="195"
+                />
+              </a>
+            </div>
           </div>
         </section>
 
