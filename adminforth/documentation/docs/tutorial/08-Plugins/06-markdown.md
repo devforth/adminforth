@@ -36,12 +36,11 @@ plugins: [
 
 Here is how it looks in the create view:
 
-![alt text](markdown.png)
+![alt text](markdown-edit.png)
 
 Here is how it looks in show view:
 
-![alt text](markdown-show1.png)
-![alt text](markdown-show2.png)
+![alt text](markdown-show-1.png)
 
 ### Images in Markdown
 
@@ -179,6 +178,8 @@ plugins: [
 
 ### Markdown Top Panel
 The Markdown plugin also provides a convenient top panel with formatting buttons, allowing users to quickly apply Markdown syntax without typing it manually.
+
+![alt text](markdown-top-panel.png)
 
 By default, the toolbar includes common formatting actions such as:
 - Bold
