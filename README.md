@@ -16,7 +16,7 @@
 <br/>
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/56867ab0-5c2b-42f1-8bac-e45898092ffa"
+  <img src="https://github.com/user-attachments/assets/775c527d-65c3-4d9c-bb0c-3692462f2818"
  alt="AdminForth Agent" width="90%">
 </div>
 
