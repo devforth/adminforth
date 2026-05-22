@@ -326,6 +326,27 @@ export default function Home(): JSX.Element {
         
         <HomepageFeatures />
 
+        <section className={styles.featuredOnSection}>
+          <div className="container">
+            <Heading as="h2" className={styles.featuredOnTitle}>
+              Featured on
+            </Heading>
+            <a
+              href="https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework"
+              target="_blank"
+              rel="noopener"
+              className={styles.featuredOnLink}
+            >
+              <img
+                src="https://auraplusplus.com/images/badges/featured-on-light.svg"
+                alt="Featured on Aura++"
+                width="265"
+                height="58"
+              />
+            </a>
+          </div>
+        </section>
+
       </main>
 
     </Layout>

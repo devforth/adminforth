@@ -76,3 +76,18 @@
   }
 
 }
+
+.featuredOnSection {
+  padding: 3rem 0 4rem;
+  text-align: center;
+}
+
+.featuredOnTitle {
+  margin-bottom: 1.5rem;
+}
+
+.featuredOnLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
