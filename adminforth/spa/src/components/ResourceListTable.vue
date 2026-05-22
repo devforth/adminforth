@@ -352,8 +352,8 @@
         :disableTogleOfSelectedItem="true"  
         :style="{ width: selectDynamicWidth }"
         :placeholder="pageSizeInternal?.toString()"        
-        class="text-sm min-w-20" 
-        classesForInput="af-page-size-button h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm rounded cursor-pointer af-button-shadow bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder rounded-default"
+        class="text-sm min-w-20 af-page-size-button" 
+        classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm rounded cursor-pointer af-button-shadow bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder rounded-default"
       /> 
     </div>
   </div>
