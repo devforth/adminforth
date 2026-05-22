@@ -373,6 +373,34 @@ export default function Home(): JSX.Element {
                   width="195"
                 />
               </a>
+              <a
+                href="https://toolfio.com"
+                target="_blank"
+                rel="dofollow"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://toolfio.com/toolfio-light-badge.png"
+                  alt="Featured on Toolfio"
+                  width="200"
+                  height="54"
+                />
+              </a>
+              <a
+                href="https://earlyhunt.com/project/adminforth"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://earlyhunt.com/badges/earlyhunt-badge-light.svg"
+                  alt="Featured on EarlyHunt"
+                  width="265"
+                  height="58"
+                />
+              </a>
             </div>
           </div>
         </section>

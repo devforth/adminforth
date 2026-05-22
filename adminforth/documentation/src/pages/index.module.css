@@ -91,7 +91,7 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 267px));
   gap: 1.5rem;
   justify-content: center;
-  max-width: 849px;
+  max-width: 1132px;
   margin: 0 auto;
 }
 
