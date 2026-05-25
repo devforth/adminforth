@@ -149,6 +149,10 @@ export async function callApi({path, method, body, headers, silentError = false,
     } 
     return await r.json();
   } catch(e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      return null;
+    }
+
     // if it is internal error, say to user
     if (e instanceof TypeError && e.message === 'Failed to fetch') {
       // this is a network error
@@ -158,7 +162,7 @@ export async function callApi({path, method, body, headers, silentError = false,
       return null;
     }
 
-    if (!silentError && !(e instanceof DOMException && e.name === 'AbortError')) {
+    if (!silentError) {
       adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
     }
     console.error(`error in callApi ${path}`, e);
