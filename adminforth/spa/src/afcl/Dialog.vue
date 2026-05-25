@@ -49,6 +49,7 @@
         v-bind="button.options"
         :class="{ 'ms-3': buttonIndex > 0 }"
         @click="button.onclick(dialog)"
+        :mode="button.options?.mode || 'primary'"
       >
         {{ button.label }}
       </Button>
