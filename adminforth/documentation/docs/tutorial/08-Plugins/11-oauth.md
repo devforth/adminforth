@@ -6,75 +6,146 @@ slug: /tutorial/Plugins/oauth
 
 # OAuth Authentication
 
-The OAuth plugin enables OAuth2-based authentication in AdminForth, allowing users to sign in using their Google, GitHub, Facebook or other OAuth2 provider accounts. 
-Optionaly, you can also enable open signup for new users and assign some default attributes, for example low-permission role for users who will sign up using OAuth.
+The OAuth plugin enables OAuth2 sign-in and connected external accounts in AdminForth. Users can sign in with Google, GitHub, Facebook, Telegram, or another OAuth2 provider. Logged-in users can also connect additional provider accounts from **Settings -> Connected Accounts**.
+
+OAuth should be configured with an external identities resource. That resource stores stable provider identity data (`provider`, `subject`) and optional profile fields. Agent chat surfaces use the same connected accounts to resolve Telegram, Slack, Teams, or other external chat users.
+
+:::warning
+Using OAuth without `externalIdentityResource` is deprecated. Configure an external identities resource for new projects.
+:::
 
 ## Installation
 
-To install the plugin:
+Install the plugin and at least one OAuth adapter:
 
 ```bash
 pnpm install @adminforth/oauth --save
-pnpm install @adminforth/google-oauth-adapter --save  # for Google OAuth
+pnpm install @adminforth/google-oauth-adapter --save
+```
+
+If you want Agent chat surfaces, install the OAuth adapter for the same provider as the chat surface. For example, Telegram chat surface support requires both:
+
+```bash
+pnpm install @adminforth/chat-surface-adapter-telegram --save
+pnpm install @adminforth/telegram-oauth-adapter --save
+```
+
+## External Identities Resource
+
+Create a resource that stores connected OAuth accounts. The default field names are:
+
+- `adminUserId` — links the external identity to the AdminForth user
+- `provider` — adapter class name, for example `AdminForthAdapterGoogleOauth2`
+- `subject` — stable provider account id
+- `externalUserId` — chat-specific user id, such as Telegram ID, Slack ID, or Teams ID
+
+The defaults can be overridden in plugin options when your schema uses different field names.
+
+### Migration example (Prisma)
+
+If you're using Prisma, add the model to your `schema.prisma`:
+
+```prisma title="./schema.prisma"
+model AdminUserExternalIdentity {
+  id             String   @id @default(uuid())
+  adminUserId    String
+  provider       String
+  subject        String
+  externalUserId String?
+  email          String?
+  phone          String?
+  fullName       String?
+  avatarUrl      String?
+  meta           Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([provider, subject])
+  @@index([adminUserId])
+}
+```
+
+Then create and apply the migration (example commands from `dev-demo`):
+
+```bash
+pnpm makemigration --name add-admin-user-external-identities ; pnpm migrate:local
+```
+
+```ts title="./resources/adminUserExternalIdentities.ts"
+import { AdminForthDataTypes, type AdminForthResourceInput } from 'adminforth';
+
+export default {
+  dataSource: 'sqlite',
+  table: 'AdminUserExternalIdentity',
+  resourceId: 'admin_user_external_identities',
+  label: 'Admin User External Identities',
+  columns: [
+    { name: 'id', type: AdminForthDataTypes.STRING, primaryKey: true },
+    { name: 'adminUserId', type: AdminForthDataTypes.STRING, required: true },
+    { name: 'provider', type: AdminForthDataTypes.STRING, required: true },
+    { name: 'subject', type: AdminForthDataTypes.STRING, required: true },
+    { name: 'externalUserId', type: AdminForthDataTypes.STRING },
+    { name: 'email', type: AdminForthDataTypes.STRING },
+    { name: 'phone', type: AdminForthDataTypes.STRING },
+    { name: 'fullName', type: AdminForthDataTypes.STRING },
+    { name: 'avatarUrl', type: AdminForthDataTypes.STRING },
+    { name: 'meta', type: AdminForthDataTypes.JSON },
+  ],
+} satisfies AdminForthResourceInput;
 ```
 
 ## Configuration
 
-This section provides a step-by-step guide to configure the OAuth plugin for Google authentication. See [OAuth2 Providers](#oauth2-providers) for other providers.
-
-### 1. OAuth Provider Setup (Google Example)
-
-You need to get the client ID and client secret from your OAuth2 provider.
-
-1. Go to the [Google Cloud Console](https://console.cloud.google.com) and log in.
-2. Create a new project or select an existing one
-3. Go to `APIs & Services` → `Credentials`
-4. Create credentials for OAuth 2.0 client IDs
-5. Select application type: "Web application"
-6. Add your application's name and redirect URI
-7. In "Authorized redirect URIs", add next URI: `https://your-domain/oauth/callback`, `http://localhost:3500/oauth/callback`. Please remember to include BASE_URL in the URI if you are using it in project e.g. `https://your-domain/base/oauth/callback` 
-8. Add the credentials to your `.env` file:
-
-```bash
-GOOGLE_OAUTH_CLIENT_ID=your_google_client_id
-GOOGLE_OAUTH_CLIENT_SECRET=your_google_client_secret
-```
-
-
-### 2. Plugin Configuration
-
-Configure the plugin in your user resource file:
+This example configures Google OAuth. See [OAuth2 Providers](#oauth2-providers) for provider setup details.
 
 ```typescript title="./resources/adminuser.ts"
 import OAuthPlugin from '@adminforth/oauth';
 import AdminForthAdapterGoogleOauth2 from '@adminforth/google-oauth-adapter';
 
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      GOOGLE_OAUTH_CLIENT_ID: string;
-      GOOGLE_OAUTH_CLIENT_SECRET: string;
-    }
-  }
-}
-
-// ... existing resource configuration ...
-
 plugins: [
   new OAuthPlugin({
+    emailField: 'email',
+    externalIdentityResource: {
+      resourceId: 'admin_user_external_identities',
+      emailField: 'email',
+      phoneField: 'phone',
+      fullNameField: 'fullName',
+      avatarUrlField: 'avatarUrl',
+      metaField: 'meta',
+    },
     adapters: [
       new AdminForthAdapterGoogleOauth2({
-        clientID: process.env.GOOGLE_OAUTH_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+        clientID: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       }),
     ],
-    
-    emailField: 'email',  // Required: field that stores the user's email
   }),
 ]
 ```
 
-### 3. Email Confirmation
+`adminUserIdField`, `providerField`, `subjectField`, and `externalUserIdField` default to `adminUserId`, `provider`, `subject`, and `externalUserId`. Configure them only when your resource uses different field names.
+
+### Google Provider Setup
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com) and log in.
+2. Create a new project or select an existing one.
+3. Go to `APIs & Services` -> `Credentials`.
+4. Create credentials for OAuth 2.0 client IDs.
+5. Select application type: "Web application".
+6. Add your application's name and redirect URI.
+7. In "Authorized redirect URIs", add `https://your-domain/oauth/callback` and `http://localhost:3500/oauth/callback`. Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
+8. Add the credentials to your `.env` file:
+
+```bash
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+## Connected Accounts
+
+When `externalIdentityResource` is configured, AdminForth adds **Connected Accounts** to the user settings menu. A logged-in user can connect additional external accounts there. This is also how Agent chat surfaces identify external users: for example, a Telegram bot message is matched to the AdminForth user through the Telegram OAuth identity stored in the external identities resource.
+
+## Email Confirmation
 
 The plugin supports automatic email confirmation for OAuth users. To enable this:
 
@@ -108,7 +179,7 @@ When using OAuth:
 - Existing users will have their email marked as confirmed upon successful OAuth login
 - The `email_confirmed` field must be a boolean type
 
-### 4. Open Signup
+## Open Signup
 
 By default, users must exist in the system before they can log in with OAuth. You can enable automatic user creation for new OAuth users with the `openSignup` option:
 
@@ -124,7 +195,7 @@ new OAuthPlugin({
 }),
 ```
 
-### 5. UI Customization
+## UI Customization
 
 You can customize the UI of the OAuth login buttons by using the `iconOnly` and `pill` options.
 
@@ -158,8 +229,8 @@ pnpm install @adminforth/facebook-oauth-adapter --save
 7. Add the credentials to your `.env` file:
 
 ```bash
-FACEBOOK_OAUTH_CLIENT_ID=your_facebook_client_id
-FACEBOOK_OAUTH_CLIENT_SECRET=your_facebook_client_secret
+FACEBOOK_CLIENT_ID=your_facebook_client_id
+FACEBOOK_CLIENT_SECRET=your_facebook_client_secret
 ```
 
 Add the adapter to your plugin configuration:
@@ -172,9 +243,9 @@ plugins: [
   new OAuthPlugin({
     adapters: [
       ...
-      new AdminForthAdapterFacebookOauth2({
-        clientID: process.env.FACEBOOK_OAUTH_CLIENT_ID,
-        clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
+      new AdminForthAdapte# OAuth AuthenticationrFacebookOauth2({
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       }),
     ],
   }),
@@ -197,8 +268,8 @@ pnpm install @adminforth/github-oauth-adapter --save
 4. Add the credentials to your `.env` file:
 
 ```bash
-GITHUB_OAUTH_CLIENT_ID=your_facebook_client_id
-GITHUB_OAUTH_CLIENT_SECRET=your_facebook_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
 ```
 
 Add the adapter to your plugin configuration:
@@ -212,13 +283,58 @@ plugins: [
     adapters: [
       ...
       new AdminForthAdapterGithubOauth2({
-        clientID: process.env.GITHUB_OAUTH_CLIENT_ID,
-        clientSecret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
       }),
     ],
   }),
 ]
 ```
+
+### Telegram Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/telegram-oauth-adapter --save
+```
+
+Add the credentials to your `.env` file:
+
+```bash
+TELEGRAM_CLIENT_ID=your_telegram_client_id
+TELEGRAM_CLIENT_SECRET=your_telegram_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```ts
+import OAuthPlugin from '@adminforth/oauth';
+import TelegramOauthAdapter from '@adminforth/telegram-oauth-adapter';
+
+new OAuthPlugin({
+  emailField: 'email',
+  externalIdentityResource: {
+    resourceId: 'admin_user_external_identities',
+    phoneField: 'phone',
+    fullNameField: 'fullName',
+    avatarUrlField: 'avatarUrl',
+    metaField: 'meta',
+  },
+  adapters: [
+    new TelegramOauthAdapter({
+      clientID: process.env.TELEGRAM_CLIENT_ID as string,
+      clientSecret: process.env.TELEGRAM_CLIENT_SECRET as string,
+      redirectUri: 'https://example.com/oauth/callback',
+      scopes: ['openid', 'profile', 'phone'],
+    }),
+  ],
+});
+```
+
+Register the same `redirectUri` in BotFather under **Login Widget → Redirect URI**.
+
+If you use `@adminforth/chat-surface-adapter-telegram`, users must connect Telegram from **Settings → Connected Accounts** before the Telegram bot can identify them.
 
 ### Kaycloack Adapter
 
@@ -281,8 +397,8 @@ pnpm install @adminforth/microsoft-oauth-adapter --save
 7. Add the credentials to your `.env` file:
 
 ```bash
-MICROSOFT_OAUTH_CLIENT_ID=your_application_id
-MICROSOFT_OAUTH_CLIENT_SECRET=your_microsoft_client_secret
+MICROSOFT_CLIENT_ID=your_application_id
+MICROSOFT_CLIENT_SECRET=your_microsoft_client_secret
 ```
 
 Add the adapter to your plugin configuration:
@@ -320,8 +436,8 @@ pnpm install @adminforth/twitch-oauth-adapter --save
 5. Add the credentials to your `.env` file:
 
 ```bash
-TWITCH_OAUTH_CLIENT_ID=your_twitch_client_id
-TWITCH_OAUTH_CLIENT_SECRET=your_twitch_client_secret
+TWITCH_CLIENT_ID=your_twitch_client_id
+TWITCH_CLIENT_SECRET=your_twitch_client_secret
 ```
 
 Add the adapter to your plugin configuration:
@@ -335,8 +451,8 @@ plugins: [
     adapters: [
       ...
       new AdminForthAdapterTwitchOauth2({
-        clientID: process.env.TWITCH_OAUTH_CLIENT_ID,
-        clientSecret: process.env.TWITCH_OAUTH_CLIENT_SECRET,
+        clientID: process.env.TWITCH_CLIENT_ID,
+        clientSecret: process.env.TWITCH_CLIENT_SECRET,
       }),
     ],
   }),
