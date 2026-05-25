@@ -7,10 +7,13 @@ sidebar_position: 8
 
 # Telegram Chat Surface Adapter
 
-Chat surface adapters connect external chat products to the [Agent plugin](/docs/tutorial/Plugins/agent/).
+Chat surface adapters connect external chat products to the [Agent plugin](/docs/tutorial/Plugins/agent/). They only receive and send chat messages. User linking is handled through OAuth connected accounts.
+
+For Telegram you need both adapters:
 
 ```bash
 pnpm i @adminforth/chat-surface-adapter-telegram
+pnpm i @adminforth/telegram-oauth-adapter
 ```
 
 Create a Telegram bot with BotFather and add the token to `.env`:
@@ -23,57 +26,62 @@ TELEGRAM_WEBHOOK_SECRET=your_random_secret
 
 The webhook secret confirms that the request came through Telegram.
 
-## Admin user field `externalUserId`
+## External identity `externalUserId`
 
-External chat accounts are linked by the Agent plugin, not by the Telegram adapter directly. The plugin stores linked external user ids in a JSON field on the AdminForth auth user resource.
+External chat accounts are resolved through OAuth connected accounts. The Telegram OAuth adapter writes the Telegram user id into `externalUserId` on the external identities resource. The Agent plugin then uses that field to map incoming Telegram messages to AdminForth users.
 
-By default this field is named `externalUserId`. Add it to your `adminuser` resource:
+Add the field to your external identities resource:
 
 ```ts
 {
   name: 'externalUserId',
-  type: AdminForthDataTypes.JSON,
+  type: AdminForthDataTypes.STRING,
 },
 ```
 
 Also add the matching column to your database schema and run a migration. For example, with Prisma and PostgreSQL:
 
 ```prisma title="schema.prisma"
-model adminuser {
-  // existing fields
-  externalUserId Json?
-}
-```
-
-For Prisma SQLite, store the same field as text:
-
-```prisma title="schema.prisma"
-model adminuser {
+model AdminUserExternalIdentity {
   // existing fields
   externalUserId String?
 }
 ```
 
-AdminForth should still define this resource column as `AdminForthDataTypes.JSON`; the SQLite connector serializes it into the text column and parses it back.
-
 Then create and apply the migration using your app's migration scripts:
 
 ```bash
-pnpm makemigration --name add-adminuser-external-user-id
+pnpm makemigration --name add-external-identity-external-user-id
 pnpm migrate:local
 ```
 
-When a Telegram account is linked, the field stores data like this:
+Configure the OAuth plugin with Telegram OAuth:
 
-```json
-{
-  "telegram": "123456789"
-}
+```ts title="./resources/adminuser.ts"
+import OAuthPlugin from '@adminforth/oauth';
+import TelegramOauthAdapter from '@adminforth/telegram-oauth-adapter';
+
+new OAuthPlugin({
+  emailField: 'email',
+  externalIdentityResource: {
+    resourceId: 'admin_user_external_identities',
+    phoneField: 'phone',
+    fullNameField: 'fullName',
+    avatarUrlField: 'avatarUrl',
+    metaField: 'meta',
+  },
+  adapters: [
+    new TelegramOauthAdapter({
+      clientID: process.env.TELEGRAM_CLIENT_ID as string,
+      clientSecret: process.env.TELEGRAM_CLIENT_SECRET as string,
+      redirectUri: process.env.TELEGRAM_OAUTH_REDIRECT_URI as string,
+      scopes: ['openid', 'profile', 'phone'],
+    }),
+  ],
+});
 ```
 
-If your field is named differently, configure `chatExternalIdsField` on the Agent plugin.
-
-Register the adapter in the Agent plugin:
+Then register the Telegram chat surface adapter in the Agent plugin:
 
 ```ts
 import AdminForthAgent from '@adminforth/agent';
@@ -103,28 +111,35 @@ new AdminForthAgent({
     }),
     //diff-add
   ],
-  // optional, defaults to 'externalUserId'
   //diff-add
-  chatExternalIdsField: 'externalUserId',
+  chatExternalIdentityResource: {
+    //diff-add
+    resourceId: 'admin_user_external_identities',
+    //diff-add
+    surfaces: {
+      //diff-add
+      telegram: {
+        //diff-add
+        provider: 'AdminForthAdapterTelegramOauth2',
+        //diff-add
+      },
+      //diff-add
+    },
+    //diff-add
+  },
 });
 ```
 
-When `botUsername` is configured, the Agent plugin adds **Chat Surfaces** to the user menu settings pages. A logged-in AdminForth user can open that page and click **Connect**. The Telegram adapter returns a URL like:
+External chat users are resolved through OAuth connected accounts. Configure OAuth `externalIdentityResource` and Agent `chatExternalIdentityResource`, then let users connect Telegram from **Connected Accounts**.
 
-```txt
-https://t.me/<botUsername>?start=<link-token>
-```
-
-After the user starts the bot with that token, AdminForth stores the Telegram user id in `externalUserId.telegram`. The same page also supports reconnecting and disconnecting the Telegram account.
-
-You can also prefill the JSON field manually if you do not want to use the connect page.
+The `provider` value must match the Telegram OAuth adapter class name. Users must connect Telegram in **Settings -> Connected Accounts** before the Telegram bot can identify them.
 
 ## Adapter options
 
 All options for `new TelegramChatSurfaceAdapter(options)`:
 
 - `botToken` (string, required) — Telegram bot token from BotFather.
-- `botUsername` (string, optional) — bot username used to build the account-link URL for the **Chat Surfaces** settings page.
+- `botUsername` (string, optional) — bot username. OAuth connected accounts are used for user linking.
 - `webhookSecret` (string, optional) — secret token configured in Telegram `setWebhook`.
 - `streamingMode` (`draft` | `typing` | `off`, optional) — streaming behavior for Telegram responses.
   - Default: `draft`.
