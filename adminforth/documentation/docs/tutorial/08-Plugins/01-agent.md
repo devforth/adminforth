@@ -292,7 +292,7 @@ If you want to talk to the same agent from external chat products (Telegram, Sla
 - a **chat surface adapter** that receives messages from the external chat product
 - an **OAuth adapter** for the same provider so users can connect that external account in **Connected Accounts**
 
-For example, Telegram Agent access needs both `@adminforth/chat-surface-adapter-telegram` and `@adminforth/telegram-oauth-adapter`.
+For example, Telegram Agent access needs both `@adminforth/chat-surface-adapter-telegram` and `@adminforth/oauth-adapter-telegram`.
 
 Register adapters through `chatSurfaceAdapters`:
 

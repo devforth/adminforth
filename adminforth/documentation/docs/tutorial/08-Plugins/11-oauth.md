@@ -20,14 +20,14 @@ Install the plugin and at least one OAuth adapter:
 
 ```bash
 pnpm install @adminforth/oauth --save
-pnpm install @adminforth/google-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-google --save
 ```
 
 If you want Agent chat surfaces, install the OAuth adapter for the same provider as the chat surface. For example, Telegram chat surface support requires both:
 
 ```bash
 pnpm install @adminforth/chat-surface-adapter-telegram --save
-pnpm install @adminforth/telegram-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-telegram --save
 ```
 
 ## External Identities Resource
@@ -100,7 +100,7 @@ This example configures Google OAuth. See [OAuth2 Providers](#oauth2-providers) 
 
 ```typescript title="./resources/adminuser.ts"
 import OAuthPlugin from '@adminforth/oauth';
-import AdminForthAdapterGoogleOauth2 from '@adminforth/google-oauth-adapter';
+import AdminForthAdapterGoogleOauth2 from '@adminforth/oauth-adapter-google';
 
 plugins: [
   new OAuthPlugin({
@@ -216,7 +216,7 @@ new OAuthPlugin({
 Install Adapter:
 
 ```
-pnpm install @adminforth/facebook-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-facebook --save
 ```
 
 
@@ -236,7 +236,7 @@ FACEBOOK_CLIENT_SECRET=your_facebook_client_secret
 Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterFacebookOauth2 from '@adminforth/facebook-oauth-adapter';
+import AdminForthAdapterFacebookOauth2 from '@adminforth/oauth-adapter-facebook';
 
 // ... existing resource configuration ...
 plugins: [
@@ -257,7 +257,7 @@ plugins: [
 Install Adapter:
 
 ```
-pnpm install @adminforth/github-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-github --save
 ```
 
 
@@ -275,7 +275,7 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
 Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterGithubOauth2 from '@adminforth/github-oauth-adapter';
+import AdminForthAdapterGithubOauth2 from '@adminforth/oauth-adapter-github';
 
 // ... existing resource configuration ...
 plugins: [
@@ -296,7 +296,7 @@ plugins: [
 Install Adapter:
 
 ```
-pnpm install @adminforth/telegram-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-telegram --save
 ```
 
 Add the credentials to your `.env` file:
@@ -310,7 +310,7 @@ Add the adapter to your plugin configuration:
 
 ```ts
 import OAuthPlugin from '@adminforth/oauth';
-import TelegramOauthAdapter from '@adminforth/telegram-oauth-adapter';
+import TelegramOauthAdapter from '@adminforth/oauth-adapter-telegram';
 
 new OAuthPlugin({
   emailField: 'email',
@@ -341,7 +341,7 @@ If you use `@adminforth/chat-surface-adapter-telegram`, users must connect Teleg
 Install Adapter:
 
 ```
-pnpm install @adminforth/keycloak-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-keycloak --save
 ```
 
 If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](/blog/keycloak-setup-example).
@@ -358,7 +358,7 @@ KEYCLOAK_REALM=your_keycloak_realm
 2. Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterKeycloakOauth2 from '@adminforth/keycloak-oauth-adapter';
+import AdminForthAdapterKeycloakOauth2 from '@adminforth/oauth-adapter-keycloak';
 
 // ... existing resource configuration ...
 plugins: [
@@ -383,7 +383,7 @@ plugins: [
 Install Adapter:
 
 ```
-pnpm install @adminforth/microsoft-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-microsoft --save
 ```
 
 
@@ -404,7 +404,7 @@ MICROSOFT_CLIENT_SECRET=your_microsoft_client_secret
 Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterMicrosoftOauth2 from '@adminforth/microsoft-oauth-adapter';
+import AdminForthAdapterMicrosoftOauth2 from '@adminforth/oauth-adapter-microsoft';
 
 // ... existing resource configuration ...
 plugins: [
@@ -426,7 +426,7 @@ plugins: [
 Install Adapter:
 
 ```
-pnpm install @adminforth/twitch-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-twitch --save
 ```
 
 1. Go to the [Twitch dashboard](https://dev.twitch.tv/console/)
@@ -443,7 +443,7 @@ TWITCH_CLIENT_SECRET=your_twitch_client_secret
 Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterTwitchOauth2 from '@adminforth/twitch-oauth-adapter';
+import AdminForthAdapterTwitchOauth2 from '@adminforth/oauth-adapter-twitch';
 
 // ... existing resource configuration ...
 plugins: [
@@ -461,18 +461,18 @@ plugins: [
 
 ### Need custom provider?
 
-Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-google-oauth-adapter) and adjust it to your needs. 
+Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-oauth-adapter-google) and adjust it to your needs. 
 
-This is really easy, you have to change less then 10 lines of code in this [file](https://github.com/devforth/adminforth-google-oauth-adapter/blob/main/index.ts)
+This is really easy, you have to change less then 10 lines of code in this [file](https://github.com/devforth/adminforth-oauth-adapter-google/blob/main/index.ts)
 
 Then just publish it to npm and install it in your project.
 
 
 Links to adapters:
-[Google](https://github.com/devforth/adminforth-google-oauth-adapter)
-[GitHub](https://github.com/devforth/adminforth-github-oauth-adapter)
-[Facebook](https://github.com/devforth/adminforth-facebook-oauth-adapter)
-[Keycloak](https://github.com/devforth/adminforth-keycloak-oauth-adapter)
+[Google](https://github.com/devforth/adminforth-oauth-adapter-google)
+[GitHub](https://github.com/devforth/adminforth-oauth-adapter-github)
+[Facebook](https://github.com/devforth/adminforth-oauth-adapter-facebook)
+[Keycloak](https://github.com/devforth/adminforth-oauth-adapter-keycloak)
 
 
 ## Fill user full name
