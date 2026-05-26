@@ -131,6 +131,11 @@ export interface FrontendAPIInterface {
 
     menu: {
         /**
+         * Refreshes the menu tree and frontend configuration by fetching the latest backend config.
+         */
+        refresh(): Promise<void>;
+
+        /**
          * Refreshes the badges in the menu, by recalling the badge function for each menu item
          */
         refreshMenuBadges(): void;

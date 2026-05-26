@@ -469,7 +469,8 @@ class CodeInjector implements ICodeInjector {
     }
 
     registerCustomPages(this.adminforth.config);
-    collectAssetsFromMenu(this.adminforth.config.menu);
+    const menuWithContributions = await this.adminforth.getMenuWithContributions();
+    collectAssetsFromMenu(menuWithContributions);
     registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
@@ -739,10 +740,10 @@ class CodeInjector implements ICodeInjector {
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
-    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
+    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(menuWithContributions);
     if (!homepageMenuItem) {
       // find first item with path or resourceId. If we face a menu item with children earlier then path/resourceId, we should search in children
-      homepageMenuItem = await findFirstMenuItemWithResource(this.adminforth.config.menu);
+      homepageMenuItem = await findFirstMenuItemWithResource(menuWithContributions);
     }
     if (!homepageMenuItem) {
       throw new Error('No homepage found in menu and no menu item with path/resourceId found. AdminForth can not generate routes');
@@ -750,7 +751,7 @@ class CodeInjector implements ICodeInjector {
 
     let homePagePath = homepageMenuItem.path || `/resource/${homepageMenuItem.resourceId}`;
     if (!homePagePath) {
-      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+      homePagePath=menuWithContributions.filter((mi)=>mi.path)[0]?.path || `/resource/${menuWithContributions.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
 
     routes += `{
