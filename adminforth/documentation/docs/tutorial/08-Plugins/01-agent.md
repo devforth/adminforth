@@ -287,25 +287,41 @@ The plugin adds a chat surface to the admin UI, keeps session history per admin 
 ## Chat surfaces (Telegram, etc.)
 
 By default, the Agent plugin exposes a chat surface inside the AdminForth admin UI.
-If you want to talk to the same agent from external chat products (Telegram, etc.), connect a **chat surface adapter**.
+If you want to talk to the same agent from external chat products (Telegram, Slack, Teams, etc.), configure both:
+
+- a **chat surface adapter** that receives messages from the external chat product
+- an **OAuth adapter** for the same provider so users can connect that external account in **Connected Accounts**
+
+For example, Telegram Agent access needs both `@adminforth/chat-surface-adapter-telegram` and `@adminforth/oauth-adapter-telegram`.
 
 Register adapters through `chatSurfaceAdapters`:
 
 ```ts
 import AdminForthAgent from '@adminforth/agent';
-import SomeChatSurfaceAdapter from '@adminforth/some-chat-surface-adapter';
+import TelegramChatSurfaceAdapter from '@adminforth/chat-surface-adapter-telegram';
 
 new AdminForthAgent({
   // ...modes, sessionResource, turnResource, etc.
   chatSurfaceAdapters: [
-    new SomeChatSurfaceAdapter({
-      // adapter-specific options
+    new TelegramChatSurfaceAdapter({
+      botToken: process.env.TELEGRAM_BOT_TOKEN as string,
+      webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
     }),
   ],
+  chatExternalIdentityResource: {
+    resourceId: 'admin_user_external_identities',
+    surfaces: {
+      telegram: {
+        provider: 'AdminForthAdapterTelegramOauth2',
+      },
+    },
+  },
 });
 ```
 
-When an adapter supports account linking, the Agent plugin adds a user menu settings page named **Chat Surfaces** where logged-in users can connect, reconnect, and disconnect external accounts.
+External chat users are resolved through the OAuth external identities resource. The `provider` value in `chatExternalIdentityResource.surfaces` must match the OAuth adapter class that writes connected accounts, for example `AdminForthAdapterTelegramOauth2`.
+
+Users connect their Telegram account from **Settings -> Connected Accounts**. After that, messages from the Telegram bot can be matched to the AdminForth user through the external identity `externalUserId`.
 
 For Telegram setup, including required user fields, webhook URL, environment variables, and adapter options, see:
 
