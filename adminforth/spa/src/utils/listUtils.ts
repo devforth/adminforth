@@ -29,6 +29,9 @@ export async function getList(resource: AdminForthResourceFrontend, isPageLoaded
     },
     abortSignal: abortController.signal
   });
+  if (abortController.signal.aborted) {
+    return;
+  }
   if (data.error) {
     showErrorTost(data.error);
     rows = [];
