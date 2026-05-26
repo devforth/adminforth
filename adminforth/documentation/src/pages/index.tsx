@@ -401,6 +401,20 @@ export default function Home(): JSX.Element {
                   height="58"
                 />
               </a>
+              <a
+                href="https://www.producthunt.com/products/adminforth/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-adminforth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=598095&theme=light"
+                  alt="AdminForth on Product Hunt"
+                  width="250"
+                  height="54"
+                />
+              </a>
             </div>
           </div>
         </section>
