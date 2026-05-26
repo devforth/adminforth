@@ -58,7 +58,6 @@ model AdminUserExternalIdentity {
   avatarUrl      String?
   meta           Json?
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
 
   @@unique([provider, subject])
   @@index([adminUserId])
@@ -73,14 +72,21 @@ pnpm makemigration --name add-admin-user-external-identities ; pnpm migrate:loca
 
 ```ts title="./resources/adminUserExternalIdentities.ts"
 import { AdminForthDataTypes, type AdminForthResourceInput } from 'adminforth';
+import { randomUUID } from 'crypto';
 
 export default {
-  dataSource: 'sqlite',
+  dataSource: 'maindb',
   table: 'AdminUserExternalIdentity',
   resourceId: 'admin_user_external_identities',
   label: 'Admin User External Identities',
   columns: [
-    { name: 'id', type: AdminForthDataTypes.STRING, primaryKey: true },
+    {
+      name: 'id',
+      type: AdminForthDataTypes.STRING,
+      primaryKey: true,
+      fillOnCreate: () => randomUUID(),
+      showIn: { create: false, edit: false },
+    },
     { name: 'adminUserId', type: AdminForthDataTypes.STRING, required: true },
     { name: 'provider', type: AdminForthDataTypes.STRING, required: true },
     { name: 'subject', type: AdminForthDataTypes.STRING, required: true },
@@ -90,6 +96,12 @@ export default {
     { name: 'fullName', type: AdminForthDataTypes.STRING },
     { name: 'avatarUrl', type: AdminForthDataTypes.STRING },
     { name: 'meta', type: AdminForthDataTypes.JSON },
+    {
+      name: 'createdAt',
+      type: AdminForthDataTypes.DATETIME,
+      fillOnCreate: () => new Date().toISOString(),
+      showIn: { create: false, edit: false },
+    },
   ],
 } satisfies AdminForthResourceInput;
 ```
@@ -308,28 +320,23 @@ TELEGRAM_CLIENT_SECRET=your_telegram_client_secret
 
 Add the adapter to your plugin configuration:
 
-```ts
-import OAuthPlugin from '@adminforth/oauth';
-import TelegramOauthAdapter from '@adminforth/oauth-adapter-telegram';
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterTelegramOauth2 from '@adminforth/oauth-adapter-telegram';
 
-new OAuthPlugin({
-  emailField: 'email',
-  externalIdentityResource: {
-    resourceId: 'admin_user_external_identities',
-    phoneField: 'phone',
-    fullNameField: 'fullName',
-    avatarUrlField: 'avatarUrl',
-    metaField: 'meta',
-  },
-  adapters: [
-    new TelegramOauthAdapter({
-      clientID: process.env.TELEGRAM_CLIENT_ID as string,
-      clientSecret: process.env.TELEGRAM_CLIENT_SECRET as string,
-      redirectUri: 'https://example.com/oauth/callback',
-      scopes: ['openid', 'profile', 'phone'],
-    }),
-  ],
-});
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new TelegramOauthAdapter({
+        clientID: process.env.TELEGRAM_CLIENT_ID as string,
+        clientSecret: process.env.TELEGRAM_CLIENT_SECRET as string,
+        redirectUri: 'https://example.com/oauth/callback',
+        scopes: ['openid', 'profile', 'phone'],
+      }),
+    ],
+  }),
+]
 ```
 
 Register the same `redirectUri` in BotFather under **Login Widget → Redirect URI**.
