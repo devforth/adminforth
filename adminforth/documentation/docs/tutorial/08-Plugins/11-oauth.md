@@ -311,6 +311,16 @@ Install Adapter:
 pnpm install @adminforth/oauth-adapter-telegram --save
 ```
 
+Create Telegram OpenID Connect credentials in BotFather:
+
+1. Open [BotFather](https://t.me/BotFather).
+2. Click **Open** and open it in the Telegram app.
+3. Select or Create your bot.
+4. Open **Login Widget**.
+5. Click **Switch to OpenID Connect Login**.
+6. Copy the client ID and client secret shown at the top.
+7. Set **Redirect URI** to `https://example.com/oauth/callback`.
+
 Add the credentials to your `.env` file:
 
 ```bash

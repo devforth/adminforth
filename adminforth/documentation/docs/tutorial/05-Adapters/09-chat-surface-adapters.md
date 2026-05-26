@@ -16,7 +16,14 @@ pnpm i @adminforth/chat-surface-adapter-telegram
 pnpm i @adminforth/oauth-adapter-telegram
 ```
 
-Create a Telegram bot with BotFather and add the token to `.env`:
+Create a Telegram bot with BotFather and copy the token:
+
+1. Open [BotFather](https://t.me/BotFather).
+2. Click **Open** and open it in the Telegram app.
+3. Select or Create your bot.
+4. Copy the bot token shown at the top.
+
+Add the token to `.env`:
 
 ```env title=".env"
 TELEGRAM_BOT_TOKEN=your_bot_token
