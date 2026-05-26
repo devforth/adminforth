@@ -7,7 +7,7 @@
     :class="{
       'cursor-default opacity-50 pointer-events-none': props.disabled,
       'active brightness-200 hover:brightness-150'  : props.active,
-      'text-lightSecondaryContrast/70 bg-lightSecondary border-lightSecondaryContrast/30 dark:bg-darkSecondary hover:bg-lightSecondary/60 hover:border-lightSecondaryContrast/60 focus:ring-lightSecondary dark:focus:ring-darkSecondary/40 dark:text-darkSecondaryContrast dark:border-darkSecondaryContrast/40 dark:hover:bg-darkSecondary/60 dark:hover:border-darkSecondary/60': props.mode === 'secondary',
+      'text-lightSecondaryContrast/70 bg-lightSecondary border-lightSecondaryContrast/30 dark:bg-darkSecondary hover:bg-lightSecondary/60 hover:border-lightSecondaryContrast/60 focus:ring-lightSecondary dark:focus:ring-darkSecondary/40 dark:text-darkSecondaryContrast dark:border-darkSecondaryContrast/40 dark:hover:bg-darkSecondary/60 dark:hover:border-white/60': props.mode === 'secondary',
     }"
   >
     <Spinner v-if="props.loader" class="w-4 h-4 text-lightButtonsText dark:text-darkButtonsText fill-lightButtonsBackground dark:fill-darkPrimary" />
