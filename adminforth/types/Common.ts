@@ -1210,6 +1210,26 @@ export interface AdminForthConfigMenuItem {
   isOpenInNewTab?: boolean
 }
 
+export type AdminForthMenuTarget =
+  | string
+  | {
+    itemId?: string,
+    resourceId?: string,
+    path?: string,
+  };
+
+export type AdminForthMenuContribution = {
+  item: AdminForthConfigMenuItem,
+  placement?:
+    | { position: 'first' | 'last' }
+    | { before: AdminForthMenuTarget }
+    | { after: AdminForthMenuTarget },
+  order?: number,
+};
+
+export type MenuTarget = AdminForthMenuTarget;
+export type MenuContribution = AdminForthMenuContribution;
+
 
 export interface ResourceVeryShort {
   resourceId: string,
