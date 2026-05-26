@@ -5,16 +5,6 @@ authors: ivanb
 tags: [agent, database, plugin]
 ---
 
-<a href="https://www.producthunt.com/products/adminforth/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-adminforth" target="_blank" rel="noreferrer">
-  <img
-    src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=598095&theme=light"
-    alt="AdminForth - Agentic Open-Source TypeScript Admin Panel framework | Product Hunt"
-    style={{ width: '250px', height: '54px' }}
-    width="250"
-    height="54"
-  />
-</a>
-
 <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', marginBottom: '2rem' }}>
   <iframe
     src="https://www.youtube.com/embed/4tB8uzY__uk"
