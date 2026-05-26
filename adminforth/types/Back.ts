@@ -13,6 +13,7 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type AdminForthResourceInputCommon,
   type AdminForthComponentDeclarationFull,
   type AdminForthConfigMenuItem,
+  type AdminForthMenuContribution,
   type AnnouncementBadgeResponse,
   type AdminForthResourceColumnInputCommon,
   type ColumnMinMaxValue,
@@ -594,8 +595,19 @@ export interface IAdminForth {
    */
   getPluginById<T>(id: string): T;
 
+  registerMenuContribution(contribution: AdminForthMenuContribution): void;
+  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider): void;
+  getMenuContributions(): AdminForthMenuContribution[];
+  getMenuWithContributions(adminUser?: AdminUser, menu?: AdminForthConfigMenuItem[]): Promise<AdminForthConfigMenuItem[]>;
+
+  refreshMenu(adminUser: AdminUser): Promise<void>;
   refreshMenuBadge(menuItemId: string, adminUser: AdminUser): Promise<void>;
 }
+
+export type AdminForthMenuContributionProvider = (ctx: {
+  adminUser?: AdminUser,
+  adminforth: IAdminForth,
+}) => AdminForthMenuContribution[] | Promise<AdminForthMenuContribution[]>;
 
 
 export interface IAdminForthPlugin {

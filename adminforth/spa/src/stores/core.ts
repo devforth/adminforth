@@ -87,6 +87,20 @@ export const useCoreStore = defineStore('core', () => {
     adminUser.value = resp.adminUser;
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
+    subscribeToMenuRefresh();
+  }
+
+  async function refreshMenu() {
+    await fetchMenuAndResource();
+    await fetchMenuBadges();
+  }
+
+  function subscribeToMenuRefresh() {
+    if (!userData.value?.pk) {
+      return;
+    }
+    websocket.unsubscribeByPrefix('/opentopic/refresh-menu/');
+    websocket.subscribe(`/opentopic/refresh-menu/${userData.value.pk}`, refreshMenu);
   }
 
   function findItemWithId(items: AdminForthConfigMenuItem[], itemId: string): AdminForthConfigMenuItem | undefined {
@@ -257,6 +271,7 @@ export const useCoreStore = defineStore('core', () => {
     userAvatarUrl,
     getPublicConfig,
     fetchMenuAndResource, 
+    refreshMenu,
     getLoginFormConfig,
     fetchRecord, 
     record, 
