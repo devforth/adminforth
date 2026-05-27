@@ -120,7 +120,7 @@ const images = [
     description: 'Use quick filters to filter your data efficiently. Create custom filters and apply them with a single click'
   },
   {
-    original: require('@site/static/img/previews/background-jobs.png').default,
+    original: require('@site/static/img/previews/background-jobs1.png').default,
     title: 'Background Jobs Plugin - manage your background tasks',
     link: '/docs/tutorial/Plugins/background-jobs/',
     description: 'Use background jobs to handle long-running tasks efficiently. Schedule, monitor, and manage your background processes with ease even after server restarts'
