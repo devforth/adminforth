@@ -38,7 +38,6 @@ Why AdminForth:
 ## Project initialisation
 
 ```
-mkdir myadmin && cd myadmin
 npx adminforth create-app
 ```
 
