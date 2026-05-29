@@ -101,10 +101,8 @@ async function open() {
 
 async function close() {
   if (props.beforeCloseFunction) {
-    console.log('Running before close function');
-    const isContinue =  await props.beforeCloseFunction?.();
-    console.log('Before close function completed, isContinue:', isContinue);
-    if (isContinue === false) {
+    const shouldClose =  await props.beforeCloseFunction?.();
+    if (shouldClose === false) {
       return;
     }
   }
