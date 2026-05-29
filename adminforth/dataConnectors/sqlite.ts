@@ -101,6 +101,9 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
+          } else if (baseType == 'json' || baseType == 'jsonb') {
+            field.type = AdminForthDataTypes.JSON;
+            field._underlineType = baseType;
           } else if (baseType === 'decimal') {
             field.type = AdminForthDataTypes.DECIMAL;
             field._underlineType = 'decimal';
