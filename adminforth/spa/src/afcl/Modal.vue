@@ -68,7 +68,7 @@ const removeFromDom = computed(() => {
 interface DialogProps {
   closeByClickOutside?: boolean
   closeByEsc?: boolean
-  beforeCloseFunction?: (() => void | Promise<void>) | null
+  beforeCloseFunction?: (() => void | Promise<void | boolean>) | null
   beforeOpenFunction?: (() => void | Promise<void>) | null
   askForCloseConfirmation?: boolean
   closeConfirmationText?: string
@@ -101,7 +101,12 @@ async function open() {
 
 async function close() {
   if (props.beforeCloseFunction) {
-    await props.beforeCloseFunction?.();
+    console.log('Running before close function');
+    const isContinue =  await props.beforeCloseFunction?.();
+    console.log('Before close function completed, isContinue:', isContinue);
+    if (isContinue === false) {
+      return;
+    }
   }
   isModalOpen.value = false;
 }
