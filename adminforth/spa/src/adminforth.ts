@@ -35,6 +35,9 @@ class FrontendAPI implements FrontendAPIInterface {
   constructor() {
 
     this.menu = {
+      refresh: async () => {
+        console.log('refreshMenu')
+      },
       refreshMenuBadges: () => {
         console.log('refreshMenuBadges')
       }
