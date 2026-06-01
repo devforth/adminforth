@@ -345,30 +345,34 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
     resource: AdminForthResource;
     filters: IAdminForthAndOrFilter;
     aggregations: { [alias: string]: IAggregationRule };
-    groupBy?: IGroupByRule;
+    groupBy?: IGroupByRule | IGroupByRule[];
   }): Promise<Array<{ group?: string, [key: string]: any }>> {
     const tableName = resource.table;
     const selectParts: string[] = [];
     const medianFields: { alias: string; field: string }[] = [];
-    let groupExpr: string | null = null;
+    const groupExprs: string[] = [];
+    const groupAliases: string[] = [];
+    const groupByRules = this.normalizeGroupByRules(groupBy);
 
-    if (groupBy?.type === 'field') {
-      groupExpr = `\`${groupBy.field}\``;
-      selectParts.push(`${groupExpr} AS \`group\``);
-    } else if (groupBy?.type === 'date_trunc') {
-      const g = groupBy as IGroupByDateTrunc;
-      const tz = g.timezone ?? 'UTC';
-      if (!/^[A-Za-z0-9/_+\-]+$/.test(tz)) {
-        throw new Error(`Invalid timezone value: ${tz}`);
+    for (const [index, groupByRule] of groupByRules.entries()) {
+      let groupExpr: string;
+      if (groupByRule.type === 'field') {
+        groupExpr = `\`${groupByRule.field}\``;
+      } else {
+        const g = groupByRule as IGroupByDateTrunc;
+        const tz = g.timezone ?? 'UTC';
+        const innerExpr = `COALESCE(CONVERT_TZ(\`${g.field}\`, 'UTC', '${tz}'), \`${g.field}\`)`;
+        switch (g.truncation) {
+          case 'day':   groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-%d')`; break;
+          case 'month': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-01')`; break;
+          case 'year':  groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-01-01')`; break;
+          case 'week':  groupExpr = `DATE_FORMAT(DATE_SUB(${innerExpr}, INTERVAL WEEKDAY(${innerExpr}) DAY), '%Y-%m-%d')`; break;
+        }
       }
-      const innerExpr = `COALESCE(CONVERT_TZ(\`${g.field}\`, 'UTC', '${tz}'), \`${g.field}\`)`;
-      switch (g.truncation) {
-        case 'day':   groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-%d')`; break;
-        case 'month': groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-%m-01')`; break;
-        case 'year':  groupExpr = `DATE_FORMAT(${innerExpr}, '%Y-01-01')`; break;
-        case 'week':  groupExpr = `DATE_FORMAT(DATE_SUB(${innerExpr}, INTERVAL WEEKDAY(${innerExpr}) DAY), '%Y-%m-%d')`; break;
-      }
-      selectParts.push(`${groupExpr} AS \`group\``);
+      const groupAlias = this.getGroupByResultAlias(groupByRule, index, groupByRules.length);
+      groupExprs.push(groupExpr);
+      groupAliases.push(groupAlias);
+      selectParts.push(`${groupExpr} AS \`${groupAlias}\``);
     }
 
     for (const [alias, rule] of Object.entries(aggregations)) {
@@ -376,6 +380,7 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       switch (rule.operation) {
         case 'sum':    selectParts.push(`SUM(${f}) AS \`${alias}\``); break;
         case 'count':  selectParts.push(`COUNT(*) AS \`${alias}\``); break;
+        case 'count_distinct': selectParts.push(`COUNT(DISTINCT ${f}) AS \`${alias}\``); break;
         case 'avg':    selectParts.push(`AVG(${f}) AS \`${alias}\``); break;
         case 'min':    selectParts.push(`MIN(${f}) AS \`${alias}\``); break;
         case 'max':    selectParts.push(`MAX(${f}) AS \`${alias}\``); break;
@@ -389,10 +394,10 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
 
     // Run non-median aggregations
     let rows: AggRow[] = [];
-    const hasNonMedian = selectParts.length > (groupExpr ? 1 : 0);
+    const hasNonMedian = selectParts.length > groupExprs.length;
     if (hasNonMedian) {
       let query = `SELECT ${selectParts.join(', ')} FROM \`${tableName}\` ${where}`;
-      if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+      if (groupExprs.length) query += ` GROUP BY ${groupExprs.join(', ')} ORDER BY ${groupExprs.join(', ')} ASC`;
       dbLogger.trace(`🪲📜 MySQL AGG Q: ${query} values: ${JSON.stringify(filterValues)}`);
       const [result] = await this.client.execute(query, filterValues);
       rows = result as AggRow[];
@@ -404,18 +409,20 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       const nullGuard = where ? `${where} AND ${f} IS NOT NULL` : `WHERE ${f} IS NOT NULL`;
 
       let medianQuery: string;
-      if (groupExpr) {
+      if (groupExprs.length) {
+        const groupSelect = groupExprs.map((expr, index) => `${expr} AS \`${groupAliases[index]}\``).join(', ');
+        const groupColumns = groupAliases.map(alias => `\`${alias}\``).join(', ');
         medianQuery = `
-          SELECT \`group\`, AVG(${f}) AS \`${alias}\`
+          SELECT ${groupColumns}, AVG(${f}) AS \`${alias}\`
           FROM (
-            SELECT ${groupExpr} AS \`group\`, ${f},
-              ROW_NUMBER() OVER (PARTITION BY ${groupExpr} ORDER BY ${f}) AS rn,
-              COUNT(*) OVER (PARTITION BY ${groupExpr}) AS cnt
+            SELECT ${groupSelect}, ${f},
+              ROW_NUMBER() OVER (PARTITION BY ${groupExprs.join(', ')} ORDER BY ${f}) AS rn,
+              COUNT(*) OVER (PARTITION BY ${groupExprs.join(', ')}) AS cnt
             FROM \`${tableName}\` ${nullGuard}
           ) t
           WHERE rn IN (FLOOR((cnt + 1) / 2.0), CEIL((cnt + 1) / 2.0))
-          GROUP BY \`group\`
-          ORDER BY \`group\` ASC
+          GROUP BY ${groupColumns}
+          ORDER BY ${groupColumns} ASC
         `;
       } else {
         medianQuery = `
@@ -434,13 +441,14 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       const [medianResult] = await this.client.execute(medianQuery, filterValues);
       const medianRows = medianResult as AggRow[];
 
-      if (groupExpr) {
+      if (groupExprs.length) {
+        const groupKey = (row: AggRow) => groupAliases.map(alias => String(row[alias])).join('\u0000');
         if (rows.length === 0) {
-          rows = medianRows.map((r) => ({ group: r.group, [alias]: r[alias] }));
+          rows = medianRows.map((r) => ({ ...Object.fromEntries(groupAliases.map(groupAlias => [groupAlias, r[groupAlias]])), [alias]: r[alias] }));
         } else {
-          const byGroup = new Map(medianRows.map((r) => [String(r.group), r[alias]]));
+          const byGroup = new Map(medianRows.map((r) => [groupKey(r), r[alias]]));
           for (const row of rows) {
-            row[alias] = byGroup.get(String(row.group)) ?? null;
+            row[alias] = byGroup.get(groupKey(row)) ?? null;
           }
         }
       } else {

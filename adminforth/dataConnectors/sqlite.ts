@@ -349,26 +349,29 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       resource: AdminForthResource,
       filters: IAdminForthAndOrFilter,
       aggregations: { [alias: string]: IAggregationRule },
-      groupBy?: IGroupByRule,
+      groupBy?: IGroupByRule | IGroupByRule[],
     }): Promise<Array<{ group?: string, [key: string]: any }>> {
       const tableName = resource.table;
       const where = this.whereClause(filters);
       const filterValues = this.getFilterParams(filters);
+      const groupByRules = this.normalizeGroupByRules(groupBy);
 
-      if (!groupBy || groupBy.type === 'field') {
+      if (groupByRules.every(g => g.type === 'field')) {
         const selectParts: string[] = [];
-        let groupExpr: string | null = null;
+        const groupExprs: string[] = [];
 
-        if (groupBy?.type === 'field') {
-          const g = groupBy as IGroupByField;
-          groupExpr = `"${g.field}"`;
-          selectParts.push(`${groupExpr} AS "group"`);
+        for (const [index, groupByRule] of groupByRules.entries()) {
+          const g = groupByRule as IGroupByField;
+          const groupExpr = `"${g.field}"`;
+          groupExprs.push(groupExpr);
+          selectParts.push(`${groupExpr} AS "${this.getGroupByResultAlias(groupByRule, index, groupByRules.length)}"`);
         }
 
         for (const [alias, rule] of Object.entries(aggregations)) {
           switch (rule.operation) {
             case 'sum':    selectParts.push(`SUM("${rule.field}") AS "${alias}"`); break;
             case 'count':  selectParts.push(`COUNT(*) AS "${alias}"`); break;
+            case 'count_distinct': selectParts.push(`COUNT(DISTINCT "${rule.field}") AS "${alias}"`); break;
             case 'avg':    selectParts.push(`AVG("${rule.field}") AS "${alias}"`); break;
             case 'min':    selectParts.push(`MIN("${rule.field}") AS "${alias}"`); break;
             case 'max':    selectParts.push(`MAX("${rule.field}") AS "${alias}"`); break;
@@ -377,17 +380,13 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         }
 
         let query = `SELECT ${selectParts.join(', ')} FROM ${tableName} ${where}`;
-        if (groupExpr) query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+        if (groupExprs.length) query += ` GROUP BY ${groupExprs.join(', ')} ORDER BY ${groupExprs.join(', ')} ASC`;
         dbLogger.trace(`🪲📜 SQLITE AGG Q: ${query}, params: ${JSON.stringify(filterValues)}`);
         return this.client.prepare(query).all([...filterValues]);
       }
 
-      const g = groupBy as IGroupByDateTrunc;
-      const timezone = g.timezone ?? 'UTC';
-      const col = resource.dataSourceColumns.find(c => c.name === g.field);
-      const underlineType = col?._underlineType ?? 'varchar';
-
-      const neededFields = new Set<string>([g.field]);
+      const neededFields = new Set<string>();
+      for (const groupByRule of groupByRules) neededFields.add(groupByRule.field);
       for (const rule of Object.values(aggregations)) {
         if (rule.field) neededFields.add(rule.field);
       }
@@ -397,19 +396,34 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       const rawRows: any[] = this.client.prepare(rawQuery).all([...filterValues]);
 
       const groups = new Map<string, any[]>();
+      const groupValues = new Map<string, Record<string, any>>();
       for (const row of rawRows) {
-        const key = this._dateGroupKey(row[g.field], underlineType, g.truncation, timezone);
+        const values: Record<string, any> = {};
+        for (const [index, groupByRule] of groupByRules.entries()) {
+          const alias = this.getGroupByResultAlias(groupByRule, index, groupByRules.length);
+          if (groupByRule.type === 'date_trunc') {
+            const g = groupByRule as IGroupByDateTrunc;
+            const col = resource.dataSourceColumns.find(c => c.name === g.field);
+            values[alias] = this._dateGroupKey(row[g.field], col?._underlineType ?? 'varchar', g.truncation, g.timezone ?? 'UTC');
+          } else {
+            values[alias] = row[(groupByRule as IGroupByField).field];
+          }
+        }
+        const key = JSON.stringify(values);
         if (!groups.has(key)) groups.set(key, []);
+        if (!groupValues.has(key)) groupValues.set(key, values);
         groups.get(key)!.push(row);
       }
 
-      const results: Array<{ group: string, [key: string]: any }> = [];
+      const results: Array<{ [key: string]: any }> = [];
       for (const [groupKey, rows] of groups) {
-        const result: { group: string, [key: string]: any } = { group: groupKey };
+        const result: { [key: string]: any } = { ...groupValues.get(groupKey) };
         for (const [alias, rule] of Object.entries(aggregations)) {
-          const nums = rule.field ? rows.map(r => Number(r[rule.field!] ?? 0)) : [];
+          const values = rule.field ? rows.map(r => r[rule.field!]).filter(v => v !== null && v !== undefined) : [];
+          const nums = values.map(v => Number(v));
           switch (rule.operation) {
             case 'count':  result[alias] = rows.length; break;
+            case 'count_distinct': result[alias] = new Set(values).size; break;
             case 'sum':    result[alias] = nums.reduce((s, v) => s + v, 0); break;
             case 'avg':    result[alias] = nums.reduce((s, x) => s + x, 0) / nums.length; break;
             case 'min':    result[alias] = Math.min(...nums); break;
@@ -427,7 +441,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
         results.push(result);
       }
 
-      return results.sort((a, b) => a.group.localeCompare(b.group));
+      const sortAliases = groupByRules.map((rule, index) => this.getGroupByResultAlias(rule, index, groupByRules.length));
+      return results.sort((a, b) => sortAliases.map(alias => String(a[alias]).localeCompare(String(b[alias]))).find(result => result !== 0) ?? 0);
     }
 
     async getDataWithOriginalTypes({ resource, limit, offset, sort, filters, columns }): Promise<any[]> {
