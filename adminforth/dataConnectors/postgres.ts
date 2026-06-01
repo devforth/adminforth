@@ -388,14 +388,17 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         resource: AdminForthResource,
         filters: IAdminForthAndOrFilter,
         aggregations: { [alias: string]: IAggregationRule },
-        groupBy?: IGroupByRule,
+        groupBy?: IGroupByRule | IGroupByRule[],
     }): Promise<Array<{ group?: string, [key: string]: any }>> {
         const tableName = resource.table;
         const selectParts: string[] = [];
-        let groupExpr: string | null = null;
+        const groupExprs: string[] = [];
+        const groupByRules = this.normalizeGroupByRules(groupBy);
 
-        if (groupBy?.type === 'date_trunc') {
-            const g = groupBy as IGroupByDateTrunc;
+        for (const [index, groupByRule] of groupByRules.entries()) {
+          let groupExpr: string;
+          if (groupByRule.type === 'date_trunc') {
+            const g = groupByRule as IGroupByDateTrunc;
             const tz = g.timezone ?? 'UTC';
             const col = resource.dataSourceColumns.find(c => c.name === g.field);
             const hasTZ = (col as any)?._baseTypeDebug?.includes('with time zone');
@@ -404,17 +407,19 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
                 : `"${g.field}" AT TIME ZONE 'UTC' AT TIME ZONE '${tz}'`;
             const fieldExpr = `DATE_TRUNC('${g.truncation}', ${innerExpr})`;
             groupExpr = `TO_CHAR(${fieldExpr}, 'YYYY-MM-DD')`;
-            selectParts.push(`${groupExpr} AS "group"`);
-        } else if (groupBy?.type === 'field') {
-            const g = groupBy as IGroupByField;
+          } else {
+            const g = groupByRule as IGroupByField;
             groupExpr = `"${g.field}"`;
-            selectParts.push(`${groupExpr} AS "group"`);
+          }
+          groupExprs.push(groupExpr);
+          selectParts.push(`${groupExpr} AS "${this.getGroupByResultAlias(groupByRule, index, groupByRules.length)}"`);
         }
 
         for (const [alias, rule] of Object.entries(aggregations)) {
             switch (rule.operation) {
                 case 'sum': selectParts.push(`SUM("${rule.field}") AS "${alias}"`); break;
                 case 'count': selectParts.push(`COUNT(*) AS "${alias}"`); break;
+                case 'count_distinct': selectParts.push(`COUNT(DISTINCT "${rule.field}") AS "${alias}"`); break;
                 case 'avg': selectParts.push(`AVG("${rule.field}") AS "${alias}"`); break;
                 case 'min': selectParts.push(`MIN("${rule.field}") AS "${alias}"`); break;
                 case 'max': selectParts.push(`MAX("${rule.field}") AS "${alias}"`); break;
@@ -425,8 +430,8 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         const { sql: where, values: filterValues } = this.whereClauseAndValues(resource, filters);
         let query = `SELECT ${selectParts.join(', ')} FROM "${tableName}" ${where}`;
 
-        if (groupExpr) {
-            query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+        if (groupExprs.length) {
+            query += ` GROUP BY ${groupExprs.join(', ')} ORDER BY ${groupExprs.join(', ')} ASC`;
         }
 
         dbLogger.trace(`🪲📜 PG AGG Q: ${query}, params: ${JSON.stringify(filterValues)}`);

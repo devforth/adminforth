@@ -16,6 +16,7 @@ import { afLogger } from '../modules/logger.js';
 
 type AdminForthFilterNode = IAdminForthSingleFilter | IAdminForthAndOrFilter;
 type AdminForthFilterInput = AdminForthFilterNode | AdminForthFilterNode[];
+type AggregateGroupByInput = IGroupByRule | IGroupByRule[] | undefined;
 type AdminForthFilterNormalizationResult = {
   ok: boolean;
   error: string;
@@ -286,18 +287,26 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource,
     filters: IAdminForthAndOrFilter,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule,
+    groupBy?: AggregateGroupByInput,
   }): Promise<Array<{ group?: string, [key: string]: any }>> {
     throw new Error('getAggregateWithOriginalTypes() not implemented for this connector.');
+  }
+
+  normalizeGroupByRules(groupBy?: AggregateGroupByInput): IGroupByRule[] {
+    return groupBy ? (Array.isArray(groupBy) ? groupBy : [groupBy]) : [];
+  }
+
+  getGroupByResultAlias(groupBy: IGroupByRule, index: number, total: number): string {
+    return groupBy.as ?? (total === 1 ? 'group' : `group${index + 1}`);
   }
 
   private validateAggregateParams(
     resource: AdminForthResource,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule,
+    groupBy?: AggregateGroupByInput,
   ): void {
     const VALID_ALIAS = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-    const VALID_OPERATIONS = ['sum', 'count', 'avg', 'min', 'max', 'median'];
+    const VALID_OPERATIONS = ['sum', 'count', 'count_distinct', 'avg', 'min', 'max', 'median'];
     const VALID_TRUNCATIONS = ['day', 'week', 'month', 'year'];
     const VALID_TIMEZONE = /^[a-zA-Z_\/\-\+0-9]+$/;
     const columnNames = new Set(resource.dataSourceColumns.map(c => c.name));
@@ -323,11 +332,14 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
       }
     }
 
-    if (groupBy) {
-      if (groupBy.type === 'field') {
-        assertColumn(groupBy.field, 'GroupBy.Field');
-      } else if (groupBy.type === 'date_trunc') {
-        const g = groupBy as IGroupByDateTrunc;
+    for (const groupByRule of this.normalizeGroupByRules(groupBy)) {
+      if (groupByRule.type === 'field') {
+        assertColumn(groupByRule.field, 'GroupBy.Field');
+        if (groupByRule.as && !VALID_ALIAS.test(groupByRule.as)) {
+          throw new Error(`Invalid groupBy alias "${groupByRule.as}". Must match ${VALID_ALIAS}`);
+        }
+      } else if (groupByRule.type === 'date_trunc') {
+        const g = groupByRule as IGroupByDateTrunc;
         assertColumn(g.field, 'GroupBy.DateTrunc');
         if (!VALID_TRUNCATIONS.includes(g.truncation)) {
           throw new Error(`Invalid truncation "${g.truncation}". Must be one of: ${VALID_TRUNCATIONS.join(', ')}`);
@@ -335,8 +347,11 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         if (g.timezone && !VALID_TIMEZONE.test(g.timezone)) {
           throw new Error(`Invalid timezone "${g.timezone}". Must be a valid IANA timezone name`);
         }
+        if (g.as && !VALID_ALIAS.test(g.as)) {
+          throw new Error(`Invalid groupBy alias "${g.as}". Must match ${VALID_ALIAS}`);
+        }
       } else {
-        throw new Error(`Unknown groupBy type "${(groupBy as any).type}"`);
+        throw new Error(`Unknown groupBy type "${(groupByRule as any).type}"`);
       }
     }
   }
@@ -345,7 +360,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     resource: AdminForthResource,
     filters: IAdminForthAndOrFilter,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule,
+    groupBy?: AggregateGroupByInput,
   }): Promise<Array<{ group?: string, [key: string]: any }>> {
     this.validateAggregateParams(resource, aggregations, groupBy);
 
