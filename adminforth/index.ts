@@ -7,7 +7,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -25,11 +25,15 @@ import {
   CreateResourceRecordResult,
   UpdateResourceRecordResult,
   DeleteResourceRecordResult,
+  AdminForthMenuContributionProvider,
 } from './types/Back.js';
 import {
   AdminForthFilterOperators,
   AdminForthDataTypes,
-  AdminUser,
+  AdminUser, 
+  type AdminForthConfigMenuItem,
+  type AdminForthMenuContribution,
+  type AdminForthMenuTarget,
 } from './types/Common.js';
 
 import AdminForthPlugin from './basePlugin.js';
@@ -126,19 +130,95 @@ class AdminForth implements IAdminForth {
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
   pluginsById: Record<string, AdminForthPlugin> = {};
+  private menuContributions: AdminForthMenuContribution[] = [];
+  private menuContributionProviders: AdminForthMenuContributionProvider[] = [];
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
 
   websocket: IWebSocketBroker;
 
+  registerMenuContribution(contribution: AdminForthMenuContribution): void {
+    this.menuContributions.push(contribution);
+  }
+
+  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider): void {
+    this.menuContributionProviders.push(provider);
+  }
+
+  getMenuContributions(): AdminForthMenuContribution[] {
+    return [...this.menuContributions];
+  }
+
+  async getMenuWithContributions(adminUser?: AdminUser, menu: AdminForthConfigMenuItem[] = this.config.menu): Promise<AdminForthConfigMenuItem[]> {
+    const generateItemId = (item: AdminForthConfigMenuItem) =>
+      md5hash(`menu-item-${item.label}-${item.resourceId || ''}-${item.path || ''}`);
+    const matchesTarget = (item: AdminForthConfigMenuItem, target: AdminForthMenuTarget) =>
+      typeof target === 'string'
+        ? item.itemId === target
+        : (target.itemId !== undefined && item.itemId === target.itemId)
+          || (target.resourceId !== undefined && item.resourceId === target.resourceId)
+          || (target.path !== undefined && item.path === target.path);
+
+    const resolvedMenu: AdminForthConfigMenuItem[] = menu.map((item) => ({
+      ...item,
+      itemId: item.itemId || generateItemId(item),
+      children: item.children?.map((child) => ({
+        ...child,
+        itemId: child.itemId || generateItemId(child),
+      })),
+    }));
+    const usedItemIds = new Set(resolvedMenu.map((item) => item.itemId));
+
+    const providerContributions = await Promise.all(
+      this.menuContributionProviders.map((provider) => provider({ adminUser, adminforth: this }))
+    );
+    const contributions = [
+      ...this.getMenuContributions(),
+      ...providerContributions.flat(),
+    ]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    for (const contribution of contributions) {
+      const item = {
+        ...contribution.item,
+        itemId: contribution.item.itemId || generateItemId(contribution.item),
+      };
+      if (usedItemIds.has(item.itemId)) {
+        throw new Error(`Menu contribution itemId "${item.itemId}" already exists in menu`);
+      }
+      usedItemIds.add(item.itemId);
+
+      const placement = contribution.placement;
+      if (placement && 'position' in placement && placement.position === 'first') {
+        resolvedMenu.unshift(item);
+      } else if (placement && 'before' in placement) {
+        const targetIndex = resolvedMenu.findIndex((menuItem) => matchesTarget(menuItem, placement.before));
+        resolvedMenu.splice(targetIndex === -1 ? resolvedMenu.length : targetIndex, 0, item);
+      } else if (placement && 'after' in placement) {
+        const targetIndex = resolvedMenu.findIndex((menuItem) => matchesTarget(menuItem, placement.after));
+        resolvedMenu.splice(targetIndex === -1 ? resolvedMenu.length : targetIndex + 1, 0, item);
+      } else {
+        resolvedMenu.push(item);
+      }
+    }
+
+    return resolvedMenu;
+  }
+
+  async refreshMenu(adminUser: AdminUser) {
+    this.websocket.publish(`/opentopic/refresh-menu/${adminUser.pk}`, {});
+  }
+
   async refreshMenuBadge(menuItemId: string, adminUser: AdminUser) {
-    const menuItem = this.config.menu.find((item) => item.itemId === menuItemId);
+    const menu = await this.getMenuWithContributions(adminUser);
+    const menuItem = menu.find((item) => item.itemId === menuItemId)
+      || menu.flatMap((item) => item.children || []).find((item) => item.itemId === menuItemId);
     if (!menuItem) {
-      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it was not found in config.menu`);
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it was not found in menu`);
       return;
     }
     if (!menuItem.badge) {
-      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it does not have badge function in config.menu`);
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it does not have badge function in menu`);
       return;
     }
     const badgeValue = typeof menuItem.badge === 'function' ? await menuItem.badge(adminUser, this) : menuItem.badge;

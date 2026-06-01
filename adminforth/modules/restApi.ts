@@ -870,7 +870,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         let newMenu = []
-        for (let menuItem of this.adminforth.config.menu) {
+        for (let menuItem of await this.adminforth.getMenuWithContributions(adminUser)) {
           let newMenuItem = {...menuItem,}
           if (menuItem.visible){
             if (!checkIsMenuItemVisible(menuItem)){
@@ -1039,7 +1039,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        this.adminforth.config.menu.map((menuItem) => {
+        (await this.adminforth.getMenuWithContributions(adminUser)).map((menuItem) => {
           processMenuItem(menuItem)
         })
 
