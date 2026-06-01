@@ -190,73 +190,29 @@ widgets: []
 
 Use a unique `slug`, for example `sales`. The plugin will expose it as `/dashboard/sales` and add it to the **Dashboards** sidebar group.
 
-## Widget Data Sources
+## Widget Queries
 
-Widgets can load data from any AdminForth resource by using `dataSource`.
-
-### Resource Data Source
+Widgets load data through `query`. The same query shape supports raw rows, grouped aggregate rows, per-measure filters, ordering, and calculated fields.
 
 ```yaml
-type: resource
-resourceId: cars
-columns:
-  - model
-  - price
-  - body_type
-sort:
-  field: price
-  direction: desc
+query:
+  resource: cars
+  select:
+    - field: body_type
+      as: body_type
+    - agg: count
+      as: total_cars
+    - agg: avg
+      field: price
+      as: avg_price
+  group_by:
+    - body_type
+  order_by:
+    - field: total_cars
+      direction: desc
 ```
 
-Resource data source fields:
-
-- `resourceId`: AdminForth `resourceId`
-- `columns`: optional list of columns returned to the widget
-- `sort`: optional sort field and direction
-- `filters`: optional AdminForth filter tree
-
-### Aggregate Data Source
-
-```yaml
-type: aggregate
-resourceId: cars
-aggregations:
-  value:
-    operation: count
-groupBy:
-  type: field
-  field: body_type
-```
-
-Aggregate data source fields:
-
-- `aggregations`: named aggregation rules exposed to widgets as output fields
-- `groupBy`: optional grouping rule; use `field` for raw values or `date_trunc` for time buckets
-- grouped aggregate rows expose the grouping key as `group`
-- `filters`: optional AdminForth filter tree
-
-### Legacy Query Format
-
-The legacy `query` shape is still supported for backwards compatibility.
-
-```yaml
-resource: cars
-select:
-  - model
-  - price
-  - body_type
-order:
-  field: price
-  direction: desc
-limit: 10
-```
-
-Legacy query fields:
-
-- `resource`: AdminForth `resourceId`
-- `select`: optional list of columns returned to the widget
-- `order`: optional sort field and direction
-- `limit`: optional maximum number of records
+Funnel charts use a steps query because each step can use its own resource, metric, and filters.
 
 ## Widget Examples
 
@@ -275,25 +231,22 @@ table:
     - price
     - body_type
     - production_year
-  pageSize: 10
-dataSource:
-  type: resource
-  resourceId: cars
-  columns:
-    - model
-    - price
-    - body_type
-    - production_year
-  sort:
-    field: production_year
-    direction: desc
+  page_size: 10
+query:
+  resource: cars
+  select:
+    - field: model
+    - field: price
+    - field: body_type
+    - field: production_year
+  order_by:
+    - field: production_year
+      direction: desc
 ```
 
-Table widgets use backend pagination by default. Set `table.pageSize` to choose how many rows each backend request loads, or `table.pagination` to `false` to request all rows at once. If you still use legacy `query`, `query.limit` is used as the maximum number of rows available across all pages.
+Table widgets use pagination by default. Set `table.page_size` to choose how many rows each request loads, or `table.pagination` to `false` to request all rows at once.
 
 ### Pie Chart
-
-When a chart uses aggregate data with `groupBy`, the grouped key is available in the `group` field.
 
 ```yaml
 label: Cars by Body Type
@@ -302,17 +255,18 @@ size: medium
 height: 360
 chart:
   type: pie
-  label_field: group
-  value_field: value
-dataSource:
-  type: aggregate
-  resourceId: cars
-  aggregations:
-    value:
-      operation: count
-  groupBy:
-    type: field
+  label:
     field: body_type
+  value:
+    field: value
+query:
+  resource: cars
+  select:
+    - field: body_type
+    - agg: count
+      as: value
+  group_by:
+    - body_type
 ```
 
 ### Bar Chart
@@ -324,17 +278,54 @@ size: wide
 height: 360
 chart:
   type: bar
-  label_field: group
-  value_field: value
-dataSource:
-  type: aggregate
-  resourceId: cars
-  aggregations:
-    value:
-      operation: count
-  groupBy:
-    type: field
+  x:
     field: production_year
+  y:
+    field: value
+query:
+  resource: cars
+  select:
+    - field: production_year
+    - agg: count
+      as: value
+  group_by:
+    - production_year
+```
+
+### Chart With Multiple Sources
+
+Use `query.steps` when funnel steps come from different resources. Each step returns one row with `name` and the metric alias.
+
+```yaml
+label: Sales Funnel
+target: chart
+size: large
+height: 360
+chart:
+  type: funnel
+  title: Sales funnel
+query:
+  steps:
+    - name: Leads
+      resource: leads
+      metric:
+        agg: count
+        as: value
+    - name: Qualified
+      resource: leads
+      metric:
+        agg: count
+        as: value
+      filters:
+        and:
+          - field: status
+            eq: qualified
+    - name: Customers
+      resource: orders
+      metric:
+        agg: count_distinct
+        field: customer_id
+        as: value
 ```
 
 ### KPI Card
@@ -343,16 +334,16 @@ dataSource:
 label: Average Car Price
 target: kpi_card
 size: small
-kpi_card:
-  value_field: value
-  prefix: $
-dataSource:
-  type: aggregate
-  resourceId: cars
-  aggregations:
-    value:
-      operation: avg
+card:
+  value:
+    field: value
+    prefix: $
+query:
+  resource: cars
+  select:
+    - agg: avg
       field: price
+      as: value
 ```
 
 ### Gauge Card
@@ -361,25 +352,22 @@ dataSource:
 label: Average Car Price
 target: gauge_card
 size: small
-gauge_card:
-  value_field: value
-  min_field: min
-  max_field: max
-  suffix: $
+card:
+  value:
+    field: value
+    suffix: $
+  target:
+    field: max
   color: '#2563eb'
-dataSource:
-  type: aggregate
-  resourceId: cars
-  aggregations:
-    value:
-      operation: avg
+query:
+  resource: cars
+  select:
+    - agg: avg
       field: price
-    min:
-      operation: min
+      as: value
+    - agg: max
       field: price
-    max:
-      operation: max
-      field: price
+      as: max
 ```
 
 ### Pivot Table
@@ -389,23 +377,26 @@ label: Cars Summary by Body Type
 target: pivot_table
 size: full
 height: 420
-pivot_table:
-  row_field: group
-dataSource:
-  type: aggregate
-  resourceId: cars
-  aggregations:
-    total_cars:
-      operation: count
-    avg_price:
-      operation: avg
+pivot:
+  rows:
+    - body_type
+  values:
+    - field: total_cars
+    - field: avg_price
+query:
+  resource: cars
+  select:
+    - field: body_type
+    - agg: count
+      as: total_cars
+    - agg: avg
       field: price
-  groupBy:
-    type: field
-    field: body_type
+      as: avg_price
+  group_by:
+    - body_type
 ```
 
-For aggregate pivot examples, the grouping key is available as `group`, and aggregation aliases such as `total_cars` and `avg_price` become table columns.
+Aggregation aliases such as `total_cars` and `avg_price` become table columns.
 
 ## Layout
 
