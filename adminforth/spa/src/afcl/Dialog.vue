@@ -5,6 +5,7 @@
     :closeByClickOutside="clickToCloseOutside || closeByClickOutside"
     :closeByEsc="closeByEsc || closable"
     :beforeCloseFunction="beforeCloseFunction"
+    :beforeCancelFunction="beforeCancelFunction" 
     :beforeOpenFunction="beforeOpenFunction"
     :askForCloseConfirmation="askForCloseConfirmation"
     :closeConfirmationText="closeConfirmationText"
@@ -26,7 +27,7 @@
         v-if="headerCloseButton"
         type="button"
         class="text-lightDialogCloseButton bg-transparent hover:bg-lightDialogCloseButtonHoverBackground hover:text-lightDialogCloseButtonHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkDialogCloseButton dark:hover:bg-darkDialogCloseButtonHoverBackground dark:hover:text-darkDialogCloseButtonHover"
-        @click="tryToHideModal"
+        @click="tryToCancelModal"
       >
         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
@@ -118,10 +119,15 @@ function close() {
   modalRef.value.close();
 }
 
+function tryToCancelModal() {
+  modalRef.value?.cancel();
+}
+
 defineExpose({
   open: open,
   close: close,
   tryToHideModal: tryToHideModal,
+  tryToCancelModal: tryToCancelModal,
 })
 
 function tryToHideModal() {
@@ -172,6 +178,11 @@ interface DialogProps {
   beforeOpenFunction?: (() => void | Promise<void>) | null
 
   /**
+  * Function that will be called before the dialog is canceled. 
+  */
+  beforeCancelFunction?: (() => void | Promise<void | boolean>) | null
+
+  /**
    * Disables close on Ecs button
    * 
    * @deprecated Use `closeByEsc` or  instead
@@ -201,19 +212,21 @@ interface DialogProps {
 
 /**********  for the backward compatibility  ***************/
 class Dialog implements IDialogInsideButtonClickHandler {
-  hide: () => void
-  constructor( hide: () => void ) {
-    this.hide = hide;
+  hide: (isCancel?: boolean) => void
+  constructor(hideFn: (isCancel?: boolean) => void) {
+    this.hide = hideFn;
   }
 }
 const dialog: Ref<Dialog> = ref(
-  new Dialog(
-    () => {
-      if (dialog.value) {
-        tryToHideModal();
+  new Dialog((isCancel = false) => {
+    if (dialog.value) {
+      if (isCancel) {
+        modalRef.value?.cancel();
+      } else {
+        modalRef.value?.close();
       }
     }
-  )
+  })
 );
 /*************************************************************/
 
