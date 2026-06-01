@@ -62,10 +62,6 @@ import type {
   AdminForthConfig,
 } from 'adminforth';
 
-// A list page fires getData + getCount + getMinMaxForColumns within milliseconds.
-// Cache the raw fetch so all three share one network call.
-const FETCH_CACHE_TTL_MS = 500;
-
 // Minimal gql tag — provides syntax highlighting only, no transformation.
 export const gql = (strings: TemplateStringsArray, ...values: any[]) =>
   strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');
@@ -107,9 +103,6 @@ export interface GraphqlApiDef {
  */
 export default class GraphqlConnector extends AdminForthBaseConnector {
   private gqlEndpoint!: string;
-
-  // Per-table record cache keyed by table name.
-  private _cache: Map<string, { records: any[]; ts: number }> = new Map();
 
   // API configs populated from resource.options.meta during discoverFields.
   private _apiConfigs: Map<string, GraphqlApiDef> = new Map();
@@ -194,16 +187,10 @@ export default class GraphqlConnector extends AdminForthBaseConnector {
 
   private async fetchAll(tableName: string): Promise<any[]> {
     const def = this.apiDef(tableName);
-    const now = Date.now();
-    const cached = this._cache.get(tableName);
-    if (cached && now - cached.ts < FETCH_CACHE_TTL_MS) return cached.records;
-
     const query = `query { ${def.queryName} { ${def.selection} } }`;
     try {
       const data = await this.gqlRequest(query);
-      const records = data[def.queryName];
-      this._cache.set(tableName, { records, ts: Date.now() });
-      return records;
+      return data[def.queryName];
     } catch (err: any) {
       throw new Error(`GraphqlConnector[${tableName}]: fetch failed — ${err.message}`);
     }
@@ -297,7 +284,6 @@ export default class GraphqlConnector extends AdminForthBaseConnector {
     if (!mut) throw new Error(`GraphqlConnector[${resource.table}]: no create mutation defined`);
     try {
       const data = await this.gqlRequest(mut.gql, mut.variables(record));
-      this._cache.delete(resource.table);
       return data[mut.resultField].id;
     } catch (err: any) {
       throw new Error(`GraphqlConnector[${resource.table}]: create failed — ${err.message}`);
@@ -315,7 +301,6 @@ export default class GraphqlConnector extends AdminForthBaseConnector {
     if (!mut) throw new Error(`GraphqlConnector[${resource.table}]: no update mutation defined`);
     try {
       await this.gqlRequest(mut.gql, mut.variables(recordId, newValues));
-      this._cache.delete(resource.table);
     } catch (err: any) {
       throw new Error(`GraphqlConnector[${resource.table}]: update failed — ${err.message}`);
     }
@@ -331,7 +316,6 @@ export default class GraphqlConnector extends AdminForthBaseConnector {
     if (!mut) throw new Error(`GraphqlConnector[${resource.table}]: no delete mutation defined`);
     try {
       const data = await this.gqlRequest(mut.gql, { id: recordId });
-      this._cache.delete(resource.table);
       return data[mut.resultField];
     } catch (err: any) {
       throw new Error(`GraphqlConnector[${resource.table}]: delete failed — ${err.message}`);
