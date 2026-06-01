@@ -729,13 +729,14 @@ sed -i 's/certificate-authority-data:.*/insecure-skip-tls-verify: true/g' kubeco
 export KUBECONFIG=$(pwd)/kubeconfig.yaml
 
 cd helm
-export APP_NAMESPACE="myadmin"
-export IMAGE_FULL_TAG="$${ACCOUNT_ID}.dkr.ecr.$${REGION}.amazonaws.com/myadmink3s:$${TAG}"
+export APP_NAMESPACE="myadmin"  # <<< SET YOUR APP NAMESPACE HERE
+export IMAGE_FULL_TAG="$${ACCOUNT_ID}.dkr.ecr.$${REGION}.amazonaws.com/myadmink3s:$${TAG}"  # Change 'myadmink3s' to your app name in 'helmfile.yaml' & 'Chart.yaml' files as well
 helmfile apply
 cd ..
 
 echo "Deployment complete!"
 ```
+You need to change the values of `APP_NAMESPACE` and `IMAGE_FULL_TAG` in the `deploy/deploy.sh` script to match your application name and image tag. Note that `IMAGE_FULL_TAG` is constructed dynamically from the Terraform outputs and the tag, so you only need to change `APP_NAMESPACE`.
 
 Don't forget to make the script executable:
 
