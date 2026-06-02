@@ -101,6 +101,9 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
             const [precision, scale] = baseType.match(/\d+/g);
             field.precision = parseInt(precision);
             field.scale = parseInt(scale);
+          } else if (baseType == 'json' || baseType == 'jsonb') {
+            field.type = AdminForthDataTypes.JSON;
+            field._underlineType = baseType;
           } else if (baseType === 'decimal') {
             field.type = AdminForthDataTypes.DECIMAL;
             field._underlineType = 'decimal';
@@ -155,17 +158,14 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value === null ? null : !!value;
       } else if (field.type == AdminForthDataTypes.JSON) {
-        if (field._underlineType == 'text' || field._underlineType == 'varchar') {
+        if (typeof value === 'string') {
           try {
             return JSON.parse(value);
           } catch (e) {
             return {'error': `Failed to parse JSON: ${e.message}`}
           }
-        } else {
-          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
         }
       }
-
       return value;
     }
 
@@ -192,12 +192,10 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       } else if (field.type == AdminForthDataTypes.BOOLEAN) {
         return value === null ? null : (value ? 1 : 0);
       } else if (field.type == AdminForthDataTypes.JSON) {
-        // check underline type is text or string
-        if (field._underlineType == 'text' || field._underlineType == 'varchar') {
-          return JSON.stringify(value);
-        } else {
-          afLogger.warn(`AdminForth: JSON field is not a string/text but ${field._underlineType}, this is not supported yet`);
+        if (value === null || value === undefined) {
+          return null;
         }
+        return typeof value === 'string' ? value : JSON.stringify(value);
       }
 
       return value;

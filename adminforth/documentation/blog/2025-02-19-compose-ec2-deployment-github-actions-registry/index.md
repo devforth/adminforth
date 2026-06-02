@@ -337,6 +337,8 @@ resource "null_resource" "wait_for_user_data" {
 resource "null_resource" "setup_registry" {
   provisioner "local-exec" {
     command = <<-EOF
+      set -eu
+
       echo "Generating secret for local registry"
       sha256sum ./.keys/id_rsa | cut -d ' ' -f1 | tr -d '\n' > ./.keys/registry.pure
 
@@ -396,6 +398,7 @@ resource "null_resource" "sync_files_and_run" {
 
   provisioner "local-exec" {
     command = <<-EOF
+      set -eu
 
       # map appserver.local to the instance (in CI we don't know the IP, so have to use this mapping)
       # so then in GA pipeline we will use 

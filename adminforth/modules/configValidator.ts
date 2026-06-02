@@ -487,6 +487,10 @@ export default class ConfigValidator implements IConfigValidator {
 
         col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
 
+        if (col.name.trim() !== col.name) {
+          errors.push(`Resource "${res.resourceId}" column name "${col.name}" must not have leading or trailing spaces`);
+        }
+
         // check for duplicate column names
         if (resInput.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
           errors.push(`Resource "${res.resourceId}" has duplicate column name "${col.name}"`);

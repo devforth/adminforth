@@ -4,8 +4,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 
 const config: Config = {
-  title: 'Vue & Node admin panel framework',
-  tagline: 'Launch robust back-office apps faster with AdminForth’s easy setup and customization',
+  title: 'Agent-first open-source admin panel framework',
+  tagline: 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code.',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
@@ -38,6 +38,44 @@ const config: Config = {
     {
       src: 'https://tluma.ai/widget.js',
       async: true,
+    },
+  ],
+
+  headTags: [
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'application-name',
+        content: 'AdminForth',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'robots',
+        content: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'googlebot',
+        content: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
+      },
+    },
+    {
+      tagName: 'meta',
+      attributes: {
+        name: 'keywords',
+        content: 'agent-first admin panel framework, open-source admin panel, agentic back office, tailwind admin framework, vue typescript admin panel, internal admin agent',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'image_src',
+        href: 'https://adminforth.dev/img/adminforth_screenshot.png',
+      },
     },
   ],
 
