@@ -31,6 +31,7 @@ import {
   AdminForthFilterOperators,
   AdminForthDataTypes,
   AdminUser, 
+  ActionCheckSource,
   type AdminForthConfigMenuItem,
   type AdminForthMenuContribution,
   type AdminForthMenuTarget,
@@ -893,6 +894,85 @@ class AdminForth implements IAdminForth {
     }
 
     return { error: null };
+  }
+
+  async runAction({
+    resourceId,
+    actionId,
+    recordId,
+    adminUser,
+    extra = {},
+    response,
+    tr,
+  }: {
+    resourceId: string,
+    actionId: string,
+    recordId: string | number,
+    adminUser: AdminUser,
+    extra,
+    response?: any,
+    tr?: any,
+  }) {
+    const resource = this.config.resources.find(
+      (res) => res.resourceId === resourceId
+    );
+
+    if (!resource) {
+      return {
+        ok: false,
+        error: `Resource '${resourceId}' not found`,
+      };
+    }
+
+    const action = resource.options.actions?.find(
+      (act) => act.id === actionId
+    );
+
+    if (!action) {
+      return {
+        ok: false,
+        error: `Action '${actionId}' not found`,
+      };
+    }
+
+    if (!action.action) {
+      return {
+        ok: false,
+        error: `Action '${actionId}' has no action handler`,
+      };
+    }
+
+    if (typeof action.allowed === 'function') {
+      const { allowedActions } = await interpretResource(
+        adminUser,
+        resource,
+        {},
+        ActionCheckSource.CustomActionRequest,
+        this
+      );
+
+      const execAllowed = await action.allowed({
+        adminUser,
+        standardAllowedActions: allowedActions,
+      });
+
+      if (!execAllowed) {
+        return {
+          ok: false,
+          error: `Action '${actionId}' not allowed`,
+        };
+      }
+    }
+
+      return await action.action({
+        recordId: String(recordId),
+        adminUser,
+        resource,
+        adminforth: this,
+        response: response as any,
+        tr: tr as any,
+        extra,
+      });
   }
 
   resource(resourceId: string): IOperationalResource {
