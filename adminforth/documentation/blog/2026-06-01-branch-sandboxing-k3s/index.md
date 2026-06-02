@@ -2,7 +2,7 @@
 slug: branch-sandboxing-k3s
 title: "K3s Branch Sandboxing: Automating EC2 Infrastructure with GitHub Actions, Terraform, Helm & Cloudflare"
 authors: kirilldorr
-tags: [aws, terraform, helm, helmfile, k3s, cloudflare, github actions]
+tags: [aws, terraform, helm, helmfile, k3s, cloudflare, github-actions]
 description: "Master branch-based sandboxing! Step-by-step guide to automating K3s cluster provisioning, DNS management, and application deployments using Terraform, Helm, Cloudflare, and GitHub Actions."
 ---
 
@@ -16,6 +16,8 @@ This guide covers:
 - Cloudflare DNS management for custom domains
 - GitHub Actions workflows for automated deployments and cleanup
 - Monitoring and management practices
+
+<!-- truncate -->
 
 ## Prerequisites
 

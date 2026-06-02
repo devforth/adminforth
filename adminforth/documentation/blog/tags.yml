@@ -92,3 +92,13 @@ helmfile:
   label: Helmfile
   permalink: /helmfile
   description: Helmfile is a declarative tool for managing multiple Helm charts, making it easier to deploy and manage complex Kubernetes applications.
+
+cloudflare:
+  label: Cloudflare
+  permalink: /cloudflare
+  description: Cloudflare is a web infrastructure and security company that provides a range of services for websites and applications.
+
+github-actions:
+  label: GitHub Actions
+  permalink: /github-actions
+  description: GitHub Actions is a continuous integration and continuous deployment (CI/CD) service provided by GitHub that allows you to automate your software development workflows.
