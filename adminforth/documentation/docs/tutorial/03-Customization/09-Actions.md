@@ -360,3 +360,46 @@ Backend handler: read the payload via `extra`.
 Notes:
 - If you don’t emit a payload, the default behavior is used by the UI (e.g., in lists the current row context is used). When you do provide a payload, it will be forwarded to the backend as `extra` for your action handler.
 - You can combine default context with your own payload by merging before emitting, for example: `emit('callAction', { ...row, asListed: true })` if your component has access to the row object.
+
+## Start actions programmatically
+You can execute resource actions manually using adminforth.runAction(). This is useful inside hooks, plugins, cron jobs, custom endpoints, or any backend automation.
+
+```ts title="./resources/apartments.ts"
+actions: [
+  {
+  //diff-add
+  id: 'testToggle listedAction',
+  name: 'Toggle listed',
+  icon: 'flowbite:eye-solid',
+  ...  
+  }
+]
+```
+Then execute it from a hook for example:
+
+```ts title="./resources/apartments.ts"
+hooks: {
+      ...
+      afterSave: async ({ record, adminUser, resource, adminforth }: { record: any, adminUser: AdminUser, resource: AdminForthResource, adminforth: any }) => {
+
+        await adminforth.runAction({
+          actionId: 'Toggle listed',
+          resourceId: resource.resourceId,
+          recordId: record.id,
+          adminUser,
+        });
+
+        return { ok: true };
+      },
+    },
+```
+
+runAction() automatically:
+- finds the resource
+- finds the action
+- checks permissions via allowed
+- executes the action handler
+- passes full action context (recordId, adminUser, extra, etc.)
+
+> ☝️ runAction() is not limited to hooks — you can call it anywhere you have access to the AdminForth instance.
+

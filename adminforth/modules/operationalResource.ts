@@ -64,7 +64,7 @@ export default class OperationalResource implements IOperationalResource {
   async aggregate(
     filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule
+    groupBy?: IGroupByRule | IGroupByRule[]
   ): Promise<Array<{ group?: string, [key: string]: any }>> {
     return this.dataConnector.aggregate({
       resource: this.resourceConfig,
