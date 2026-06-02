@@ -288,6 +288,25 @@ After registering a handler, you can create a job. For example:
   ...
 
 ```
+
+## Run code after all tasks are done
+If you need to react when the whole job is finished, pass `onAllTasksDone` to `registerTaskHandler`.
+
+```ts title="./index.ts"
+  ...
+
+  backgroundJobsPlugin.registerTaskHandler({
+    jobHandlerName: 'import-users',
+    handler: async ({ jobId, setTaskStateField, getTaskStateField }) => {
+      // task logic
+    },
+    onAllTasksDone: async ({ jobId, failedTasks, succeededTasks }) => {
+      console.log('job finished', { jobId, failedTasks, succeededTasks });
+    },
+  });
+
+```
+
 ## Custom job state renderer
 There may be cases when you need to display the state of job tasks. For this, you can register a custom component.
 
