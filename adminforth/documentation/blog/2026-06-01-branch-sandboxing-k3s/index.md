@@ -30,10 +30,10 @@ Before you begin, make sure you have the following:
 
 Also you need to have installed:
 
-- Terraform
-- Helm
-- Helmfile
-- kubectl
+- [Terraform](https://developer.hashicorp.com/terraform/install)
+- [Helm](https://helm.sh/docs/intro/install/)
+- [Helmfile](https://helmfile.readthedocs.io/en/latest/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 
 ## GitHub Secrets Configuration
 
