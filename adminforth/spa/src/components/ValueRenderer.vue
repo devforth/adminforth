@@ -188,6 +188,7 @@ function getArrayItemDisplayValue(value: any, column: AdminForthResourceColumnCo
 
 .jv-container .jv-code {
   padding: 10px 10px;
+  white-space: pre-wrap;  
 }
 
 .jv-container .jv-button[class] {

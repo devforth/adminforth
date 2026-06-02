@@ -451,16 +451,19 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       resource: AdminForthResource;
       filters: IAdminForthAndOrFilter;
       aggregations: { [alias: string]: IAggregationRule };
-      groupBy?: IGroupByRule;
+      groupBy?: IGroupByRule | IGroupByRule[];
     }): Promise <Array<{ group?: string, [key: string]: any }>> {
 
       const tableName = `${this.dbName}.${resource.table}`;
 
       const selectParts: string[] = [];
-      let groupExpr: string | null = null;
+      const groupExprs: string[] = [];
+      const groupByRules = this.normalizeGroupByRules(groupBy);
 
-      if (groupBy?.type === 'date_trunc') {
-        const g = groupBy as IGroupByDateTrunc;
+      for (const [index, groupByRule] of groupByRules.entries()) {
+        let groupExpr: string;
+        if (groupByRule.type === 'date_trunc') {
+        const g = groupByRule as IGroupByDateTrunc;
         const tz = g.timezone ?? 'UTC';
 
         const field = `toTimeZone(${g.field}, '${tz}')`;
@@ -471,18 +474,18 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
           case 'week': groupExpr = `toDate(toStartOfWeek(${field}))`; break;
           case 'year': groupExpr = `toDate(toStartOfYear(${field}))`; break;
         }
-
-        selectParts.push(`${groupExpr} AS \`group\``);
-
-      } else if (groupBy?.type === 'field') {
-        const g = groupBy as IGroupByField;
+      } else {
+        const g = groupByRule as IGroupByField;
         groupExpr = `${g.field}`;
-        selectParts.push(`${groupExpr} AS \`group\``);
+      }
+        groupExprs.push(groupExpr);
+        selectParts.push(`${groupExpr} AS \`${this.getGroupByResultAlias(groupByRule, index, groupByRules.length)}\``);
       }
 
       for (const [alias, rule] of Object.entries(aggregations)) {
         switch (rule.operation) {
           case 'count': selectParts.push(`count() AS \`${alias}\``); break;
+          case 'count_distinct': selectParts.push(`uniqExact(${rule.field}) AS \`${alias}\``); break;
           case 'sum': selectParts.push(`sum(${rule.field}) AS \`${alias}\``); break;
           case 'avg': selectParts.push(`avg(${rule.field}) AS \`${alias}\``); break;
           case 'min': selectParts.push(`min(${rule.field}) AS \`${alias}\``); break;
@@ -495,8 +498,8 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
 
       let query = `SELECT ${selectParts.join(', ')} FROM ${tableName} ${where}`;
 
-      if (groupExpr) {
-        query += ` GROUP BY ${groupExpr} ORDER BY ${groupExpr} ASC`;
+      if (groupExprs.length) {
+        query += ` GROUP BY ${groupExprs.join(', ')} ORDER BY ${groupExprs.join(', ')} ASC`;
       }
 
       const result = await this.client.query({

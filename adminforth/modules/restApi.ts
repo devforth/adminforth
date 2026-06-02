@@ -1569,18 +1569,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
     const aggregateRequestSchema: AnySchemaObject = {
       type: 'object',
-      $defs: commonFilterSchemaDefs,
       required: ['resourceId', 'aggregations'],
       properties: {
         resourceId: { type: 'string' },
         aggregations: {
           type: 'object',
-          description: 'Map of alias → aggregation rule. Each rule has an "operation" (sum, count, avg, min, max, median) and an optional "field".',
+          description: 'Map of alias → aggregation rule. Each rule has an "operation" (sum, count, count_distinct, avg, min, max, median) and an optional "field".',
           additionalProperties: {
             type: 'object',
             required: ['operation'],
             properties: {
-              operation: { type: 'string', enum: ['sum', 'count', 'avg', 'min', 'max', 'median'] },
+              operation: { type: 'string', enum: ['sum', 'count', 'count_distinct', 'avg', 'min', 'max', 'median'] },
               field: { type: 'string' },
             },
             additionalProperties: false,
@@ -1588,7 +1587,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         },
         filters: commonFiltersSchema,
         groupBy: {
-          description: 'Optional grouping rule. Either { type: "field", field: "col" } or { type: "date_trunc", field: "col", truncation: "day"|"week"|"month"|"year", timezone?: "IANA/Name" }.',
+          description: 'Optional grouping rule or array of grouping rules.',
+          anyOf: [
+            { $ref: '#/$defs/aggregateGroupByRule' },
+            { type: 'array', items: { $ref: '#/$defs/aggregateGroupByRule' } },
+          ],
+        },
+      },
+      $defs: {
+        ...commonFilterSchemaDefs,
+        aggregateGroupByRule: {
           anyOf: [
             {
               type: 'object',
@@ -1596,6 +1604,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               properties: {
                 type: { type: 'string', enum: ['field'] },
                 field: { type: 'string' },
+                as: { type: 'string' },
               },
               additionalProperties: false,
             },
@@ -1607,6 +1616,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 field: { type: 'string' },
                 truncation: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
                 timezone: { type: 'string' },
+                as: { type: 'string' },
               },
               additionalProperties: false,
             },
@@ -1681,9 +1691,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         try {
           const userTimeZone = headers['X-TimeZone'];
-          const aggregateGroupBy = groupBy?.type === 'date_trunc' && userTimeZone
-            ? { ...groupBy, timezone: userTimeZone }
-            : groupBy;
+          const applyUserTimeZone = (groupByRule: any) => groupByRule?.type === 'date_trunc' && userTimeZone
+            ? { ...groupByRule, timezone: userTimeZone }
+            : groupByRule;
+          const aggregateGroupBy = Array.isArray(groupBy)
+            ? groupBy.map(applyUserTimeZone)
+            : applyUserTimeZone(groupBy);
 
           const data = await this.adminforth.connectors[resource.dataSource].aggregate({
             resource,
