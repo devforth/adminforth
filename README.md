@@ -1,4 +1,4 @@
-# AdminForth - free powerfull Node.js admin panel framework on Vue & Tailwind
+# AdminForth - powerfull Agent-first Typescript admin panel framework
 
 
 <a href="https://adminforth.dev"><img src="https://img.shields.io/badge/website-adminforth.dev-blue" style="height:24px"/></a> <a href="https://adminforth.dev"><img src="https://img.shields.io/npm/dw/adminforth" style="height:24px"/></a> <a href="https://devforth.io"><img src="https://raw.githubusercontent.com/devforth/OnLogs/e97944fffc24fec0ce2347b205c9bda3be8de5c5/.assets/df_powered_by.svg" style="height:28px"/></a>
@@ -16,9 +16,8 @@
 <br/>
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/e643caad-1daa-4085-b125-cc940557a2ec"
- alt="AdminForth Dashboard" width="90%">
-
+  <img src="https://github.com/user-attachments/assets/775c527d-65c3-4d9c-bb0c-3692462f2818"
+ alt="AdminForth Agent" width="90%">
 </div>
 
 
@@ -38,32 +37,43 @@ Why AdminForth:
 
 ## Project initialisation
 
-```
-mkdir myadmin && cd myadmin
+To create an AdminForth project, run:
+
+```bash
 npx adminforth create-app
 ```
 
-## Previews
+During the interactive initialization process, AdminForth will ask you to provide a local database URL.
 
-<a href="https://adminforth.dev/docs/tutorial/Customization/customPages">Custom Dashboard</a>
-<br/>
-<img src="https://github.com/user-attachments/assets/aa899196-f7f3-4582-839c-2267f2e9e197" alt="AdminForth Dashboard demo" width="80%" />
+### Integrating AdminForth into your existing application
 
-<a href="https://adminforth.dev/docs/tutorial/Plugins/chat-gpt">Text completion plugin (Copilot-style) using LLMs</a>
-<br/>
+If you want to build an admin panel for an existing project that already has a database with tables, you can provide the connection URL to your existing development database, such as a local or deployed one.
 
-<img src="https://github.com/user-attachments/assets/cfa17cbd-3a53-4725-ab46-53c7c7666028" alt="AdminForth ChatGPT demo" width="80%" />
+After that, you may want to generate AdminForth resource files from your existing database tables:
 
-<a href="https://adminforth.dev/docs/tutorial/Plugins/upload/#image-generation">Image Generation using image generation models</a>
-<br/>
-<img src="https://github.com/user-attachments/assets/b923e044-7e29-46ff-ab91-eeca5eee2b0a" alt="AdminForth DALE-E image generator demo" width="80%">
+```bash
+npx adminforth resource
+```
 
+Resource files are needed for AdminForth to “know” about your tables and define how to work with them.
 
-# For developers
+Use the command above every time you add new tables or change their schema.
 
-The most convenient way to add new features or fixes is using `dev-demo`. It imports the source code of the repository and plugins so you can edit them and see changes on the fly.
+### Starting from scratch
 
-# Requirements
+If you do not have a database yet, start an empty local database, for example PostgreSQL in Docker, and provide its URL to the AdminForth CLI.
+
+If the adminforth CLI does not detect any tables, it will suggest adding Prisma as a migration tool. Prisma is not related to AdminForth, but it is one of the most convenient migration tools.
+
+Please follow [getting started](https://adminforth.dev/docs/tutorial/gettingStarted/).
+
+# For AdminForth developers
+
+> Follow this section only if you want to make changes to the AdminForth framework or develop a plugin.
+
+The most convenient way to add new features or fixes is to use `dev-demo`. It imports the repository source code and plugins, so you can edit them and see changes on the fly.
+
+## Requirements
 
 - **Node.js 20**
 - **Docker**

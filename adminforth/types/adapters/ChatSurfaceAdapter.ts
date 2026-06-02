@@ -9,6 +9,11 @@ export type ChatSurfaceRequestContext = {
 export type ChatSurfaceIncomingMessage = {
   surface: string;
   prompt: string;
+  audio?: {
+    buffer: Buffer;
+    filename: string;
+    mimeType: string;
+  };
   externalConversationId: string;
   externalUserId: string;
   userTimeZone?: string;
@@ -38,6 +43,12 @@ export type ChatSurfaceEvent =
   | {
       type: "done";
       text: string;
+    }
+  | {
+      type: "audio";
+      audio: Buffer;
+      filename: string;
+      mimeType: string;
     }
   | {
       type: "error";

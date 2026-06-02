@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
@@ -7,6 +8,20 @@ import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
 const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
+const YOUTUBE_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/4tB8uzY__uk';
+const HOME_TITLE = 'Agent-first open-source admin panel framework';
+const HOME_DESCRIPTION = 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. AdminForth is a flexible, modern foundation for developer-owned back-end management systems.';
+const HOME_SUMMARY = 'You can use AdminForth to build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. It is designed for developers who need a flexible, modern foundation for back-end management systems.';
+const SCREENSHOT_PATH = '/img/adminforth_screenshot.png';
+const OG_IMAGE_PATH = '/img/og.jpg';
+const FEATURE_LIST = [
+  'Connect to existing Postgres, MySQL, SQLite, or MongoDB data, provide an OpenAI or Anthropic API key, and start using the internal agent in natural language with npx adminforth create-app.',
+  'Ships assets for coding agents like Claude, Codex, Copilot, and Antigravity, including AGENTS.md, CLAUDE.md, llms.txt, and skills.',
+  'Always open-source and free.',
+  'Built with Tailwind CSS and fully extendable with Vue and TypeScript.',
+  'Premade RFC and OWASP-compatible plugins for TOTP, passkeys, third-party auth providers, and audit logs.',
+  'Rich component library for custom admin controls and pages.',
+];
 
 
 const images = [
@@ -136,7 +151,7 @@ function HomepageHeader() {
       <header className={clsx('hero', styles.heroBanner)}>
         <div className="container" >
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            Open-Source Admin Framework with a native Agent
+            {HOME_TITLE}
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
 
@@ -195,13 +210,79 @@ function HomepageHeader() {
 
 export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
+  const siteUrl = siteConfig.url.replace(/\/$/, '');
+  const screenshotUrl = `${siteUrl}${SCREENSHOT_PATH}`;
+  const ogImageUrl = `${siteUrl}${OG_IMAGE_PATH}`;
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        name: 'AdminForth',
+        alternateName: HOME_TITLE,
+        url: `${siteUrl}/`,
+        description: HOME_SUMMARY,
+        image: ogImageUrl,
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'AdminForth',
+        alternateName: HOME_TITLE,
+        applicationCategory: 'BusinessApplication',
+        applicationSubCategory: 'Admin panel framework',
+        operatingSystem: 'Web browser',
+        url: `${siteUrl}/`,
+        image: ogImageUrl,
+        screenshot: screenshotUrl,
+        description: HOME_SUMMARY,
+        isAccessibleForFree: true,
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        featureList: FEATURE_LIST,
+        sameAs: [
+          'https://github.com/devforth/adminforth',
+          'https://demo.adminforth.dev/',
+        ],
+      },
+    ],
+  };
 
   return (
     <Layout
-      title={`${siteConfig.title}`}
-      description="OpenSource Tailwind Admin Panel extendable with Vue3 and typescript!">
+      title={HOME_TITLE}
+      description={HOME_DESCRIPTION}>
+      <Head>
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AdminForth" />
+        <meta property="og:image:alt" content="AdminForth social card" />
+        <meta name="twitter:title" content={HOME_TITLE} />
+        <meta name="twitter:description" content={HOME_DESCRIPTION} />
+        <meta name="twitter:image:alt" content="AdminForth social card" />
+        <meta name="twitter:label1" content="License" />
+        <meta name="twitter:data1" content="Open source and free" />
+        <meta name="twitter:label2" content="Stack" />
+        <meta name="twitter:data2" content="Tailwind, Vue, TypeScript" />
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      </Head>
       <HomepageHeader />
       <main>
+
+        <div className={styles.videoSection}>
+          <div className={styles.videoWrapper}>
+            <iframe
+              className={styles.videoFrame}
+              src={YOUTUBE_VIDEO_EMBED_URL}
+              title="AdminForth overview video"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
 
 
       <Heading as="h2" className="hero__title text--center">
@@ -244,6 +325,99 @@ export default function Home(): JSX.Element {
         </div>
         
         <HomepageFeatures />
+
+        <section className={styles.featuredOnSection}>
+          <div className="container">
+            <Heading as="h2" className={styles.featuredOnTitle}>
+              Featured on
+            </Heading>
+            <div className={styles.featuredOnBadges}>
+              <a
+                href="https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://auraplusplus.com/images/badges/featured-on-light.svg"
+                  alt="Featured on Aura++"
+                  width="265"
+                  height="58"
+                />
+              </a>
+              <a
+                href="https://peerpush.net/p/adminforth"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://peerpush.net/p/adminforth/badge.png"
+                  alt="AdminForth on PeerPush"
+                  width="230"
+                />
+              </a>
+              <a
+                href="https://openhunts.com"
+                target="_blank"
+                rel="noopener"
+                title="OpenHunts Club"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://cdn.openhunts.com/badges/club.webp"
+                  alt="OpenHunts Club Member"
+                  width="195"
+                />
+              </a>
+              <a
+                href="https://toolfio.com"
+                target="_blank"
+                rel="dofollow"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://toolfio.com/toolfio-light-badge.png"
+                  alt="Featured on Toolfio"
+                  width="200"
+                  height="54"
+                />
+              </a>
+              <a
+                href="https://earlyhunt.com/project/adminforth"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://earlyhunt.com/badges/earlyhunt-badge-light.svg"
+                  alt="Featured on EarlyHunt"
+                  width="265"
+                  height="58"
+                />
+              </a>
+              <a
+                href="https://www.producthunt.com/products/adminforth/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-adminforth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=598095&theme=light"
+                  alt="AdminForth on Product Hunt"
+                  width="250"
+                  height="54"
+                />
+              </a>
+            </div>
+          </div>
+        </section>
 
       </main>
 
