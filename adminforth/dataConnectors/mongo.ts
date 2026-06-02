@@ -310,22 +310,26 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         resource: AdminForthResource;
         filters: IAdminForthAndOrFilter;
         aggregations: { [alias: string]: IAggregationRule };
-        groupBy?: IGroupByRule;
+        groupBy?: IGroupByRule | IGroupByRule[];
     }): Promise<Array<{ group?: string, [key: string]: any }>> {
 
         const collection = this.client.db().collection(resource.table);
 
         const match = filters?.subFilters?.length ? this.getFilterQuery(resource, filters) : {};
 
+        const groupByRules = this.normalizeGroupByRules(groupBy);
         let groupId: any = null;
-
-        if (groupBy?.type === 'field') {
-            const g = groupBy as IGroupByField;
-            groupId = `$${g.field}`;
+        if (groupByRules.length) {
+            groupId = {};
         }
-
-        if (groupBy?.type === 'date_trunc') {
-            const g = groupBy as IGroupByDateTrunc;
+        for (const [index, groupByRule] of groupByRules.entries()) {
+            const alias = this.getGroupByResultAlias(groupByRule, index, groupByRules.length);
+            if (groupByRule.type === 'field') {
+                const g = groupByRule as IGroupByField;
+                groupId[alias] = `$${g.field}`;
+                continue;
+            }
+            const g = groupByRule as IGroupByDateTrunc;
             const tz = g.timezone ?? 'UTC';
             const dateTruncSpec: any = { 
                 date: `$${g.field}`, 
@@ -335,7 +339,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
             if (g.truncation === 'week') {
                 dateTruncSpec.startOfWeek = 'Mon';
             }
-            groupId = { $dateTrunc: dateTruncSpec };
+            groupId[alias] = { $dateTrunc: dateTruncSpec };
         }
 
         const groupStage: Record<string, any> = {
@@ -345,6 +349,7 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         for (const [alias, rule] of Object.entries(aggregations)) {
             switch (rule.operation) {
                 case 'count': groupStage[alias] = { $sum: 1 }; break;
+                case 'count_distinct': groupStage[alias] = { $addToSet: `$${rule.field}` }; break;
                 case 'sum': groupStage[alias] = { $sum: { $toDouble: `$${rule.field}` } }; break;
                 case 'avg': groupStage[alias] = { $avg: { $toDouble: `$${rule.field}` } }; break;
                 case 'min': groupStage[alias] = { $min: { $toDouble: `$${rule.field}` } }; break;
@@ -364,23 +369,26 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
         pipeline.push({
             $project: {
                 _id: 0,
-                group: !groupBy ? "$$REMOVE" : (groupBy.type === 'date_trunc' ? {
-                    $cond: {
-                        if: { $eq: [{ $type: "$_id" }, "date"] },
-                        then: { 
-                            $dateToString: { 
-                                format: "%Y-%m-%d", 
-                                date: "$_id", 
-                                timezone: (groupBy as IGroupByDateTrunc).timezone ?? 'UTC' 
-                            } 
-                        },
-                        else: "$_id"
-                    }
-                } : "$_id"),
+                ...Object.fromEntries(groupByRules.map((groupByRule, index) => {
+                    const alias = this.getGroupByResultAlias(groupByRule, index, groupByRules.length);
+                    return [alias, groupByRule.type === 'date_trunc' ? {
+                        $cond: {
+                            if: { $eq: [{ $type: `$_id.${alias}` }, "date"] },
+                            then: {
+                                $dateToString: {
+                                    format: "%Y-%m-%d",
+                                    date: `$_id.${alias}`,
+                                    timezone: (groupByRule as IGroupByDateTrunc).timezone ?? 'UTC'
+                                }
+                            },
+                            else: `$_id.${alias}`
+                        }
+                    } : `$_id.${alias}`];
+                })),
                 ...Object.fromEntries(
                     Object.keys(groupStage)
                         .filter(k => k !== '_id')
-                        .map(k => [k, `$${k}`])
+                        .map(k => [k, aggregations[k]?.operation === 'count_distinct' ? { $size: `$${k}` } : `$${k}`])
                 ),
             },
         });

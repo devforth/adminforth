@@ -402,7 +402,7 @@ export interface IAdminForthDataSourceConnector {
     resource: AdminForthResource,
     filters: IAdminForthAndOrFilter,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule,
+    groupBy?: IGroupByRule | IGroupByRule[],
   }): Promise<Array<{ group?: string, [key: string]: any }>>;
 }
 
@@ -448,7 +448,7 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
     resource: AdminForthResource,
     filters: IAdminForthAndOrFilter,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule,
+    groupBy?: IGroupByRule | IGroupByRule[],
   }): Promise<Array<{ group?: string, [key: string]: any }>>;
 }
 
@@ -1847,8 +1847,8 @@ export interface AdminForthConfig extends Omit<AdminForthInputConfig, 'customiza
 export type FDataFilter = (field: string, value: any) => IAdminForthSingleFilter;
 
 export interface IAggregationRule {
-  operation: 'sum' | 'count' | 'avg' | 'min' | 'max' | 'median';
-  /** Required for sum, avg, min, max, median. Omit for count. */
+  operation: 'sum' | 'count' | 'count_distinct' | 'avg' | 'min' | 'max' | 'median';
+  /** Required for sum, count_distinct, avg, min, max, median. Omit for count. */
   field?: string;
 }
 
@@ -1858,11 +1858,15 @@ export interface IGroupByDateTrunc {
   truncation: 'day' | 'week' | 'month' | 'year';
   /** IANA timezone name, e.g. 'Europe/Kyiv'. Optional, defaults to UTC. */
   timezone?: string;
+  /** Output key for this grouping. Defaults to "group" for a single groupBy, or group1/group2/... for multiple. */
+  as?: string;
 }
 
 export interface IGroupByField {
   type: 'field';
   field: string;
+  /** Output key for this grouping. Defaults to "group" for a single groupBy, or group1/group2/... for multiple. */
+  as?: string;
 }
 
 export type IGroupByRule = IGroupByDateTrunc | IGroupByField;
@@ -1873,6 +1877,7 @@ export type IGroupByRule = IGroupByDateTrunc | IGroupByField;
 export class Aggregates {
   static sum(field: string): IAggregationRule { return { operation: 'sum', field }; }
   static count(): IAggregationRule { return { operation: 'count' }; }
+  static countDistinct(field: string): IAggregationRule { return { operation: 'count_distinct', field }; }
   static avg(field: string): IAggregationRule { return { operation: 'avg', field }; }
   static min(field: string): IAggregationRule { return { operation: 'min', field }; }
   static max(field: string): IAggregationRule { return { operation: 'max', field }; }
@@ -1889,16 +1894,16 @@ export class GroupBy {
    * @param truncation  'day' | 'week' | 'month' | 'year'
    * @param timezone  IANA timezone name, e.g. 'Europe/Kyiv'. Defaults to 'UTC' when omitted.
    */
-  static DateTrunc(field: string, truncation: 'day' | 'week' | 'month' | 'year', timezone?: string): IGroupByDateTrunc {
-    return { type: 'date_trunc', field, truncation, timezone };
+  static DateTrunc(field: string, truncation: 'day' | 'week' | 'month' | 'year', timezone?: string, as?: string): IGroupByDateTrunc {
+    return { type: 'date_trunc', field, truncation, timezone, as };
   }
 
   /**
    * Group by raw field value. The field value is returned as-is in the `group` key.
    * @param field  Column name to group by
    */
-  static Field(field: string): IGroupByField {
-    return { type: 'field', field };
+  static Field(field: string, as?: string): IGroupByField {
+    return { type: 'field', field, as };
   }
 }
 
@@ -2002,7 +2007,7 @@ export interface IOperationalResource {
   aggregate: (
     filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
     aggregations: { [alias: string]: IAggregationRule },
-    groupBy?: IGroupByRule
+    groupBy?: IGroupByRule | IGroupByRule[]
   ) => Promise<Array<{ group?: string, [key: string]: any }>>;
 
   create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
