@@ -10,6 +10,19 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
+        <button v-if="filtersStore.visibleFiltersCount > 0"
+          :disabled="nextId === null"
+          @click="nextId && router.push({ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextId } })"
+          :class="nextId === null ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+          class="af-button-shadow h-[34px] inline-flex items-center px-3 py-2 text-left
+          text-sm font-medium transition-all border outline-none 
+          bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder  
+          dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+          hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+        >
+          {{ $t('Next') }}
+        </button>
       <template v-if="coreStore.resource?.options?.actions">
 
         <div class="flex gap-1" v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
@@ -181,7 +194,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
@@ -194,9 +207,12 @@ import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnC
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { Spinner } from '@/afcl';
 import websocket from '@/websocket';
+import { useFiltersStore } from '@/stores/filters';
 
 const route = useRoute();
 const router = useRouter();
+const filtersStore = useFiltersStore();
+
 const loading = ref(true);
 const { t } = useI18n();
 const { confirm, alert, show } = useAdminforth();
@@ -225,6 +241,31 @@ const skeletonRowsCount = computed(() => {
 const showPageTopic = computed(() => {
   return `${SHOW_PAGE_TOPIC_PREFIX}${String(route.params.resourceId)}/${String(route.params.primaryKey)}`;
 });
+
+const nextId = ref<string | null>(null);
+
+watch(() => route.params.primaryKey, async () => {
+  await loadNeighbors();
+});
+
+async function loadNeighbors() {
+  const resourceId = route.params.resourceId as string;
+  const currentId = route.params.primaryKey as string;
+
+  const next = await callAdminForthApi({
+    path: '/next_filtered_record',
+    method: 'POST',
+    body: {
+      resourceId,
+      currentId,
+      filters: filtersStore.filters,
+    },
+  });
+
+  nextId.value = next.id ?? null;
+  console.log('nextId.value:', nextId.value, typeof nextId.value);
+
+}
 
 function applyShowPageUpdates(data: { resourceId: string; recordId: string; updates: Record<string, any> }) {
   if (String(data.resourceId) !== String(route.params.resourceId)) {
@@ -264,6 +305,7 @@ onMounted(async () => {
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   }
   loading.value = false;
+  await loadNeighbors();
 });
 
 onUnmounted(() => {

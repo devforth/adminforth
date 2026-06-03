@@ -2431,6 +2431,48 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
+    server.endpoint({
+      method: 'POST',
+      path: '/next_filtered_record',
+      handler: async ({ body, adminUser }) => {
+        const { resourceId, currentId, filters, sort } = body;
+
+        const resource = this.adminforth.config.resources.find(
+          (res) => res.resourceId === resourceId
+        );
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+
+        const { allowedActions } = await interpretResource(
+          adminUser, resource, {}, ActionCheckSource.ShowRequest, this.adminforth
+        );
+        const { allowed, error } = checkAccess(AllowedActionsEnum.show, allowedActions);
+        if (!allowed) {
+          return { error };
+        }
+
+        const pkColumn = resource.columns.find((col) => col.primaryKey);
+
+        const data = await this.adminforth.connectors[resource.dataSource].getData({
+          resource,
+          filters: {
+            operator: AdminForthFilterOperators.AND,
+            subFilters: [
+              ...(filters || []),
+              { field: pkColumn.name, operator: AdminForthFilterOperators.GT, value: currentId },
+            ],
+          },
+          limit: 1,
+          offset: 0,
+          sort: [{ field: pkColumn.name, direction: AdminForthSortDirections.asc }],
+        });
+
+        const record = data.data?.[0];
+        return { id: record?.[pkColumn.name] ?? null };
+      },
+    });
+
     // setup endpoints for all plugins
     this.adminforth.activatedPlugins.forEach((plugin) => {
       plugin.setupEndpoints(server);
