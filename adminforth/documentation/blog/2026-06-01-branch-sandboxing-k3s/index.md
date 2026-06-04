@@ -106,6 +106,12 @@ terraform {
   }
 }
 ```
+After this you need to run 
+
+```bash
+terraform init -migrate-state
+```
+in terraform directory
 
 Also, we need to output the values we need for the sandbox deployment. In the same directory add (or edit) the `outputs.tf` file:
 
@@ -165,6 +171,59 @@ output "instance_type" {
 //diff-add
 }
 ```
+
+Also you need to attach IAM policy to the instance profile created in the main deployment. This is required for the cluster autoscaler to be able to manage the Auto Scaling Group. Also we attach role for ECR repository pull only to the node role. So the autoscaled node instances can pull images from ECR.
+
+```hcl title="[deploy/terraform/resvpc.tf]"
+resource "aws_iam_role_policy_attachment" "ecr_access_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+  role       = aws_iam_role.node_role.name
+}
+
+resource "aws_iam_role_policy" "cluster_autoscaler_policy" {
+  name = "${local.app_name}-cluster-autoscaler-policy"
+  role = aws_iam_role.node_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeTags",
+          "ec2:DescribeInstanceTypes",
+          "ec2:DescribeLaunchTemplateVersions"
+        ]
+        Resource = ["*"]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
+          "autoscaling:UpdateAutoScalingGroup"
+        ]
+        Resource = ["*"]
+        Condition = {
+          StringEquals = {
+            "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled" = "true"
+          }
+        }
+      }
+    ]
+  })
+}
+```
+
+Make sure you attach the policies to the node role created in the main deployment. If you didn't create the node role in the main deployment, you should create it now. We attach it to the node role, because we create node instances using Auto Scaling Group. So the autoscaled node instances can pull images from ECR. Also you need to add cluster autoscaler deployment to the cluster.
+
+```bash
+terraform apply --auto-approve
+```
+in terraform directory
 
 Make sure, that you're using the same values as in the main deployment, so if you're using different `ECR` repository name, `subnet_id`, `security_group_id`, `iam_instance_profile`, `key_name` or `instance_type` in your main deployment, you should use the same values in the sandbox deployment.
 
