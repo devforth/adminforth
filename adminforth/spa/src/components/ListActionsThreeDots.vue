@@ -23,7 +23,8 @@
               params: { 
                 resourceId: props.resourceId, 
                 primaryKey: record._primaryKeyValue,
-              }
+              },
+              query: props.rowOffset !== undefined ? { offset: props.rowOffset } : undefined,
             }"
 
           >
@@ -116,6 +117,7 @@ const props = defineProps<{
     record: any;
     customActionIconsThreeDotsMenuItems: AdminForthComponentDeclaration[];
     resourceId: string;
+    rowOffset?: number;
     deleteRecord: (record: any) => void;
     updateRecords: () => void;
     startCustomAction: (actionId: string, row: any, extraData?: Record<string, any>) => void;

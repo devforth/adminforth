@@ -2435,7 +2435,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/next_filtered_record',
       handler: async ({ body, adminUser }) => {
-        const { resourceId, currentId, filters, sort } = body;
+        const { resourceId, offset, filters, sort } = body;
 
         const resource = this.adminforth.config.resources.find(
           (res) => res.resourceId === resourceId
@@ -2458,14 +2458,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           resource,
           filters: {
             operator: AdminForthFilterOperators.AND,
-            subFilters: [
-              ...(filters || []),
-              { field: pkColumn.name, operator: AdminForthFilterOperators.GT, value: currentId },
-            ],
+            subFilters: filters || [],
           },
           limit: 1,
-          offset: 0,
-          sort: [{ field: pkColumn.name, direction: AdminForthSortDirections.asc }],
+          offset: offset + 1,
+          sort: sort || [],
         });
 
         const record = data.data?.[0];

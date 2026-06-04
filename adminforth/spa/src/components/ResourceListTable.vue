@@ -143,7 +143,8 @@
                     params: { 
                       resourceId: resource.resourceId, 
                       primaryKey: row._primaryKeyValue,
-                    }
+                    },
+                    query: { offset: rowGlobalOffset(row) },
                   }"
                 >
                   <IconEyeSolid class="af-show-icon w-5 h-5 me-2"/>
@@ -238,6 +239,7 @@
                 :updateRecords="()=>emits('update:records', true)"
                 :deleteRecord="deleteRecord"
                 :resourceId="resource.resourceId"
+                :rowOffset="rowGlobalOffset(row)"
                 :startCustomAction="startCustomAction"
                 :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems ?? []"
               />
@@ -477,6 +479,11 @@ const showListActionsThreeDots = computed(() => {
 })
 
 const from = computed(() => ((page.value || 1) - 1) * props.pageSize + 1);
+
+function rowGlobalOffset(row: any): number {
+  const indexInPage = props.rows?.indexOf(row) ?? -1;
+  return (page.value - 1) * props.pageSize + indexInPage;
+}
 const to = computed(() => Math.min((page.value || 1) * props.pageSize, props.totalRows));
 
 watch(() => page.value, (newPage) => {
@@ -611,6 +618,7 @@ async function onClick(e: any, row: any) {
               resourceId: props.resource?.resourceId,
               primaryKey: row._primaryKeyValue,
             },
+            query: { offset: rowGlobalOffset(row) },
           }).href,
           '_blank'
         );
@@ -629,6 +637,7 @@ async function onClick(e: any, row: any) {
             resourceId: props.resource?.resourceId,
             primaryKey: row._primaryKeyValue,
           },
+          query: { offset: rowGlobalOffset(row) },
         });
       }
     }

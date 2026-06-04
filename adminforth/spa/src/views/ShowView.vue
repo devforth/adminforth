@@ -12,7 +12,7 @@
     <BreadcrumbsWithButtons>
         <button v-if="filtersStore.visibleFiltersCount > 0"
           :disabled="nextId === null"
-          @click="nextId && router.push({ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextId } })"
+          @click="nextId && router.push({ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextId }, query: { offset: currentOffset + 1 } })"
           :class="nextId === null ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
           class="af-button-shadow h-[34px] inline-flex items-center px-3 py-2 text-left
           text-sm font-medium transition-all border outline-none 
@@ -243,22 +243,32 @@ const showPageTopic = computed(() => {
 });
 
 const nextId = ref<string | null>(null);
+const currentOffset = computed(() => {
+  const raw = route.query.offset;
+  if (raw === undefined || raw === null) return undefined;
+  const n = Number(raw);
+  return isNaN(n) ? undefined : n;
+});
 
-watch(() => route.params.primaryKey, async () => {
+watch(() => [route.params.primaryKey, route.query.offset], async () => {
   await loadNeighbors();
 });
 
 async function loadNeighbors() {
+  if (currentOffset.value === undefined) {
+    nextId.value = null;
+    return;
+  }
   const resourceId = route.params.resourceId as string;
-  const currentId = route.params.primaryKey as string;
 
   const next = await callAdminForthApi({
     path: '/next_filtered_record',
     method: 'POST',
     body: {
       resourceId,
-      currentId,
       filters: filtersStore.filters,
+      sort: filtersStore.getSort(),
+      offset: currentOffset.value,
     },
   });
 
