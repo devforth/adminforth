@@ -436,6 +436,12 @@ docker push "${IMAGE_FULL_TAG}"
 echo "LOG: Sandbox image build and push complete. IMAGE_FULL_TAG=${IMAGE_FULL_TAG}"
 ```
 
+After this
+
+```bash
+chmod +x deploy/sandboxing/build-and-push-sandbox.sh
+```
+
 Here, you should pay attention to the **APP_SOURCE_CODE_PATH** variable and make sure it correctly points to the directory containing your source code and Dockerfile. Also, if necessary, repeat the `docker build` and `docker push` steps for the number of images you need.
 
 Next, we need to configure the autoscaler. In the `deploy/sandboxing` directory, create a file named `deploy/sandboxing/manage-autoscaler.sh`:
@@ -575,6 +581,12 @@ elif [[ "$ACTION" == "uninstall" ]]; then
 
     echo "Uninstallation completed successfully!"
 fi
+```
+
+And
+
+```bash
+chmod +x deploy/sandboxing/manage-autoscaler.sh
 ```
 
 When running this specific script, we’ll activate the sandbox for our repository with just a single command.
