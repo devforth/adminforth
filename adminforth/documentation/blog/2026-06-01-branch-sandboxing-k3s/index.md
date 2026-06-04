@@ -94,12 +94,16 @@ terraform {
   }
 //diff-add
   backend "s3" {
+    //diff-add
     bucket       = "terraform-sandbox-blogpost"
+    //diff-add
     key          = "terraform.tfstate"
+    //diff-add
     region       = "us-west-2"
+    //diff-add
     use_lockfile = true
+  //diff-add
   }
-//diff-add
 }
 ```
 
@@ -108,41 +112,58 @@ Also, we need to output the values we need for the sandbox deployment. In the sa
 ```hcl
 //diff-add
 output "ecr_repository_url" {
+  //diff-add
   value = aws_ecr_repository.app_repo.repository_url
-}
-
-output "account_id" {
-  value = data.aws_caller_identity.current.account_id
-}
-
-output "aws_region" {
-  value = local.aws_region
-}
-
-output "public_ip" {
-  value = aws_instance.ec2_instance.public_ip
-}
-
-output "subnet_id" {
-  value = aws_subnet.public_a.id
-}
-
-output "security_group_id" {
-  value = aws_security_group.app_sg.id
-}
-
-output "iam_instance_profile" {
-  value = aws_iam_instance_profile.instance_profile.name
-}
-
-output "key_name" {
-  value = aws_key_pair.app_deployer.key_name
-}
-
-output "instance_type" {
-  value = aws_instance.ec2_instance.instance_type
+//diff-add
 }
 //diff-add
+output "account_id" {
+  //diff-add
+  value = data.aws_caller_identity.current.account_id
+//diff-add
+}
+//diff-add
+output "aws_region" {
+  //diff-add
+  value = local.aws_region
+//diff-add
+}
+//diff-add
+output "public_ip" {
+  //diff-add
+  value = aws_instance.ec2_instance.public_ip
+//diff-add
+}
+//diff-add
+output "subnet_id" {
+  //diff-add
+  value = aws_subnet.public_a.id
+//diff-add
+}
+//diff-add
+output "security_group_id" {
+  //diff-add
+  value = aws_security_group.app_sg.id
+//diff-add
+}
+//diff-add
+output "iam_instance_profile" {
+  //diff-add
+  value = aws_iam_instance_profile.instance_profile.name
+//diff-add
+}
+//diff-add
+output "key_name" {
+  //diff-add
+  value = aws_key_pair.app_deployer.key_name
+//diff-add
+}
+//diff-add
+output "instance_type" {
+  //diff-add
+  value = aws_instance.ec2_instance.instance_type
+//diff-add
+}
 ```
 
 Make sure, that you're using the same values as in the main deployment, so if you're using different `ECR` repository name, `subnet_id`, `security_group_id`, `iam_instance_profile`, `key_name` or `instance_type` in your main deployment, you should use the same values in the sandbox deployment.
