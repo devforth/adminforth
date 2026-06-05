@@ -111,7 +111,9 @@ CREATE TABLE adminuser (
 )
 ENGINE = MergeTree()
 ORDER BY id;
-\`\`\``;
+\`\`\`
+
+ClickHouse does not enforce UNIQUE constraints like PostgreSQL, MySQL, or SQLite. AdminForth authentication expects `email` values in `adminuser` to be unique, so enforce this in your ingestion/application logic and remove duplicate email rows to avoid ambiguous logins.`;
   }
 
   if (provider === 'mongodb') {

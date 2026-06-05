@@ -15,9 +15,10 @@ The generated app will seed the default `adminforth` / `adminforth` user on firs
 {{/if}}
 
 {{#if prismaDbUrl}}
-Migrate the database:
+Create the initial migration and apply it to the database:
 
 ```bash
+{{packageManagerRun}} makemigration{{packageManagerScriptArgSeparator}}--name init
 {{packageManagerRun}} migrate:local
 ```
 {{/if}}
