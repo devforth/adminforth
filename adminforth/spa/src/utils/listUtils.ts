@@ -47,11 +47,12 @@ export async function getList(resource: AdminForthResourceFrontend, isPageLoaded
     return row;
   });
   totalRows = data.total;
-  
+  const recordIds = data.recordIds || [];
+
   // if checkboxes have items which are not in current data, remove them
   checkboxes.value = checkboxes.value.filter((pk: any) => rows.some((r: any) => r._primaryKeyValue === pk));
   await nextTick();
-  return { rows, totalRows };
+  return { rows, totalRows, recordIds };
 }
 
 

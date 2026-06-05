@@ -22,6 +22,8 @@ export const useCoreStore = defineStore('core', () => {
   const isResourceFetching = ref(false);
   const isInternetError = ref(false);
   const screenWidth = ref(window.innerWidth);
+  const listRecordIds: Ref<any[]> = ref([]);
+  const listResourceId: Ref<string | null> = ref(null);
 
   onMounted(() => {
     window.addEventListener('resize', updateWidth);
@@ -290,5 +292,7 @@ export const useCoreStore = defineStore('core', () => {
     isIos,
     isInternetError,
     isMobile,
+    listRecordIds,
+    listResourceId,
   }
 })

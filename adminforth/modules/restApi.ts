@@ -318,6 +318,7 @@ const getResourceDataResponseSchema: AnySchemaObject = createErrorOrSuccessSchem
       items: genericObjectSchema,
     },
     total: { type: 'number' },
+    recordIds: { type: 'array', items: {} },
     options: genericObjectSchema,
   },
   additionalProperties: true,
@@ -1561,6 +1562,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
           }
+        }
+
+        if (source === 'list') {
+          const pkField = resource.columns.find((col) => col.primaryKey).name;
+          (data as any).recordIds = data.data.map((item) => item[pkField]);
         }
 
         return data;
