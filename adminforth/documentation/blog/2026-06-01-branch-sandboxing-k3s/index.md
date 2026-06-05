@@ -605,9 +605,11 @@ spec:
   - default:
       memory: "512Mi"
       cpu: "500m"
+      ephemeral-storage: "3Gi"
     defaultRequest:
       memory: "256Mi"
       cpu: "100m"
+      ephemeral-storage: "2Gi"
     type: Container
 ```
 
