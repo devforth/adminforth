@@ -21,15 +21,38 @@ nvm use 20
 
 ## Creating an AdminForth Project
 
-The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart boilerplate it creates one resource for users management.
+The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart from boilerplate, it creates one resource for users management.
 
-You can provide options directorly:
+There are two common setup paths:
+
+### Path 1: Existing Database
+
+Use this path when you already have a database and your own schema or migrations. Pass your database URL with `--db`, or enter it when the CLI asks `Please specify the database URL to use`:
 
 ```bash
-npx adminforth create-app --app-name myadmin --db "sqlite://.db.sqlite"
+npx adminforth create-app --app-name myadmin --db "postgresql://user:password@localhost:5432/dbname"
 ```
 
-Or omit them to be prompted interactively:
+When you provide your own database URL, the CLI treats this as your own database. It does not create Prisma schema or Prisma migration scripts for that database. Instead, the generated project README contains the SQL or schema notes for adding the required `adminuser` table with your own migration tool.
+
+After the project is created, navigate into it and generate resources from your existing tables:
+
+```bash
+cd myadmin
+npx adminforth resource
+```
+
+Resource files are needed for AdminForth to know about your tables and define how to work with them. Use `npx adminforth resource` again when you add new tables or change their schema.
+
+### Path 2: New Database
+
+Use this path when you want AdminForth to scaffold a standalone app with a new local SQLite database. Omit `--db`, or accept the default `sqlite://.db.sqlite` value in the interactive prompt:
+
+```bash
+npx adminforth create-app --app-name myadmin
+```
+
+Or omit all options to be prompted interactively:
 
 ```bash
 npx adminforth create-app
@@ -40,6 +63,8 @@ Once the project is created, navigate into its directory:
 ```bash
 cd myadmin # or any other name you provided
 ```
+
+For the new database path, the CLI can scaffold Prisma files and migration scripts for the default SQLite database.
 
 CLI options:
 
@@ -69,7 +94,7 @@ myadmin/
 │   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
 ├── resources
 │   └── adminuser.ts      # Example resource file for users management
-├── schema.prisma         # Prisma schema file for database schema
+├── schema.prisma         # Prisma schema file, generated only for the new database path
 ├── index.ts              # Main entry point: configures AdminForth & starts the server
 ├── package.json          # Project dependencies
 ├── pnpm-workspace.yaml
@@ -82,15 +107,15 @@ myadmin/
 
 ### Initial Migration & Future Migrations
 
-> ☝️ CLI creates Prisma schema file for managing migrations in relational databases, however you are not forced to use it. Instead you are free to use your favourite or existing migration tool. In this case just ignore generated prisma file, and don't run migration command which will be suggested by CLI. However you have to ensure that your migration tool will generate required table `adminuser` with same fields and types for Admin Users resource to implmenet BackOffice authentication.
+For the new database path, the CLI creates Prisma files for managing migrations. Prisma is not required by AdminForth itself, but it is a convenient migration tool for standalone projects that do not have database management yet.
 
 CLI will suggest you a command to initialize the database with Prisma:
 
 ```bash
-pnpm makemigration --name init
+pnpm makemigration --name init && pnpm migrate:local
 ```
 
-This will create a migration file in `migrations` and apply it to the database.
+This will create a migration file and apply it to the database.
 
 In future, when you need to add new resources, you need to modify `schema.prisma` (add models, change fields, etc.). After doing any modification you need to create a new migration using next command:
 
@@ -99,6 +124,8 @@ pnpm makemigration --name init ; pnpm migrate:local
 ```
 
 Other developers need to pull migration and run `pnpm migrate:local` to apply any unapplied migrations.
+
+For the existing database path, use your own migration tool instead. The generated project README shows how to add the required `adminuser` table to your database.
 
 ## Run the Server
 

@@ -39,6 +39,7 @@ function detectAdminforthVersion() {
 const adminforthVersion = detectAdminforthVersion();
 const SUPPORTED_DB_URL_SCHEMES = ['sqlite://', 'postgresql://', 'mongodb://', 'mysql://', 'clickhouse://'];
 const PRISMA_MIGRATION_DB_PROTOCOLS = ['sqlite', 'postgres', 'postgresql', 'mysql'];
+const DEFAULT_DB_URL = 'sqlite://.db.sqlite';
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -57,8 +58,67 @@ export function parseArgumentsIntoOptions(rawArgs) {
   return {
     appName: args['--app-name'],
     db: args['--db'],
+    dbProvided: args['--db'] !== undefined,
     useNpm: args['--use-npm'],
   };
+}
+
+function generateAdminUserTableInstructions(provider) {
+  if (provider === 'postgresql') {
+    return `\`\`\`sql
+CREATE TABLE adminuser (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL
+);
+\`\`\``;
+  }
+
+  if (provider === 'mysql') {
+    return `\`\`\`sql
+CREATE TABLE adminuser (
+  id VARCHAR(191) PRIMARY KEY,
+  email VARCHAR(191) NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(191) NOT NULL,
+  created_at DATETIME NOT NULL
+);
+\`\`\``;
+  }
+
+  if (provider === 'sqlite') {
+    return `\`\`\`sql
+CREATE TABLE adminuser (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL,
+  created_at DATETIME NOT NULL
+);
+\`\`\``;
+  }
+
+  if (provider === 'clickhouse') {
+    return `\`\`\`sql
+CREATE TABLE adminuser (
+  id String,
+  email String,
+  password_hash String,
+  role String,
+  created_at DateTime
+)
+ENGINE = MergeTree()
+ORDER BY id;
+\`\`\``;
+  }
+
+  if (provider === 'mongodb') {
+    return 'Create an `adminuser` collection with `id`, `email`, `password_hash`, `role`, and `created_at` fields. Keep `email` unique in your own schema/index setup.';
+  }
+
+  return null;
 }
 
 export async function promptForMissingOptions(options) {
@@ -78,7 +138,7 @@ export async function promptForMissingOptions(options) {
       type: 'input',
       name: 'db',
       message: 'Please specify the database URL to use >',
-      default: 'sqlite://.db.sqlite',
+      default: DEFAULT_DB_URL,
       });
   };
 
@@ -102,25 +162,8 @@ export async function promptForMissingOptions(options) {
       db: options.db || answers.db,
       useNpm: options.useNpm || answers.useNpm,
   };
-
-  if (
-    resolvedOptions.includePrismaMigrations === undefined &&
-    isPrismaMigrationDbUrl(resolvedOptions.db)
-  ) {
-    const prismaAnswer = await inquirer.prompt([{
-      type: 'select',
-      name: 'includePrismaMigrations',
-      message: 'Include Prisma migrations? >',
-      choices: [
-        { name: 'Yes', value: true },
-        { name: 'No', value: false },
-      ],
-      default: true,
-    }]);
-    resolvedOptions.includePrismaMigrations = prismaAnswer.includePrismaMigrations;
-  } else {
-    resolvedOptions.includePrismaMigrations = Boolean(resolvedOptions.includePrismaMigrations);
-  }
+  resolvedOptions.existingDb = options.dbProvided || resolvedOptions.db !== DEFAULT_DB_URL;
+  resolvedOptions.includePrismaMigrations = !resolvedOptions.existingDb && isPrismaMigrationDbUrl(resolvedOptions.db);
 
   return resolvedOptions;
 }
@@ -262,7 +305,7 @@ async function scaffoldProject(ctx, options, cwd) {
   const prismaDbUrlProd = generateDbUrlForPrismaProd(connectionString);
 
 
-  ctx.skipPrismaSetup = !prismaDbUrl;
+  ctx.skipPrismaSetup = !options.includePrismaMigrations || !prismaDbUrl;
   const appName = options.appName;
 
   const filename = fileURLToPath(import.meta.url);
@@ -287,6 +330,7 @@ async function scaffoldProject(ctx, options, cwd) {
     prismaDbUrlProd,
     appName,
     provider,
+    existingDb: options.existingDb,
     nodeMajor: parseInt(process.versions.node.split('.')[0], 10),
     sqliteFile: connectionString.protocol.startsWith('sqlite') ? connectionString.host : null,
   });
@@ -310,7 +354,7 @@ function getPackageManagerTemplateData(useNpm, nodeMajor) {
 
 async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
   const { 
-    dbUrl, prismaDbUrl, appName, provider, nodeMajor,
+    dbUrl, prismaDbUrl, appName, provider, existingDb, nodeMajor,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
   const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
@@ -352,7 +396,14 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl, appName, sqliteFile },
+      data: {
+        dbUrl,
+        prismaDbUrl: resolvedPrismaDbUrl,
+        appName,
+        sqliteFile,
+        existingDb,
+        adminUserTableInstructions: existingDb ? generateAdminUserTableInstructions(provider) : null,
+      },
     },
     {
       src: 'AGENTS.md.hbs',
@@ -519,15 +570,18 @@ async function installDependenciesNpm(ctx, cwd) {
 
 function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
-  if (!skipPrismaSetup)
-    instruction += `
+  instruction += `
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
-  if (options.includePrismaMigrations && !skipPrismaSetup)
+  if (!skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration --name init && pnpm migrate:local')}\n`;
+
+  if (options.existingDb)
+    instruction += `
+  ${chalk.dim('// Create the adminuser table in your database using the README instructions')}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
@@ -541,15 +595,18 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
 
 function generateFinalInstructionsNpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
-  if (!skipPrismaSetup)
-    instruction += `
+  instruction += `
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
-  if (options.includePrismaMigrations && !skipPrismaSetup)
+  if (!skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;
+
+  if (options.existingDb)
+    instruction += `
+  ${chalk.dim('// Create the adminuser table in your database using the README instructions')}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
