@@ -30,10 +30,9 @@ const props = withDefaults(defineProps<{
   loader: false,
   disabled: false,
   active: false,
-  variant: 'primary'
 });
 
-// mode is deprecated, but we still want to support it for backward compatibility, 
+// mode is deprecated, but we still want to support it for backward compatibility,
 // so we check both variant and mode props
 const currentVariant = computed(() => props.variant ?? props.mode ?? 'primary');
 </script>
