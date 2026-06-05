@@ -26,7 +26,6 @@ import {
   UpdateResourceRecordResult,
   DeleteResourceRecordResult,
   AdminForthMenuContributionProvider,
-  AdminForthMenuTransformProvider,
 } from './types/Back.js';
 import {
   AdminForthFilterOperators,
@@ -134,7 +133,6 @@ class AdminForth implements IAdminForth {
   pluginsById: Record<string, AdminForthPlugin> = {};
   private menuContributions: AdminForthMenuContribution[] = [];
   private menuContributionProviders: AdminForthMenuContributionProvider[] = [];
-  private menuTransformProviders: AdminForthMenuTransformProvider[] = [];
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
 
@@ -148,10 +146,6 @@ class AdminForth implements IAdminForth {
     this.menuContributionProviders.push(provider);
   }
 
-  registerMenuTransformProvider(provider: AdminForthMenuTransformProvider): void {
-    this.menuTransformProviders.push(provider);
-  }
-
   getMenuContributions(): AdminForthMenuContribution[] {
     return [...this.menuContributions];
   }
@@ -159,15 +153,6 @@ class AdminForth implements IAdminForth {
   async getMenuWithContributions(adminUser?: AdminUser, menu: AdminForthConfigMenuItem[] = this.config.menu): Promise<AdminForthConfigMenuItem[]> {
     const generateItemId = (item: AdminForthConfigMenuItem) =>
       md5hash(`menu-item-${item.label}-${item.resourceId || ''}-${item.path || ''}`);
-    const cloneMenuItem = (item: AdminForthConfigMenuItem): AdminForthConfigMenuItem => ({
-      ...item,
-      children: item.children?.map(cloneMenuItem),
-    });
-    const resolveMenuItemIds = (items: AdminForthConfigMenuItem[]): AdminForthConfigMenuItem[] => items.map((item) => ({
-      ...item,
-      itemId: item.itemId || generateItemId(item),
-      children: item.children ? resolveMenuItemIds(item.children) : item.children,
-    }));
     const matchesTarget = (item: AdminForthConfigMenuItem, target: AdminForthMenuTarget) =>
       typeof target === 'string'
         ? item.itemId === target
@@ -175,7 +160,14 @@ class AdminForth implements IAdminForth {
           || (target.resourceId !== undefined && item.resourceId === target.resourceId)
           || (target.path !== undefined && item.path === target.path);
 
-    const resolvedMenu: AdminForthConfigMenuItem[] = resolveMenuItemIds(menu);
+    const resolvedMenu: AdminForthConfigMenuItem[] = menu.map((item) => ({
+      ...item,
+      itemId: item.itemId || generateItemId(item),
+      children: item.children?.map((child) => ({
+        ...child,
+        itemId: child.itemId || generateItemId(child),
+      })),
+    }));
     const usedItemIds = new Set(resolvedMenu.map((item) => item.itemId));
 
     const providerContributions = await Promise.all(
@@ -211,17 +203,7 @@ class AdminForth implements IAdminForth {
       }
     }
 
-    let transformedMenu = resolvedMenu;
-
-    for (const provider of this.menuTransformProviders) {
-      transformedMenu = resolveMenuItemIds(await provider({
-        adminUser,
-        adminforth: this,
-        menu: transformedMenu.map(cloneMenuItem),
-      }));
-    }
-
-    return transformedMenu;
+    return resolvedMenu;
   }
 
   async refreshMenu(adminUser: AdminUser) {
