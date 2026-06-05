@@ -394,6 +394,10 @@ async function getListInner() {
   }
   rows.value = result.rows;
   totalRows.value = result.totalRows ?? 0;
+  if (result.recordIds) {
+    coreStore.listRecordIds = result.recordIds;
+    coreStore.listResourceId = coreStore.resource!.resourceId;
+  }
   return result.error ? { error: result.error } : {};
 }
 

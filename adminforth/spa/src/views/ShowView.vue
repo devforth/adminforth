@@ -60,10 +60,36 @@
         {{ $t('Delete') }}
       </button>
 
-      <ThreeDotsMenu 
+      <ThreeDotsMenu
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems as [])"
         :customActions="customActions"
       ></ThreeDotsMenu>
+
+      <div v-if="hasPrevNext" class="flex items-center gap-1 ml-2">
+        <RouterLink
+          v-if="prevRecordId !== null"
+          :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: prevRecordId } }"
+          class="flex items-center justify-center w-[2.125rem] h-[2.125rem] af-button-shadow text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+          :title="$t('Previous')"
+        >
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </RouterLink>
+        <span v-else class="flex items-center justify-center w-[2.125rem] h-[2.125rem] text-sm text-gray-300 dark:text-gray-600 cursor-not-allowed">
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </span>
+        <span class="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{{ currentIndex + 1 }}/{{ coreStore.listRecordIds.length }}</span>
+        <RouterLink
+          v-if="nextRecordId !== null"
+          :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextRecordId } }"
+          class="flex items-center justify-center w-[2.125rem] h-[2.125rem] af-button-shadow text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+          :title="$t('Next')"
+        >
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </RouterLink>
+        <span v-else class="flex items-center justify-center w-[2.125rem] h-[2.125rem] text-sm text-gray-300 dark:text-gray-600 cursor-not-allowed">
+          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </span>
+      </div>
     </BreadcrumbsWithButtons>
 
     <component 
@@ -296,6 +322,25 @@ const groups = computed(() => {
 
 const allColumns = computed(() => {
   return coreStore.resource?.columns?.filter(col => col.showIn?.show);
+});
+
+const hasPrevNext = computed(() => {
+  return coreStore.listResourceId === route.params.resourceId && coreStore.listRecordIds.length > 0;
+});
+
+const currentIndex = computed(() => {
+  const pk = String(route.params.primaryKey);
+  return coreStore.listRecordIds.findIndex((id: any) => String(id) === pk);
+});
+
+const prevRecordId = computed(() => {
+  const idx = currentIndex.value;
+  return idx > 0 ? coreStore.listRecordIds[idx - 1] : null;
+});
+
+const nextRecordId = computed(() => {
+  const idx = currentIndex.value;
+  return idx >= 0 && idx < coreStore.listRecordIds.length - 1 ? coreStore.listRecordIds[idx + 1] : null;
 });
 
 const otherColumns = computed(() => {
