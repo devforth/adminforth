@@ -324,7 +324,7 @@ resource "aws_launch_template" "worker" {
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
-      volume_size           = 10
+      volume_size           = 20
       volume_type           = "gp3"
       delete_on_termination = true
     }
@@ -801,6 +801,30 @@ jobs:
 ```
 
 This file is responsible for creating a new isolated environment when pushing to a new branch. Please note the comments in the code that indicate variables you will most likely need to replace with your own.
+
+## Configure your deployment
+
+This section of the guide specifically focuses on using a Helmfile as a package manager. If you are using a different deployment method, such as vanilla Helm or native Kubernetes manifests, the code implementation will differ. 
+The point of this change is to pass the sandbox domain and its unique namespace to the deployment. If your main application is deployed following the instructions from one of our [previous blog posts](https://adminforth.dev/blog/k3s-ec2-deployment/), you can simply add the corresponding code to `helmfile.yaml`.
+
+```yaml title="/deploy/helm/helmfile.yaml"
+releases:
+  - name: '{{ requiredEnv "APP_NAMESPACE" }}'
+    namespace: '{{ requiredEnv "APP_NAMESPACE" }}'
+    createNamespace: true
+    chart: .
+    values:
+      - values.yaml
+      - ecrImageFull: '{{ requiredEnv "IMAGE_FULL_TAG" }}'
+      //diff-add
+      - appNameSpace: '{{ requiredEnv "APP_NAMESPACE" }}'
+//diff-add
+{{ if env "APP_HOST" }}
+//diff-add
+      - host: '{{ env "APP_HOST" }}'
+//diff-add
+{{ end }}
+```
 
 ## Deploying a Sandbox
 
