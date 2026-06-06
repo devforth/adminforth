@@ -5,7 +5,7 @@ slug: /tutorial/Plugins/background-jobs
 ---
 
 # Background jobs
-BackgroundJobsPlugin adds a durable background-job system to AdminForth. Jobs are stored in your data store (via a resource), executed by registered handlers, and automatically resumed after server restarts.
+BackgroundJobsPlugin adds a durable background job system to AdminForth. Jobs are stored in your data store through a resource, executed by registered handlers, and automatically resumed after server restarts.
 
 
 ## Setup
@@ -15,7 +15,7 @@ First, install the plugin:
 pnpm i @adminforth/background-jobs
 ```
 
-and create a resource for jobs:
+Then create a resource for jobs:
 
 
 ```ts title="./resources/jobs.ts"
@@ -129,7 +129,7 @@ export default {
 } as AdminForthResourceInput;
 ```
 
-Then make add table schema:
+Then add the table schema:
 
 ```
 model jobs {
@@ -145,11 +145,11 @@ model jobs {
 }
 ```
 
-and make migration
+Then create a migration.
 
 
 ## Usage
-The plugin saves tasks and keeps executing them even after a server restart, so you should register job task handlers at the start of the AdminForth application.
+The plugin saves tasks and keeps executing them after a server restart, so you should register job task handlers when the AdminForth application starts.
 
 ```ts title="./index.ts"
   //diff-add
@@ -212,7 +212,7 @@ The plugin saves tasks and keeps executing them even after a server restart, so 
       //diff-add
     },
     //diff-add
-    //limit of tasks, that are running in parallel
+    // limit of tasks that are running in parallel
     //diff-add
     parallelLimit: 1
     //diff-add
@@ -308,7 +308,7 @@ If you need to react when the whole job is finished, pass `onAllTasksDone` to `r
 ```
 
 ## Custom job state renderer
-There may be cases when you need to display the state of job tasks. For this, you can register a custom component.
+There may be cases where you need to display the state of job tasks. For this, you can register a custom component.
 
 
 ```ts title="./custom/JobCustomComponent.vue"
@@ -372,16 +372,6 @@ onUnmounted(() => {
 </script>
 ```
 
-Job state and task state can be reactive on the frontend and updated when something changes on the backend.
-However, to avoid unnecessary high-volume backend updates that might not be needed on the frontend,
-all updates are disabled out of the box, and you need to specify which fields to subscribe to.
-
-Use `subscribeToJobStateFields(['fieldName'])` for specific job state fields and
-`subscribeToJobTaskFields(['fieldName'])` for specific task state fields. The plugin applies
-incoming updates to the reactive `job` prop and to the task objects returned by
-`getJobTasks()`. Task field subscriptions receive updates for that field from every task
-in the opened job. Both helpers return an unsubscribe function; the plugin also unsubscribes
-remaining field subscriptions when the job dialog closes.
 
 
 Now register this component explicitly:
@@ -461,10 +451,25 @@ Finally, register this component alongside the job task handler:
 
 ```
 
+### Reactive updates for job state and task state
+
+You can activate automatic reactive updates for task state and job state on the frontend when you call backend state mutation methods like `setJobField` and `setTaskStateField`.
+
+To avoid unnecessary high-volume backend updates for data that might not be needed on the frontend, all reactive updates are disabled by default, and you need to specify which fields to subscribe to.
+
+Use `subscribeToJobStateFields(['fieldName1', 'fieldName2'])` for specific job state fields and
+`subscribeToJobTaskFields(['fieldName1', 'fieldName2'])` for specific task state fields.
+
+The plugin applies incoming updates to the reactive `job` prop and to the task objects returned by
+`getJobTasks()`. Task field subscriptions receive updates for that field from every task
+in the open job. Both helpers return an unsubscribe function, though the plugin also automatically unsubscribes from
+remaining field subscriptions when the job dialog closes.
+
+
 
 ## Frontend API
 ### Job info popup
-If you want to imedeatelly open job info popup, you shoul return job id from you API, that creates job:
+If you want to immediately open the job info popup, return the job ID from the API that creates the job:
 
 For example:
 
@@ -496,9 +501,9 @@ For example:
 
 ```
 
-## Backend api
+## Backend API
 
-Pluging provides some handy methods, that can be used in different situations:
+The plugin provides some handy methods that can be used in different situations:
 
 ```ts
 //set key:value to the job state in the DB
@@ -509,16 +514,17 @@ getJobField(jobId: string, key: string)
 getJobState(jobId: string)
 /**
  * 
- * executes code atomically, if you have many task, that can update task state, 
- * better use this method to avoid cases, when in the task state writes invalid data.
+ * executes code atomically. If you have many tasks that can update task state,
+ * use this method to avoid invalid task state writes.
  * 
  **/
 updateJobFieldsAtomically(jobId: string, updateFunction: () => Promise<void>) 
 
 //for example
 backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
-  // do all set / get fields in this function to make state update atomic and there is no conflicts when 2 tasks in parallel do get before set.
-  // don't do long awaits in this callback, since it has exclusive lock.
+  // Do all set / get field operations in this function to make the state update atomic and avoid conflicts
+  // when two parallel tasks get the same value before setting it.
+  // Don't do long awaits in this callback, since it has an exclusive lock.
   let totalUsedTokens = await backgroundJobsPlugin.getJobField(jobId, 'totalUsedTokens');
   totalUsedTokens += promptCost;
   await backgroundJobsPlugin.setJobField(jobId, 'totalUsedTokens', totalUsedTokens);
