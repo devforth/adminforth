@@ -317,6 +317,7 @@ There may be cases when you need to display the state of job tasks. For this, yo
     <Button class="h-10" @click="loadTasks">
       Get Job Tasks
     </Button>
+    {{ props.job.state.statusMessage }}
     {{ tasks }}
   </div>
 </template>
@@ -325,19 +326,23 @@ There may be cases when you need to display the state of job tasks. For this, yo
 <script setup lang="ts">
 import { Button, JsonViewer } from '@/afcl';
 import { onMounted, onUnmounted, ref } from 'vue';
-import websocket from '@/websocket';
 import type { AdminForthComponentDeclarationFull } from 'adminforth';
 
 
 const tasks = ref<{state: Record<string, any>, status: string}[]>([]);
+let unsubscribeJobStateFields: (() => void) | null = null;
+let unsubscribeTaskFields: (() => void) | null = null;
 
 
 const props = defineProps<{
   meta: any;
   getJobTasks: (limit?: number, offset?: number) => Promise<{state: Record<string, any>, status: string}[]>;
+  subscribeToJobStateFields: (fieldNames: string[]) => () => void;
+  subscribeToJobTaskFields: (fieldNames: string[]) => () => void;
   job: {
     id: string;
     name: string;
+    state: Record<string, any>;
     status: 'IN_PROGRESS' | 'DONE' | 'DONE_WITH_ERRORS' | 'CANCELLED';
     progress: number; // 0 to 100
     createdAt: Date;
@@ -354,27 +359,29 @@ const loadTasks = async () => {
 
 onMounted(async () => {
   loadTasks();
-  websocket.subscribe(`/background-jobs-task-update/${props.job.id}`, (data: { taskIndex: number, status?: string, state?: Record<string, any> }) => {
-    console.log('Received WebSocket message for job:', data.status);
-    
-    if (data.state) {
-      tasks.value[data.taskIndex].state = data.state;
-    }
-    if (data.status) {
-      tasks.value[data.taskIndex].status = data.status;
-    }
-
-  });
+  unsubscribeJobStateFields = props.subscribeToJobStateFields(['statusMessage']);
+  unsubscribeTaskFields = props.subscribeToJobTaskFields(['step', 'result']);
 });
 
 onUnmounted(() => {
-  console.log('Unsubscribing from WebSocket for job:', props.job.id);
-  websocket.unsubscribe(`/background-jobs-task-update/${props.job.id}`);
+  unsubscribeJobStateFields?.();
+  unsubscribeTaskFields?.();
 });
 
 
 </script>
 ```
+
+Job state and task state can be reactive on the frontend and updated when something changes on the backend.
+However, to avoid unnecessary high-volume backend updates that might not be needed on the frontend,
+all updates are disabled out of the box, and you need to specify which fields to subscribe to.
+
+Use `subscribeToJobStateFields(['fieldName'])` for specific job state fields and
+`subscribeToJobTaskFields(['fieldName'])` for specific task state fields. The plugin applies
+incoming updates to the reactive `job` prop and to the task objects returned by
+`getJobTasks()`. Task field subscriptions receive updates for that field from every task
+in the opened job. Both helpers return an unsubscribe function; the plugin also unsubscribes
+remaining field subscriptions when the job dialog closes.
 
 
 Now register this component explicitly:
