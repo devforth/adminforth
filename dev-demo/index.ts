@@ -19,7 +19,7 @@ import m2m_pg from './resources/many2many_resources/m2m_PG.js';
 import m2m_mongo from './resources/many2many_resources/m2m_mongo.js';
 import m2m_ch from './resources/many2many_resources/m2m_ch.js';
 
-import background_jobs_resource from './resources/background_jobs.js';
+import background_jobs_resource, { EXAMPLE_JOB_HANDLER_NAME, startExampleBackgroundJob } from './resources/background_jobs.js';
 import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js';
 
 import auditLogsResource from "./resources/auditLogs.js"
@@ -252,19 +252,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
           return;
         }
-        backgroundJobsPlugin.startNewJob(
-          'Example Job', //job name
-          req.adminUser, // adminuser
-          [
-            { state: { step: 1 } },
-            { state: { step: 2 } },
-            { state: { step: 3 } },
-            { state: { step: 4 } },
-            { state: { step: 5 } },
-            { state: { step: 6 } },
-          ], //initial tasks
-          'example_job_handler', //job handler name
-        )
+        await startExampleBackgroundJob(backgroundJobsPlugin, req.adminUser);
         res.json({ok: true, message: 'Job started' });
         }
       ),
@@ -273,7 +261,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   initApi(app, admin);
 
-  const port = 3123;
+  const port = Number(process.env.PORT || 3123);
   
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
     logger.info('Bundling AdminForth SPA done.');
@@ -285,22 +273,29 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
 
   backgroundJobsPlugin.registerTaskHandler({
     // job handler name
-    jobHandlerName: 'example_job_handler',
+    jobHandlerName: EXAMPLE_JOB_HANDLER_NAME,
     //handler function
-    handler: async ({ setTaskStateField, getTaskStateField }) => {
-      const state = await getTaskStateField();
-      console.log('State of the task at the beginning of the job handler:', state);
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      await setTaskStateField({[state.step]: `Step ${state.step} completed`});
-      const updatedState = await getTaskStateField();
-      console.log('State of the task after setting the new state in the job handler:', updatedState);
+    handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
+      const state = await getState();
+
+      for (let second = 0; second < 3; second++) {
+        const taskCounter = await getTaskStateField('task_counter');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await setTaskStateField('task_counter', taskCounter+1);
+      }
+
+      await backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
+        const jobState = await backgroundJobsPlugin.getJobState(jobId);
+        await backgroundJobsPlugin.setJobStateField(jobId, 'counter', jobState.counter + 1);
+        await backgroundJobsPlugin.setJobStateField(jobId, 'commited_tasks', `${jobState.commited_tasks}${state.task_number} `);
+      });
     },
     //limit of tasks, that are running in parallel
-    parallelLimit: 1
+    parallelLimit: 2
   })
   
   backgroundJobsPlugin.registerTaskDetailsComponent({
-    jobHandlerName: 'example_job_handler', // Handler name
+    jobHandlerName: EXAMPLE_JOB_HANDLER_NAME, // Handler name
     component: { 
       file: '@@/JobCustomComponent.vue'  //custom component for the job details
     },
