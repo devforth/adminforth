@@ -292,6 +292,7 @@ After registering a handler, you can create a job. For example:
 There may be cases when you need to display the state of job tasks. For this, you can register a custom component.
 
 
+1) You need to create a custom vue component:
 ```ts title="./custom/JobCustomComponent.vue"
 <template>
   <div class="w-[1000px] h-[500px] bg-gray-100 rounded-lg p-4 flex flex-col items-center justify-center  ">
@@ -358,7 +359,7 @@ onUnmounted(() => {
 ```
 
 
-Now register this component explicitly:
+2) Now register this component explicitly:
 
 ```ts title="./index.ts"
 export const admin = new AdminForth({
@@ -399,7 +400,7 @@ export const admin = new AdminForth({
 ```
 
 
-Finally, register this component alongside the job task handler:
+3) Finally, register this component alongside the job task handler:
 
 ```ts title="./index.ts"
   ...
