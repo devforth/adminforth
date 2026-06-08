@@ -5,7 +5,7 @@
       class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
       @click="toggleMenu"
     >
-      <IconDotsHorizontalOutline class="w-6 h-6 text-lightPrimary dark:text-darkPrimary" />
+      <IconDotsHorizontalOutline class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150" />
     </div>
     <teleport to="body">
       <div
