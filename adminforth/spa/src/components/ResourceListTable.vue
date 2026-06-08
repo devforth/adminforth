@@ -216,7 +216,7 @@
                         <component
                           v-if="action.icon && !actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
                           :is="getIcon(action.icon)"
-                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary"
+                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150"
                         />
                         <Spinner
                           v-if="actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
