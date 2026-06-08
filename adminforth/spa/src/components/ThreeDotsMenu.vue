@@ -59,7 +59,7 @@
                     <component 
                       v-if="action.icon && !actionLoadingStates[action.id!]" 
                       :is="getIcon(action.icon)" 
-                      class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                      class="w-4 h-4 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
                     />
                     <Spinner
                       v-if="actionLoadingStates[action.id!]"
@@ -83,7 +83,7 @@
                 <component 
                   v-if="action.icon" 
                   :is="getIcon(action.icon)" 
-                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
                 />
                 {{ action.label }}
               </div>
