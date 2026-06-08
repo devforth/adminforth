@@ -32,6 +32,7 @@ vars:
     - "adminforth-background-jobs"
     - "adminforth-auto-remove"
     - "adminforth-agent"
+    - "adminforth-dashboard"
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"
