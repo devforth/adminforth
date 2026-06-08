@@ -70,7 +70,7 @@
                 <component
                   v-if="action.icon"
                   :is="getIcon(action.icon)"
-                  class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                  class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
                 />
                 {{ $t(action.name) }}
               </component>               
