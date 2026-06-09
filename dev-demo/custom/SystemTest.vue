@@ -3,7 +3,12 @@
     <Button @click="createJob">
       Create Job
     </Button>
-
+    <Button @click="addTaskToTheLastJob">
+      Add Task to the Last Job
+    </Button>
+    <Button @click="deleteTaskFromTheLastJob">
+      Delete Task from the Last Job
+    </Button>
     <Button @click="callHelloWorldApi">
       Call API
     </Button>
@@ -41,6 +46,30 @@ async function createJob() {
     console.log('Job created successfully:', res);
   } catch (error) {
     console.error('Error creating job:', error);
+  }
+}
+
+async function addTaskToTheLastJob() {
+  try {
+    const res = await callApi({path: '/api/add-task-to-last-job/', method: 'POST'});
+    console.log('Task added to the last job successfully:', res);
+  } catch (error) {
+    console.error('Error adding task to the last job:', error);
+  }
+}
+
+async function deleteTaskFromTheLastJob() {
+  try {
+    const res = await callApi({
+      path: '/api/delete-task-from-last-job/', 
+      method: 'POST',
+      body: {
+        taskIndex: 10 // Replace with the actual task index you want to delete
+      }
+    });
+    console.log('Task deleted from the last job successfully:', res);
+  } catch (error) {
+    console.error('Error deleting task from the last job:', error);
   }
 }
 

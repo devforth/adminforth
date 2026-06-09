@@ -237,6 +237,9 @@ export const admin = new AdminForth({
   ],
 });
 
+let lastJobId: string | null = null;
+let taskNumberCounter = 0;
+
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const app = express();
   app.use(express.json());
@@ -258,8 +261,86 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
           return;
         }
-        await startExampleBackgroundJob(backgroundJobsPlugin, req.adminUser);
-        res.json({ok: true, message: 'Job started' });
+        const newJobId = await startExampleBackgroundJob(backgroundJobsPlugin, req.adminUser);
+        lastJobId = newJobId;
+        taskNumberCounter = 12; // just random number
+        res.json({ok: true, message: 'Job started', jobId: newJobId });
+        }
+      ),
+    )
+  );
+
+  app.post(`${ADMIN_BASE_URL}/api/add-task-to-last-job/`,
+    admin.express.withSchema(
+      {
+        description: 'Add a task to the last started job.',
+        request: z.object({}),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
+          if (!lastJobId) {
+            res.status(400).json({ error: 'No job has been started yet' });
+            return;
+          }
+          const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
+          if (!backgroundJobsPlugin) {
+            res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
+            return;
+          }
+          try {
+            await backgroundJobsPlugin.addNewTasksToExistingJob(lastJobId, [{
+              state: {
+                task_number: taskNumberCounter++,
+                task_counter: 0.1,
+              },
+            }]);
+          } catch (error) {
+            logger.error('Error adding task to the last job:', error);
+            res.status(500).json({ error: 'Error adding task to the last job' });
+            return;
+          }
+          res.json({ok: true, message: 'Task added to last job', jobId: lastJobId });
+        }
+      ),
+    )
+  );
+
+  app.post(`${ADMIN_BASE_URL}/api/delete-task-from-last-job/`,
+    admin.express.withSchema(
+      {
+        description: 'Delete a task from the last started job.',
+        request: z.object({
+          taskIndex: z.number(),
+        }),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
+          if (!lastJobId) {
+            res.status(400).json({ error: 'No job has been started yet' });
+            return;
+          }
+          const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
+          if (!backgroundJobsPlugin) {
+            res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
+            return;
+          }
+          try {
+            await backgroundJobsPlugin.deleteTasksFromExistingJob(lastJobId, req.body.taskIndex);
+
+          } catch (error) {
+            logger.error('Error deleting task from the last job:', error);
+            res.status(500).json({ error: 'Error deleting task from the last job' });
+            return;
+          }
+          res.json({ok: true, message: 'Task deleted from last job', jobId: lastJobId });
         }
       ),
     )
