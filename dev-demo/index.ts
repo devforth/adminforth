@@ -199,6 +199,12 @@ export const admin = new AdminForth({
       type: 'gap'
     },
     {
+      label: 'System tests',
+      icon: 'flowbite:shield-solid',
+      component: '@@/SystemTest.vue',
+      path: '/system-tests',
+    },
+    {
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'adminuser'
