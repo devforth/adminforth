@@ -212,7 +212,45 @@ query:
       direction: desc
 ```
 
-Funnel charts use a steps query because each step can use its own resource, metric, and filters.
+Step-based charts use a `steps` query when each step needs its own resource, metric, and filters. Funnel charts always use this query shape.
+
+Depending on the widget, `query` can also use `limit`, `offset`, `calcs`, `time_series`, `period`, `bucket`, and `formatting`.
+
+Widget-scoped constants can be defined with `variables`. They are available inside `query.calcs` through `lookup($variables.path, field, default)`.
+
+```yaml
+label: Average Car Price by Database
+target: chart
+variables:
+  price_multipliers:
+    cars_sl: 0.84
+    cars_mysql: 1.12
+chart:
+  type: bar
+  x:
+    field: name
+  y:
+    field: adjusted_value
+query:
+  steps:
+    - name: SQLite
+      resource: cars_sl
+      metric:
+        agg: avg
+        field: price
+        as: value
+    - name: MySQL
+      resource: cars_mysql
+      metric:
+        agg: avg
+        field: price
+        as: value
+  calcs:
+    - calc: value * lookup($variables.price_multipliers, resource, 1)
+      as: adjusted_value
+```
+
+Define `variables` on each widget config. Dashboard root variables are not merged into widget data queries.
 
 ## Widget Examples
 
@@ -406,11 +444,11 @@ Widgets support these layout fields:
 size: small
 width: 320
 height: 360
-minWidth: 240
-maxWidth: 640
+min_width: 240
+max_width: 640
 ```
 
-`size` can be `small`, `medium`, `large`, `wide`, or `full`. Explicit `width`, `height`, `minWidth`, and `maxWidth` can be used when a widget needs more precise sizing.
+`size` can be `small`, `medium`, `large`, `wide`, or `full`. Explicit `width`, `height`, `min_width`, and `max_width` can be used when a widget needs more precise sizing.
 
 ## Agent Plugin Integration
 

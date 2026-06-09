@@ -1,5 +1,13 @@
 
-const subscriptions: { [topic: string]: ((data: any) => void)[] } = {};
+type WebsocketCallback = (data: any) => void;
+type Unsubscribe = () => void;
+type Subscription = {
+  id: number;
+  callback: WebsocketCallback;
+};
+
+const subscriptions: { [topic: string]: Subscription[] } = {};
+let nextSubscriptionId = 1;
 
 interface ExtendedWebSocket extends WebSocket {
   connected?: boolean;
@@ -65,8 +73,8 @@ async function connect () {
       const topic = message.topic;
       const data = message.data;
       if (subscriptions[topic]) {
-        for (const callback of subscriptions[topic]) {
-          callback(data);
+        for (const subscription of subscriptions[topic]) {
+          subscription.callback(data);
         }
       }
     }
@@ -104,19 +112,49 @@ setInterval(() => {
 }, 10_000);
 
 
+function unsubscribeSubscription(topic: string, subscriptionId: number): void {
+  if (!subscriptions[topic]) {
+    return;
+  }
+
+  subscriptions[topic] = subscriptions[topic].filter((subscription) => subscription.id !== subscriptionId);
+  if (subscriptions[topic].length > 0) {
+    return;
+  }
+
+  delete subscriptions[topic];
+  if (state.status === 'connected') {
+    doPhysicalUnsubscribe(topic);
+  }
+}
+
 export default {
-  subscribe(topic: string, callback: (data: any) => void): void {
+  subscribe(topic: string, callback: WebsocketCallback): Unsubscribe {
     const isFirstSubscription = !subscriptions[topic];
     if (!subscriptions[topic]) {
       subscriptions[topic] = [];
     }
-    subscriptions[topic].push(callback);
+    const subscriptionId = nextSubscriptionId++;
+    subscriptions[topic].push({
+      id: subscriptionId,
+      callback,
+    });
     if (isFirstSubscription && state.status === 'connected') {
       doPhysicalSubscribe(topic);
     }
+
+    let isSubscribed = true;
+    return () => {
+      if (!isSubscribed) {
+        return;
+      }
+      isSubscribed = false;
+      unsubscribeSubscription(topic, subscriptionId);
+    };
   },
 
   unsubscribe(topic: string): void {
+    console.warn('This method is deprecated because it removes all subscriptions for the topic. Use the unsubscribe function returned by subscribe(), or use unsubscribeByPrefix() when you explicitly need to unsubscribe by topic prefix.');
     if (!subscriptions[topic]) {
       return;
     }
