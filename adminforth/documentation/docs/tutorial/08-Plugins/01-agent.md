@@ -500,7 +500,9 @@ Create a renderer in your app custom folder:
       <div class="mt-1">
         {{ debugSequences.length }} sequences,
         {{ totalToolCalls }} tool calls,
-        {{ totalCachedTokens.toLocaleString() }} cached prompt tokens
+        {{ totalUncachedInputTokens.toLocaleString() }} uncached input tokens,
+        {{ totalCachedInputTokens.toLocaleString() }} cached input tokens,
+        {{ totalOutputTokens.toLocaleString() }} output tokens
       </div>
     </div>
 
@@ -518,7 +520,13 @@ type DebugToolCall = {
 };
 
 type DebugSequence = {
+  uncachedInputTokens?: number;
+  cachedInputTokens?: number;
+  outputTokens?: number;
   cachedTokens: number;
+  promptTokens: number;
+  reasoningTokens: number;
+  textTokens: number;
   toolCalls: DebugToolCall[];
 };
 
@@ -531,9 +539,27 @@ const debugSequences = computed(() => props.record[props.column.name] ?? []);
 const totalToolCalls = computed(() =>
   debugSequences.value.reduce((sum, sequence) => sum + sequence.toolCalls.length, 0),
 );
-const totalCachedTokens = computed(() =>
-  debugSequences.value.reduce((sum, sequence) => sum + sequence.cachedTokens, 0),
+const totalUncachedInputTokens = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequenceUncachedInputTokens(sequence), 0),
 );
+const totalCachedInputTokens = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequenceCachedInputTokens(sequence), 0),
+);
+const totalOutputTokens = computed(() =>
+  debugSequences.value.reduce((sum, sequence) => sum + sequenceOutputTokens(sequence), 0),
+);
+
+function sequenceUncachedInputTokens(sequence: DebugSequence) {
+  return sequence.uncachedInputTokens ?? Math.max(sequence.promptTokens - sequenceCachedInputTokens(sequence), 0);
+}
+
+function sequenceCachedInputTokens(sequence: DebugSequence) {
+  return sequence.cachedInputTokens ?? sequence.cachedTokens;
+}
+
+function sequenceOutputTokens(sequence: DebugSequence) {
+  return sequence.outputTokens ?? sequence.reasoningTokens + sequence.textTokens;
+}
 </script>
 ```
 
