@@ -10,6 +10,16 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
+      <button
+        v-if="hasPrevNext"
+        :disabled="nextRecordId === null"
+        @click="nextRecordId && router.push({ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextRecordId } })"
+        :class="nextRecordId === null ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+        class="af-button-shadow h-[34px] inline-flex items-center px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+      >
+        {{ $t('Next') }}
+      </button>
+
       <template v-if="coreStore.resource?.options?.actions">
 
         <div class="flex gap-1" v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
@@ -65,31 +75,6 @@
         :customActions="customActions"
       ></ThreeDotsMenu>
 
-      <div v-if="hasPrevNext" class="flex items-center gap-1 ml-2">
-        <RouterLink
-          v-if="prevRecordId !== null"
-          :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: prevRecordId } }"
-          class="flex items-center justify-center w-[2.125rem] h-[2.125rem] af-button-shadow text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-          :title="$t('Previous')"
-        >
-          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </RouterLink>
-        <span v-else class="flex items-center justify-center w-[2.125rem] h-[2.125rem] text-sm text-gray-300 dark:text-gray-600 cursor-not-allowed">
-          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </span>
-        <span class="text-xs text-gray-500 dark:text-gray-400 tabular-nums">{{ currentIndex + 1 }}/{{ coreStore.listRecordIds.length }}</span>
-        <RouterLink
-          v-if="nextRecordId !== null"
-          :to="{ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextRecordId } }"
-          class="flex items-center justify-center w-[2.125rem] h-[2.125rem] af-button-shadow text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-          :title="$t('Next')"
-        >
-          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </RouterLink>
-        <span v-else class="flex items-center justify-center w-[2.125rem] h-[2.125rem] text-sm text-gray-300 dark:text-gray-600 cursor-not-allowed">
-          <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </span>
-      </div>
     </BreadcrumbsWithButtons>
 
     <component 
@@ -333,10 +318,6 @@ const currentIndex = computed(() => {
   return coreStore.listRecordIds.findIndex((id: any) => String(id) === pk);
 });
 
-const prevRecordId = computed(() => {
-  const idx = currentIndex.value;
-  return idx > 0 ? coreStore.listRecordIds[idx - 1] : null;
-});
 
 const nextRecordId = computed(() => {
   const idx = currentIndex.value;
