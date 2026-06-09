@@ -1,0 +1,79 @@
+# AdminForth
+
+> AdminForth is an agent-first open-source admin panel framework for building customizable back-office apps. This file curates the core tutorial documentation as clean markdown sources for LLM consumption.
+
+Use this file as the primary map for implementation, customization, adapters, plugins, CLI usage, deployment, and advanced integration patterns.
+
+## Core Tutorial
+- [Getting Started](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/001-gettingStarted.md): Getting Started tutorial page.
+- [Hello world app without CLI](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/01-helloWorld.md): Hello world app without CLI tutorial page.
+- [Glossary](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/02-glossary.md): Glossary tutorial page.
+- [Deploy in Docker](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/04-deploy.md): Deploy in Docker tutorial page.
+- [CLI Commands](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/06-CLICommands.md): CLI Commands tutorial page.
+- [Usage of the logger](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/07-UsageOfLogger.md): Usage of the logger tutorial page.
+
+## Customization
+- [Branding and Theming](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/01-branding.md): Branding and Theming tutorial page.
+- [Custom record field rendering](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/02-customFieldRendering.md): Custom record field rendering tutorial page.
+- [Virtual columns](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/03-virtualColumns.md): Virtual columns tutorial page.
+- [Hooks](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/04-hooks.md): Hooks tutorial page.
+- [Limiting actions access](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/05-limitingAccess.md): Limiting actions access tutorial page.
+- [Custom pages](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/06-customPages.md): Custom pages tutorial page.
+- [Alerts and confirmations](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/07-alert.md): Alerts and confirmations tutorial page.
+- [Page Injections](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/08-pageInjections.md): Page Injections tutorial page.
+- [Actions](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/09-Actions.md): Actions tutorial page.
+- [Menu & Header](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/10-menuConfiguration.md): Menu & Header tutorial page.
+- [Data API](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/11-dataApi.md): Data API tutorial page.
+- [Security](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/12-security.md): Security tutorial page.
+- [Standard pages tuning](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/13-standardPagesTuning.md): Standard pages tuning tutorial page.
+- [AdminForth Components Library](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/15-afcl.md): AdminForth Components Library tutorial page.
+- [Websocket](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/03-Customization/16-websocket.md): Websocket tutorial page.
+
+## Adapters
+- [Email Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/01-email-adapters.md): Email Adapters tutorial page.
+- [OAuth2 Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/02-oauth2-adapters.md): OAuth2 Adapters tutorial page.
+- [Image Generation Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/03-image-generation-adapters.md): Image Generation Adapters tutorial page.
+- [Storage Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/04-storage-adapters.md): Storage Adapters tutorial page.
+- [AI Completion Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/05-ai-completion-adapters.md): AI Completion Adapters tutorial page.
+- [Image Analysis Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/06-image-analysis-adapters.md): Image Analysis Adapters tutorial page.
+- [Key-value Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/07-key-value-adapters.md): Key-value Adapters tutorial page.
+- [Captcha Adapters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/08-captcha-adapters.md): Captcha Adapters tutorial page.
+- [Telegram Chat Surface Adapter](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/05-Adapters/09-chat-surface-adapters.md): Telegram Chat Surface Adapter tutorial page.
+
+## Plugins
+- [Agent](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/01-agent.md): Agent tutorial page.
+- [Two-Factor Authentication Plugin](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/02-TwoFactorsAuth.md): Two-Factor Authentication Plugin tutorial page.
+- [Foreign Inline List](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/03-ForeignInlineList.md): Foreign Inline List tutorial page.
+- [Audit Log](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/04-AuditLog.md): Audit Log tutorial page.
+- [Upload](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/05-0-upload.md): Upload tutorial page.
+- [Upload API](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/05-1-upload-api.md): Upload API tutorial page.
+- [Markdown](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/06-markdown.md): Markdown tutorial page.
+- [Email Password Reset](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/07-email-password-reset.md): Email Password Reset tutorial page.
+- [Import Export](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/08-import-export.md): Import Export tutorial page.
+- [Open Signup](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/09-open-signup.md): Open Signup tutorial page.
+- [Internationalization (i18n)](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/10-i18n.md): Internationalization (i18n) tutorial page.
+- [OAuth Authentication](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/11-oauth.md): OAuth Authentication tutorial page.
+- [Inline Create](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/12-inline-create.md): Inline Create tutorial page.
+- [List In-Place Edit](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/13-list-in-place-edit.md): List In-Place Edit tutorial page.
+- [Text Complete](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/14-text-complete.md): Text Complete tutorial page.
+- [Foreign Inline Show](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/15-ForeignInlineShow.md): Foreign Inline Show tutorial page.
+- [Email Invite](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/16-email-invite.md): Email Invite tutorial page.
+- [Bulk AI Flow](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/17-bulk-ai-flow.md): Bulk AI Flow tutorial page.
+- [Universal Search (Legacy)](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/18-universal-filters.md): Universal Search (Legacy) tutorial page.
+- [Login Captcha](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/19-login-captcha.md): Login Captcha tutorial page.
+- [User Soft Delete](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/20-user-soft-delete.md): User Soft Delete tutorial page.
+- [Clone Row](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/21-clone-row.md): Clone Row tutorial page.
+- [Many to Many](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/22-many2many.md): Many to Many tutorial page.
+- [Background Jobs](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/23-background-jobs.md): Background Jobs tutorial page.
+- [Quick Filters](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/24-quick-filters.md): Quick Filters tutorial page.
+- [Auto Remove Plugin](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/25-auto-remove.md): Auto Remove Plugin tutorial page.
+- [Rich Editor](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/26-RichEditor.md): Rich Editor tutorial page.
+- [Dashboard](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/08-Plugins/27-dashboard.md): Dashboard tutorial page.
+
+## Advanced
+- [Plugin development guide](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/09-Advanced/01-plugin-development.md): Plugin development guide tutorial page.
+- [Working without direct database connection](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/09-Advanced/02-working-without-direct-database-connection.md): Working without direct database connection tutorial page.
+
+## Optional
+- [Glossary](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/02-glossary.md): Reference terminology; useful but not always required for implementation.
+- [Usage of Logger](https://raw.githubusercontent.com/devforth/adminforth/main/adminforth/documentation/docs/tutorial/07-UsageOfLogger.md): Logging integration and patterns; useful for observability-focused tasks.
