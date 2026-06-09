@@ -578,6 +578,10 @@ setJobStateField(jobId: string, key: string, value: any)
 getJobStateField(jobId: string, key: string)
 //get job state from the db
 getJobState(jobId: string)
+//add task to the running job
+addNewTasksToExistingJob(jobId: string, tasks: taskType[])
+//delete task from the running job (if not started yet)
+deleteTasksFromExistingJob(jobId: string, taskIndex: number)
 /**
  * 
  * executes code atomically. If you have many tasks that can update task state,
