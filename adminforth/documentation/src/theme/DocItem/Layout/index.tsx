@@ -25,6 +25,8 @@ export default function LayoutWrapper(props: Props): ReactNode {
     <>
       <Head>
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
+        <meta name="twitter:title" content={metadata.title} />
+        <meta name="twitter:description" content={metadata.description} />
       </Head>
       <Layout {...props} />
     </>
