@@ -16,20 +16,35 @@ types.setTypeParser(1082, (val) => val); // DATE
 
 class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDataSourceConnector {
 
-    async setupClient(url: string): Promise<void> {
+    async setupClient(url: string, options?: { recovery?: boolean }): Promise<void> {
         this.client = new Pool({
             connectionString: url
         });
-        try {
-            await this.client.connect();
-            this.client.on('error', async (err) => {
-                afLogger.error(`Postgres error: ${err.message} ${err.stack}`);
-                this.client.end();
-                await new Promise((resolve) => { setTimeout(resolve, 1000) });
-                this.setupClient(url);
+
+        const selfHeal = options?.recovery !== false;
+
+        if (selfHeal) {
+            this.client.on('error', (err) => {
+                afLogger.error(`Postgres pool idle client error (pool self-heals on next query): ${err.message} ${err.stack}`);
             });
-        } catch (e) {
-            afLogger.error(`Failed to connect to Postgres ${e}`);
+            try {
+                const client = await this.client.connect();
+                client.release();
+            } catch (e) {
+                afLogger.error(`Failed to connect to Postgres ${e}`);
+            }
+        } else {
+            try {
+                await this.client.connect();
+                this.client.on('error', async (err) => {
+                    afLogger.error(`Postgres error: ${err.message} ${err.stack}`);
+                    this.client.end();
+                    await new Promise((resolve) => { setTimeout(resolve, 1000) });
+                    this.setupClient(url, options);
+                });
+            } catch (e) {
+                afLogger.error(`Failed to connect to Postgres ${e}`);
+            }
         }
     }
 

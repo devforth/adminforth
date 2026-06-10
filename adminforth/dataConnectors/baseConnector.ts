@@ -44,7 +44,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     return this.client;
   }
 
-  setupClient(url: string): Promise<void> {
+  setupClient(url: string, options?: { recovery?: boolean }): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
