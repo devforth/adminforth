@@ -1,6 +1,6 @@
 ---
-title: Dashboard
-description: "Guide to the Dashboard plugin."
+title: Dashboard plugin
+description: "Documentation for the Dashboard plugin."
 slug: /tutorial/Plugins/dashboard
 ---
 
@@ -24,7 +24,7 @@ Supported widgets:
 pnpm install @adminforth/dashboard --save
 ```
 
-## Create Dashboard Configs Table
+### Create Dashboard Configs Table
 
 The plugin needs one resource to store dashboard definitions. For Prisma-based projects, add the table to your schema:
 
@@ -64,7 +64,7 @@ CREATE INDEX "dashboard_configs_slug_idx" ON "dashboard_configs"("slug");
 
 Use the JSON column type supported by your database connector. For example, PostgreSQL migrations might use `JSONB`, while SQLite migrations can use `JSON`.
 
-## Create Resource
+### Create Resource
 
 Create a resource that points to the `dashboard_configs` table:
 
@@ -136,7 +136,7 @@ export const admin = new AdminForth({
 });
 ```
 
-## Configure Plugin
+### Configure Plugin
 
 Attach the plugin to one of your resources, usually the users resource:
 
