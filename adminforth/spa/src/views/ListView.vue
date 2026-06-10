@@ -180,6 +180,7 @@
       @update:records="getListInner"
       @update:pageSize="(newSize) => { pageSize = newSize; page = 1; }"
       :sort="sort"
+      :filters="filtersStore.filters"
       :pageSizeOptions="Array.isArray(coreStore.resource?.options?.listPageSizeOptions) ? coreStore.resource?.options?.listPageSizeOptions : []"
       :pageSize="pageSize"
       :totalRows="totalRows"
@@ -394,10 +395,6 @@ async function getListInner() {
   }
   rows.value = result.rows;
   totalRows.value = result.totalRows ?? 0;
-  if (result.recordIds) {
-    coreStore.listRecordIds = result.recordIds;
-    coreStore.listResourceId = coreStore.resource!.resourceId;
-  }
   return result.error ? { error: result.error } : {};
 }
 

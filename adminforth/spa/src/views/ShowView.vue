@@ -11,12 +11,13 @@
     />
     <BreadcrumbsWithButtons>
       <button
-        v-if="hasPrevNext"
-        :disabled="nextRecordId === null"
-        @click="nextRecordId && router.push({ name: 'resource-show', params: { resourceId: $route.params.resourceId, primaryKey: nextRecordId } })"
-        :class="nextRecordId === null ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
-        class="af-button-shadow h-[34px] inline-flex items-center px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+        v-if="hasListNavContext && coreStore.resourceOptions?.showNextButton !== false"
+        :disabled="!hasNextRecord || isFetchingNextPage"
+        @click="goToNextRecord()"
+        :class="!hasNextRecord ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+        class="af-button-shadow h-[34px] inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
       >
+        <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />
         {{ $t('Next') }}
       </button>
 
@@ -309,20 +310,65 @@ const allColumns = computed(() => {
   return coreStore.resource?.columns?.filter(col => col.showIn?.show);
 });
 
-const hasPrevNext = computed(() => {
-  return coreStore.listResourceId === route.params.resourceId && coreStore.listRecordIds.length > 0;
-});
+const isFetchingNextPage = ref(false);
 
-const currentIndex = computed(() => {
+const hasListNavContext = computed(() =>
+  coreStore.listResourceId === route.params.resourceId && coreStore.listRecordIds.length > 0
+);
+
+const currentRecordIndex = computed(() => {
   const pk = String(route.params.primaryKey);
   return coreStore.listRecordIds.findIndex((id: any) => String(id) === pk);
 });
 
+const isLastOnCurrentPage = computed(() =>
+  currentRecordIndex.value === coreStore.listRecordIds.length - 1
+);
 
-const nextRecordId = computed(() => {
-  const idx = currentIndex.value;
-  return idx >= 0 && idx < coreStore.listRecordIds.length - 1 ? coreStore.listRecordIds[idx + 1] : null;
+const hasNextRecord = computed(() => {
+  if (currentRecordIndex.value < 0) return false;
+  if (!isLastOnCurrentPage.value) return true;
+  return coreStore.listRecordIds.length === coreStore.listPageSize;
 });
+
+async function goToNextRecord() {
+  if (!hasNextRecord.value) return;
+
+  if (!isLastOnCurrentPage.value) {
+    router.push({
+      name: 'resource-show',
+      params: { resourceId: route.params.resourceId, primaryKey: coreStore.listRecordIds[currentRecordIndex.value + 1] },
+    });
+    return;
+  }
+
+  isFetchingNextPage.value = true;
+  try {
+    const response = await callAdminForthApi({
+      path: '/get_resource_data',
+      method: 'POST',
+      body: {
+        source: 'list',
+        resourceId: coreStore.listResourceId,
+        limit: coreStore.listPageSize,
+        offset: coreStore.listPage * coreStore.listPageSize,
+        filters: coreStore.listFilters,
+        sort: coreStore.listSort,
+      },
+    });
+    if (response?.recordIds?.length) {
+      console.log('[Next] fetched next page records:', response.recordIds);
+      coreStore.listRecordIds = response.recordIds;
+      coreStore.listPage += 1;
+      router.push({
+        name: 'resource-show',
+        params: { resourceId: route.params.resourceId, primaryKey: response.recordIds[0] },
+      });
+    }
+  } finally {
+    isFetchingNextPage.value = false;
+  }
+}
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
