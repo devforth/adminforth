@@ -24,7 +24,7 @@ For example: `pnpx adminforth create-app --app-name myadmin --db "sqlite://.db.s
 
 **Description:**
 
-This command scaffolds a brand new AdminForth application in a specified directory. It guides you through setup using command-line arguments or interactive prompts, generates the necessary configuration and project files, installs dependencies, and sets up the development environment.
+The `create-app` command scaffolds a brand new AdminForth application in a specified directory. The `create-app` command guides you through setup using command-line arguments or interactive prompts, generates the necessary configuration and project files, installs dependencies, and sets up the development environment.
 
 **Usage:**
 
@@ -77,7 +77,7 @@ Creates a folder `my-app/` with the entire AdminForth app ready to go.
 
 **Description:**
 
-This command sets up a fresh AdminForth plugin project by generating the required files, installing dependencies, and preparing the environment for local development and testing.
+The `create-plugin` command sets up a fresh AdminForth plugin project by generating the required files, installing dependencies, and preparing the environment for local development and testing.
 
 **Usage:**
 
@@ -124,7 +124,7 @@ Creates a folder with all the necessary files for your plugin and instructions f
 
 **Description:**
 
-This command scans the current working directory for a valid AdminForth instance and automatically generates a TypeScript file containing model type definitions for all defined resources. It inspects the resource columns and maps them to appropriate TypeScript types.
+The `generate-models` command scans the current working directory for a valid AdminForth instance and automatically generates a TypeScript file containing model type definitions for all defined resources. The `generate-models` command inspects the resource columns and maps them to appropriate TypeScript types.
 
 **Usage:**
 
@@ -191,7 +191,7 @@ export type Product = {
 
 **Description:**
 
-This command bundles the AdminForth front-end (SPA) using your current AdminForth instance. It calls the `bundleNow()` method from your AdminForth admin entry point.
+The `bundle` command bundles the AdminForth front-end (SPA) using your current AdminForth instance. The `bundle` command calls the `bundleNow()` method from your AdminForth admin entry point.
 
 **Usage:**
 
@@ -201,7 +201,7 @@ pnpx adminforth bundle
 
 **Output:**
 
-The output files (typically JavaScript/CSS assets) will be generated in the directory configured by your AdminForth project (usually `dist` or `public`).
+The `bundle` command generates output files (typically JavaScript/CSS assets) in the directory configured by your AdminForth project (usually `dist` or `public`).
 
 
 
@@ -225,9 +225,9 @@ The output files (typically JavaScript/CSS assets) will be generated in the dire
 
 ### `component`
 
-The `component` command is an interactive CLI tool to scaffold and inject Vue components into your AdminForth plugin.
+The `component` command is an interactive CLI tool that scaffolds and injects Vue components into your AdminForth plugin.
 
-It helps you generate:
+The `component` command helps you generate:
 - Custom field components (`fields`)
 - CRUD page injections (`crudPage`)
 - Login page injections (`login`)
@@ -237,18 +237,18 @@ It helps you generate:
 
 #### 🔤 Custom Fields (`fields`)
 
-Generates components for specific fields in views such as:
+The `component fields` flow generates components for specific fields in views such as:
 - `list`
 - `show`
 - `edit`
 - `create`
 - `filter`
 
-It prompts to select a **resource**, then a **column**, and finally injects a file like:
+The `component fields` flow prompts you to select a **resource**, then a **column**, and finally injects a file like:
 ```bash
 custom/UserEmailShow.vue
 ```
-Config will be auto-updated.
+The `component fields` flow auto-updates the config.
 
 Usage shortcut:
 ```bash
@@ -259,15 +259,15 @@ pnpx adminforth component fields.show.user.email
 
 #### ➖ CRUD Page Injections (`crudPage`)
 
-Adds components to entire CRUD pages (not just fields).
+The `component crudPage` flow adds components to entire CRUD pages (not just fields).
 
-It supports views:
+The `component crudPage` flow supports views:
 - `list`
 - `show`
 - `edit`
 - `create`
 
-It then asks:
+The `component crudPage` flow then asks:
 - Where to inject (top, bottom, dropdown, etc.)
 - Optional name (e.g. "ExportButton")
 - Whether the component is "thin" (coexists with existing layout)
@@ -279,9 +279,9 @@ custom/OrderShowBottomExportButton.vue
 
 #### 🔐 Login Page Injections (`login`)
 
-Places a component before or after the login form.
+The `component login` flow places a component before or after the login form.
 
-It will prompt for:
+The `component login` flow prompts for:
 - Injection type: `beforeLogin` or `afterLogin`
 - Purpose (for naming)
 - Updates `index.ts` automatically
@@ -295,13 +295,13 @@ custom/CustomLoginSocials.vue
 
 #### 🌐 Global Injections (`global`)
 
-Injects into:
+The `component global` flow injects into:
 - `userMenu`
 - `header`
 - `sidebar`
 - `everyPageBottom`
 
-Prompt asks:
+The `component global` flow asks for:
 - Location
 - Description (for naming)
 
@@ -318,7 +318,7 @@ custom/CustomGlobalSupportLink.vue
 - Code uses Handlebars templates (`.vue.hbs`)
 - Config file `index.ts` must exist and export `admin`
 
-If the component file already exists, you’ll get a warning and it won’t be overwritten.
+If the generated component file already exists, the `component` command shows a warning and does not overwrite the existing file.
 
 ---
 
@@ -344,7 +344,7 @@ If the component file already exists, you’ll get a warning and it won’t be o
 
 **Description:**
 
-This command helps you scaffold a new resource file for a selected table in your database and automatically integrates it into the AdminForth application. It fetches available tables, lets you select one interactively, generates a corresponding resource file using a template, and injects the result into your application’s index file.
+The `resource` command helps you scaffold a new resource file for a selected table in your database and automatically integrates it into the AdminForth application. The `resource` command fetches available tables, lets you select one interactively, generates a corresponding resource file using a template, and injects the result into your application’s index file.
 
 **Usage:**
 
@@ -394,7 +394,7 @@ pnpx adminforth resource
 
 **Description:**
 
-This command outputs a summary of all supported AdminForth commands in the terminal with brief descriptions. It’s useful as a quick reference for developers to understand what functionality is available.
+The `help` command outputs a summary of all supported AdminForth commands in the terminal with brief descriptions. The `help` command is useful as a quick reference for developers to understand what functionality is available.
 
 **Usage:**
 
@@ -414,7 +414,7 @@ Available commands:
   resource           Scaffold a custom resource
 ```
 
-This command is typically displayed by running `adminforth` with no arguments or explicitly using `adminforth help`.
+The `help` output is typically displayed by running `adminforth` with no arguments or explicitly running `adminforth help`.
 
 ---
 
@@ -443,7 +443,7 @@ This command is typically displayed by running `adminforth` with no arguments or
 
 **Description:**
 
-This command displays the version number of the currently installed AdminForth CLI. It's useful for verifying which version you're using, especially when troubleshooting or checking compatibility.
+The `version` command displays the version number of the currently installed AdminForth CLI. The `version` command is useful for verifying which version you are using, especially when troubleshooting or checking compatibility.
 
 **Usage:**
 
