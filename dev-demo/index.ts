@@ -24,6 +24,7 @@ import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js
 
 import auditLogsResource from "./resources/auditLogs.js"
 import sessionsResource from "./resources/agent_resources/sessions.js";
+import dashboardConfigsResource from './resources/dashboard_configs.js';
 import turnsResource from './resources/agent_resources/turns.js';
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
@@ -139,7 +140,8 @@ export const admin = new AdminForth({
     translations,
     background_jobs_resource,
     sessionsResource,
-    turnsResource
+    turnsResource,
+    dashboardConfigsResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
