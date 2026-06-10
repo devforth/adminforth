@@ -406,7 +406,8 @@ const props = withDefaults(defineProps<{
   bufferSize?: number,
   customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration[]
   tableRowReplaceInjection?: AdminForthComponentDeclaration,
-  isVirtualScrollEnabled: boolean
+  isVirtualScrollEnabled: boolean,
+  filters?: any[]
 }>(), {
   sort: () => []
 });
@@ -599,6 +600,12 @@ async function onClick(e: any, row: any) {
       // user asked to nothing on click
       return;
     }
+    coreStore.listRecordIds = props.rows?.map(r => r._primaryKeyValue) ?? [];
+    coreStore.listResourceId = props.resource?.resourceId ?? null;
+    coreStore.listSort = props.sort;
+    coreStore.listPage = page.value;
+    coreStore.listPageSize = props.pageSize;
+    coreStore.listFilters = props.filters ?? [];
     if (e.ctrlKey || e.metaKey || row._clickUrl?.includes('target=_blank')) {
       
       if (row._clickUrl) {

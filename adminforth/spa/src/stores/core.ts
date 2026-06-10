@@ -24,6 +24,10 @@ export const useCoreStore = defineStore('core', () => {
   const screenWidth = ref(window.innerWidth);
   const listRecordIds: Ref<any[]> = ref([]);
   const listResourceId: Ref<string | null> = ref(null);
+  const listFilters: Ref<any[]> = ref([]);
+  const listSort: Ref<any[]> = ref([]);
+  const listPage: Ref<number> = ref(0);
+  const listPageSize: Ref<number> = ref(0);
 
   onMounted(() => {
     window.addEventListener('resize', updateWidth);
@@ -294,5 +298,9 @@ export const useCoreStore = defineStore('core', () => {
     isMobile,
     listRecordIds,
     listResourceId,
+    listFilters,
+    listSort,
+    listPage,
+    listPageSize,
   }
 })
