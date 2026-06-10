@@ -109,6 +109,7 @@ const config: Config = {
           sidebarCollapsible: true,
           sidebarCollapsed: false,
           sidebarPath: './sidebars.ts',
+          showLastUpdateTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           // editUrl:
