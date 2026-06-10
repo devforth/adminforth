@@ -363,9 +363,6 @@ export function buildOpenApiDocument(options: BuildOpenApiDocumentOptions): {[ke
       ...(route.description ? {
         description: route.description,
       } : {}),
-      ...(route.agent ? {
-        'x-adminforth-agent': route.agent,
-      } : {}),
       ...(route.request_schema ? {
         requestBody: {
           required: true,

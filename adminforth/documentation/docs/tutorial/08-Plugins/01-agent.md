@@ -655,7 +655,7 @@ To define a custom tool, register an API endpoint with `admin.express.endpoint`.
 
 By default, `admin.express.endpoint` applies AdminForth authorization. The endpoint handler receives `adminUser` from the user who is controlling the agent. In other words, all permissions and access rights of the agent are defined by that admin user. At the same time, actions done by the agent are automatically attributed in the audit log to the admin user who is controlling the agent.
 
-If a tool is risky, you can attach AdminForth agent metadata directly to the endpoint with the `agent` field. AdminForth renders it into OpenAPI as the vendor extension `x-adminforth-agent`.
+If a tool is risky, you can attach AdminForth agent metadata directly to the endpoint with the `agent` field.
 
 ```ts
 type AgentRiskLevel = 'safe' | 'danger';
