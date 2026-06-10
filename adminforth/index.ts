@@ -513,7 +513,10 @@ class AdminForth implements IAdminForth {
 
     await Promise.all(Object.keys(this.connectors).map(async (dataSourceId) => {
       try {
-        await this.connectors[dataSourceId].setupClient(this.config.dataSources.find((ds) => ds.id === dataSourceId).url);
+        await this.connectors[dataSourceId].setupClient(
+          this.config.dataSources.find((ds) => ds.id === dataSourceId).url,
+          { recovery: this.config.dataSources.find((ds) => ds.id === dataSourceId).connectionRecovery !== false }
+        );
       } catch (e) {
         afLogger.error(`Error while connecting to datasource '${dataSourceId}': ${e}`);
       }
