@@ -9,6 +9,7 @@ import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapte
 import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapter-google/index.js';
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
+import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
 import CompletionAdapterOpenAIResponses from '../../adapters/adminforth-completion-adapter-openai-responses/index.js';
@@ -258,6 +259,9 @@ export default {
         responseField: 'response',
         debugField: 'dubbug',
       },
+    }),
+    new DashboardPlugin({
+      dashboardConfigsResourceId: 'dashboard_configs',
     }),
   ],
   hooks: {

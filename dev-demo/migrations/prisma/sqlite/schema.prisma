@@ -127,3 +127,13 @@ model turns {
   response      String?
   dubbug        String?
 }
+
+model dashboard_configs {
+  id        String @id
+  slug      String @unique
+  label     String
+  revision  Int
+  config    Json
+
+  @@index([slug])
+}
