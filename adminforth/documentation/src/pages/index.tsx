@@ -248,6 +248,7 @@ export default function Home(): JSX.Element {
         ],
       },
     ],
+    dateModified: new Date().toISOString(),
   };
 
   return (
