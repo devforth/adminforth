@@ -5,7 +5,6 @@ import type { ZodType } from 'zod';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
-  type AdminForthResourceCommon, 
   type AdminUser, type AllowedActionsResolved, 
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
@@ -59,6 +58,10 @@ export interface IAdminForthAuthenticatedEndpointHandlerInput extends IAdminFort
   adminUser: AdminUser;
 }
 
+export type AgentToolMeta = {
+  isDangerous?: boolean;
+};
+
 export interface IAdminForthEndpointOptionsBase {
   method: string,
   path: string,
@@ -66,6 +69,7 @@ export interface IAdminForthEndpointOptionsBase {
   request_schema?: AnySchemaObject,
   response_schema?: AnySchemaObject,
   responce_schema?: AnySchemaObject,
+  agent?: AgentToolMeta,
   meta?: Record<string, unknown>,
   target?: 'json' | 'upload',
 }
@@ -103,6 +107,11 @@ export interface IAdminForthExpressRouteSchema {
   response?: AdminForthExpressSchemaInput;
 
   /**
+   * AdminForth agent metadata.
+   */
+  agent?: AgentToolMeta;
+
+  /**
    * Internal metadata for AdminForth integrations. This is not rendered in the OpenAPI document.
    */
   meta?: Record<string, unknown>;
@@ -112,6 +121,7 @@ export interface IRegisteredApiSchema {
   method: string;
   path: string;
   description?: string;
+  agent?: AgentToolMeta;
   meta?: Record<string, unknown>;
   request_schema?: AnySchemaObject;
   response_schema?: AnySchemaObject;
