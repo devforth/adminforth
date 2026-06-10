@@ -283,6 +283,31 @@ new BulkAiFlowPlugin({
 }),
 ```
 
+## Image generation quality
+
+`ImageGenerationAdapterOpenAI` accepts an `extraParams` object that is passed directly to the OpenAI API. The most useful option here is `quality`, which controls the fidelity and cost of each generated image:
+
+| Value | Description |
+|-------|-------------|
+| `'low'` | Fastest generation, lowest cost. Good for drafts or high-volume batch jobs where speed matters more than visual fidelity. |
+| `'medium'` | Balanced quality and speed. A sensible default for most use cases. |
+| `'high'` | Best image quality, slowest and most expensive. Use for final promotional assets or when visual detail is critical. |
+
+```ts
+new ImageGenerationAdapterOpenAI({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-image-1',
+  //diff-add
+  extraParams: {
+  //diff-add
+    quality: 'low', // 'low' | 'medium' | 'high'
+  //diff-add
+  },
+}),
+```
+
+> ☝️ `'low'` quality is a great starting point when processing large datasets — you can always re-run generation with `'high'` for selected records once you're happy with the prompts.
+
 ## Rate Limiting and Best Practices
 
 - Use `rateLimit` for individual image generation operations and for the bulk image generation
@@ -428,6 +453,21 @@ If you are processing large sets of data, you might want to limit the number of 
 ```
 
 And there won't be more than 5 parallel requests being handled.
+
+## Controlling page size in the generation dialog
+
+When users trigger bulk generation, records are displayed as cards in a paginated dialog. By default, 6 cards are shown per page. Use `pageSize` to tune this — lower values help when cards contain large images or long text, keeping the dialog fast and reviewable:
+
+```ts
+new BulkAiFlowPlugin({
+  actionName: 'Generate description and Price',
+
+  //diff-add
+  pageSize: 10, // default is 6
+
+  // ...
+}),
+```
 
 ## Confirming long-running generations
 
