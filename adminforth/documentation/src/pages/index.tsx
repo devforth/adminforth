@@ -140,6 +140,18 @@ const images = [
     link: '/docs/tutorial/Plugins/background-jobs/',
     description: 'Use background jobs to handle long-running tasks efficiently. Schedule, monitor, and manage your background processes with ease even after server restarts'
   },
+  {
+    original: require('@site/static/img/previews/agent.png').default,
+    title: 'Agent Plugin - give AI any task and let it handle it',
+    link: '/docs/tutorial/Plugins/agent/',
+    description: 'Provides an internal agent that can perform various tasks based on natural language instructions. Connect it to your data and let it help you with content generation, data management, or any custom use case you can think of'
+  },
+  {
+    original: require('@site/static/img/previews/dashboards-plugin.png').default,
+    title: 'Dashboard Plugin - creare custom dashboards from web interface',
+    link: '/docs/tutorial/Plugins/dashboard/',
+    description: 'Provides a customizable dashboard plugin that allows you to create and manage dashboards for your data. Connect it to your resources and visualize your data in a meaningful way'
+  },
 ];
 
 
