@@ -53,7 +53,7 @@
     "flag-icons": "^7.2.3",
     "flowbite": "^3.1.2",
     "i18n-iso-countries": "^7.12.0",
-    "npm-run-all2": "^6.1.2",
+    "npm-run-all2": "^9.0.1",
     "portfinder": "^1.0.32",
     "postcss": "^8.4.38",
     "sass": "^1.77.2",
