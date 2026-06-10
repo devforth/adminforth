@@ -326,7 +326,7 @@ If you need to react when the whole job is finished, pass `onAllTasksDone` to `r
 ## Custom job state renderer
 There may be cases where you need to display the state of job tasks. For this, you can register a custom component.
 
-
+1) You need to create a custom vue component:
 ```vue title="./custom/JobCustomComponent.vue"
 <template>
   <div class="w-full rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
@@ -431,9 +431,7 @@ onUnmounted(() => {
 </script>
 ```
 
-
-
-Now register this component explicitly:
+2) Now register this component explicitly:
 
 ```ts title="./index.ts"
 export const admin = new AdminForth({
@@ -474,7 +472,7 @@ export const admin = new AdminForth({
 ```
 
 
-Finally, register this component alongside the job task handler:
+3) Finally, register this component alongside the job task handler:
 
 ```ts title="./index.ts"
   ...
@@ -580,6 +578,10 @@ setJobStateField(jobId: string, key: string, value: any)
 getJobStateField(jobId: string, key: string)
 //get job state from the db
 getJobState(jobId: string)
+//add task to the running job
+addNewTasksToExistingJob(jobId: string, tasks: taskType[])
+//delete task from the running job (if not started yet)
+deleteTasksFromExistingJob(jobId: string, taskIndex: number)
 /**
  * 
  * executes code atomically. If you have many tasks that can update task state,

@@ -70,6 +70,7 @@ interface DialogProps {
   closeByEsc?: boolean
   beforeCloseFunction?: (() => void | Promise<void | boolean>) | null
   beforeOpenFunction?: (() => void | Promise<void>) | null
+  beforeCancelFunction?: (() => void | Promise<void | boolean>) | null
   askForCloseConfirmation?: boolean
   closeConfirmationText?: string
   removeFromDomOnClose?: boolean
@@ -82,6 +83,7 @@ const props = withDefaults(defineProps<DialogProps>(), {
   closeByEsc: true,
   beforeCloseFunction: null,
   beforeOpenFunction: null,
+  beforeCancelFunction: null,
   askForCloseConfirmation: false,
   closeConfirmationText: 'Are you sure you want to close this dialog?',
   removeFromDomOnClose: false,
@@ -109,6 +111,14 @@ async function close() {
   isModalOpen.value = false;
 }
 
+async function cancel() {
+  if (props.beforeCancelFunction) {
+    const shouldCancel = await props.beforeCancelFunction?.();
+    if (shouldCancel === false) return;
+  }
+  isModalOpen.value = false;
+}
+
 defineOptions({
   inheritAttrs: false,
 })
@@ -116,12 +126,17 @@ defineOptions({
 defineExpose({
   open: open,
   close: close,
+  cancel: cancel,
   tryToHideModal: tryToHideModal,
 })
 
-function tryToHideModal() {
-  if (!props.askForCloseConfirmation ) {
-    close();
+function tryToHideModal(isCancelAction = false) {
+  if (!props.askForCloseConfirmation) {
+    if (isCancelAction) {
+      cancel();
+    } else {
+      close();
+    }
   } else {
     showConfirmationOnClose.value = true;
   }
@@ -136,10 +151,8 @@ function toggleModal() {
 }
 
 function onEsc(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    if (props.closeByEsc) {
-      tryToHideModal();
-    }
+  if (event.key === 'Escape' && props.closeByEsc) {
+    tryToHideModal(true);
   }
 }
 
@@ -154,7 +167,7 @@ onUnmounted(() => {
 
 function backdropClick(e: MouseEvent) {
   if (props.closeByClickOutside && e.target === e.currentTarget) {
-    tryToHideModal();
+    tryToHideModal(true);
   }
 }
 

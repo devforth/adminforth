@@ -2,6 +2,11 @@
   "name": "adminforth",
   "version": "1.6.2",
   "description": "OpenSource Agent-Native forth-generation admin panel",
+  "pnpm": {
+    "overrides": {
+      "shell-quote": "^1.8.4"
+    }
+  },
   "keywords": [
     "adminforth",
     "agent",

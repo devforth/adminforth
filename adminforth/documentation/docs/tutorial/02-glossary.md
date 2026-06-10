@@ -15,6 +15,25 @@ It used to:
 
 There might be several datasources in the system for various databases e.g. One datasource to Mongo DBs and one to Postgres DB. 
 
+### connectionRecovery
+
+For PostgreSQL datasources AdminForth keeps a connection pool. The optional `connectionRecovery` flag controls how the connector reacts when that connection drops (DB restart, failover, network blip, etc.):
+
+```ts
+dataSources: [
+  {
+    id: 'maindb',
+    url: `${process.env.DATABASE_URL}`,
+    connectionRecovery: true, // default
+  },
+],
+```
+
+- `true` (default, recommended) — **self-heal mode.** The pool recovers automatically: a dead idle connection is dropped and a fresh one is transparently opened on the next query, so the app keeps working without a manual restart. Queries that were in-flight at the moment of the outage will fail, but subsequent queries succeed once the database is back.
+- `false` — **legacy mode.** On a connection error the pool is destroyed and recreated after 1 second. If the outage outlasts that retry, the app can be left with a permanently dead pool and require a manual restart. Kept only for backward compatibility.
+
+This flag is currently honored by the PostgreSQL connector; other connectors rely on their driver's built-in recovery.
+
 ## resource
 
 A [Resource](/docs/api/Back/interfaces/AdminForthResource.md) is a AdminForth representation of a table or collection in database. One resource is one table in the database. Resource has `table` property which should be equal to the name of the table in the database.

@@ -77,6 +77,20 @@ const config: Config = {
         href: 'https://adminforth.dev/img/adminforth_screenshot.png',
       },
     },
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "AdminForth",
+        "url": "https://adminforth.dev",
+        "description": "Agent-first open-source admin panel framework. Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code.",
+        "keywords": "backoffice, vue backoffice, agent-first admin panel framework, open-source admin panel, agentic back office, tailwind admin framework, vue typescript admin panel, internal admin agent",
+      }),
+    }
   ],
 
   // Even if you don't use internationalization, you can use this field to set
@@ -95,6 +109,7 @@ const config: Config = {
           sidebarCollapsible: true,
           sidebarCollapsed: false,
           sidebarPath: './sidebars.ts',
+          showLastUpdateTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           // editUrl:
