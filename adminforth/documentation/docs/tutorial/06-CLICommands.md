@@ -8,11 +8,13 @@ description: "Reference page for the AdminForth CLI, including create-app, creat
 
 ## Usage
 
+To use a command, write it in format like:
+
 ```bash
-
-adminforth <command> [...options]
-
+pnpx adminforth <command> [...options]
 ```
+
+For example: `pnpx adminforth create-app --app-name myadmin --db "sqlite://.db.sqlite"`
 
 ## Commands
 
@@ -27,7 +29,7 @@ This command scaffolds a brand new AdminForth application in a specified directo
 **Usage:**
 
 ```bash
-adminforth create-app [--app-name <name>] [--db <database_url>]
+pnpx adminforth create-app [--app-name <name>] [--db <database_url>]
 ```
 
 **Options:**
@@ -35,22 +37,10 @@ adminforth create-app [--app-name <name>] [--db <database_url>]
 - **`--app-name`**: The name of your new application. This becomes the project directory. Defaults to `adminforth-app`.
 - **`--db `**: The connection URL for your database. Currently PostgreSQL, MongoDB, SQLite, MySQL, Clickhouse are supported. If not provided, defaults to `sqlite://.db.sqlite`.
 
-<!-- **What it does:**
-
-1. ✅ Parses CLI arguments (or prompts if missing).
-2. 🔍 Validates Node.js version and checks if target folder exists.
-3. 📁 Creates project directory structure:
-   - `custom/`
-   - `resources/`
-   - `.env`, `package.json`, `tsconfig.json`, etc.
-4. 🛠 Applies database-specific templates using Handlebars.
-5. 📦 Installs dependencies in both main and custom directories.
-6. 📌 Prints helpful next steps to start developing immediately. -->
-
 **Example:**
 
 ```bash
-adminforth create-app --app-name my-app --db sqlite://mydb.sqlite
+pnpx adminforth create-app --app-name my-app --db sqlite://mydb.sqlite
 ```
 
 **Result:**
@@ -92,55 +82,23 @@ This command sets up a fresh AdminForth plugin project by generating the require
 **Usage:**
 
 ```bash
-adminforth create-plugin [--plugin-name <name>]
+pnpx adminforth create-plugin [--plugin-name <name>]
 ```
 
 **Options:**
 
 - **`--plugin-name`**: The name of your new plugin. This becomes the folder name and is used in generated files. If not provided, you'll be prompted.
 
-<!-- **What it does:**
-
-1. ✅ Parses CLI arguments (or prompts interactively).
-2. 🔍 Performs initial checks:
-   - Validates Node.js version (>= 20)
-   - Ensures no existing `package.json` exists in the current directory
-3. 📁 Creates a plugin folder structure with files such as:
-   - `tsconfig.json`
-   - `package.json`
-   - `index.ts`, `types.ts`
-   - `custom/tsconfig.json`
-   - `.gitignore`
-4. 📦 Installs dependencies in both root and `custom` directories.
-5. 📌 Prints post-setup instructions for building and testing. -->
-
 **Example:**
 
 ```bash
-adminforth create-plugin --plugin-name my-awesome-plugin
+pnpx adminforth create-plugin --plugin-name my-awesome-plugin
 ```
 
 **Result:**
 
 Creates a folder with all the necessary files for your plugin and instructions for linking it into an AdminForth project.
 
----
-
-**Next steps after creation:**
-
-```bash
-cd my-awesome-plugin
-pnpm build
-pnpm link
-```
-
-Then in your AdminForth project:
-
-```bash
-pnpm link my-awesome-plugin
-```
-
----
 
 
 
@@ -171,30 +129,17 @@ This command scans the current working directory for a valid AdminForth instance
 **Usage:**
 
 ```bash
-adminforth generate-models [--env-file=<path>]
+pnpx adminforth generate-models [--env-file=<path>]
 ```
 
 **Options:**
 
 - **`--env-file=<path>`**: (optional) Path to a custom `.env` file to load environment variables. Defaults to `.env`.
 
-<!-- **What it does:**
-
-1. 📁 Scans the current directory for `.js` or `.ts` files.
-2. 🔍 Looks for an AdminForth instance and calls `discoverDatabases()` to introspect resource definitions.
-3. 🧠 Extracts all resources and their columns.
-4. 🛠 Converts resource definitions into TypeScript type declarations using:
-   - Resource ID → PascalCase type name
-   - Column types → TypeScript equivalents
-5. ✍️ Writes output to:
-   ```
-   node_modules/adminforth/models/models.ts
-   ``` -->
-
 **Example:**
 
 ```bash
-adminforth generate-models --env-file=.env.dev
+pnpx adminforth generate-models --env-file=.env.dev
 ```
 
 **Result:**
@@ -251,37 +196,12 @@ This command bundles the AdminForth front-end (SPA) using your current AdminFort
 **Usage:**
 
 ```bash
-adminforth bundle
+pnpx adminforth bundle
 ```
-
-<!-- **What it does:**
-
-1. 🔍 Looks for a valid AdminForth instance file using `findAdminInstance()`.
-2. 📦 Dynamically loads the instance using `callTsProxy`.
-3. 🧰 Calls `admin.bundleNow({ hotReload: false })` to build the production-ready front-end. -->
 
 **Output:**
 
 The output files (typically JavaScript/CSS assets) will be generated in the directory configured by your AdminForth project (usually `dist` or `public`).
-
-**Example:**
-
-```bash
-adminforth bundle
-```
-
-You should see:
-
-```
-Bundling admin SPA...
-```
-
-And after successful execution, your compiled AdminForth front-end will be ready for deployment.
-
----
-
-
-
 
 
 
@@ -332,7 +252,7 @@ Config will be auto-updated.
 
 Usage shortcut:
 ```bash
-adminforth component fields.show.user.email
+pnpx adminforth component fields.show.user.email
 ```
 
 ---
@@ -429,30 +349,7 @@ This command helps you scaffold a new resource file for a selected table in your
 **Usage:**
 
 ```bash
-adminforth resource
-```
-
-
-<!-- **What it does:**
-
-1. 🔍 Discovers all available tables across configured databases.
-2. 🧭 Prompts the user to select a table using a searchable list.
-3. 📑 Fetches all columns for the selected table.
-4. 🛠 Generates a resource file from a Handlebars template (`templates/resource.ts.hbs`), including:
-   - Table name
-   - Column definitions
-   - Database source name
-   - Resource metadata
-5. 🚫 Skips file creation if a matching resource already exists with the same `dataSource`.
-6. 🧠 Appends the new resource to the app’s main `index.ts`:
-   - Adds an import statement.
-   - Registers the resource in the `resources` array.
-   - Adds a corresponding entry to the admin `menu`. -->
-
-**Example:**
-
-```bash
-adminforth resource
+pnpx adminforth resource
 ```
 
 **Result:**
