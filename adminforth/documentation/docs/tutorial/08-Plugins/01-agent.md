@@ -579,18 +579,18 @@ completionAdapter: new CompletionAdapterOpenAIResponses({
 
 However some of 3rd party providers might serve outdated vLLM and still don't fully support the Responses API needed for langchain internal implmentation, for example [OVH AI Endpoints](https://www.ovhcloud.com/en/public-cloud/ai-endpoints/) in Responses mode still don't play well with langchain proxy (25 Apr 2026)
 
-In that case you can try to use the OpenAI Complition API mode of the plugin, which is less efficient but more compatible with older APIs, you can force Chat Completions API mode with `useComplitionApi: true`:
+In that case you can try to use the OpenAI Chat Completions API mode of the plugin, which is less efficient but more compatible with older APIs, you can force Chat Completions API mode with `useCompletionApi: true`:
 
 ```ts
 completionAdapter: new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN as string,
   baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
   model: 'gpt-oss-120b',
-  useComplitionApi: true,
+  useCompletionApi: true,
 })
 ```
 
-OVH AI Endpoints still does not fully support the OpenAI `responses` API, so `useComplitionApi: false` may work unstably there.
+OVH AI Endpoints still does not fully support the OpenAI `responses` API, so `useCompletionApi: false` may work unstably there.
 
 
 ## Turn on audio chat support
@@ -655,6 +655,29 @@ To define a custom tool, register an API endpoint with `admin.express.endpoint`.
 
 By default, `admin.express.endpoint` applies AdminForth authorization. The endpoint handler receives `adminUser` from the user who is controlling the agent. In other words, all permissions and access rights of the agent are defined by that admin user. At the same time, actions done by the agent are automatically attributed in the audit log to the admin user who is controlling the agent.
 
+If a tool is risky, you can attach AdminForth agent metadata directly to the endpoint with the `agent` field. AdminForth renders it into OpenAPI as the vendor extension `x-adminforth-agent`.
+
+```ts
+type AgentRiskLevel = 'safe' | 'danger';
+
+type AgentToolMeta = {
+  riskLevel?: AgentRiskLevel;
+  confirmation?: {
+    title?: string;
+    message?: string;
+    confirmLabel?: string;
+  };
+};
+```
+
+Use it in `.endpoint(...)` like this:
+
+- `riskLevel: 'safe'` marks the tool as low-risk.
+- `riskLevel: 'danger'` marks the tool as dangerous.
+- `confirmation` customizes the confirmation dialog shown before the tool is executed.
+
+This metadata is rendered into the generated OpenAPI document, so the agent can understand that a tool is dangerous and requires an explicit confirmation UI before execution.
+
 This example uses the same email adapter pattern shown in the Email Invite and Email Password Reset plugins. The transport below uses Mailgun only to keep the snippet short; you can replace it with SES or any other adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
 
 ```ts title="./api.ts"
@@ -691,6 +714,14 @@ export function initApi(app: Express, admin: IAdminForth) {
     method: 'POST',
     path: '/send_email_to_user',
     description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
+    agent: {
+      riskLevel: 'danger',
+      confirmation: {
+        title: 'Send email to user',
+        message: 'This action will send a real email to the selected user.',
+        confirmLabel: 'Send email',
+      },
+    },
     request_schema: {
       type: 'object',
       additionalProperties: false,
