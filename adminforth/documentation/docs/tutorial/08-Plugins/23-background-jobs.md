@@ -5,7 +5,7 @@ slug: /tutorial/Plugins/background-jobs
 ---
 
 # Background jobs
-BackgroundJobsPlugin adds a durable background-job system to AdminForth. Jobs are stored in your data store (via a resource), executed by registered handlers, and automatically resumed after server restarts.
+BackgroundJobsPlugin adds a durable background job system to AdminForth. Jobs are stored in your data store through a resource, executed by registered handlers, and automatically resumed after server restarts.
 
 
 ## Setup
@@ -15,7 +15,7 @@ First, install the plugin:
 pnpm i @adminforth/background-jobs
 ```
 
-and create a resource for jobs:
+Then create a resource for jobs:
 
 
 ```ts title="./resources/jobs.ts"
@@ -129,7 +129,7 @@ export default {
 } as AdminForthResourceInput;
 ```
 
-Then make add table schema:
+Then add the table schema:
 
 ```
 model jobs {
@@ -145,11 +145,11 @@ model jobs {
 }
 ```
 
-and make migration
+Then create a migration.
 
 
 ## Usage
-The plugin saves tasks and keeps executing them even after a server restart, so you should register job task handlers at the start of the AdminForth application.
+The plugin saves tasks and keeps executing them after a server restart, so you should register job task handlers when the AdminForth application starts.
 
 ```ts title="./index.ts"
   //diff-add
@@ -196,25 +196,39 @@ The plugin saves tasks and keeps executing them even after a server restart, so 
     //diff-add
     //handler function
     //diff-add
-    handler: async ({ jobId, setTaskStateField, getTaskStateField }) => {
+    handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
       //diff-add
-      const state = await getTaskStateField();
+      const state = await getState();
       //diff-add
       console.log('State of the task at the beginning of the job handler:', state);
       //diff-add
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      for (let second = 0; second < 3; second++) {
+        //diff-add
+        let taskCounter = await getTaskStateField('task_counter');
+        //diff-add
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        //diff-add
+        taskCounter += 1;
+        //diff-add
+        await setTaskStateField('task_counter', taskCounter);
+        //diff-add
+      }
       //diff-add
-      await setTaskStateField({[state.step]: `Step ${state.step} completed`});
-      //diff-add
-      const updatedState = await getTaskStateField();
-      //diff-add
-      console.log('State of the task after setting the new state in the job handler:', updatedState);
+      await backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
+        //diff-add
+        const jobState = await backgroundJobsPlugin.getJobState(jobId);
+        //diff-add
+        await backgroundJobsPlugin.setJobStateField(jobId, 'counter', jobState.counter + 1);
+        //diff-add
+        await backgroundJobsPlugin.setJobStateField(jobId, 'commited_tasks', `${jobState.commited_tasks}${state.task_number} `);
+        //diff-add
+      });
       //diff-add
     },
     //diff-add
-    //limit of tasks, that are running in parallel
+    // limit of tasks that are running in parallel
     //diff-add
-    parallelLimit: 1
+    parallelLimit: 2
     //diff-add
   })
 
@@ -259,21 +273,23 @@ After registering a handler, you can create a job. For example:
             //diff-add
             [
               //diff-add
-              { state: { step: 1 } },
+              { state: { task_number: 1, task_counter: 0 } },
               //diff-add
-              { state: { step: 2 } },
+              { state: { task_number: 2, task_counter: 0 } },
               //diff-add
-              { state: { step: 3 } },
+              { state: { task_number: 3, task_counter: 0 } },
               //diff-add
-              { state: { step: 4 } },
+              { state: { task_number: 4, task_counter: 0 } },
               //diff-add
-              { state: { step: 5 } },
+              { state: { task_number: 5, task_counter: 0 } },
               //diff-add
-              { state: { step: 6 } },
+              { state: { task_number: 6, task_counter: 0 } },
               //diff-add
             ], //initial tasks
             //diff-add
             'example_job_handler', //job handler name
+            //diff-add
+            { counter: 0, commited_tasks: 'Commited tasks:' }, //initial job state
             //diff-add
           )
           //diff-add
@@ -297,7 +313,7 @@ If you need to react when the whole job is finished, pass `onAllTasksDone` to `r
 
   backgroundJobsPlugin.registerTaskHandler({
     jobHandlerName: 'import-users',
-    handler: async ({ jobId, setTaskStateField, getTaskStateField }) => {
+    handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
       // task logic
     },
     onAllTasksDone: async ({ jobId, failedTasks, succeededTasks }) => {
@@ -308,76 +324,114 @@ If you need to react when the whole job is finished, pass `onAllTasksDone` to `r
 ```
 
 ## Custom job state renderer
-There may be cases when you need to display the state of job tasks. For this, you can register a custom component.
+There may be cases where you need to display the state of job tasks. For this, you can register a custom component.
 
-
-```ts title="./custom/JobCustomComponent.vue"
+1) You need to create a custom vue component:
+```vue title="./custom/JobCustomComponent.vue"
 <template>
-  <div class="w-[1000px] h-[500px] bg-gray-100 rounded-lg p-4 flex flex-col items-center justify-center  ">
-    <Button class="h-10" @click="loadTasks">
-      Get Job Tasks
-    </Button>
-    {{ tasks }}
+  <div class="w-full rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
+    <div class="flex gap-10">
+      <div>
+        <h3 class="mb-4 text-sm font-semibold text-gray-900 dark:text-white">Job state</h3>
+        <Table
+          class="mb-6"
+          :columns="jobStateColumns"
+          :data="jobStateRows"
+          :page-size="2"
+        />
+      </div>
+
+      <div>
+        <h3 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Tasks</h3>
+        <Table
+          :columns="taskColumns"
+          :data="taskRows"
+          :page-size="taskRows.length || 5"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
-
 <script setup lang="ts">
-import { Button, JsonViewer } from '@/afcl';
-import { onMounted, onUnmounted, ref } from 'vue';
-import websocket from '@/websocket';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import type { AdminForthComponentDeclarationFull } from 'adminforth';
+import { Table } from '@/afcl';
 
+type JobTask = {
+  state: {
+    task_number: number;
+    task_counter: number;
+  };
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'DONE' | 'FAILED';
+};
 
-const tasks = ref<{state: Record<string, any>, status: string}[]>([]);
-
+const tasks = ref<JobTask[]>([]);
+const unsubscribeCallbacks: Array<() => void> = [];
+const jobStateColumns = [
+  { label: 'Field', fieldName: 'field' },
+  { label: 'Value', fieldName: 'value' },
+];
+const taskColumns = [
+  { label: 'Task', fieldName: 'taskNumber' },
+  { label: 'State', fieldName: 'status' },
+  { label: 'task_counter', fieldName: 'taskCounter' },
+];
+const taskStatusLabels: Record<JobTask['status'], string> = {
+  SCHEDULED: 'pending',
+  IN_PROGRESS: 'running',
+  DONE: 'done',
+  FAILED: 'failed',
+};
 
 const props = defineProps<{
   meta: any;
-  getJobTasks: (limit?: number, offset?: number) => Promise<{state: Record<string, any>, status: string}[]>;
+  getJobTasks: (limit?: number, offset?: number) => Promise<JobTask[]>;
+  subscribeToJobStateFields: (fieldNames: string[]) => () => void;
+  subscribeToJobTaskFields: (fieldNames: string[]) => () => void;
   job: {
     id: string;
     name: string;
     status: 'IN_PROGRESS' | 'DONE' | 'DONE_WITH_ERRORS' | 'CANCELLED';
-    progress: number; // 0 to 100
+    state: {
+      counter: number;
+      commited_tasks: string;
+    };
+    progress: number;
     createdAt: Date;
-    finishedAt: Date;
-    customComponent?: AdminForthComponentDeclarationFull; 
+    customComponent?: AdminForthComponentDeclarationFull;
   };
 }>();
 
-const loadTasks = async () => {
-  tasks.value = await props.getJobTasks(10, 0);
-  console.log('Loaded tasks for job:', tasks.value);
+const jobStateRows = computed(() => [
+  { field: 'counter', value: props.job.state.counter },
+  { field: 'commited_tasks', value: props.job.state.commited_tasks },
+]);
+
+const taskRows = computed(() => tasks.value.map((task) => ({
+  taskNumber: task.state.task_number,
+  status: taskStatusLabels[task.status],
+  taskCounter: task.state.task_counter,
+})));
+
+async function loadTasks() {
+  tasks.value = await props.getJobTasks(100, 0);
 }
 
-
 onMounted(async () => {
-  loadTasks();
-  websocket.subscribe(`/background-jobs-task-update/${props.job.id}`, (data: { taskIndex: number, status?: string, state?: Record<string, any> }) => {
-    console.log('Received WebSocket message for job:', data.status);
-    
-    if (data.state) {
-      tasks.value[data.taskIndex].state = data.state;
-    }
-    if (data.status) {
-      tasks.value[data.taskIndex].status = data.status;
-    }
+  await loadTasks();
 
-  });
+  unsubscribeCallbacks.push(props.subscribeToJobStateFields(['counter', 'commited_tasks']));
+  unsubscribeCallbacks.push(props.subscribeToJobTaskFields(['task_counter']));
 });
 
 onUnmounted(() => {
-  console.log('Unsubscribing from WebSocket for job:', props.job.id);
-  websocket.unsubscribe(`/background-jobs-task-update/${props.job.id}`);
+  unsubscribeCallbacks.forEach((unsubscribe) => unsubscribe());
 });
-
-
 </script>
 ```
 
-
-Now register this component explicitly:
+2) Now register this component explicitly:
 
 ```ts title="./index.ts"
 export const admin = new AdminForth({
@@ -418,7 +472,7 @@ export const admin = new AdminForth({
 ```
 
 
-Finally, register this component alongside the job task handler:
+3) Finally, register this component alongside the job task handler:
 
 ```ts title="./index.ts"
   ...
@@ -427,15 +481,24 @@ Finally, register this component alongside the job task handler:
   
   backgroundJobsPlugin.registerTaskHandler({
     jobHandlerName: 'example_job_handler', // Handler name
-    handler: async ({ setTaskStateField, getTaskStateField }) => { //handler function
-      const state = await getTaskStateField();
+    handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => { //handler function
+      const state = await getState();
       console.log('State of the task at the beginning of the job handler:', state);
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      await setTaskStateField({[state.step]: `Step ${state.step} completed`});
-      const updatedState = await getTaskStateField();
-      console.log('State of the task after setting the new state in the job handler:', updatedState);
+
+      for (let second = 0; second < 3; second++) {
+        let taskCounter = await getTaskStateField('task_counter');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        taskCounter += 1;
+        await setTaskStateField('task_counter', taskCounter);
+      }
+
+      await backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
+        const jobState = await backgroundJobsPlugin.getJobState(jobId);
+        await backgroundJobsPlugin.setJobStateField(jobId, 'counter', jobState.counter + 1);
+        await backgroundJobsPlugin.setJobStateField(jobId, 'commited_tasks', `${jobState.commited_tasks}${state.task_number} `);
+      });
     },
-    parallelLimit: 1 //parallel tasks limit
+    parallelLimit: 2 //parallel tasks limit. 2 menans 2 tasks can run at a time
   })
 
   //diff-add
@@ -454,10 +517,25 @@ Finally, register this component alongside the job task handler:
 
 ```
 
+### Reactive updates for job state and task state
+
+You can activate automatic reactive updates for task state and job state on the frontend when you call backend state mutation methods like `setJobStateField` and `setTaskStateField`.
+
+To avoid unnecessary high-volume backend updates for data that might not be needed on the frontend, all reactive updates are disabled by default, and you need to specify which fields to subscribe to.
+
+Use `subscribeToJobStateFields(['fieldName1', 'fieldName2'])` for specific job state fields and
+`subscribeToJobTaskFields(['fieldName1', 'fieldName2'])` for specific task state fields.
+
+The plugin applies incoming updates to the reactive `job` prop and to the task objects returned by
+`getJobTasks()`. Task field subscriptions receive updates for that field from every task
+in the open job. Both helpers return an unsubscribe function, though the plugin also automatically unsubscribes from
+remaining field subscriptions when the job dialog closes.
+
+
 
 ## Frontend API
 ### Job info popup
-If you want to imedeatelly open job info popup, you shoul return job id from you API, that creates job:
+If you want to immediately open the job info popup, return the job ID from the API that creates the job:
 
 For example:
 
@@ -489,32 +567,37 @@ For example:
 
 ```
 
-## Backend api
+## Backend API
 
-Pluging provides some handy methods, that can be used in different situations:
+The plugin provides some handy methods that can be used in different situations:
 
 ```ts
 //set key:value to the job state in the DB
-setJobField(jobId: string, key: string, value: any)
+setJobStateField(jobId: string, key: string, value: any)
 //get job field from the state in db
-getJobField(jobId: string, key: string)
+getJobStateField(jobId: string, key: string)
 //get job state from the db
 getJobState(jobId: string)
+//add task to the running job
+addNewTasksToExistingJob(jobId: string, tasks: taskType[])
+//delete task from the running job (if not started yet)
+deleteTasksFromExistingJob(jobId: string, taskIndex: number)
 /**
  * 
- * executes code atomically, if you have many task, that can update task state, 
- * better use this method to avoid cases, when in the task state writes invalid data.
+ * executes code atomically. If you have many tasks that can update task state,
+ * use this method to avoid invalid task state writes.
  * 
  **/
 updateJobFieldsAtomically(jobId: string, updateFunction: () => Promise<void>) 
 
 //for example
 backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
-  // do all set / get fields in this function to make state update atomic and there is no conflicts when 2 tasks in parallel do get before set.
-  // don't do long awaits in this callback, since it has exclusive lock.
-  let totalUsedTokens = await backgroundJobsPlugin.getJobField(jobId, 'totalUsedTokens');
+  // Do all set / get field operations in this function to make the state update atomic and avoid conflicts
+  // when two parallel tasks get the same value before setting it.
+  // Don't do long awaits in this callback, since it has an exclusive lock.
+  let totalUsedTokens = await backgroundJobsPlugin.getJobStateField(jobId, 'totalUsedTokens');
   totalUsedTokens += promptCost;
-  await backgroundJobsPlugin.setJobField(jobId, 'totalUsedTokens', totalUsedTokens);
+  await backgroundJobsPlugin.setJobStateField(jobId, 'totalUsedTokens', totalUsedTokens);
 })
 
 ```

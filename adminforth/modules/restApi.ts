@@ -1927,6 +1927,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         method: 'POST',
         path: '/create_record',
       description: 'Creates a new record in the specified resource. The endpoint validates create permissions, required fields, hidden or backend-only field rules, polymorphic foreign keys, and resource hooks before persisting and returning the created primary key.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: createRecordRequestSchema,
       response_schema: createRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
@@ -2075,9 +2078,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     });
     server.endpoint({
-        method: 'POST',
-        path: '/update_record',
+      method: 'POST',
+      path: '/update_record',
       description: 'Updates an existing record by primary key. The endpoint validates edit permissions, current record existence, hidden, backend-only, and read-only field rules, polymorphic foreign keys, and resource hooks before saving changes.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: updateRecordRequestSchema,
       response_schema: updateRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
@@ -2216,9 +2222,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     });
     server.endpoint({
-        method: 'POST',
-        path: '/delete_record',
+      method: 'POST',
+      path: '/delete_record',
       description: 'Deletes an existing record by primary key. The endpoint validates delete permissions, loads the current record, executes configured cascade child deletion, and then removes the record.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: deleteRecordRequestSchema,
       response_schema: deleteRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
@@ -2305,6 +2314,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/start_custom_action',
       description: 'Executes a custom resource action for a single record. The endpoint validates the resource, action existence, and action permissions, then either returns a redirect URL or executes the action handler and returns its result together with action context.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: startCustomActionRequestSchema,
       response_schema: startCustomActionResponseSchema,
       handler: async ({ body, adminUser, tr, cookies, response, headers }) => {
@@ -2361,6 +2373,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/start_custom_bulk_action',
       description: 'Executes a custom resource action in bulk mode for multiple records. The endpoint validates the resource, action existence, bulk handler availability, and permissions, then runs the bulk handler and returns its result together with action context.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: startCustomBulkActionRequestSchema,
       response_schema: startCustomBulkActionResponseSchema,
       handler: async ({ body, adminUser, tr, response, cookies, headers }) => {

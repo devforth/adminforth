@@ -32,6 +32,7 @@ vars:
     - "adminforth-background-jobs"
     - "adminforth-auto-remove"
     - "adminforth-agent"
+    - "adminforth-dashboard"
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"
@@ -42,6 +43,8 @@ vars:
     - "adminforth-oauth-adapter-keycloak"
     - "adminforth-oauth-adapter-microsoft"
     - "adminforth-oauth-adapter-twitch"
+    - "adminforth-oauth-adapter-telegram"
+    - "adminforth-chat-surface-adapter-telegram"
     - "adminforth-image-generation-adapter-openai"
     - "adminforth-storage-adapter-amazon-s3"
     - "adminforth-storage-adapter-local"

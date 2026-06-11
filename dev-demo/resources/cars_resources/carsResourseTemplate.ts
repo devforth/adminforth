@@ -200,6 +200,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           region: process.env.AWS_REGION as string,
           accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: "public-read"
         }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -220,6 +221,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           region: process.env.AWS_REGION as string,
           accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: "public-read"
         }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -314,6 +316,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
               region: process.env.AWS_REGION as string,
               accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
               secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              s3ACL: "public-read"
             }),
             
             pathColumnName: 'generated_promo_picture',

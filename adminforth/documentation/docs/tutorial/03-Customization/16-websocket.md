@@ -13,10 +13,13 @@ In two words, to subscribe to a topic from any frontend component you need to do
 ```javascript
 import websocket from '@/websocket';
 
-websocket.subscribe('/topic-name', (data) => {
+const unsubscribe = websocket.subscribe('/topic-name', (data) => {
   // this callback called when we receive publish in topic from the websocket
   console.log(data);
 });
+
+// later, for example when the component is unmounted
+unsubscribe();
 ```
 
 On server you can publish data to the topic by calling
@@ -74,17 +77,17 @@ const props = defineProps({
 });
 
 const totalCost: Ref<number|null> = ref(null);
+let unsubscribePropertyCost: (() => void) | undefined;
 
 onMounted(() => {
-  websocket.subscribe(`/property-cost/${props.adminUser!.pk}`, (data: any) => {
+  unsubscribePropertyCost = websocket.subscribe(`/property-cost/${props.adminUser!.pk}`, (data: any) => {
     // this callback called when we receive publish in topic from the websocket
     totalCost.value = data.totalCost;
   });
 });
 
 onUnmounted(() => {
-  // will be called on logout
-  websocket.unsubscribeAll();
+  unsubscribePropertyCost?.();
 });
 
 </script>
