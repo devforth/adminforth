@@ -251,6 +251,7 @@ export default class ConfigValidator implements IConfigValidator {
       label: `Delete checked`,
       icon: 'flowbite:trash-bin-outline',
       confirm: 'Are you sure you want to delete selected items?',
+      message: 'Deleting {count} item. This process is irreversible. | Deleting {count} items. This process is irreversible.',
       dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
       action: async ({ selectedIds, adminUser, response }) => {

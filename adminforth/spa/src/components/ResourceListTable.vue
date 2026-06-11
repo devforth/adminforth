@@ -259,7 +259,7 @@
   -->
   <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded "
+    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded-default" 
       v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
     >
       <!-- Buttons -->
