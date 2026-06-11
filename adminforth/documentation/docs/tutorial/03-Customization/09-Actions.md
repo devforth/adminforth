@@ -161,18 +161,6 @@ confirm: {
 
 Omit `confirm` entirely to skip the dialog and run the action immediately.
 
-### Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `label` | `string` | Button label shown in the list toolbar. |
-| `icon` | `string` | Flowbite icon for the button. |
-| `confirm` | `string \| { title?, message?, yes?, no? }` | Confirmation dialog. String → title only. Object → full control. If omitted, no dialog is shown. |
-| `successMessage` | `string` | Toast message shown after the action completes. |
-| `allowed` | `async ({ adminUser, selectedIds, allowedActions }) => boolean` | Called on page load (no `selectedIds`) to decide visibility, and again on click (with `selectedIds`) to authorize. |
-| `action` | `async ({ selectedIds, adminUser, resource, tr }) => { ok, error?, successMessage? }` | Handler called with all selected IDs at once. |
-| `showInThreeDotsDropdown` | `boolean` | Show in the three-dots menu of the list header instead of as a top-level button. |
-
 ### Access Control
 
 You can control who can use an action through the `allowed` function. This function receives:
