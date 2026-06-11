@@ -8,6 +8,7 @@ import { defineStore } from 'pinia'
   contentHTML?: string;
   acceptText?: string;
   cancelText?: string;
+  dangerous?: boolean;
  }
 
 
@@ -19,6 +20,7 @@ export const useModalStore = defineStore('modal', () => {
     contentHTML: '',
     acceptText: 'acceptText',
     cancelText: 'cancelText',
+    dangerous: false,
   });  
   const isOpened = ref(false);
   const onAcceptFunction: any = ref(()=>{});
@@ -40,6 +42,7 @@ export const useModalStore = defineStore('modal', () => {
       contentHTML: content.contentHTML || '',
       acceptText: content.acceptText || 'acceptText',
       cancelText: content.cancelText || 'cancelText',
+      dangerous: content.dangerous ?? false,
     };
   }
   function resetmodalState() {
@@ -51,6 +54,7 @@ export const useModalStore = defineStore('modal', () => {
       contentHTML: '',
       acceptText: 'acceptText',
       cancelText: 'cancelText',
+      dangerous: false,
     };
     setOnAcceptFunction(()=>{});
 
