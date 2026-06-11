@@ -21,7 +21,7 @@ nvm use 20
 
 ## Creating an AdminForth Project
 
-The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart from boilerplate, it creates one resource for users management.
+The recommended way to get started with AdminForth is via the **`create-app`** CLI, which scaffolds a basic fully functional back-office application. Apart from boilerplate, it creates one resource for user management.
 
 There are two common setup paths:
 

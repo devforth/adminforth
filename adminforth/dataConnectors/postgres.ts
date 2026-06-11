@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField, DatabaseCleanState } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import pkg from 'pg';
@@ -90,17 +90,16 @@ class PostgresConnector extends AdminForthBaseConnector implements IAdminForthDa
         return res.rows.map(row => ({ name: row.column_name, sampleValue: sampleRow[row.column_name] }));
       }
 
-    async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+    async isDatabaseEmpty(): Promise<boolean> {
         const res = await this.client.query(`
             SELECT table_schema, table_name
             FROM information_schema.tables
             WHERE table_type = 'BASE TABLE'
               AND table_schema NOT IN ('pg_catalog', 'information_schema')
               AND table_schema NOT LIKE 'pg_toast%'
+            LIMIT 1
         `);
-        return {
-            blockingObjects: res.rows.map((row) => `${row.table_schema}.${row.table_name}`),
-        };
+        return res.rows.length === 0;
     }
     
     async checkForeignResourceCascade(resource: AdminForthResource, config: AdminForthConfig, schema = 'public'): Promise<void> {

@@ -4,7 +4,6 @@ import {
   IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter,
   AdminForthConfig,
   IAggregationRule, IGroupByRule, IGroupByDateTrunc,
-  DatabaseCleanState,
 } from "../types/Back.js";
 
 
@@ -697,7 +696,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('getAllColumnsInTable() must be implemented in subclass');
   }
 
-  async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+  async isDatabaseEmpty(): Promise<boolean> {
     throw new Error('isDatabaseEmpty() must be implemented in subclass');
   }
 

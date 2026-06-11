@@ -276,10 +276,6 @@ export interface IAdminForthSort {
   direction: AdminForthSortDirections 
 }
 
-export type DatabaseCleanState = {
-  blockingObjects: string[];
-};
-
 export interface IAdminForthDataSourceConnector {
 
   client: any;
@@ -305,7 +301,7 @@ export interface IAdminForthDataSourceConnector {
   /**
    * Function to check whether database has no user data.
    */
-  isDatabaseEmpty(): Promise<DatabaseCleanState>;
+  isDatabaseEmpty(): Promise<boolean>;
 
   /**
    * Optional.

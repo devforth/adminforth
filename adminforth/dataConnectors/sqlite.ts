@@ -1,5 +1,5 @@
 import betterSqlite3 from 'better-sqlite3';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField, DatabaseCleanState } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections } from '../types/Common.js';
@@ -52,17 +52,15 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
     }));
   }
 
-  async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+  async isDatabaseEmpty(): Promise<boolean> {
     const stmt = this.client.prepare(`
       SELECT name
       FROM sqlite_schema
       WHERE type = 'table'
         AND name NOT LIKE 'sqlite_%'
+      LIMIT 1
     `);
-    const rows = stmt.all();
-    return {
-      blockingObjects: rows.map((row) => row.name),
-    };
+    return !stmt.get();
   }
   
     async hasSQLiteCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {
@@ -553,8 +551,8 @@ class SQLiteConnector extends AdminForthBaseConnector implements IAdminForthData
       return res.changes ?? 0;
     }
 
-    close() {
-      this.client.close();
+    async close(): Promise<void> {
+      this.client?.close();
     }
 }
 

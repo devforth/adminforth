@@ -170,7 +170,6 @@ export async function promptForMissingOptions(options) {
       db: options.db || answers.db,
       useNpm: options.useNpm || answers.useNpm,
   };
-  resolvedOptions.databaseCleanState = { blockingObjects: [] };
   resolvedOptions.existingDb = false;
 
   await inspectDatabaseCleanState(resolvedOptions);
@@ -268,17 +267,24 @@ async function inspectDatabaseCleanState(options) {
 
   const Connector = (await import(DATABASE_CONNECTOR_IMPORTS[provider])).default;
   const connector = new Connector();
-  await connector.setupClient(connectionString.toString());
 
   try {
-    options.databaseCleanState = await connector.isDatabaseEmpty();
+    await connector.setupClient(connectionString.toString());
+  } catch (error) {
+    if (provider === 'sqlite' && error.message?.includes('directory does not exist')) {
+      options.existingDb = false;
+      return;
+    }
+    throw error;
+  }
+
+  try {
+    options.existingDb = !(await connector.isDatabaseEmpty());
   } finally {
     if (typeof connector.close === 'function') {
       await connector.close();
     }
   }
-
-  options.existingDb = options.databaseCleanState.blockingObjects.length > 0;
 }
 
 function initialChecks(options) {
@@ -619,6 +625,7 @@ async function installDependenciesNpm(ctx, cwd) {
 
 function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
+  const provider = detectDbProvider(parseConnectionString(options.db).protocol);
   instruction += `
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
@@ -630,7 +637,8 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
 
   if (options.existingDb)
     instruction += `
-  ${chalk.dim('// Create the adminuser table in your database using the README instructions')}\n`;
+  ${chalk.dim('// Create the adminuser table in your database before starting the app')}
+  ${generateAdminUserTableInstructions(provider)}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}
@@ -644,6 +652,7 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
 
 function generateFinalInstructionsNpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
+  const provider = detectDbProvider(parseConnectionString(options.db).protocol);
   instruction += `
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
@@ -655,7 +664,8 @@ function generateFinalInstructionsNpm(skipPrismaSetup, options) {
 
   if (options.existingDb)
     instruction += `
-  ${chalk.dim('// Create the adminuser table in your database using the README instructions')}\n`;
+  ${chalk.dim('// Create the adminuser table in your database before starting the app')}
+  ${generateAdminUserTableInstructions(provider)}\n`;
 
   instruction += `
   ${chalk.dim('// Start dev server with tsx watch for hot-reloading')}

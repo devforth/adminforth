@@ -1,4 +1,4 @@
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField, DatabaseCleanState } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, AdminForthResourceColumn, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
@@ -88,21 +88,23 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
     }));
   }
 
-  async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+  async isDatabaseEmpty(): Promise<boolean> {
     const res = await this.client.query({
       query: `
         SELECT database, name, engine
         FROM system.tables
-        WHERE database = currentDatabase()
+        WHERE database = {database:String}
           AND database NOT IN ('system', 'information_schema', 'INFORMATION_SCHEMA')
           AND is_temporary = 0
+        LIMIT 1
       `,
       format: 'JSONEachRow',
+      query_params: {
+        database: this.dbName,
+      },
     });
     const rows = await res.json();
-    return {
-      blockingObjects: rows.map((row: any) => row.name),
-    };
+    return rows.length === 0;
   }
   
     async discoverFields(resource: AdminForthResource): Promise<{[key: string]: AdminForthResourceColumn}> {
