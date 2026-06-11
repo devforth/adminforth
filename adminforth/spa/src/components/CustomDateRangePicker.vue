@@ -70,7 +70,6 @@ import utc from 'dayjs/plugin/utc';
 
 import {useCoreStore} from '@/stores/core';
 
-import Datepicker from "flowbite-datepicker/Datepicker";
 import IconCalendar from "@/components/icons/IconCalendar.vue";
 import IconTime from "@/components/icons/IconTime.vue";
 
@@ -204,7 +203,11 @@ watch(end, () => {
   emit('update:valueEnd', end.value)
 })
 
-function initDatepickers() {
+async function initDatepickers() {
+  const { default: Datepicker } = await import(
+    'flowbite-datepicker/Datepicker'
+  );
+
   const LS_LANG_KEY = `afLanguage`;
   datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
   datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
