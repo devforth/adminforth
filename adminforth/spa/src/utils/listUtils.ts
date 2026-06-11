@@ -66,7 +66,6 @@ export async function startBulkAction(actionId: string, resource: AdminForthReso
       typeof action.confirm === 'string'
         ? {
             title: action.confirm,
-            message: t('Deleting {count} item. This process is irreversible. | Deleting {count} items. This process is irreversible.', { count: checkboxes.value.length }),
             dangerous: action.dangerous ?? false,
           }
         : {
