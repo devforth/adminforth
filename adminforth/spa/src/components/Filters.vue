@@ -153,7 +153,7 @@
       <button 
         :disabled="!filtersStore.visibleFiltersCount"
         type="button" 
-        class="flex gap-1 items-center py-1 pr-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
+        class="flex gap-1 items-center py-1 pr-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded-default border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear"><IconCloseOutline class="ml-3"/> {{ $t('Clear all') }}</button>
 
    </div>
