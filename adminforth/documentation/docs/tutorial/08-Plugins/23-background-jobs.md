@@ -305,12 +305,12 @@ After registering a handler, you can create a job. For example:
 
 ```
 
-## Run code after all tasks are done
-If you need to react when the whole job is finished, pass `onAllTasksDone` to `registerTaskHandler`.
+## Run more tasks before job finishes
+If you need to react when the whole job is almost finished and add more tasks, use the `beforeJobFinish` callback.
 
-The callback is called when all currently scheduled tasks are done, before the job is marked as `DONE` or `DONE_WITH_ERRORS`.
+The callback is called when all currently scheduled tasks are done, before the job is marked as `DONE` or `DONE_WITH_ERRORS`, and before `onAllTasksDone` is called.
 This means you can use it as a continuation hook: add more tasks with `addNewTasksToExistingJob`, and the same job will keep running.
-After those new tasks finish, `onAllTasksDone` is called again.
+After those new tasks finish, `beforeJobFinish` is called again.
 
 `finishAttemptNumber` starts from `1` and increments every time the job reaches this candidate-finish point again. Use it to avoid accidental infinite continuations.
 
@@ -322,7 +322,7 @@ After those new tasks finish, `onAllTasksDone` is called again.
     handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
       // task logic
     },
-    onAllTasksDone: async ({ jobId, failedTasks, succeededTasks, finishAttemptNumber }) => {
+    beforeJobFinish: async ({ jobId, failedTasks, succeededTasks, finishAttemptNumber }) => {
       console.log('job reached finish point', {
         jobId,
         failedTasks,
@@ -343,8 +343,8 @@ After those new tasks finish, `onAllTasksDone` is called again.
 
 ```
 
-In this example, the job runs its initial tasks, calls `onAllTasksDone` with `finishAttemptNumber: 1`, appends two more tasks, runs them, and then calls `onAllTasksDone` again with `finishAttemptNumber: 2`.
-If the second callback does not add more tasks, the job is marked as finished.
+In this example, the job runs its initial tasks, calls `beforeJobFinish` with `finishAttemptNumber: 1`, appends two more tasks, runs them, and then calls `beforeJobFinish` again with `finishAttemptNumber: 2`.
+If the second callback does not add more tasks, the job is marked as finished and `onAllTasksDone` is called if it was registered.
 
 ## Custom job state renderer
 There may be cases where you need to display the state of job tasks. For this, you can register a custom component.
