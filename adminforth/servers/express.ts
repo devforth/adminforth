@@ -479,6 +479,7 @@ class ExpressServer implements IExpressHttpServer {
           method: method.toUpperCase(),
           path: routePath,
           description: schema.description,
+          agent: schema.agent,
           request_schema: schema.request,
           response_schema: schema.response,
           meta: schema.meta,
@@ -568,6 +569,7 @@ class ExpressServer implements IExpressHttpServer {
       request_schema,
       response_schema,
       responce_schema,
+      agent,
       target='json'
     } = options;
     if (!path.startsWith('/')) {
@@ -583,6 +585,7 @@ class ExpressServer implements IExpressHttpServer {
         description,
         request_schema,
         response_schema: normalizedResponseSchema,
+        agent,
         handler,
       })
       : null;
