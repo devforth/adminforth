@@ -1116,7 +1116,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             translateRoutines[`bulkAction${i}`] = tr(action.label, `resource.${resource.resourceId}`);
           }
           if (action.confirm) {
-            translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+            if (typeof action.confirm === 'string') {
+              translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+            } else {
+              Object.entries(action.confirm).forEach(([key, value]: [string, string]) => {
+                if (value) {
+                  translateRoutines[`bulkActionConfirm${i}_${key}`] = tr(value, `resource.${resource.resourceId}`);
+                }
+              });
+            }
           }
         });
 
@@ -1217,7 +1225,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 (action, i) => ({
                   ...action,
                   label: action.label ? translated[`bulkAction${i}`] : action.label,
-                  confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
+                  confirm: !action.confirm ? action.confirm : (
+                    typeof action.confirm === 'string'
+                      ? translated[`bulkActionConfirm${i}`]
+                      : Object.fromEntries(
+                          Object.entries(action.confirm).map(([key, value]) => [
+                            key,
+                            value ? translated[`bulkActionConfirm${i}_${key}`] : value,
+                          ])
+                        )
+                  ),
                 })
               ),
               actions: allowedCustomActions.map(({ bulkHandler, action: actionFn, ...rest }) => ({

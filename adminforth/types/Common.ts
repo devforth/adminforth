@@ -139,8 +139,17 @@ export interface AdminForthBulkActionCommon {
 
   /**
    * Confirmation message which will be displayed to user before action is executed.
+   * String value is shown as the dialog title without any message under it.
+   * Use object form to explicitly set a message (e.g. "This process is irreversible.")
+   * and/or button labels. `{count}` placeholder in message will be replaced with the
+   * number of selected records, pluralization is supported via `|` separator.
    */
-  confirm?: string,
+  confirm?: string | {
+    title?: string,
+    message?: string,
+    yes?: string,
+    no?: string,
+  },
 
   /**
    * When true, the confirmation dialog renders in red/danger style.
