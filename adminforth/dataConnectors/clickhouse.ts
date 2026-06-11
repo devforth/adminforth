@@ -679,8 +679,8 @@ class ClickhouseConnector extends AdminForthBaseConnector implements IAdminForth
       return recordIds.length;
     }
 
-    close() {
-      this.client.disconnect();
+    async close() {
+      await this.client.close();
     }
 }
 

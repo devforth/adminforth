@@ -3,7 +3,8 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Fuse from 'fuse.js';
 import crypto from 'crypto';
-import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
+import { Filters } from '../types/Back.js';
+import type { AdminForthResource, IAdminForth } from '../types/Back.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
 // @ts-ignore-next-line
 
