@@ -6,7 +6,7 @@
       backgroundCustomClasses="z-[998]"
       modalCustomClasses="z-[999] flex items-center justify-center" 
     >
-      <div class="relative p-6 sm:p-8 sm:w-[440px] rounded-lg shadow-xl dark:bg-gray-800" >
+      <div class="relative p-6 sm:p-8 sm:w-[440px] rounded-lg shadow-xl bg-lightAcceptModalBackground dark:bg-darkAcceptModalBackground" >
         
         <button type="button" @click="modalStore.togleModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors dark:hover:text-white" >
           <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -15,10 +15,13 @@
         </button>
 
         <div class="text-center flex flex-col">
-          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-4 relative dark:bg-red-900/20">
-            <IconClipboardDocumentSolid class="w-10 h-10 text-red-500" />
-            <div class="absolute bottom-1 right-1 bg-red-500 rounded-full w-[18px] h-[18px] flex items-center justify-center border-2 border-white dark:border-gray-800">
-                <span class="text-white text-[10px] font-medium">!</span>
+          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-4 relative"
+            :class="modalStore.modalContent.dangerous ? 'bg-red-50 dark:bg-red-900/20' : 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity'">
+            <IconClipboardDocumentSolid class="w-10 h-10"
+              :class="modalStore.modalContent.dangerous ? 'text-red-500' : 'text-lightButtonsBackground dark:text-darkButtonsBackground'" />
+            <div class="absolute bottom-1 right-1 rounded-default w-[18px] h-[18px] flex items-center justify-center border-2 border-white dark:border-gray-800"
+              :class="modalStore.modalContent.dangerous ? 'bg-red-500' : 'bg-lightButtonsBackground dark:bg-darkButtonsBackground'">
+                <span class="text-lightButtonsText dark:text-darkButtonsText text-[10px] font-medium">!</span>
             </div>
           </div>
           
@@ -33,21 +36,21 @@
             </div>
           </div>
 
-          <hr class="border-t-2 border-gray-300 dark:border-gray-700 my-6">
+          <hr class="border-t-2 border-gray-300 dark:border-gray-500 my-6">
 
           <div class="flex justify-center gap-4 w-full">
-            <button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" class="flex-1 py-2.5 px-4 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            <button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" class="flex-1 py-2.5 px-4 text-sm font-medium text-gray-700 bg-white rounded-default border border-gray-200 hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
                 {{ modalStore?.modalContent?.cancelText }}
             </button>
             
-            <button 
-              @click="()=>{ modalStore.onAcceptFunction(true);modalStore.togleModal()}" 
-              type="button" 
-              class="flex-1 flex items-center justify-center py-2.5 px-4 text-sm font-medium transition-all focus:outline-none 
-                    text-white bg-red-600 hover:bg-red-700 
-                    dark:bg-red-500 dark:hover:bg-red-600 
-                    border-none rounded-lg shadow-sm focus:z-10 focus:ring-4 
-                    focus:ring-red-100 dark:focus:ring-red-900 gap-1">
+            <button
+              @click="()=>{ modalStore.onAcceptFunction(true);modalStore.togleModal()}"
+              type="button"
+              class="flex-1 flex items-center justify-center py-2.5 px-4 text-sm font-medium transition-all focus:outline-none
+                    border-none rounded-default shadow-sm focus:z-10 focus:ring-4 gap-1"
+              :class="modalStore.modalContent.dangerous
+                ? 'text-lightAcceptModalConfirmButtonText dark:text-darkAcceptModalConfirmButtonText bg-lightAcceptModalConfirmButtonBackground dark:bg-darkAcceptModalConfirmButtonBackground hover:bg-lightAcceptModalConfirmButtonBackgroundHover dark:hover:bg-darkAcceptModalConfirmButtonBackgroundHover focus:ring-lightAcceptModalConfirmButtonFocus dark:focus:ring-darkAcceptModalConfirmButtonFocus'
+                : 'text-lightButtonsText dark:text-darkButtonsText bg-lightButtonsBackground dark:bg-darkButtonsBackground hover:bg-lightButtonsHover dark:hover:bg-darkButtonsHover focus:ring-lightButtonFocusRing dark:focus:ring-darkButtonFocusRing'">
                 {{ modalStore?.modalContent?.acceptText }}
             </button>
           </div>

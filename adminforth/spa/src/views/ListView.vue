@@ -361,6 +361,7 @@ async function startCustomBulkActionInner(actionId: string | number) {
     resourceId: route.params.resourceId as string,
     recordIds: checkboxes.value,
     confirmMessage: action?.bulkConfirmationMessage,
+    confirmDangerous: action?.bulkDangerous ?? false,
     resource: coreStore.resource!,
     setLoadingState: (loading: boolean) => {
       customActionLoadingStates.value[actionId] = loading;
