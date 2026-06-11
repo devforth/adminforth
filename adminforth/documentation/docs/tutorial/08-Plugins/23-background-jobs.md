@@ -308,6 +308,12 @@ After registering a handler, you can create a job. For example:
 ## Run code after all tasks are done
 If you need to react when the whole job is finished, pass `onAllTasksDone` to `registerTaskHandler`.
 
+The callback is called when all currently scheduled tasks are done, before the job is marked as `DONE` or `DONE_WITH_ERRORS`.
+This means you can use it as a continuation hook: add more tasks with `addNewTasksToExistingJob`, and the same job will keep running.
+After those new tasks finish, `onAllTasksDone` is called again.
+
+`finishAttemptNumber` starts from `1` and increments every time the job reaches this candidate-finish point again. Use it to avoid accidental infinite continuations.
+
 ```ts title="./index.ts"
   ...
 
@@ -316,12 +322,29 @@ If you need to react when the whole job is finished, pass `onAllTasksDone` to `r
     handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
       // task logic
     },
-    onAllTasksDone: async ({ jobId, failedTasks, succeededTasks }) => {
-      console.log('job finished', { jobId, failedTasks, succeededTasks });
+    onAllTasksDone: async ({ jobId, failedTasks, succeededTasks, finishAttemptNumber }) => {
+      console.log('job reached finish point', {
+        jobId,
+        failedTasks,
+        succeededTasks,
+        finishAttemptNumber,
+      });
+
+      if (finishAttemptNumber > 1) {
+        return;
+      }
+
+      await backgroundJobsPlugin.addNewTasksToExistingJob(jobId, [
+        { state: { userId: 'user-1001' } },
+        { state: { userId: 'user-1002' } },
+      ]);
     },
   });
 
 ```
+
+In this example, the job runs its initial tasks, calls `onAllTasksDone` with `finishAttemptNumber: 1`, appends two more tasks, runs them, and then calls `onAllTasksDone` again with `finishAttemptNumber: 2`.
+If the second callback does not add more tasks, the job is marked as finished.
 
 ## Custom job state renderer
 There may be cases where you need to display the state of job tasks. For this, you can register a custom component.
