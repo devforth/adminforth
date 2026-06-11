@@ -10,9 +10,13 @@
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
-        placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
-        dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        class="af-page-size-btn block w-full h-[34px] pl-3 pr-10 py-2 text-left
+        text-sm font-medium transition-all border outline-none rounded-default
+        bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder
+        placeholder-lightDropdownButtonsPlaceholderText dark:placeholder-darkDropdownButtonsPlaceholderText
+        dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder
+        dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover
+        hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover"
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
         autocomplete="off" data-custom="no-autofill"
         :placeholder="
@@ -32,7 +36,7 @@
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
+        <IconCaretDownSolid class="h-4 w-4 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
           :class="{ 'transform rotate-180': showDropdown }"
         />
       </div>
