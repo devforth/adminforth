@@ -143,6 +143,12 @@ export interface AdminForthBulkActionCommon {
   confirm?: string,
 
   /**
+   * When true, the confirmation dialog renders in red/danger style.
+   * Use for destructive bulk actions like delete.
+   */
+  dangerous?: boolean,
+
+  /**
    * Success message which will be displayed to user after action is executed.
    */
   successMessage?: string,
