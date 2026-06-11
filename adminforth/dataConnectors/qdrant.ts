@@ -9,6 +9,7 @@ import type {
 	IAdminForthDataSourceConnector,
 	IAdminForthSingleFilter,
 	IAdminForthSort,
+	DatabaseCleanState,
 } from '../types/Back.js';
 import {
 	AdminForthDataTypes,
@@ -93,6 +94,13 @@ class QdrantConnector extends AdminForthBaseConnector implements IAdminForthData
 	async getAllTables(): Promise<Array<string>> {
 		const collections = await this.client.getCollections();
 		return (collections.collections ?? []).map((collection: { name: string }) => collection.name);
+	}
+
+	async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+		const collections = await this.client.getCollections();
+		return {
+			blockingObjects: (collections.collections ?? []).map((collection: { name: string }) => collection.name),
+		};
 	}
 
   // discover fields 

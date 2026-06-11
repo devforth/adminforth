@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
-import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
+import { AdminForthResource, IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthDataSourceConnector, AdminForthConfig, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField, DatabaseCleanState } from '../types/Back.js';
 import { AdminForthDataTypes,  AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import mysql from 'mysql2/promise';
@@ -75,6 +75,18 @@ class MysqlConnector extends AdminForthBaseConnector implements IAdminForthDataS
       name: col.COLUMN_NAME,
       sampleValue: sampleRow[col.COLUMN_NAME],
     }));
+  }
+
+  async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+    const [rows] = await this.client.execute(`
+      SELECT table_schema, table_name
+      FROM information_schema.tables
+      WHERE table_schema = DATABASE()
+        AND table_type = 'BASE TABLE'
+    `);
+    return {
+      blockingObjects: rows.map((row: any) => row.TABLE_NAME ?? row.table_name),
+    };
   }
 
   async hasMySQLCascadeFk(resource: AdminForthResource, config: AdminForthConfig): Promise<boolean> {

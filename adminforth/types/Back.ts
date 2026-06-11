@@ -276,6 +276,10 @@ export interface IAdminForthSort {
   direction: AdminForthSortDirections 
 }
 
+export type DatabaseCleanState = {
+  blockingObjects: string[];
+};
+
 export interface IAdminForthDataSourceConnector {
 
   client: any;
@@ -297,6 +301,12 @@ export interface IAdminForthDataSourceConnector {
    * Function to get all columns in table.
    */
   getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }>>;
+
+  /**
+   * Function to check whether database has no user data.
+   */
+  isDatabaseEmpty(): Promise<DatabaseCleanState>;
+
   /**
    * Optional.
    * You an redefine this function to define how one record should be fetched from database.

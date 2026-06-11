@@ -40,6 +40,13 @@ const adminforthVersion = detectAdminforthVersion();
 const SUPPORTED_DB_URL_SCHEMES = ['sqlite://', 'postgresql://', 'mongodb://', 'mysql://', 'clickhouse://'];
 const PRISMA_MIGRATION_DB_PROTOCOLS = ['sqlite', 'postgres', 'postgresql', 'mysql'];
 const DEFAULT_DB_URL = 'sqlite://.db.sqlite';
+const DATABASE_CONNECTOR_IMPORTS = {
+  sqlite: '../../dist/dataConnectors/sqlite.js',
+  postgresql: '../../dist/dataConnectors/postgres.js',
+  mysql: '../../dist/dataConnectors/mysql.js',
+  mongodb: '../../dist/dataConnectors/mongo.js',
+  clickhouse: '../../dist/dataConnectors/clickhouse.js',
+};
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -58,7 +65,6 @@ export function parseArgumentsIntoOptions(rawArgs) {
   return {
     appName: args['--app-name'],
     db: args['--db'],
-    dbProvided: args['--db'] !== undefined,
     useNpm: args['--use-npm'],
   };
 }
@@ -113,7 +119,7 @@ ENGINE = MergeTree()
 ORDER BY id;
 \`\`\`
 
-ClickHouse does not enforce UNIQUE constraints like PostgreSQL, MySQL, or SQLite. AdminForth authentication expects `email` values in `adminuser` to be unique, so enforce this in your ingestion/application logic and remove duplicate email rows to avoid ambiguous logins.`;
+ClickHouse does not enforce UNIQUE constraints like PostgreSQL, MySQL, or SQLite. AdminForth authentication expects \`email\` values in \`adminuser\` to be unique, so enforce this in your ingestion/application logic and remove duplicate email rows to avoid ambiguous logins.`;
   }
 
   if (provider === 'mongodb') {
@@ -164,8 +170,30 @@ export async function promptForMissingOptions(options) {
       db: options.db || answers.db,
       useNpm: options.useNpm || answers.useNpm,
   };
-  resolvedOptions.existingDb = options.dbProvided || resolvedOptions.db !== DEFAULT_DB_URL;
-  resolvedOptions.includePrismaMigrations = !resolvedOptions.existingDb && isPrismaMigrationDbUrl(resolvedOptions.db);
+  resolvedOptions.databaseCleanState = { blockingObjects: [] };
+  resolvedOptions.existingDb = false;
+
+  await inspectDatabaseCleanState(resolvedOptions);
+
+  if (
+    resolvedOptions.includePrismaMigrations === undefined &&
+    isPrismaMigrationDbUrl(resolvedOptions.db) &&
+    !resolvedOptions.existingDb
+  ) {
+    const prismaAnswer = await inquirer.prompt([{
+      type: 'select',
+      name: 'includePrismaMigrations',
+      message: 'Include Prisma migrations? >',
+      choices: [
+        { name: 'Yes', value: true },
+        { name: 'No', value: false },
+      ],
+      default: true,
+    }]);
+    resolvedOptions.includePrismaMigrations = prismaAnswer.includePrismaMigrations;
+  } else {
+    resolvedOptions.includePrismaMigrations = Boolean(resolvedOptions.includePrismaMigrations) && !resolvedOptions.existingDb;
+  }
 
   return resolvedOptions;
 }
@@ -232,6 +260,50 @@ function generateDbUrlForAfProd(connectionString) {
   if (connectionString.protocol.startsWith('sqlite'))
     return `sqlite:////code/db/${connectionString.host}`;
   return connectionString.toString();
+}
+
+function getSqliteInspectionUrl(dbUrl, appName) {
+  const connectionString = parseConnectionString(dbUrl);
+  const sqliteFile = connectionString.host;
+  const resolvedSqliteFile = path.isAbsolute(sqliteFile)
+    ? sqliteFile
+    : path.join(process.cwd(), appName, sqliteFile);
+
+  if (!fs.existsSync(resolvedSqliteFile)) {
+    return null;
+  }
+
+  return `sqlite://${resolvedSqliteFile}`;
+}
+
+async function inspectDatabaseCleanState(options) {
+  const connectionString = parseConnectionString(options.db);
+  const provider = detectDbProvider(connectionString.protocol);
+  let inspectionDbUrl = connectionString.toString();
+
+  if (provider === 'sqlite') {
+    const sqliteInspectionUrl = getSqliteInspectionUrl(options.db, options.appName);
+    if (!sqliteInspectionUrl) {
+      options.databaseCleanState = { blockingObjects: [] };
+      options.existingDb = false;
+      return;
+    }
+    inspectionDbUrl = sqliteInspectionUrl;
+  }
+
+  const Connector = (await import(DATABASE_CONNECTOR_IMPORTS[provider])).default;
+  const connector = new Connector();
+  await connector.setupClient(inspectionDbUrl);
+
+  try {
+    options.databaseCleanState = await connector.isDatabaseEmpty();
+  } finally {
+    if (typeof connector.close === 'function') {
+      await connector.close();
+    }
+  }
+
+  options.existingDb = options.databaseCleanState.blockingObjects.length > 0;
 }
 
 function initialChecks(options) {

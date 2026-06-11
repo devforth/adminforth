@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { MongoClient } from 'mongodb';
 import { Decimal128, Double } from 'bson';
-import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField } from '../types/Back.js';
+import { IAdminForthDataSourceConnector, IAdminForthSingleFilter, IAdminForthAndOrFilter, AdminForthResource, IAggregationRule, IGroupByRule, IGroupByDateTrunc, IGroupByField, DatabaseCleanState } from '../types/Back.js';
 import AdminForthBaseConnector from './baseConnector.js';
 import { afLogger } from '../modules/logger.js';
 import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, } from '../types/Common.js';
@@ -165,6 +165,15 @@ class MongoConnector extends AdminForthBaseConnector implements IAdminForthDataS
                 sampleValue: sampleValues.get(name),
             };
         });
+    }
+
+    async isDatabaseEmpty(): Promise<DatabaseCleanState> {
+        const collections = await this.client.db().listCollections({}, { nameOnly: true }).toArray();
+        return {
+            blockingObjects: collections
+                .filter((collection) => !collection.name.startsWith('system.'))
+                .map((collection) => collection.name),
+        };
     }
       
     
