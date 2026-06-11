@@ -262,38 +262,13 @@ function generateDbUrlForAfProd(connectionString) {
   return connectionString.toString();
 }
 
-function getSqliteInspectionUrl(dbUrl, appName) {
-  const connectionString = parseConnectionString(dbUrl);
-  const sqliteFile = connectionString.host;
-  const resolvedSqliteFile = path.isAbsolute(sqliteFile)
-    ? sqliteFile
-    : path.join(process.cwd(), appName, sqliteFile);
-
-  if (!fs.existsSync(resolvedSqliteFile)) {
-    return null;
-  }
-
-  return `sqlite://${resolvedSqliteFile}`;
-}
-
 async function inspectDatabaseCleanState(options) {
   const connectionString = parseConnectionString(options.db);
   const provider = detectDbProvider(connectionString.protocol);
-  let inspectionDbUrl = connectionString.toString();
-
-  if (provider === 'sqlite') {
-    const sqliteInspectionUrl = getSqliteInspectionUrl(options.db, options.appName);
-    if (!sqliteInspectionUrl) {
-      options.databaseCleanState = { blockingObjects: [] };
-      options.existingDb = false;
-      return;
-    }
-    inspectionDbUrl = sqliteInspectionUrl;
-  }
 
   const Connector = (await import(DATABASE_CONNECTOR_IMPORTS[provider])).default;
   const connector = new Connector();
-  await connector.setupClient(inspectionDbUrl);
+  await connector.setupClient(connectionString.toString());
 
   try {
     options.databaseCleanState = await connector.isDatabaseEmpty();
