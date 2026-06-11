@@ -129,7 +129,7 @@ new CompletionAdapterOpenAIResponses({
 
 You can specify any GPT model you need. The default is `gpt-5-nano` as it is cheapest though may behave weakly.
 
-By default, this adapter uses the OpenAI `responses` API (`v1/responses`) unless `useComplitionApi` is set to `true`. If `useComplitionApi` is `true`, it uses the older Chat Completions API (`v1/chat/completions`). 
+By default, this adapter uses the OpenAI `responses` API (`v1/responses`) unless `useCompletionApi` is set to `true`. If `useCompletionApi` is `true`, it uses the older Chat Completions API (`v1/chat/completions`). 
 
 
 ### Using with OpenAI-compatible API providers (for example based on self-hosted vLLM docker images)
@@ -141,25 +141,25 @@ new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN as string,
   baseUrl: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
   model: 'gpt-oss-20b',
-  useComplitionApi: true,
+  useCompletionApi: true,
   extraRequestBodyParameters: {
     store: false,
   },
 }),
 ```
 
-If `useComplitionApi` is omitted, the adapter keeps the current default behavior:
+If `useCompletionApi` is omitted, the adapter keeps the current default behavior:
 
 - official OpenAI uses the `responses` API
 - custom `baseUrl` providers use the Chat Completions API. 
 
-This is because many OpenAI-compatible providers do not yet support the `responses` API or support it unstably (for example OVH AI Endpoints still - Apr 2026 does not fully support the `responses`, so `useComplitionApi: false` may work unstably there, though you can re-test it by manually enabling it by setting `useComplitionApi: true` and checking if it works).
+This is because many OpenAI-compatible providers do not yet support the `responses` API or support it unstably (for example OVH AI Endpoints still - Apr 2026 does not fully support the `responses`, so `useCompletionApi: false` may work unstably there, though you can re-test it by manually enabling it by setting `useCompletionApi: true` and checking if it works).
 Any 3rd-party API providers might have next reasones of pure `responses` API compatibility:
 
 1) If they use vLLM open-source software under the hood they might have outdated version
 2) Custom non-vLLM implmentation might have reliable chat API implementation while give less priority to responses API as it is more complex and new.
 
-We recommend you to try responses API first by setting `false` in `useComplitionApi` because it gives rich features set, including summarization and better structured outputs, and if it does not work for your provider, then set it to `true` to have less features but working implementation.
+We recommend you to try responses API first by setting `false` in `useCompletionApi` because it gives rich features set, including summarization and better structured outputs, and if it does not work for your provider, then set it to `true` to have less features but working implementation.
 
 
 
