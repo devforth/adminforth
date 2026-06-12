@@ -1104,8 +1104,16 @@ export interface AdminForthConfigMenuItem {
 
   /**
    * Label for menu item which will be displayed in the admin panel.
+   * Can be a static string or a callback which receives the current admin user
+   * and returns the label dynamically.
+   *
+   * Example:
+   *
+   * ```ts
+   * label: (adminUser) => adminUser.dbUser.role === 'superadmin' ? 'Dashboard (CRS)' : 'Dashboard',
+   * ```
    */
-  label?: string,
+  label?: string | ((user: AdminUser, adminForth: IAdminForth) => Promise<string> | string),
 
   /**
    * Icon for menu item which will be displayed in the admin panel.
