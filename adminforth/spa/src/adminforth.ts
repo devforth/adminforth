@@ -127,7 +127,8 @@ class FrontendAPI implements FrontendAPIInterface {
         content: params.message,
         contentHTML: params.messageHtml,
         acceptText: params.yes || 'Yes',
-        cancelText: params.no || 'Cancel'
+        cancelText: params.no || 'Cancel',
+        dangerous: params.dangerous ?? false,
       })
       this.modalStore.onAcceptFunction = resolve
       this.modalStore.onCancelFunction = reject
