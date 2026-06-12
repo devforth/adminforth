@@ -55,7 +55,7 @@
             </button>
           </div>
           <Teleport to="body">
-            <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
+            <div class="af-settings-popup z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
               <div class="px-4 py-3" role="none">
                 <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                   {{ coreStore.userFullname }}
