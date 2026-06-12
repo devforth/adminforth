@@ -20,7 +20,7 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
@@ -645,6 +645,24 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
+  }
+
+  private normalizeJsonColumns(resource: AdminForthResource, record: any): string | null {
+    for (const column of resource.columns) {
+      if (
+        column.type === AdminForthDataTypes.JSON &&
+        !column.isArray?.enabled &&
+        typeof record[column.name] === 'string' &&
+        record[column.name].trim() !== ''
+      ) {
+        try {
+          record[column.name] = parseLooseJson(record[column.name]);
+        } catch (e) {
+          return `Field "${column.name}" contains invalid JSON: ${e.message}`;
+        }
+      }
+    }
+    return null;
   }
 
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
@@ -2072,6 +2090,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 record[column.foreignResource.polymorphicOn] = Object.keys(targetData).find((tdk) => targetData[tdk].length);
               }
             }
+            const jsonError = this.normalizeJsonColumns(resource, record);
+            if (jsonError) {
+              return { error: jsonError, ok: false };
+            }
 
             const createRecordResponse = await this.adminforth.createResourceRecord({ 
               resource, record, adminUser, response, 
@@ -2225,6 +2247,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
             
+            const jsonError = this.normalizeJsonColumns(resource, record);
+            if (jsonError) {
+              return { error: jsonError, ok: false };
+            }
             const { error } = await this.adminforth.updateResourceRecord({ 
               resource, updates: record, adminUser, oldRecord, recordId, response, 
               extra: { body, query, headers, cookies, requestUrl, response } 
