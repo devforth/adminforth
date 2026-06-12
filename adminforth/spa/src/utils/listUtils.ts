@@ -64,10 +64,14 @@ export async function startBulkAction(actionId: string, resource: AdminForthReso
   if (action?.confirm) {
     const confirmed = await confirm(
       typeof action.confirm === 'string'
-        ? { title: action.confirm }
+        ? {
+            title: action.confirm,
+            dangerous: action.dangerous ?? false,
+          }
         : {
             ...action.confirm,
             message: action.confirm.message && t(action.confirm.message, { count: checkboxes.value.length }),
+            dangerous: action.dangerous ?? false,
           }
     );
     if (!confirmed) {
