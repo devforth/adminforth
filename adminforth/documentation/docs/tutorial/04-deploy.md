@@ -37,6 +37,7 @@ docker run -p 3500:3500 \
 ```
 
 > `-v $(pwd)/db:/code/db` is needed only if you are using SQLite database.
+> Pay attention, that ADMINFORTH_SECRET environment should be in deployed app as well
 
 Now open your browser and go to `http://localhost:3500` to see your AdminForth application running in Docker container.
 
