@@ -1,7 +1,5 @@
 <template>
   <div class="rounded-default">
-    <pre>
-  </pre>
     <form autocomplete="off" @submit.prevent>
       <div v-if="!groups || groups.length === 0">
         <GroupsTable
