@@ -3,8 +3,3 @@ packages:
 
 allowBuilds:
   better-sqlite3: true
-
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - vue-demi
