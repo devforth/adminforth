@@ -946,7 +946,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           if (menuItem.label) {
             translateRoutines.push(
               (async () => {
-                menuItem.label = await tr(menuItem.label, `menu.${menuItem.itemId}`);
+                const rawLabel = typeof menuItem.label === 'function' ? await menuItem.label(adminUser, this.adminforth) : menuItem.label;
+                menuItem.label = await tr(rawLabel, `menu.${menuItem.itemId}`);
               })()
             );
           }
