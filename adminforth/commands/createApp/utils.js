@@ -483,17 +483,17 @@ async function installDependenciesPnpm(ctx, cwd) {
   const isWindows = process.platform === 'win32';
 
   const nodeBinary = process.execPath; 
-  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'pnpm.cmd' : 'pnpm');
+  const pnpmPath = path.join(path.dirname(nodeBinary), isWindows ? 'pnpm.cmd' : 'pnpm');
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([
-      await execAsync(`pnpm install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`pnpm install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
     const res = await Promise.all([
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
 }
@@ -506,13 +506,13 @@ async function installDependenciesNpm(ctx, cwd) {
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([
-      await execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
     const res = await Promise.all([
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
 }

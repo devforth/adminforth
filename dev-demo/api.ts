@@ -1,5 +1,5 @@
 import { Express, Response } from "express";
-import { IAdminForth, IAdminUserExpressRequest } from "adminforth";
+import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
 
@@ -72,6 +72,10 @@ export function initApi(app: Express, admin: IAdminForth) {
       admin.express.authorize(
         async (req: IAdminUserExpressRequest, res: Response) => {
           admin.refreshMenuBadge('menuTimestamp', req.adminUser);
+          const cars_sqlite_list = await admin.resource('cars_sl').list( [Filters.EQ('id', '0')] );
+          console.log('cars_sqlite_list', cars_sqlite_list);
+          const cars_pg_list = await admin.resource('cars_pg').list( [Filters.EQ('id', '0')] );
+          console.log('cars_pg_list', cars_pg_list);
           res.json({ message: "Hello from AdminForth API!" });
         }
       )

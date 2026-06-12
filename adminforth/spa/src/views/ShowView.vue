@@ -314,6 +314,7 @@ async function deleteRecord() {
     message: t(`This process is irreversible.`),
     yes: t('Delete'),
     no: t('Cancel'),
+    dangerous: true,
   });
   if (data) {
     try {

@@ -114,6 +114,53 @@ If your operation can be expressed more efficiently as a single batched query (e
 | `bulkConfirmationMessage` | `string` | Confirmation dialog text shown before the bulk action executes. |
 | `bulkSuccessMessage` | `string` | Success message shown after the bulk operation. Defaults to `"N out of M items processed successfully"`. |
 
+## Standalone Bulk Actions
+
+For operations that only apply to multiple selected records, use `options.bulkActions`. The built-in **Delete checked** action is a good reference.
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    bulkActions: [
+      {
+        label: 'Send Invitation',
+        icon: 'flowbite:envelope-solid',
+        confirm: 'Are you sure you want to send invitation emails?',
+        allowed: async ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+        action: async ({ selectedIds }) => {
+          await sendBulkInvitations(selectedIds);
+          return { ok: true, successMessage: `Sent to ${selectedIds.length} users` };
+        },
+      },
+    ],
+  },
+}
+```
+
+### Confirmation dialog
+
+Pass `confirm` to show a dialog before the action runs.
+
+**String** — shown as the dialog title, no secondary message:
+
+```ts
+confirm: 'Are you sure you want to send invitation emails?',
+```
+
+**Object** — full control over the dialog. `{count}` in `message` is replaced with the number of selected records; `|` separates singular and plural forms:
+
+```ts
+confirm: {
+  title: 'Are you sure you want to archive the selected items?',
+  message: 'Archiving {count} item. This process is irreversible. | Archiving {count} items. This process is irreversible.',
+  yes: 'Archive',
+  no: 'Cancel',
+},
+```
+
+Omit `confirm` entirely to skip the dialog and run the action immediately.
+
 ### Access Control
 
 You can control who can use an action through the `allowed` function. This function receives:
