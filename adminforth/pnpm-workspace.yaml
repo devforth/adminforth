@@ -2,15 +2,9 @@ packages:
   - spa
 
 allowBuilds:
-  '@parcel/watcher': true
   better-sqlite3: true
-  esbuild: true
-  vue-demi: true
 
 ignoredBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - vue-demi
-
-onlyBuiltDependencies:
-  - better-sqlite3
