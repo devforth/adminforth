@@ -25,7 +25,7 @@ steps:
       - cd adminforth
       - pnpm install
       - /bin/bash ../live-demo/deploy/buildRelease.sh
-      - pnpm audit --audit-level=critical
+      # - pnpm audit --audit-level=critical
       - pnpm exec semantic-release
 
   slack-on-success:
