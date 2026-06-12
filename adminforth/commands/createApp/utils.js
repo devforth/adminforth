@@ -47,6 +47,7 @@ const DATABASE_CONNECTOR_IMPORTS = {
   mongodb: '../../dist/dataConnectors/mongo.js',
   clickhouse: '../../dist/dataConnectors/clickhouse.js',
 };
+const ADMINUSER_TABLE_EXAMPLE_NOTE = 'This is only an example schema. We recommend using your favorite migration tool to create and evolve this table, and adding database indexes or constraints only when they match your project requirements.';
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -74,36 +75,42 @@ function generateAdminUserTableInstructions(provider) {
     return `\`\`\`sql
 CREATE TABLE adminuser (
   id TEXT PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL
 );
-\`\`\``;
+\`\`\`
+
+${ADMINUSER_TABLE_EXAMPLE_NOTE}`;
   }
 
   if (provider === 'mysql') {
     return `\`\`\`sql
 CREATE TABLE adminuser (
   id VARCHAR(191) PRIMARY KEY,
-  email VARCHAR(191) NOT NULL UNIQUE,
+  email VARCHAR(191) NOT NULL,
   password_hash TEXT NOT NULL,
   role VARCHAR(191) NOT NULL,
   created_at DATETIME NOT NULL
 );
-\`\`\``;
+\`\`\`
+
+${ADMINUSER_TABLE_EXAMPLE_NOTE}`;
   }
 
   if (provider === 'sqlite') {
     return `\`\`\`sql
 CREATE TABLE adminuser (
   id TEXT PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL,
   created_at DATETIME NOT NULL
 );
-\`\`\``;
+\`\`\`
+
+${ADMINUSER_TABLE_EXAMPLE_NOTE}`;
   }
 
   if (provider === 'clickhouse') {
@@ -119,11 +126,7 @@ ENGINE = MergeTree()
 ORDER BY id;
 \`\`\`
 
-ClickHouse does not enforce UNIQUE constraints like PostgreSQL, MySQL, or SQLite. AdminForth authentication expects \`email\` values in \`adminuser\` to be unique, so enforce this in your ingestion/application logic and remove duplicate email rows to avoid ambiguous logins.`;
-  }
-
-  if (provider === 'mongodb') {
-    return 'Create an `adminuser` collection with `id`, `email`, `password_hash`, `role`, and `created_at` fields. Keep `email` unique in your own schema/index setup.';
+${ADMINUSER_TABLE_EXAMPLE_NOTE}`;
   }
 
   return null;
