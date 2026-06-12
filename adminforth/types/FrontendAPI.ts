@@ -191,7 +191,13 @@ export type ConfirmParams = {
      * The text to display in the "cancel" button
      */
     no?: string;
-   
+
+    /**
+     * When true, the dialog renders in red/danger style (destructive actions like delete).
+     * When false or omitted, the dialog renders in primary color (neutral confirmations).
+     */
+    dangerous?: boolean;
+
 }
 
 export type AlertParams = {
