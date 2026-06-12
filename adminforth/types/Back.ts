@@ -1469,6 +1469,10 @@ interface AdminForthInputConfigCustomization {
 export interface AdminForthActionInput {
   name: string;
   bulkConfirmationMessage?: string;
+  /**
+   * When true, the bulk confirmation dialog renders in red/danger style.
+   */
+  bulkDangerous?: boolean;
   bulkSuccessMessage?: string;
   showIn?: {
       list?: boolean,

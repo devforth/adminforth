@@ -12,11 +12,6 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "i18n:extract": "echo {} > i18n-empty.json && vue-i18n-extract report --vueFiles \"./src/**/*.{js,vue,ts}\" --output ./i18n-messages.json --languageFiles \"i18n-empty.json\" --add"
   },
-  "pnpm": {
-    "overrides": {
-      "shell-quote": "^1.8.4"
-    }
-  },
   "dependencies": {
     "@iconify-prerendered/vue-flag": "^0.28.1748584105",
     "@iconify-prerendered/vue-flowbite": "^0.28.1754899090",
