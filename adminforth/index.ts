@@ -46,6 +46,7 @@ import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 export { afLogger } from './modules/logger.js';
+export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
 
 // exports
