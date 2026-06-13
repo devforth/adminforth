@@ -142,6 +142,24 @@ export default {
 
 >⚠️ Please note that sticky columns can only be applied to one column per resource.
 
+### Custom list column class
+
+You can add a custom CSS class to any list column with `listCssClass`. AdminForth applies it to both the header cell and the data cells for that column.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+    {
+      name: "price",
+      listCssClass: "text-right font-semibold min-w-10",
+    },
+    ...
+  ]
+}
+```
+
 ### Conditional display
 You can conditionally display columns in forms and views based on the values of other fields in the current record using the `showIf` property. This enables dynamic layouts that automatically adapt to user input, creating more intuitive and context-aware interfaces.
 

@@ -31,7 +31,13 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            ref="headerRefs"
+            scope="col"
+            class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}]"
+          >
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center font-semibold" :class="{'cursor-pointer':c.sortable}">
@@ -122,7 +128,11 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            class="px-2 md:px-3 lg:px-6 py-4"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}]"
+          >
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
