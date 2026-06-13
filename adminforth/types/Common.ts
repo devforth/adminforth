@@ -1005,6 +1005,11 @@ export interface AdminForthResourceColumnInputCommon {
   listSticky?: boolean;
 
   /**
+   * Custom CSS class applied to the column in list view header and cells.
+   */
+  listCssClass?: string;
+
+  /**
    * Show field only if certain conditions are met.
    */
   showIf?: Predicate;
