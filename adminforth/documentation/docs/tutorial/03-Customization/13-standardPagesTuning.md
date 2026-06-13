@@ -145,6 +145,7 @@ export default {
 ### Custom list column class
 
 You can add a custom CSS class to any list column with `listCssClass`. AdminForth applies it to both the header cell and the data cells for that column.
+Static Tailwind utility classes used here are collected into the generated Tailwind safelist during bundling, so you can use normal utility strings in the resource config.
 
 ```typescript title="./resources/apartments.ts"
 export default {

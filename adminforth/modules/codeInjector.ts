@@ -140,6 +140,25 @@ class CodeInjector implements ICodeInjector {
     this.allComponentNames[filePath] = componentName;
   }
 
+  collectTailwindSafelist(): string[] {
+    const classes = new Set<string>();
+
+    for (const resource of this.adminforth.config.resources) {
+      for (const column of resource.columns || []) {
+        if (!column.listCssClass) {
+          continue;
+        }
+
+        column.listCssClass
+          .split(/\s+/)
+          .filter(Boolean)
+          .forEach((className) => classes.add(className));
+      }
+    }
+
+    return Array.from(classes);
+  }
+
   cleanup() {
     console.log('Cleaning up...');
     this.allWatchers.forEach((watcher) => {
@@ -698,9 +717,11 @@ class CodeInjector implements ICodeInjector {
     // generate tailwind extend styles
     const stylesGenerator = new StylesGenerator(this.adminforth.config.customization?.styles); 
     const  stylesText = JSON.stringify(stylesGenerator.mergeStyles(), null, 2).slice(1, -1);
+    const safelistText = JSON.stringify(this.collectTailwindSafelist(), null, 2).slice(1, -1);
     let tailwindConfigPath = path.join(this.spaTmpPath(), 'tailwind.config.js');
     let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
     tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
+    tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND SAFELIST */', safelistText);
     await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     
 
