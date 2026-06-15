@@ -67,6 +67,7 @@ vars:
     - "adminforth-connector-mysql"
     - "adminforth-connector-postgres"
     - "adminforth-connector-sqlite"
+    - "adminforth-connector-qdrant"
 
 tasks:
 

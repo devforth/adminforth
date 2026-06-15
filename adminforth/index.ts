@@ -36,7 +36,6 @@ import {
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
-import QdrantConnector from './dataConnectors/qdrant.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -516,7 +515,7 @@ class AdminForth implements IAdminForth {
       dataSourcesDatabasesTypes.push(dbType)
     });
     const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
-    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector;
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
     if (uniqueDbTypes.includes('sqlite')) {
       SQLiteConnector = await this.tryToImportConnector('sqlite');
     }
@@ -531,6 +530,9 @@ class AdminForth implements IAdminForth {
     }
     if (uniqueDbTypes.includes('mysql')) {
       MysqlConnector = await this.tryToImportConnector('mysql');
+    }
+    if (uniqueDbTypes.includes('qdrant')) {
+      QdrantConnector = await this.tryToImportConnector('qdrant');
     }
 
     this.connectorClasses = {
