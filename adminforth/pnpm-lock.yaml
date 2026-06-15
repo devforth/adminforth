@@ -35,9 +35,6 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.25
-      adminforth:
-        specifier: 'link:'
-        version: 'link:'
       ajv:
         specifier: ^8.18.0
         version: 8.18.0
