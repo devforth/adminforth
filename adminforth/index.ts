@@ -2,7 +2,6 @@ import AdminForthAuth from './auth.js';
 import MongoConnector from './dataConnectors/mongo.js';
 import PostgresConnector from './dataConnectors/postgres.js';
 import MysqlConnector from './dataConnectors/mysql.js';
-import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
@@ -491,6 +490,12 @@ class AdminForth implements IAdminForth {
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
+    let SQLiteConnector;
+    try {
+      SQLiteConnector = (await import('@adminforth/connector-sqlite')).default;
+    } catch (e) {
+      throw new Error(`Error while importing SQLite connector: ${e}. If you want to use SQLite data source, please install @adminforth/connector-sqlite package.`);
+    }
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,

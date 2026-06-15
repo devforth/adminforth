@@ -6,3 +6,10 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   vue-demi: true
+
+minimumReleaseAgeExclude:
+  - '@adminforth/connector-sqlite@1.0.0'
+  - adminforth@2.72.3
+
+overrides:
+  adminforth: 'link:'
