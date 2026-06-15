@@ -158,7 +158,7 @@ class CodeInjector implements ICodeInjector {
   }
 
 
-  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+  public async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
     if (!dir) {
       return false;
     }
@@ -1201,7 +1201,7 @@ class CodeInjector implements ICodeInjector {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
-      };
+      }; 
       
       const nodeBinary = process.execPath;
       const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);
