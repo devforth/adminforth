@@ -7,4 +7,4 @@ allowBuilds:
   esbuild: true
   prisma: true
 minimumReleaseAgeExclude:
-  - adminforth@3.0.0
+  - adminforth@3.0.1
