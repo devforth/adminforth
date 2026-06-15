@@ -111,7 +111,7 @@ tasks:
 
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
-            (cd "${name}" && pnpm install)
+            (cd "${name}" && CI=true pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
@@ -153,7 +153,7 @@ tasks:
             exit 0
           fi
 
-          pnpm add adminforth@latest --save-peer
+          CI=true pnpm add adminforth@latest --save-peer
 
           git add package.json
           if [ -e pnpm-lock.yaml ]; then
@@ -165,7 +165,7 @@ tasks:
             exit 0
           fi
 
-          git commit -m "fix: update adminforth verion"
+          git commit -m "fix: update adminforth version"
           git push
         ' _ {}
 
