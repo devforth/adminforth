@@ -619,7 +619,14 @@ class AdminForth implements IAdminForth {
     this.config.resources.forEach((resource) => {
       this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
     });
-
+    
+    const adminforthSecret = process.env.ADMINFORTH_SECRET;
+    if (!adminforthSecret) {
+      throw new Error(`ADMINFORTH_SECRET environment not set
+        Please set ADMINFORTH_SECRET environment variable to a random string to secure your admin panel.
+        ADMINFORTH_SECRET variable is used to sign JWT tokens
+      `);
+    }
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
