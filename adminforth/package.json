@@ -85,16 +85,15 @@
   "type": "module",
   "dependencies": {
     "@babel/parser": "^7.27.5",
-    "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^9.0.3",
     "@inquirer/prompts": "^7.4.1",
     "@qdrant/js-client-rest": "^1.17.0",
     "@scalar/express-api-reference": "^0.9.7",
     "@types/express": "^4.17.21",
+    "adminforth": "link:",
     "ajv": "^8.18.0",
     "arg": "^5.0.2",
     "ast-types": "^0.14.2",
-    "better-sqlite3": "^11.10.0",
     "bson": "^7.2.0",
     "chalk": "^5.4.1",
     "connection-string": "^4.4.0",
@@ -111,11 +110,8 @@
     "jiti": "^2.4.2",
     "jsonwebtoken": "^9.0.2",
     "listr2": "^8.2.5",
-    "mongodb": "6.6",
     "multer": "^2.1.1",
-    "mysql2": "^3.14.2",
     "node-fetch": "^3.3.2",
-    "pg": "^8.11.5",
     "pino": "^10.1.0",
     "pino-pretty": "^13.1.3",
     "private-ip": "^3.0.2",
@@ -133,5 +129,29 @@
     "semantic-release": "^24.2.1",
     "semantic-release-slack-bot": "^4.0.2",
     "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "@adminforth/connector-clickhouse": "^1.0.1",
+    "@adminforth/connector-mongo": "^1.0.0",
+    "@adminforth/connector-mysql": "^1.0.0",
+    "@adminforth/connector-postgres": "^1.0.0",
+    "@adminforth/connector-sqlite": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@adminforth/connector-sqlite": {
+      "optional": true
+    },
+    "@adminforth/connector-postgres": {
+      "optional": true
+    },
+    "@adminforth/connector-mongo": {
+      "optional": true
+    },
+    "@adminforth/connector-mysql": {
+      "optional": true
+    },
+    "@adminforth/connector-clickhouse": {
+      "optional": true
+    }
   }
 }

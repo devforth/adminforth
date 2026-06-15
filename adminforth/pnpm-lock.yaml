@@ -4,16 +4,31 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  adminforth: 'link:'
+
 importers:
 
   .:
     dependencies:
+      '@adminforth/connector-clickhouse':
+        specifier: ^1.0.1
+        version: 1.0.1
+      '@adminforth/connector-mongo':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@adminforth/connector-mysql':
+        specifier: ^1.0.0
+        version: 1.0.0(@types/node@20.19.37)
+      '@adminforth/connector-postgres':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@adminforth/connector-sqlite':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@babel/parser':
         specifier: ^7.27.5
         version: 7.29.0
-      '@clickhouse/client':
-        specifier: ^1.4.0
-        version: 1.18.1
       '@faker-js/faker':
         specifier: ^9.0.3
         version: 9.9.0
@@ -29,6 +44,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.25
+      adminforth:
+        specifier: 'link:'
+        version: 'link:'
       ajv:
         specifier: ^8.18.0
         version: 8.18.0
@@ -38,9 +56,6 @@ importers:
       ast-types:
         specifier: ^0.14.2
         version: 0.14.2
-      better-sqlite3:
-        specifier: ^11.10.0
-        version: 11.10.0
       bson:
         specifier: ^7.2.0
         version: 7.2.0
@@ -89,21 +104,12 @@ importers:
       listr2:
         specifier: ^8.2.5
         version: 8.3.3
-      mongodb:
-        specifier: '6.6'
-        version: 6.6.2
       multer:
         specifier: ^2.1.1
         version: 2.1.1
-      mysql2:
-        specifier: ^3.14.2
-        version: 3.19.0(@types/node@20.19.37)
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
-      pg:
-        specifier: ^8.11.5
-        version: 8.20.0
       pino:
         specifier: ^10.1.0
         version: 10.3.1
@@ -297,6 +303,21 @@ importers:
         version: 2.2.12(typescript@5.4.5)
 
 packages:
+
+  '@adminforth/connector-clickhouse@1.0.1':
+    resolution: {integrity: sha512-2SgZb5TOcnmHpbBd9IXz0YqWnje+D5rtak5TjSN4KuU/k5UtgjJ+wm2ZAMeRiZnP+dZHOwZEExQqmeoZdh+M/w==}
+
+  '@adminforth/connector-mongo@1.0.0':
+    resolution: {integrity: sha512-m9EJoRyydbEsmfEuc/ScUWuGd35VmOTpeuVRtwUYrSIEGbIuFH0xE1JjLisJ1M7vMbFgJyKAY6ZkUrfTxZ10lA==}
+
+  '@adminforth/connector-mysql@1.0.0':
+    resolution: {integrity: sha512-4zmWuIF6mhqF/4+mUuxtxWMamqkXT0NFtF25JhgyJYF7ZwQvkmw145mxmy9NVmhRiUMZf+DGyN1LcvgOQ3l1iw==}
+
+  '@adminforth/connector-postgres@1.0.0':
+    resolution: {integrity: sha512-4dzmyngMU6A/HO0/6cbJy6mTGcR32NYZh3n5JXZdHHWrQMSr3fdLjqO3ehR/zzCOzFArl5FEvsUyVJCttv1bRw==}
+
+  '@adminforth/connector-sqlite@1.0.0':
+    resolution: {integrity: sha512-v9jFZBzLJlrXCK45pEEuUmMLUq/Fl3P8iHGwteGGsUySSJi9ZbzWyqM0FiQpv97i036OR6w9ajF4VbQuqPQbPQ==}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -1836,6 +1857,9 @@ packages:
   dayjs@1.11.19:
     resolution: {integrity: sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw==}
 
+  dayjs@1.11.21:
+    resolution: {integrity: sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==}
+
   de-indent@1.0.2:
     resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
 
@@ -3309,30 +3333,30 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
 
-  pg-cloudflare@1.3.0:
-    resolution: {integrity: sha512-6lswVVSztmHiRtD6I8hw4qP/nDm1EJbKMRhf3HCYaqud7frGysPv7FYJ5noZQdhQtN2xJnimfMtvQq21pdbzyQ==}
+  pg-cloudflare@1.4.0:
+    resolution: {integrity: sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==}
 
-  pg-connection-string@2.12.0:
-    resolution: {integrity: sha512-U7qg+bpswf3Cs5xLzRqbXbQl85ng0mfSV/J0nnA31MCLgvEaAo7CIhmeyrmJpOr7o+zm0rXK+hNnT5l9RHkCkQ==}
+  pg-connection-string@2.13.0:
+    resolution: {integrity: sha512-EMnU9E2fSULdsbErBbMaXJvFeD9B4+nPcM3f+4lsiCR0BHLPrLVjv3DbyM2hgQQviKJaTWIRRTjKjWlHg3p2ig==}
 
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
     engines: {node: '>=4.0.0'}
 
-  pg-pool@3.13.0:
-    resolution: {integrity: sha512-gB+R+Xud1gLFuRD/QgOIgGOBE2KCQPaPwkzBBGC9oG69pHTkhQeIuejVIk3/cnDyX39av2AxomQiyPT13WKHQA==}
+  pg-pool@3.14.0:
+    resolution: {integrity: sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==}
     peerDependencies:
       pg: '>=8.0'
 
-  pg-protocol@1.13.0:
-    resolution: {integrity: sha512-zzdvXfS6v89r6v7OcFCHfHlyG/wvry1ALxZo4LqgUoy7W9xhBDMaqOuMiF3qEV45VqsN6rdlcehHrfDtlCPc8w==}
+  pg-protocol@1.14.0:
+    resolution: {integrity: sha512-n5taZ1kO3s9ngDTVxsEznOqCyToTgz0FLuPq0B33COy5pPpuWJpY3/2oRBVETuOgzdqRXfWpM9HIhp2LBBT1BA==}
 
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.20.0:
-    resolution: {integrity: sha512-ldhMxz2r8fl/6QkXnBD3CR9/xg694oT6DZQ2s6c/RI28OjtSOpxnPrUCGOBJ46RCUxcWdx3p6kw/xnDHjKvaRA==}
+  pg@8.21.0:
+    resolution: {integrity: sha512-AUP1EYJuHraQGsVoCQVIcM7TEJVGtDzxWtGFZd8rds9d+CCXlU5Js1rYgfLNvxy9iJrpHjGrRjoi/3BT9fRyiA==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -4327,6 +4351,51 @@ packages:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
 
 snapshots:
+
+  '@adminforth/connector-clickhouse@1.0.1':
+    dependencies:
+      '@clickhouse/client': 1.18.1
+      adminforth: 'link:'
+      bson: 7.2.0
+      dayjs: 1.11.21
+
+  '@adminforth/connector-mongo@1.0.0':
+    dependencies:
+      adminforth: 'link:'
+      bson: 7.2.0
+      dayjs: 1.11.21
+      mongodb: 6.6.2
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - snappy
+      - socks
+
+  '@adminforth/connector-mysql@1.0.0(@types/node@20.19.37)':
+    dependencies:
+      adminforth: 'link:'
+      bson: 7.2.0
+      dayjs: 1.11.21
+      mysql2: 3.19.0(@types/node@20.19.37)
+    transitivePeerDependencies:
+      - '@types/node'
+
+  '@adminforth/connector-postgres@1.0.0':
+    dependencies:
+      adminforth: 'link:'
+      dayjs: 1.11.21
+      pg: 8.21.0
+    transitivePeerDependencies:
+      - pg-native
+
+  '@adminforth/connector-sqlite@1.0.0':
+    dependencies:
+      adminforth: 'link:'
+      better-sqlite3: 11.10.0
+      dayjs: 1.11.21
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -5816,6 +5885,8 @@ snapshots:
 
   dayjs@1.11.19: {}
 
+  dayjs@1.11.21: {}
+
   de-indent@1.0.2: {}
 
   debounce@1.2.1: {}
@@ -6689,7 +6760,7 @@ snapshots:
 
   launder@1.7.1:
     dependencies:
-      dayjs: 1.11.19
+      dayjs: 1.11.21
 
   levn@0.4.1:
     dependencies:
@@ -7224,18 +7295,18 @@ snapshots:
 
   path-type@4.0.0: {}
 
-  pg-cloudflare@1.3.0:
+  pg-cloudflare@1.4.0:
     optional: true
 
-  pg-connection-string@2.12.0: {}
+  pg-connection-string@2.13.0: {}
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.13.0(pg@8.20.0):
+  pg-pool@3.14.0(pg@8.21.0):
     dependencies:
-      pg: 8.20.0
+      pg: 8.21.0
 
-  pg-protocol@1.13.0: {}
+  pg-protocol@1.14.0: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -7245,15 +7316,15 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.20.0:
+  pg@8.21.0:
     dependencies:
-      pg-connection-string: 2.12.0
-      pg-pool: 3.13.0(pg@8.20.0)
-      pg-protocol: 1.13.0
+      pg-connection-string: 2.13.0
+      pg-pool: 3.14.0(pg@8.21.0)
+      pg-protocol: 1.14.0
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.3.0
+      pg-cloudflare: 1.4.0
 
   pgpass@1.0.5:
     dependencies:

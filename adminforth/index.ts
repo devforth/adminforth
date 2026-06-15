@@ -1,8 +1,4 @@
 import AdminForthAuth from './auth.js';
-import MongoConnector from './dataConnectors/mongo.js';
-import PostgresConnector from './dataConnectors/postgres.js';
-import MysqlConnector from './dataConnectors/mysql.js';
-import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
@@ -40,7 +36,6 @@ import {
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
-import ClickhouseConnector from './dataConnectors/clickhouse.js';
 import QdrantConnector from './dataConnectors/qdrant.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
@@ -488,9 +483,27 @@ class AdminForth implements IAdminForth {
     return null;
   }
 
+  async tryToImportConnector(connectorName: string) {
+    try {
+      const connectorModule = await import(`@adminforth/connector-${connectorName}`);
+      return connectorModule.default;
+    } catch (e) {
+      throw new Error(`____________________
+      Error while importing ${connectorName} connector: ${e}. 
+      If you want to use ${connectorName} data source, please install @adminforth/connector-${connectorName} package.
+      ____________________
+      `);
+    }
+  }
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
+    const SQLiteConnector = await this.tryToImportConnector('sqlite');
+    const PostgresConnector = await this.tryToImportConnector('postgres');
+    const MongoConnector = await this.tryToImportConnector('mongo');
+    const ClickhouseConnector = await this.tryToImportConnector('clickhouse');
+    const MysqlConnector = await this.tryToImportConnector('mysql');
+
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,

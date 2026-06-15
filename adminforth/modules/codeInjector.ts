@@ -158,7 +158,7 @@ class CodeInjector implements ICodeInjector {
   }
 
 
-  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+  public async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
     if (!dir) {
       return false;
     }
