@@ -488,21 +488,50 @@ class AdminForth implements IAdminForth {
       const connectorModule = await import(`@adminforth/connector-${connectorName}`);
       return connectorModule.default;
     } catch (e) {
-      throw new Error(`____________________
-      Error while importing ${connectorName} connector: ${e}. 
-      If you want to use ${connectorName} data source, please install @adminforth/connector-${connectorName} package.
-      ____________________
+      throw new Error(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║  ❌ CONNECTOR IMPORT ERROR                                                 ║
+║  ────────────────────────────────────────────────────────────────────────  ║
+║                                                                            ║
+║  Error while importing ${connectorName} connector: ${e}                    ║
+║                                                                            ║
+║  💡 SOLUTION                                                               ║
+║  Install the required package:                                             ║
+║                                                                            ║
+║    npm install @adminforth/connector-${connectorName}                      ║
+║    # or                                                                    ║
+║    pnpm add @adminforth/connector-${connectorName}                         ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
       `);
     }
   }
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
-    const SQLiteConnector = await this.tryToImportConnector('sqlite');
-    const PostgresConnector = await this.tryToImportConnector('postgres');
-    const MongoConnector = await this.tryToImportConnector('mongo');
-    const ClickhouseConnector = await this.tryToImportConnector('clickhouse');
-    const MysqlConnector = await this.tryToImportConnector('mysql');
+    const dataSourcesDatabasesTypes = [];
+    this.config.dataSources.forEach((ds) => {
+      const dbType = ds.url.split(':')[0];
+      dataSourcesDatabasesTypes.push(dbType)
+    });
+    const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector;
+    if (uniqueDbTypes.includes('sqlite')) {
+      SQLiteConnector = await this.tryToImportConnector('sqlite');
+    }
+    if (uniqueDbTypes.includes('postgres') || uniqueDbTypes.includes('postgresql')) {
+      PostgresConnector = await this.tryToImportConnector('postgres');
+    }
+    if (uniqueDbTypes.includes('mongodb')) {
+      MongoConnector = await this.tryToImportConnector('mongo');
+    }
+    if (uniqueDbTypes.includes('clickhouse')) {
+      ClickhouseConnector = await this.tryToImportConnector('clickhouse');
+    }
+    if (uniqueDbTypes.includes('mysql')) {
+      MysqlConnector = await this.tryToImportConnector('mysql');
+    }
 
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
