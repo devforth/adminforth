@@ -42,40 +42,6 @@ pnpm add @adminforth/connector-Mongo
 pnpm add @adminforth/connector-qdrant
 ```
 
-## Configure datasource
-
-Use a datasource with a SQLite URL:
-
-```ts
-import AdminForth from 'adminforth';
-
-export const admin = new AdminForth({
-	dataSources: [
-		{
-			id: 'maindb',
-			url: 'sqlite://.db.sqlite',
-		},
-	],
-	resources: [
-    ...
-	],
-});
-```
-
-The URL format is:
-
-```txt
-sqlite://<path-to-file>
-```
-
-Examples:
-
-- `sqlite://.db.sqlite`
-- `sqlite://./db/app.sqlite`
-- `sqlite:///var/data/app.sqlite`
-
-If the database file does not exist yet, SQLite will create it.
-
 ## How peer dependency loading works
 
 AdminForth keeps connectors optional and attempts to import only the connector that matches your datasource type.
