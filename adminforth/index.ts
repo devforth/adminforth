@@ -488,19 +488,19 @@ class AdminForth implements IAdminForth {
       return connectorModule.default;
     } catch (e) {
       throw new Error(`
-╔════════════════════════════════════════════════════════════════════════════╗
-║                                                                            ║
-║  ❌ CONNECTOR IMPORT ERROR                                                 ║
-║  ────────────────────────────────────────────────────────────────────────  ║
-║                                                                            ║
-║  Error while importing ${connectorName}                                    ║
-║                                                                            ║
-║  💡 SOLUTION                                                               ║
-║  Install the required package:                                             ║
-║                                                                            ║
-║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}     ║                  ║
-║                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════════════════
+║                                                                            
+║  ❌ CONNECTOR IMPORT ERROR                                                 
+║  ──────────────────────────────────────────────────────────────────────────
+║                                                                            
+║  Error while importing ${connectorName} connector                                   
+║                                                                            
+║  💡 SOLUTION                                                               
+║  Install the required package:                                             
+║                                                                            
+║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}                       ║
+║                                                                            
+╚════════════════════════════════════════════════════════════════════════════
       `);
     }
   }
