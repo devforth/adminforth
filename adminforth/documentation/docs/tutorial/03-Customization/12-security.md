@@ -70,7 +70,7 @@ Also you can add custom rules. For example to prevent popular words:
   ],
 ```
 
-All rules defined in password column will be also delivered to [password reset plugin](../08-Plugins/07-email-password-reset.md) if you are using it to ensure that password reset will also respect same rules.
+All rules defined in password column will be also delivered to [password reset plugin](../09-Plugins/07-email-password-reset.md) if you are using it to ensure that password reset will also respect same rules.
 
 
 ## Trusting client IP addresses

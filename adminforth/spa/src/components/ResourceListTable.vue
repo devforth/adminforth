@@ -363,7 +363,13 @@
         :style="{ width: selectDynamicWidth }"
         :placeholder="pageSizeInternal?.toString()"        
         class="text-sm min-w-20 af-page-size-button" 
-        classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm cursor-pointer af-button-shadow bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder rounded-default"
+        classesForInput="
+        af-page-size-btn h-[34px] min-h-0 py-1 pl-2 pr-6 text-left text-sm font-medium transition-all 
+        outline-none cursor-pointer af-button-shadow rounded-default bg-lightListViewButtonBackground 
+        text-lightListViewButtonText border-lightListViewButtonBorder 
+        dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+        hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
+        dark:hover:bg-darkListViewButtonBackgroundHover dark:hover:text-darkListViewButtonTextHover"
       /> 
     </div>
   </div>
