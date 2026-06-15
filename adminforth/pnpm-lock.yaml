@@ -4,10 +4,16 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  adminforth: 'link:'
+
 importers:
 
   .:
     dependencies:
+      '@adminforth/connector-sqlite':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@babel/parser':
         specifier: ^7.27.5
         version: 7.29.0
@@ -29,6 +35,9 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.25
+      adminforth:
+        specifier: 'link:'
+        version: 'link:'
       ajv:
         specifier: ^8.18.0
         version: 8.18.0
@@ -297,6 +306,9 @@ importers:
         version: 2.2.12(typescript@5.4.5)
 
 packages:
+
+  '@adminforth/connector-sqlite@1.0.0':
+    resolution: {integrity: sha512-v9jFZBzLJlrXCK45pEEuUmMLUq/Fl3P8iHGwteGGsUySSJi9ZbzWyqM0FiQpv97i036OR6w9ajF4VbQuqPQbPQ==}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -1835,6 +1847,9 @@ packages:
 
   dayjs@1.11.19:
     resolution: {integrity: sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw==}
+
+  dayjs@1.11.21:
+    resolution: {integrity: sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==}
 
   de-indent@1.0.2:
     resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
@@ -4328,6 +4343,12 @@ packages:
 
 snapshots:
 
+  '@adminforth/connector-sqlite@1.0.0':
+    dependencies:
+      adminforth: 'link:'
+      better-sqlite3: 11.10.0
+      dayjs: 1.11.21
+
   '@alloc/quick-lru@5.2.0': {}
 
   '@babel/code-frame@7.29.0':
@@ -5815,6 +5836,8 @@ snapshots:
   dateformat@4.6.3: {}
 
   dayjs@1.11.19: {}
+
+  dayjs@1.11.21: {}
 
   de-indent@1.0.2: {}
 
