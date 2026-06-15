@@ -482,7 +482,7 @@ class AdminForth implements IAdminForth {
     return null;
   }
 
-  async tryToImportConnector(connectorName: string) {
+  async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
     try {
       const connectorModule = await import(`@adminforth/connector-${connectorName}`);
       return connectorModule.default;
@@ -493,14 +493,12 @@ class AdminForth implements IAdminForth {
 ║  ❌ CONNECTOR IMPORT ERROR                                                 ║
 ║  ────────────────────────────────────────────────────────────────────────  ║
 ║                                                                            ║
-║  Error while importing ${connectorName} connector: ${e}                    ║
+║  Error while importing ${connectorName}                                    ║
 ║                                                                            ║
 ║  💡 SOLUTION                                                               ║
 ║  Install the required package:                                             ║
 ║                                                                            ║
-║    npm install @adminforth/connector-${connectorName}                      ║
-║    # or                                                                    ║
-║    pnpm add @adminforth/connector-${connectorName}                         ║
+║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}     ║                  ║
 ║                                                                            ║
 ╚════════════════════════════════════════════════════════════════════════════╝
       `);
@@ -509,6 +507,7 @@ class AdminForth implements IAdminForth {
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
+    const doesUserHavePnpmLock = await this.codeInjector.doesUserHasPnpmLockFile('./');
     const dataSourcesDatabasesTypes = [];
     this.config.dataSources.forEach((ds) => {
       const dbType = ds.url.split(':')[0];
@@ -517,22 +516,22 @@ class AdminForth implements IAdminForth {
     const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
     let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
     if (uniqueDbTypes.includes('sqlite')) {
-      SQLiteConnector = await this.tryToImportConnector('sqlite');
+      SQLiteConnector = await this.tryToImportConnector('sqlite', doesUserHavePnpmLock);
     }
     if (uniqueDbTypes.includes('postgres') || uniqueDbTypes.includes('postgresql')) {
-      PostgresConnector = await this.tryToImportConnector('postgres');
+      PostgresConnector = await this.tryToImportConnector('postgres', doesUserHavePnpmLock);
     }
     if (uniqueDbTypes.includes('mongodb')) {
-      MongoConnector = await this.tryToImportConnector('mongo');
+      MongoConnector = await this.tryToImportConnector('mongo', doesUserHavePnpmLock);
     }
     if (uniqueDbTypes.includes('clickhouse')) {
-      ClickhouseConnector = await this.tryToImportConnector('clickhouse');
+      ClickhouseConnector = await this.tryToImportConnector('clickhouse', doesUserHavePnpmLock);
     }
     if (uniqueDbTypes.includes('mysql')) {
-      MysqlConnector = await this.tryToImportConnector('mysql');
+      MysqlConnector = await this.tryToImportConnector('mysql', doesUserHavePnpmLock);
     }
     if (uniqueDbTypes.includes('qdrant')) {
-      QdrantConnector = await this.tryToImportConnector('qdrant');
+      QdrantConnector = await this.tryToImportConnector('qdrant', doesUserHavePnpmLock);
     }
 
     this.connectorClasses = {
