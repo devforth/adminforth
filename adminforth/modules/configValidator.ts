@@ -1255,13 +1255,6 @@ export default class ConfigValidator implements IConfigValidator {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
     }
 
-    const adminforthSecret = process.env.ADMINFORTH_SECRET;
-    if (!adminforthSecret) {
-      throw new Error(`ADMINFORTH_SECRET environment not set
-        Please set ADMINFORTH_SECRET environment variable to a random string to secure your admin panel.
-        ADMINFORTH_SECRET variable is used to sign JWT tokens
-      `);
-    }
 
     this.adminforth.config = newConfig as AdminForthConfig;
   }
