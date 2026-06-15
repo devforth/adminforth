@@ -1201,7 +1201,7 @@ class CodeInjector implements ICodeInjector {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
-      };
+      }; 
       
       const nodeBinary = process.execPath;
       const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);
