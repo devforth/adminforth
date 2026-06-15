@@ -3,6 +3,7 @@ version: '3'
 vars:
   PLUGINS_DIR: "../plugins"
   ADAPTERS_DIR: "../adapters"
+  CONNECTORS_DIR: "../connectors"
   PULL_JOBS: 30
   PNPM_JOBS: 10
   PLUGINS:
@@ -60,6 +61,13 @@ vars:
     - "adminforth-completion-adapter-google-gemini"
     - "adminforth-audio-adapter-openai"
 
+  CONNECTORS:
+    - "adminforth-connector-clickhouse"
+    - "adminforth-connector-mongo"
+    - "adminforth-connector-mysql"
+    - "adminforth-connector-postgres"
+    - "adminforth-connector-sqlite"
+    - "adminforth-connector-qdrant"
 
 tasks:
 
@@ -179,6 +187,15 @@ tasks:
           REPOS:
             ref: .ADAPTERS
 
+  pull_connectors:
+    desc: Pull connector repositories
+    cmds:
+      - task: pull_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS          
+
   pnpm_plugins:
     desc: Install plugin dependencies
     cmds:
@@ -196,6 +213,15 @@ tasks:
           DIR: "{{.ADAPTERS_DIR}}"
           REPOS:
             ref: .ADAPTERS
+  
+  pnpm_connectors:
+    desc: Install connector dependencies
+    cmds:
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS
 
   update_adminforth_plugins:
     desc: Update adminforth to latest in plugin repositories, commit, and push
