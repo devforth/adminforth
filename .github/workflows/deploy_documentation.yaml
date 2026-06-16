@@ -35,6 +35,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pnpm i
           cd documentation
           npm ci
 
