@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^1.52.6
-        version: 1.52.6(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
+        specifier: ^1.53.0
+        version: 1.53.0(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.0
         version: 1.3.0(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))(ws@8.21.0)(zod@4.4.3)
@@ -45,8 +45,8 @@ importers:
         specifier: ^1.10.21
         version: 1.10.21(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))
       '@adminforth/i18n':
-        specifier: ^2.0.22
-        version: 2.0.22(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))
+        specifier: ^2.0.24
+        version: 2.0.24(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.11
         version: 1.0.12(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))
@@ -108,8 +108,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@1.52.6':
-    resolution: {integrity: sha512-nbyjzCBtLGj+kOh+qOQlJvhdFWm6JjolrocKS/YxwoBLG8F6NqOJuhdKLdeWT2T9OCjKXQGu4Xbe89o14h8Ftg==}
+  '@adminforth/agent@1.53.0':
+    resolution: {integrity: sha512-j/L7YPtSCtyIYwBWHu8Xc/IoaOK/OptZkkAU8vLqujPzAluhFydpyQZEWSq9LsEmV30ky7GgSwoz+C26TJRXTw==}
     peerDependencies:
       adminforth: 3.0.1
 
@@ -164,10 +164,10 @@ packages:
     peerDependencies:
       adminforth: 2.71.1
 
-  '@adminforth/i18n@2.0.22':
-    resolution: {integrity: sha512-WNkl2DBuLfkNLOB7BECErM+EMgp3GdQkgYoyIhDoGFHURgI6tea6nOY1zAX6KV0dOOhEcr5hnngslBIi/gUPnw==}
+  '@adminforth/i18n@2.0.24':
+    resolution: {integrity: sha512-dDNekIrgegrP/bkKmtlkNGJm5+iicaYHTB+k4QUNGZjEt98aA4Odaiznk3SZyRcJvVK50o/Xbk72DPXamPSBag==}
     peerDependencies:
-      adminforth: ^2.71.1
+      adminforth: ^3.0.1
 
   '@adminforth/image-generation-adapter-openai@1.0.12':
     resolution: {integrity: sha512-UqF7yRVYb9/Y+y+QZKXFdYWqmfGFO61Xq6dkzT5RiRKOTUMM/XOiSaaGsK3nhQzonC5ewWizzCliJ6+8EWN2Zg==}
@@ -3148,7 +3148,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@1.52.6(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)':
+  '@adminforth/agent@1.53.0(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)':
     dependencies:
       '@langchain/core': 1.1.49(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0)
       '@langchain/langgraph': 1.4.2(@langchain/core@1.1.49(openai@6.42.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
@@ -3262,7 +3262,7 @@ snapshots:
       adminforth: 3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3)
       clone: 2.1.2
 
-  '@adminforth/i18n@2.0.22(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))':
+  '@adminforth/i18n@2.0.24(adminforth@3.0.1(@adminforth/connector-sqlite@1.0.0(@types/node@25.9.3)(typescript@5.9.3))(@types/node@25.9.3))':
     dependencies:
       '@aws-sdk/client-ses': 3.1068.0
       '@sapphire/async-queue': 1.5.5
