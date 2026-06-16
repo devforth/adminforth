@@ -583,6 +583,75 @@ list: '@/renderers/ZeroStylesRichText.vue',
 `ZeroStyleRichText` fits well for tasks like email templates preview fields.
 
 
+### Sensitive data blur
+
+For fields containing sensitive data (like passwords, API keys, tokens, or other confidential values), you can create a renderer that blurs the value by default and reveals it on click.
+
+Create a file `SensitiveBlurCell.vue` in your `custom` directory:
+
+```html title='./custom/SensitiveBlurCell.vue'
+<template>
+  <div class="inline-flex items-center gap-1">
+    <div
+      class="overflow-hidden max-w-[200px] max-h-[20px] rounded-default"
+      :title="show ? $t('Click to hide') : $t('Click to show')"
+      @click="toggle"
+    >
+      <span
+        class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
+        :class="{
+          'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
+        }"
+      >
+        <ValueRenderer :column="column" :record="record" />
+      </span>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import ValueRenderer from '@/components/ValueRenderer.vue';
+import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUser } from '@/types/Common';
+
+const props = defineProps<{
+  column: AdminForthResourceColumnCommon;
+  record: any;
+  meta: any;
+  resource: AdminForthResourceCommon;
+  adminUser: AdminUser;
+}>();
+
+const show = ref(false);
+
+function toggle(event: MouseEvent) {
+  show.value = !show.value;
+  event.stopPropagation();
+}
+</script>
+```
+
+Now use it in your resource configuration:
+
+```ts title='./resources/anyResource.ts'
+  columns: [
+    ...
+    {
+      name: 'api_key',
+  //diff-add
+      components: {
+  //diff-add
+        show: '@@/SensitiveBlurCell.vue',
+  //diff-add
+        list: '@@/SensitiveBlurCell.vue',
+  //diff-add
+      },
+    ...
+```
+
+This component works with any field type — it wraps the standard `ValueRenderer` (the same renderer AdminForth would use by default) and adds a click-to-reveal blur effect. The value is blurred until the user clicks on it, and clicking again hides it.
+
+
 ### Custom filter component for square meters
 
 

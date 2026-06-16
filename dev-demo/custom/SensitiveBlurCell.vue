@@ -1,15 +1,19 @@
 <template>
   <div class="inline-flex items-center gap-1">
-    <span
-      class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
-      :class="{
-        'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
-      }"
+    <div
+      class="overflow-hidden max-w-[200px] max-h-[20px] rounded-default"
       :title="show ? $t('Click to hide') : $t('Click to show')"
       @click="toggle"
     >
-      <ValueRenderer :column="column" :record="record" />
-    </span>
+      <span
+        class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
+        :class="{
+          'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
+        }"
+      >
+        <ValueRenderer :column="column" :record="record" />
+      </span>
+    </div>
   </div>
 </template>
 
