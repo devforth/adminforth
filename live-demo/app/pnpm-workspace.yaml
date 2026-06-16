@@ -8,3 +8,4 @@ allowBuilds:
   prisma: true
 minimumReleaseAgeExclude:
   - adminforth@3.0.1
+  - '@adminforth/agent@1.52.5'
