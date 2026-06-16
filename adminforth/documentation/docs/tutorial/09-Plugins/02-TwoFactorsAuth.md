@@ -237,6 +237,8 @@ If you wan't to call 2FA verification modal from the backend for verification, y
 t2fa.verifyAuto(adminUser);
 ```
 This method opens 2FA verification modal at the frontend and then returns verification result.
+The modal is shown only in the same browser tab/window which made the backend request.
+Because of this, `verifyAuto` must be called from a browser-initiated request handled by AdminForth request context, for example from an endpoint wrapped with `admin.express.authorize`.
  
 Here is an example:
 
@@ -929,7 +931,6 @@ After adding passkey you can use passkey, instead of TOTP:
  ![alt text](Passkeys3.png)
 
 > 💡 **Note**: Adding a passkey does not remove the option to use TOTP. If you lose access to your passkey, you can log in using TOTP and reset your passkey.
-
 
 
 
