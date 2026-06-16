@@ -23,6 +23,7 @@ import type { AddressInfo } from 'net';
 import { randomUUID } from 'crypto';
 import { listify } from '../modules/utils.js';
 import { afLogger } from '../modules/logger.js';
+import { ADMINFORTH_CLIENT_ID_HEADER, runWithRequestContext } from '../modules/requestContext.js';
 import * as z from 'zod';
 import multer from 'multer';
 
@@ -50,6 +51,11 @@ function parseCookiesString(cookiesString: string): Array<{
     result.push({key, value});
   });
   return result;
+}
+
+function getHeaderString(headers: Record<string, any>, name: string): string | undefined {
+  const value = headers[name];
+  return typeof value === 'string' ? value : undefined;
 }
 
 async function parseExpressCookie(req): Promise<
@@ -271,6 +277,7 @@ class ExpressServer implements IExpressHttpServer {
         this.adminforth.websocket.registerWsClient(
           new WebSocketClient({
             id: randomUUID(),
+            clientId: typeof req.url === 'string' ? new URL(req.url, 'http://localhost').searchParams.get('clientId') || undefined : undefined,
             adminUser,
             send: (data) => ws.send(data),
             close: () => ws.close(),
@@ -287,6 +294,11 @@ class ExpressServer implements IExpressHttpServer {
 
   serve(app) {
     this.expressApp = app;
+    this.expressApp.use((req, res, next) => {
+      runWithRequestContext({
+        websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
+      }, next);
+    });
     this.patchSchemaAwareRouteRegistration();
     this.flushPendingEndpointRegistrations();
     const stack = (this.expressApp as any)?._router?.stack;
@@ -337,55 +349,63 @@ class ExpressServer implements IExpressHttpServer {
       }
     }
   }
+
+  runInRequestContext(req, callback) {
+    return runWithRequestContext({
+      websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
+    }, callback);
+  }
   
 
   authorize(handler) {
     return async (req, res, next) => {
-      const cookies = await parseExpressCookie(req);
-      const brandSlug = this.adminforth.config.customization.brandNameSlug;
-      // check if multiple adminforth_jwt providerd and show warning
-      const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
-      if (jwts.length > 1) {
-        afLogger.error('Multiple adminforth_jwt cookies provided');
-      }
+      return this.runInRequestContext(req, async () => {
+        const cookies = await parseExpressCookie(req);
+        const brandSlug = this.adminforth.config.customization.brandNameSlug;
+        // check if multiple adminforth_jwt providerd and show warning
+        const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
+        if (jwts.length > 1) {
+          afLogger.error('Multiple adminforth_jwt cookies provided');
+        }
 
-      const jwt = jwts[0]?.value;
+        const jwt = jwts[0]?.value;
 
-      if (!jwt) {
-        res.status(401).send('Unauthorized by AdminForth');
-        return
-      }
-      let adminforthUser;
-      try {
-        adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
-      } catch (e) {
-        // this might happen if e.g. database intialization in progress.
-        // so we can't answer with 401 (would logout user)
-        // reproduced during usage of listRowsAutoRefreshSeconds
-        afLogger.error(e.stack);
-        res.status(500).send('Failed to verify JWT token - something went wrong');
-        return;
-      }
-      if (!adminforthUser) {
-        res.status(401).send('Unauthorized by AdminForth');
-      } else {
-        req.adminUser = adminforthUser;
-        const toReturn: { error?: string, allowed: boolean } = { allowed: true };
-        await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
-          body: req.body,
-          query: req.query,
-          headers: req.headers,
-          cookies: cookies as any,
-          requestUrl: req.url,
-          meta: {},
-          response: res
-        });
-        if (!toReturn.allowed) {
+        if (!jwt) {
+          res.status(401).send('Unauthorized by AdminForth');
+          return
+        }
+        let adminforthUser;
+        try {
+          adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+        } catch (e) {
+          // this might happen if e.g. database intialization in progress.
+          // so we can't answer with 401 (would logout user)
+          // reproduced during usage of listRowsAutoRefreshSeconds
+          afLogger.error(e.stack);
+          res.status(500).send('Failed to verify JWT token - something went wrong');
+          return;
+        }
+        if (!adminforthUser) {
           res.status(401).send('Unauthorized by AdminForth');
         } else {
-          handler(req, res, next);
+          req.adminUser = adminforthUser;
+          const toReturn: { error?: string, allowed: boolean } = { allowed: true };
+          await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
+            body: req.body,
+            query: req.query,
+            headers: req.headers,
+            cookies: cookies as any,
+            requestUrl: req.url,
+            meta: {},
+            response: res
+          });
+          if (!toReturn.allowed) {
+            res.status(401).send('Unauthorized by AdminForth');
+          } else {
+            handler(req, res, next);
+          }
         }
-      }
+      });
     };
   }
 
@@ -590,7 +610,7 @@ class ExpressServer implements IExpressHttpServer {
       })
       : null;
 
-    const expressHandler = async (req, res) => {
+    const expressHandler = async (req, res) => this.runInRequestContext(req, async () => {
       const abortController = new AbortController();
       res.on('close', () => {
         if(req.destroyed) {
@@ -718,7 +738,7 @@ class ExpressServer implements IExpressHttpServer {
       }
 
       res.json(output);
-    }
+    });
 
     const registerEndpoint = () => {
       afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);

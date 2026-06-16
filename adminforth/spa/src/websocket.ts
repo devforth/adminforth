@@ -1,3 +1,4 @@
+import { getAdminForthClientId } from '@/utils/clientId';
 
 type WebsocketCallback = (data: any) => void;
 type Unsubscribe = () => void;
@@ -46,9 +47,10 @@ async function connect () {
     base = base.slice(0, -1);
   }
 
+  const clientId = encodeURIComponent(getAdminForthClientId());
   state.ws = new WebSocket(`${
     window.location.protocol === 'http:' ? 'ws' : 'wss'
-  }://${window.location.host}${base}/afws`);
+  }://${window.location.host}${base}/afws?clientId=${clientId}`);
   state.status = 'connecting';
   state.ws.addEventListener('open', () => {
     console.log('🔌 AFWS connected');

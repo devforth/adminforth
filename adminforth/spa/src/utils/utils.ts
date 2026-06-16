@@ -13,6 +13,7 @@ import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
 import { reconnect } from '@/websocket';
+import { ADMINFORTH_CLIENT_ID_HEADER, getAdminForthClientId } from './clientId';
 
 
 
@@ -133,6 +134,7 @@ export async function callApi({path, method, body, headers, silentError = false,
     headers: {
       'Content-Type': 'application/json',
       'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+      [ADMINFORTH_CLIENT_ID_HEADER]: getAdminForthClientId(),
       ...headers
     },
     body: JSON.stringify(body),

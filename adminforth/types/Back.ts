@@ -2385,6 +2385,7 @@ export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnC
 
 export interface IWebSocketClient {
   id: string;
+  clientId?: string;
   lastPing: number;
   topics: Set<string>;
   adminUser: AdminUser;
