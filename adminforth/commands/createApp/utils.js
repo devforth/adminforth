@@ -420,7 +420,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
         appName,
         adminforthVersion: adminforthVersion,
         includePrismaMigrations: Boolean(resolvedPrismaDbUrl),
-        databaseProvider: connectorProvider,
+        connectorProvider: connectorProvider,
       },
     },
     {
