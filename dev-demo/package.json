@@ -16,14 +16,16 @@
     "migrate:clickhouse": "pnpm exec clickhouse-migrations migrate --host=http://localhost:28124 --user=demo --password=demo --db=demo --migrations-home=./migrations/clickhouse_migrations",
     "install-plugins": "task pull_plugins && task pnpm_plugins",
     "install-adapters": "task pull_adapters && task pnpm_adapters",
+    "install-connectors": "task pull_connectors && task pnpm_connectors",
     "pull-plugins": "task pull_plugins",
     "pull-adapters": "task pull_adapters",
+    "pull-connectors": "task pull_connectors",
     "build-adminforth": "cd ../adminforth && pnpm i && pnpm build && pnpm link ./",
     "migrate:all": "pnpm migrate:sqlite && pnpm migrate:mysql && pnpm migrate:postgres && pnpm migrate:clickhouse",
     "preinstall": "node scripts/check-node.js",
     "check-docker": "node scripts/check-docker.js",
     "check-task": "node scripts/check-task.js",
-    "setup-dev-demo": "[ -f .env ] || cp .env.local .env && pnpm preinstall && pnpm check-docker && pnpm check-task && pnpm build-adminforth && pnpm install-plugins && pnpm install-adapters && pnpm install && pnpm link ../adminforth && bash ./scripts/run_inventory.sh"
+    "setup-dev-demo": "[ -f .env ] || cp .env.local .env && pnpm preinstall && pnpm check-docker && pnpm check-task && pnpm build-adminforth && pnpm install-plugins && pnpm install-adapters && pnpm install-connectors && pnpm install && pnpm link ../adminforth && bash ./scripts/run_inventory.sh"
   },
   "author": "",
   "license": "ISC",
