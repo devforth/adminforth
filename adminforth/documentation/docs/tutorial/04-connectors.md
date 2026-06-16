@@ -29,12 +29,12 @@ pnpm add @adminforth/connector-mysql
 ```
 ### Clickhouse
 ```bash
-pnpm add @adminforth/connector-Clickhouse
+pnpm add @adminforth/connector-clickhouse
 ```
 
 ### Mongo
 ```bash
-pnpm add @adminforth/connector-Mongo
+pnpm add @adminforth/connector-congo
 ```
 
 ### Qdrant
