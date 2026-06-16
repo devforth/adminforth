@@ -316,6 +316,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
   const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
   const resolvedPrismaDbUrl = includePrismaMigrations ? prismaDbUrl : null;
   const resolvedPrismaDbUrlProd = includePrismaMigrations ? prismaDbUrlProd : null;
+  const connectorProvider = provider === 'postgresql' ? 'postgres' : provider;
 
   // Build a list of files to generate
   const templateTasks = [
@@ -419,6 +420,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
         appName,
         adminforthVersion: adminforthVersion,
         includePrismaMigrations: Boolean(resolvedPrismaDbUrl),
+        databaseProvider: connectorProvider,
       },
     },
     {
