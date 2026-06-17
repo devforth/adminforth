@@ -6,6 +6,8 @@
 export interface KeyValueAdapter {
 
   get(key: string): Promise<string | null>;
+
+  listByPrefix(prefix: string, limit: number): Promise<Record<string, string>>;  
   
   set(key: string, value: string, expiresInSeconds?: number): Promise<void>;
 
