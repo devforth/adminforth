@@ -3,6 +3,8 @@ title: Two-Factor Authentication Plugin
 description: "Guide to the Two-Factor Authentication plugin, including installation, TOTP or passkey setup, rollout rules, and per-user exceptions for stronger admin login security."
 slug: /tutorial/Plugins/two-factors-auth
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # Two-Factor Authentication Plugin
 
@@ -235,6 +237,8 @@ If you wan't to call 2FA verification modal from the backend for verification, y
 t2fa.verifyAuto(adminUser);
 ```
 This method opens 2FA verification modal at the frontend and then returns verification result.
+The modal is shown only in the same browser tab/window which made the backend request.
+Because of this, `verifyAuto` must be called from a browser-initiated request handled by AdminForth request context, for example from an endpoint wrapped with `admin.express.authorize`.
  
 Here is an example:
 
@@ -279,7 +283,7 @@ But if you websocket doesn't work in you application, or you wan't to perform ve
 
 You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
 
-To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `window.adminforthTwoFaModal.getCode(cb?)` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `get2FaConfirmationResult` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
 
 ```ts title='/custom/RequireTwoFaGate.vue'
 <template>
@@ -289,6 +293,9 @@ To do it, first, create frontend custom component which wraps and intercepts cli
 </template>
 
 <script setup lang="ts">
+  import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+
+  const { get2FaConfirmationResult } = useTwoFactorsAuth();
   const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
   const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
 
@@ -297,8 +304,7 @@ To do it, first, create frontend custom component which wraps and intercepts cli
       return;
     }
   
-    const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
-
+    const verificationResult = await get2FaConfirmationResult(); // this will ask user to enter code
     emit('callAction', { verificationResult }); // then we pass this verification result to action (from fronted to backend)
   }
 </script>
@@ -383,20 +389,19 @@ Frontend (Save Interceptor component injected via pageInjections):
 ```vue title='/custom/SaveInterceptor.vue'
 <script setup>
 import { useAdminforth } from '@/adminforth';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
+const { get2FaConfirmationResult } = useTwoFactorsAuth();
 const { registerSaveInterceptor } = useAdminforth();
 
 registerSaveInterceptor(async ({ action, values, resource }) => {
   // action is 'create' or 'edit'
-  const modal = (window as any)?.adminforthTwoFaModal;
-  if (modal?.get2FaConfirmationResult) {
-    const confirmationResult = await modal.get2FaConfirmationResult('Confirm to save changes');
-    if (!confirmationResult) {
-      return { ok: false, error: 'Two-factor authentication cancelled' };
-    }
-    // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
-    return { ok: true, extra: { confirmationResult } };
+  const confirmationResult = await get2FaConfirmationResult('Confirm to save changes');
+  if (!confirmationResult) {
+    return { ok: false, error: 'Two-factor authentication cancelled' };
   }
+  // Pass data to backend; the view will forward extra.confirmationResult to meta.confirmationResult
+  return { ok: true, extra: { confirmationResult } };
   else {
     throw new Error('No Two-Factor Authentication modal found, please ensure you have latest version of @adminforth/two-factors-auth installed and instantiated on resource');
   }
@@ -489,9 +494,12 @@ Imagine you have some button which does some API call
 
 <script setup lang="ts">
 import { callApi } from '@/utils';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+
+const { get2FaConfirmationResult } = useTwoFactorsAuth();
 
 async function callAdminAPI() {
-  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+  const verificationResult = await get2FaConfirmationResult();
 
   const res = await callApi({
     path: '/myCriticalAction',
@@ -530,12 +538,14 @@ You might want to protect this call with a second factor also. To do it, we need
 <script setup lang="ts">
 import { callApi } from '@/utils';
 import { useAdminforth } from '@/adminforth';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
+const { get2FaConfirmationResult } = useTwoFactorsAuth();
 const { alert } = useAdminforth();
 
 async function callAdminAPI() {
   // diff-add
-  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();
+  const verificationResult = await get2FaConfirmationResult();
 
   const res = await callApi({
     path: '/myCriticalAction',
@@ -667,27 +677,97 @@ If you want to have custom label prefix for some reason:
 If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
 
 First, you need to create a passkeys table in your schema.prisma file:
+<Tabs
+  defaultValue="sqlite"
+  values={[
+    {label: 'SQlite', value: 'sqlite'},
+    {label: 'Postgres', value: 'postgres'},
+    {label: 'MySql', value: 'mysql'},
+    {label: 'Clickhouse', value: 'clickhouse'},
+  ]}>
+  <TabItem value="sqlite">
+    ```ts title='./schema.prisma'
+      //diff-add
+      model passkeys {
+        //diff-add
+        id                      String @id
+        //diff-add
+        credential_id           String  
+        //diff-add
+        user_id                 String
+        //diff-add
+        meta                    String
+        //diff-add
+        @@index([user_id])
+        //diff-add
+        @@index([credential_id])
+        //diff-add
+      }
+    ```
+  </TabItem>
+  <TabItem value="postgres">
+    ```ts title='./schema.prisma'
+      //diff-add
+      model passkeys {
+        //diff-add
+        id                      String @id
+        //diff-add
+        credential_id           String  
+        //diff-add
+        user_id                 String
+        //diff-add
+        meta                    Json
+        //diff-add
+        @@index([user_id])
+        //diff-add
+        @@index([credential_id])
+        //diff-add
+      }
+    ```
+  </TabItem>
+  <TabItem value="mysql">
+    ```ts title='./schema.prisma'
+      //diff-add
+      model passkeys {
+        //diff-add
+        id                      String @id
+        //diff-add
+        credential_id           String  
+        //diff-add
+        user_id                 String
+        //diff-add
+        meta                    Json
+        //diff-add
+        @@index([user_id])
+        //diff-add
+        @@index([credential_id])
+        //diff-add
+      }
+    ```
+  </TabItem>
+  <TabItem value="clickhouse">
+    ```ts title='./schema.prisma'
+      //diff-add
+      model passkeys {
+        //diff-add
+        id                      String @id
+        //diff-add
+        credential_id           String  
+        //diff-add
+        user_id                 String
+        //diff-add
+        meta                    Json
+        //diff-add
+        @@index([user_id])
+        //diff-add
+        @@index([credential_id])
+        //diff-add
+      }
+    ```
+  </TabItem>
+</Tabs>
 
-```ts title='./schema.prisma'
-  //diff-add
-  model passkeys {
-    //diff-add
-    id                      String @id
-    //diff-add
-    credential_id           String  
-    //diff-add
-    user_id                 String
-    //diff-add
-    meta                    String
-    //diff-add
-    @@index([user_id])
-    //diff-add
-    @@index([credential_id])
-    //diff-add
-  }
-```
->☝️Use string data type for credential_id and meta fields
-
+>☝️Use Json data type, if it's possible for the meta field
 And make migration:
 
 ```bash
@@ -857,7 +937,6 @@ After adding passkey you can use passkey, instead of TOTP:
  ![alt text](Passkeys3.png)
 
 > 💡 **Note**: Adding a passkey does not remove the option to use TOTP. If you lose access to your passkey, you can log in using TOTP and reset your passkey.
-
 
 
 

@@ -31,7 +31,13 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            ref="headerRefs"
+            scope="col"
+            class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}]"
+          >
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center font-semibold" :class="{'cursor-pointer':c.sortable}">
@@ -122,7 +128,11 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            class="px-2 md:px-3 lg:px-6 py-4"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}]"
+          >
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
@@ -216,7 +226,7 @@
                         <component
                           v-if="action.icon && !actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
                           :is="getIcon(action.icon)"
-                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary"
+                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150"
                         />
                         <Spinner
                           v-if="actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
@@ -259,7 +269,7 @@
   -->
   <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded "
+    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded-default" 
       v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
     >
       <!-- Buttons -->
@@ -353,7 +363,13 @@
         :style="{ width: selectDynamicWidth }"
         :placeholder="pageSizeInternal?.toString()"        
         class="text-sm min-w-20 af-page-size-button" 
-        classesForInput="h-[34px] min-h-0 py-1 pl-2 pr-6 text-sm cursor-pointer af-button-shadow bg-lightDropdownButtonsBackground text-lightDropdownButtonsText border-lightDropdownButtonsBorder dark:bg-darkDropdownButtonsBackground dark:text-darkDropdownButtonsText dark:border-darkDropdownButtonsBorder rounded-default"
+        classesForInput="
+        af-page-size-btn h-[34px] min-h-0 py-1 pl-2 pr-6 text-left text-sm font-medium transition-all 
+        outline-none cursor-pointer af-button-shadow rounded-default bg-lightListViewButtonBackground 
+        text-lightListViewButtonText border-lightListViewButtonBorder 
+        dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+        hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
+        dark:hover:bg-darkListViewButtonBackgroundHover dark:hover:text-darkListViewButtonTextHover"
       /> 
     </div>
   </div>
@@ -648,6 +664,7 @@ async function deleteRecord(row: any) {
     message: t(`This process is irreversible.`),
     yes: t('Delete'),
     no: t('Cancel'),
+    dangerous: true,
   });
   if (data) {
     try {

@@ -1,8 +1,4 @@
 import AdminForthAuth from './auth.js';
-import MongoConnector from './dataConnectors/mongo.js';
-import PostgresConnector from './dataConnectors/postgres.js';
-import MysqlConnector from './dataConnectors/mysql.js';
-import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
@@ -40,12 +36,11 @@ import {
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
-import ClickhouseConnector from './dataConnectors/clickhouse.js';
-import QdrantConnector from './dataConnectors/qdrant.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 export { afLogger } from './modules/logger.js';
+export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
 
 // exports
@@ -53,6 +48,7 @@ export * from './types/Back.js';
 export * from './types/Common.js';
 export * from './types/adapters/index.js';
 export * from './modules/filtersTools.js';
+export * from './modules/requestContext.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
@@ -487,9 +483,58 @@ class AdminForth implements IAdminForth {
     return null;
   }
 
+  async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
+    try {
+      const connectorModule = await import(`@adminforth/connector-${connectorName}`);
+      return connectorModule.default;
+    } catch (e) {
+      throw new Error(`
+╔════════════════════════════════════════════════════════════════════════════
+║                                                                            
+║  ❌ CONNECTOR IMPORT ERROR                                                 
+║  ──────────────────────────────────────────────────────────────────────────
+║                                                                            
+║  Error while importing ${connectorName} connector                                   
+║                                                                            
+║  💡 SOLUTION                                                               
+║  Install the required package:                                             
+║                                                                            
+║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}
+║                                                                            
+╚════════════════════════════════════════════════════════════════════════════
+      `);
+    }
+  }
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
+    const doesUserHavePnpmLock = await this.codeInjector.doesUserHasPnpmLockFile('./');
+    const dataSourcesDatabasesTypes = [];
+    this.config.dataSources.forEach((ds) => {
+      const dbType = ds.url.split(':')[0];
+      dataSourcesDatabasesTypes.push(dbType)
+    });
+    const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
+    if (uniqueDbTypes.includes('sqlite')) {
+      SQLiteConnector = await this.tryToImportConnector('sqlite', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('postgres') || uniqueDbTypes.includes('postgresql')) {
+      PostgresConnector = await this.tryToImportConnector('postgres', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('mongodb')) {
+      MongoConnector = await this.tryToImportConnector('mongo', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('clickhouse')) {
+      ClickhouseConnector = await this.tryToImportConnector('clickhouse', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('mysql')) {
+      MysqlConnector = await this.tryToImportConnector('mysql', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('qdrant')) {
+      QdrantConnector = await this.tryToImportConnector('qdrant', doesUserHavePnpmLock);
+    }
+
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
@@ -513,7 +558,10 @@ class AdminForth implements IAdminForth {
 
     await Promise.all(Object.keys(this.connectors).map(async (dataSourceId) => {
       try {
-        await this.connectors[dataSourceId].setupClient(this.config.dataSources.find((ds) => ds.id === dataSourceId).url);
+        await this.connectors[dataSourceId].setupClient(
+          this.config.dataSources.find((ds) => ds.id === dataSourceId).url,
+          { recovery: this.config.dataSources.find((ds) => ds.id === dataSourceId).connectionRecovery !== false }
+        );
       } catch (e) {
         afLogger.error(`Error while connecting to datasource '${dataSourceId}': ${e}`);
       }
@@ -572,7 +620,14 @@ class AdminForth implements IAdminForth {
     this.config.resources.forEach((resource) => {
       this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
     });
-
+    
+    const adminforthSecret = process.env.ADMINFORTH_SECRET;
+    if (!adminforthSecret) {
+      throw new Error(`ADMINFORTH_SECRET environment not set
+        Please set ADMINFORTH_SECRET environment variable to a random string to secure your admin panel.
+        ADMINFORTH_SECRET variable is used to sign JWT tokens
+      `);
+    }
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {

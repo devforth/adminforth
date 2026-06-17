@@ -56,6 +56,7 @@ class OpenApiRegistry implements IOpenApiRegistry {
       method: options.method.toLowerCase(),
       path: options.path,
       description: options.description,
+      agent: options.agent,
       request_schema: options.request_schema,
       response_schema: responseSchema,
       meta: options.meta,

@@ -1,6 +1,6 @@
 ---
-title: Dashboard
-description: "Guide to the Dashboard plugin."
+title: Dashboard plugin
+description: "Documentation for the Dashboard plugin."
 slug: /tutorial/Plugins/dashboard
 ---
 
@@ -24,7 +24,7 @@ Supported widgets:
 pnpm install @adminforth/dashboard --save
 ```
 
-## Create Dashboard Configs Table
+### Create Dashboard Configs Table
 
 The plugin needs one resource to store dashboard definitions. For Prisma-based projects, add the table to your schema:
 
@@ -64,7 +64,7 @@ CREATE INDEX "dashboard_configs_slug_idx" ON "dashboard_configs"("slug");
 
 Use the JSON column type supported by your database connector. For example, PostgreSQL migrations might use `JSONB`, while SQLite migrations can use `JSON`.
 
-## Create Resource
+### Create Resource
 
 Create a resource that points to the `dashboard_configs` table:
 
@@ -136,7 +136,7 @@ export const admin = new AdminForth({
 });
 ```
 
-## Configure Plugin
+### Configure Plugin
 
 Attach the plugin to one of your resources, usually the users resource:
 
@@ -212,7 +212,45 @@ query:
       direction: desc
 ```
 
-Funnel charts use a steps query because each step can use its own resource, metric, and filters.
+Step-based charts use a `steps` query when each step needs its own resource, metric, and filters. Funnel charts always use this query shape.
+
+Depending on the widget, `query` can also use `limit`, `offset`, `calcs`, `time_series`, `period`, `bucket`, and `formatting`.
+
+Widget-scoped constants can be defined with `variables`. They are available inside `query.calcs` through `lookup($variables.path, field, default)`.
+
+```yaml
+label: Average Car Price by Database
+target: chart
+variables:
+  price_multipliers:
+    cars_sl: 0.84
+    cars_mysql: 1.12
+chart:
+  type: bar
+  x:
+    field: name
+  y:
+    field: adjusted_value
+query:
+  steps:
+    - name: SQLite
+      resource: cars_sl
+      metric:
+        agg: avg
+        field: price
+        as: value
+    - name: MySQL
+      resource: cars_mysql
+      metric:
+        agg: avg
+        field: price
+        as: value
+  calcs:
+    - calc: value * lookup($variables.price_multipliers, resource, 1)
+      as: adjusted_value
+```
+
+Define `variables` on each widget config. Dashboard root variables are not merged into widget data queries.
 
 ## Widget Examples
 
@@ -294,7 +332,7 @@ query:
 
 ### Chart With Multiple Sources
 
-Use `query.steps` when funnel steps come from different resources. Each step returns one row with `name` and the metric alias.
+Use `query.source: steps` when chart data comes from different resources. Each step returns one row with `name`, `resource`, and the selected aggregate aliases.
 
 ```yaml
 label: Sales Funnel
@@ -305,27 +343,68 @@ chart:
   type: funnel
   title: Sales funnel
 query:
+  source: steps
   steps:
     - name: Leads
       resource: leads
-      metric:
-        agg: count
-        as: value
+      select:
+        - agg: count
+          as: value
     - name: Qualified
       resource: leads
-      metric:
-        agg: count
-        as: value
+      select:
+        - agg: count
+          as: value
       filters:
         and:
           - field: status
             eq: qualified
     - name: Customers
       resource: orders
-      metric:
-        agg: count_distinct
-        field: customer_id
-        as: value
+      select:
+        - agg: count_distinct
+          field: customer_id
+          as: value
+```
+
+For the same numeric buckets across multiple resources, add `query.bucket` and render the result as a stacked bar chart. The dashboard runs every step once per bucket and returns rows with `label`, `name`, `resource`, and the aggregate aliases:
+
+```yaml
+label: Cars by Price Range and Database
+target: chart
+size: wide
+height: 360
+chart:
+  type: stacked_bar
+  x:
+    field: label
+  y:
+    field: count
+  series:
+    field: name
+query:
+  source: steps
+  bucket:
+    field: price
+    buckets:
+      - label: Budget
+        max: 3500
+      - label: Mid-range
+        min: 3500
+        max: 7000
+      - label: Premium
+        min: 7000
+  steps:
+    - name: SQLite
+      resource: cars_sl
+      select:
+        - agg: count
+          as: count
+    - name: MySQL
+      resource: cars_mysql
+      select:
+        - agg: count
+          as: count
 ```
 
 ### KPI Card
@@ -406,11 +485,11 @@ Widgets support these layout fields:
 size: small
 width: 320
 height: 360
-minWidth: 240
-maxWidth: 640
+min_width: 240
+max_width: 640
 ```
 
-`size` can be `small`, `medium`, `large`, `wide`, or `full`. Explicit `width`, `height`, `minWidth`, and `maxWidth` can be used when a widget needs more precise sizing.
+`size` can be `small`, `medium`, `large`, `wide`, or `full`. Explicit `width`, `height`, `min_width`, and `max_width` can be used when a widget needs more precise sizing.
 
 ## Agent Plugin Integration
 

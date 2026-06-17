@@ -922,6 +922,7 @@ describe('POST /get_resource_data', () => {
       expect(res.body.resource.table).toBeUndefined();
       expect(res.body.resource.dataSource).toBeUndefined();
       expect(res.body.resource.dataSourceColumns).toBeUndefined();
+      expect(res.body.resource.columns.find((column: any) => column.name === 'model').listCssClass).toBe('text-lightPrimary dark:text-darkPrimary');
     });
   });
 

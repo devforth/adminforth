@@ -5,7 +5,6 @@ import type { ZodType } from 'zod';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
-  type AdminForthResourceCommon, 
   type AdminUser, type AllowedActionsResolved, 
   type AdminForthBulkActionCommon, 
   type AdminForthForeignResourceCommon,
@@ -59,6 +58,10 @@ export interface IAdminForthAuthenticatedEndpointHandlerInput extends IAdminFort
   adminUser: AdminUser;
 }
 
+export type AgentToolMeta = {
+  isDangerous?: boolean;
+};
+
 export interface IAdminForthEndpointOptionsBase {
   method: string,
   path: string,
@@ -66,6 +69,7 @@ export interface IAdminForthEndpointOptionsBase {
   request_schema?: AnySchemaObject,
   response_schema?: AnySchemaObject,
   responce_schema?: AnySchemaObject,
+  agent?: AgentToolMeta,
   meta?: Record<string, unknown>,
   target?: 'json' | 'upload',
 }
@@ -103,6 +107,11 @@ export interface IAdminForthExpressRouteSchema {
   response?: AdminForthExpressSchemaInput;
 
   /**
+   * AdminForth agent metadata.
+   */
+  agent?: AgentToolMeta;
+
+  /**
    * Internal metadata for AdminForth integrations. This is not rendered in the OpenAPI document.
    */
   meta?: Record<string, unknown>;
@@ -112,6 +121,7 @@ export interface IRegisteredApiSchema {
   method: string;
   path: string;
   description?: string;
+  agent?: AgentToolMeta;
   meta?: Record<string, unknown>;
   request_schema?: AnySchemaObject;
   response_schema?: AnySchemaObject;
@@ -273,8 +283,10 @@ export interface IAdminForthDataSourceConnector {
   /**
    * Function to setup client connection to database.
    * @param url URL to database. Examples: clickhouse://demo:demo@localhost:8125/demo
+   * @param options Optional connection options. `recovery` mirrors the dataSource
+   *   `connectionRecovery` flag (defaults to true when omitted).
    */
-  setupClient(url: string): Promise<void>;
+  setupClient(url: string, options?: { recovery?: boolean }): Promise<void>;
   
   /**
    * Function to get all tables from database.
@@ -1245,6 +1257,19 @@ export type AdminForthDataSource = {
     * - SQLite: `sqlite://<path>`
     */
   url: string,
+
+  /**
+   * Controls how the connector reacts to a dropped database connection.
+   * Currently honored by the PostgreSQL connector.
+   *
+   * - `true` (default): self-heal mode. The connection pool recovers automatically — when an
+   *   idle connection dies (DB restart, failover, network blip, etc.) it is dropped and a fresh
+   *   one is opened on the next query, so the app keeps working without a manual restart.
+   * - `false`: legacy mode. On a connection error the pool is destroyed and recreated after 1s.
+   *   If the outage outlasts that retry the app can be left with a permanently dead pool and
+   *   require a manual restart. Kept only for backward compatibility.
+   */
+  connectionRecovery?: boolean,
 }
 
 type AdminForthPageDeclaration = {
@@ -1444,6 +1469,10 @@ interface AdminForthInputConfigCustomization {
 export interface AdminForthActionInput {
   name: string;
   bulkConfirmationMessage?: string;
+  /**
+   * When true, the bulk confirmation dialog renders in red/danger style.
+   */
+  bulkDangerous?: boolean;
   bulkSuccessMessage?: string;
   showIn?: {
       list?: boolean,
@@ -2356,6 +2385,7 @@ export interface AdminForthResourceColumn extends Omit<AdminForthResourceColumnC
 
 export interface IWebSocketClient {
   id: string;
+  clientId?: string;
   lastPing: number;
   topics: Set<string>;
   adminUser: AdminUser;

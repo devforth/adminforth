@@ -139,8 +139,23 @@ export interface AdminForthBulkActionCommon {
 
   /**
    * Confirmation message which will be displayed to user before action is executed.
+   * String value is shown as the dialog title without any message under it.
+   * Use object form to explicitly set a message (e.g. "This process is irreversible.")
+   * and/or button labels. `{count}` placeholder in message will be replaced with the
+   * number of selected records, pluralization is supported via `|` separator.
    */
-  confirm?: string,
+  confirm?: string | {
+    title?: string,
+    message?: string,
+    yes?: string,
+    no?: string,
+  },
+
+  /**
+   * When true, the confirmation dialog renders in red/danger style.
+   * Use for destructive bulk actions like delete.
+   */
+  dangerous?: boolean,
 
   /**
    * Success message which will be displayed to user after action is executed.
@@ -998,6 +1013,11 @@ export interface AdminForthResourceColumnInputCommon {
   listSticky?: boolean;
 
   /**
+   * Custom CSS class applied to the column in list view header and cells.
+   */
+  listCssClass?: string;
+
+  /**
    * Show field only if certain conditions are met.
    */
   showIf?: Predicate;
@@ -1097,8 +1117,16 @@ export interface AdminForthConfigMenuItem {
 
   /**
    * Label for menu item which will be displayed in the admin panel.
+   * Can be a static string or a callback which receives the current admin user
+   * and returns the label dynamically.
+   *
+   * Example:
+   *
+   * ```ts
+   * label: (adminUser) => adminUser.dbUser.role === 'superadmin' ? 'Dashboard (CRS)' : 'Dashboard',
+   * ```
    */
-  label?: string,
+  label?: string | ((user: AdminUser, adminForth: IAdminForth) => Promise<string> | string),
 
   /**
    * Icon for menu item which will be displayed in the admin panel.

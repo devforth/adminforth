@@ -209,6 +209,24 @@ export function getComponentNameFromPath(filePath) {
 export function listify(param?: Array<Function>) {
   return param || [];
 }
+export function parseLooseJson(input: string): any {
+  try {
+    return JSON.parse(input);
+  } catch {
+  }
+
+  const keywords = ['true', 'false', 'null'];
+  const normalized = input
+    .replace(/([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g, '$1"$2"$3')
+    .replace(/(:\s*)([A-Za-z_$][\w$]*)(?=\s*[,}\]])/g, (match, before, word) =>
+      keywords.includes(word) ? match : `${before}"${word}"`
+    )
+    .replace(/([\[,]\s*)([A-Za-z_$][\w$]*)(?=\s*[,\]])/g, (match, before, word) =>
+      keywords.includes(word) ? match : `${before}"${word}"`
+    );
+
+  return JSON.parse(normalized);
+}
 
 export function deepMerge(target, source) {
   if (typeof target !== 'object' || target === null) {

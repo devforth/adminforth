@@ -63,10 +63,18 @@ export async function startBulkAction(actionId: string, resource: AdminForthReso
   const { confirm, alert } = useAdminforth();
 
   if (action?.confirm) {
-    const confirmed = await confirm({
-      title: action.confirm,
-      message: t('Deleting {count} item. This process is irreversible. | Deleting {count} items. This process is irreversible.', { count: checkboxes.value.length }),
-    });
+    const confirmed = await confirm(
+      typeof action.confirm === 'string'
+        ? {
+            title: action.confirm,
+            dangerous: action.dangerous ?? false,
+          }
+        : {
+            ...action.confirm,
+            message: action.confirm.message && t(action.confirm.message, { count: checkboxes.value.length }),
+            dangerous: action.dangerous ?? false,
+          }
+    );
     if (!confirmed) {
       return;
     }

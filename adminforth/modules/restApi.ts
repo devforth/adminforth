@@ -20,7 +20,7 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
@@ -648,6 +648,24 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     this.adminforth = adminforth;
   }
 
+  private normalizeJsonColumns(resource: AdminForthResource, record: any): string | null {
+    for (const column of resource.columns) {
+      if (
+        column.type === AdminForthDataTypes.JSON &&
+        !column.isArray?.enabled &&
+        typeof record[column.name] === 'string' &&
+        record[column.name].trim() !== ''
+      ) {
+        try {
+          record[column.name] = parseLooseJson(record[column.name]);
+        } catch (e) {
+          return `Field "${column.name}" contains invalid JSON: ${e.message}`;
+        }
+      }
+    }
+    return null;
+  }
+
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
@@ -947,7 +965,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           if (menuItem.label) {
             translateRoutines.push(
               (async () => {
-                menuItem.label = await tr(menuItem.label, `menu.${menuItem.itemId}`);
+                const rawLabel = typeof menuItem.label === 'function' ? await menuItem.label(adminUser, this.adminforth) : menuItem.label;
+                menuItem.label = await tr(rawLabel, `menu.${menuItem.itemId}`);
               })()
             );
           }
@@ -1117,7 +1136,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             translateRoutines[`bulkAction${i}`] = tr(action.label, `resource.${resource.resourceId}`);
           }
           if (action.confirm) {
-            translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+            if (typeof action.confirm === 'string') {
+              translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+            } else {
+              Object.entries(action.confirm).forEach(([key, value]: [string, string]) => {
+                if (value) {
+                  translateRoutines[`bulkActionConfirm${i}_${key}`] = tr(value, `resource.${resource.resourceId}`);
+                }
+              });
+            }
           }
         });
 
@@ -1218,7 +1245,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 (action, i) => ({
                   ...action,
                   label: action.label ? translated[`bulkAction${i}`] : action.label,
-                  confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
+                  confirm: !action.confirm ? action.confirm : (
+                    typeof action.confirm === 'string'
+                      ? translated[`bulkActionConfirm${i}`]
+                      : Object.fromEntries(
+                          Object.entries(action.confirm).map(([key, value]) => [
+                            key,
+                            value ? translated[`bulkActionConfirm${i}_${key}`] : value,
+                          ])
+                        )
+                  ),
                 })
               ),
               actions: allowedCustomActions.map(({ bulkHandler, action: actionFn, ...rest }) => ({
@@ -1933,6 +1969,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         method: 'POST',
         path: '/create_record',
       description: 'Creates a new record in the specified resource. The endpoint validates create permissions, required fields, hidden or backend-only field rules, polymorphic foreign keys, and resource hooks before persisting and returning the created primary key.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: createRecordRequestSchema,
       response_schema: createRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
@@ -2058,6 +2097,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 record[column.foreignResource.polymorphicOn] = Object.keys(targetData).find((tdk) => targetData[tdk].length);
               }
             }
+            const jsonError = this.normalizeJsonColumns(resource, record);
+            if (jsonError) {
+              return { error: jsonError, ok: false };
+            }
 
             const createRecordResponse = await this.adminforth.createResourceRecord({ 
               resource, record, adminUser, response, 
@@ -2081,9 +2124,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     });
     server.endpoint({
-        method: 'POST',
-        path: '/update_record',
+      method: 'POST',
+      path: '/update_record',
       description: 'Updates an existing record by primary key. The endpoint validates edit permissions, current record existence, hidden, backend-only, and read-only field rules, polymorphic foreign keys, and resource hooks before saving changes.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: updateRecordRequestSchema,
       response_schema: updateRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
@@ -2208,6 +2254,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
             
+            const jsonError = this.normalizeJsonColumns(resource, record);
+            if (jsonError) {
+              return { error: jsonError, ok: false };
+            }
             const { error } = await this.adminforth.updateResourceRecord({ 
               resource, updates: record, adminUser, oldRecord, recordId, response, 
               extra: { body, query, headers, cookies, requestUrl, response } 
@@ -2222,9 +2272,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     });
     server.endpoint({
-        method: 'POST',
-        path: '/delete_record',
+      method: 'POST',
+      path: '/delete_record',
       description: 'Deletes an existing record by primary key. The endpoint validates delete permissions, loads the current record, executes configured cascade child deletion, and then removes the record.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: deleteRecordRequestSchema,
       response_schema: deleteRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
@@ -2311,6 +2364,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/start_custom_action',
       description: 'Executes a custom resource action for a single record. The endpoint validates the resource, action existence, and action permissions, then either returns a redirect URL or executes the action handler and returns its result together with action context.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: startCustomActionRequestSchema,
       response_schema: startCustomActionResponseSchema,
       handler: async ({ body, adminUser, tr, cookies, response, headers }) => {
@@ -2367,6 +2423,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/start_custom_bulk_action',
       description: 'Executes a custom resource action in bulk mode for multiple records. The endpoint validates the resource, action existence, bulk handler availability, and permissions, then runs the bulk handler and returns its result together with action context.',
+      agent: {
+        isDangerous: true,
+      },
       request_schema: startCustomBulkActionRequestSchema,
       response_schema: startCustomBulkActionResponseSchema,
       handler: async ({ body, adminUser, tr, response, cookies, headers }) => {
