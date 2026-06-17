@@ -476,6 +476,48 @@ plugins: [
 ]
 ```
 
+### Clerk Adapter
+
+Install Adapter:
+
+```bash
+pnpm install @adminforth/clerk-oauth-adapter --save
+```
+
+1. Go to the [Clerk Dashboard](https://dashboard.clerk.com) and open your application.
+2. In the left sidebar, go to **Configure** → **OAuth Applications**.
+3. Click **Add OAuth Application**, give it a name.
+4. In **Redirect URIs**, add `https://your-domain/oauth/callback` (and `http://localhost:3500/oauth/callback` for local development). Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
+5. Copy **Client ID** and **Client Secret**.
+6. To find your **Frontend API URL**: go to **Configure** → **API Keys** — it is listed under **Frontend API** (looks like `https://xxx-yyy-00.clerk.accounts.dev`).
+7. Add the credentials to your `.env` file:
+
+```bash
+CLERK_CLIENT_ID=your_clerk_client_id
+CLERK_CLIENT_SECRET=your_clerk_client_secret
+CLERK_DOMAIN=https://your-app.clerk.accounts.dev
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterClerkOauth2 from '@adminforth/clerk-oauth-adapter';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterClerkOauth2({
+        clientID: process.env.CLERK_CLIENT_ID as string,
+        clientSecret: process.env.CLERK_CLIENT_SECRET as string,
+        domain: process.env.CLERK_DOMAIN as string,
+      }),
+    ],
+  }),
+]
+```
+
 ### Need custom provider?
 
 Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-oauth-adapter-google) and adjust it to your needs. 
