@@ -35,7 +35,7 @@
         @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"
         data-tooltip-target="tooltip-remove-all"
-        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText af-button-shadow 
+        class="flex gap-1  items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText af-button-shadow 
           focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder h-[2.125rem]
           hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 
           focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
@@ -79,7 +79,7 @@
           <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 
           via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none
            focus:ring-purple-300 dark:focus:ring-purple-800 
-            font-medium rounded-sm text-xs px-1 ml-1 text-center ">
+            font-medium rounded-default text-xs px-1 ml-1 text-center ">
             {{ action.badge }}            
           </div>
         </button>
@@ -125,7 +125,7 @@
       </RouterLink>
 
       <button
-        class="af-filter-button flex gap-1 items-center py-1 h-[2.125rem] px-3 me-2 af-button-shadow text-sm font-medium 
+        class="af-filter-button flex gap-1 items-center py-1 h-[2.125rem] px-3 af-button-shadow text-sm font-medium 
           text-lightListViewButtonText transition-all focus:outline-none bg-lightListViewButtonBackground rounded border 
           border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
           focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
@@ -362,6 +362,7 @@ async function startCustomBulkActionInner(actionId: string | number) {
     resourceId: route.params.resourceId as string,
     recordIds: checkboxes.value,
     confirmMessage: action?.bulkConfirmationMessage,
+    confirmDangerous: action?.bulkDangerous ?? false,
     resource: coreStore.resource!,
     setLoadingState: (loading: boolean) => {
       customActionLoadingStates.value[actionId] = loading;

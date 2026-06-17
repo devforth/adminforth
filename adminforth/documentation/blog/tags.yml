@@ -87,3 +87,13 @@ database:
   label: Database
   permalink: /database
   description: Databases store the business data that AdminForth exposes through resources, permissions, workflows, and agent tooling.
+
+helmfile:
+  label: Helmfile
+  permalink: /helmfile
+  description: Helmfile is a declarative tool for managing multiple Helm charts, making it easier to deploy and manage complex Kubernetes applications.
+
+cloudflare:
+  label: Cloudflare
+  permalink: /cloudflare
+  description: Cloudflare is a web infrastructure and security company that provides a range of services for websites and applications.

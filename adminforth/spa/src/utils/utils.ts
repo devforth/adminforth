@@ -13,6 +13,7 @@ import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
 import { reconnect } from '@/websocket';
+import { ADMINFORTH_CLIENT_ID_HEADER, getAdminForthClientId } from './clientId';
 
 
 
@@ -133,6 +134,7 @@ export async function callApi({path, method, body, headers, silentError = false,
     headers: {
       'Content-Type': 'application/json',
       'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+      [ADMINFORTH_CLIENT_ID_HEADER]: getAdminForthClientId(),
       ...headers
     },
     body: JSON.stringify(body),
@@ -792,6 +794,7 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
         messageHtml,
         yes: t('Leave without saving'),
         no: t('Stay and continue'),
+        dangerous: true,
       });
 
       return answer;
@@ -875,6 +878,7 @@ export async function executeCustomBulkAction({
   onError,
   setLoadingState,
   confirmMessage,
+  confirmDangerous,
   resource,
 }: {
   actionId: string | number | undefined,
@@ -885,6 +889,7 @@ export async function executeCustomBulkAction({
   onError?: (error: string) => void,
   setLoadingState?: (loading: boolean) => void,
   confirmMessage?: string,
+  confirmDangerous?: boolean,
   resource?: AdminForthResourceFrontend,
 }): Promise<any> {
   if (!recordIds || recordIds.length === 0) {
@@ -898,6 +903,7 @@ export async function executeCustomBulkAction({
     const { confirm } = useAdminforth();
     const confirmed = await confirm({
       message: confirmMessage,
+      dangerous: confirmDangerous ?? false,
     });
     if (!confirmed) {
       return { cancelled: true };

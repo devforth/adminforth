@@ -9,6 +9,7 @@ import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapte
 import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapter-google/index.js';
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
+import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
 import CompletionAdapterOpenAIResponses from '../../adapters/adminforth-completion-adapter-openai-responses/index.js';
@@ -215,49 +216,55 @@ export default {
         },
       },
     }),
-    new AdminForthAgent({
-      audioAdapter: new OpenAIAudioAdapter({
-        apiKey: process.env.OPENAI_API_KEY,
+    ...(process.env.OPENAI_API_KEY ? 
+    [
+      new AdminForthAgent({
+        audioAdapter: new OpenAIAudioAdapter({
+          apiKey: process.env.OPENAI_API_KEY,
+        }),
+        placeholderMessages: async ({ adminUser, httpExtra }) => {
+          return [
+            "What is a cars count in SQLite",
+            "Build average car price by days chart in SQLite",
+          ]
+        },
+        modes: [
+          {
+            name: 'Balanced',
+            completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'medium'),
+          },
+          {
+            name: 'Fast',
+            completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'low'),
+          },
+          {
+            name: 'Smart Thinking',
+            completionAdapter: createAgentCompletionAdapter('gpt-5.4', 'xhigh'),
+          },
+        ],
+        maxTokens: 10000,
+        reasoning: 'none',
+        sessionResource: {
+          resourceId: 'sessions',
+          idField: 'id',
+          titleField: 'title',
+          turnsField: 'turns',
+          askerIdField: 'asker_id',
+          createdAtField: 'created_at',
+        },
+        turnResource: {
+          resourceId: 'turns',
+          idField: 'id',
+          sessionIdField: 'session_id',
+          createdAtField: 'created_at',
+          promptField: 'prompt',
+          responseField: 'response',
+          debugField: 'dubbug',
+        },
       }),
-      placeholderMessages: async ({ adminUser, httpExtra }) => {
-        return [
-          "What is a cars count in SQLite",
-          "Build average car price by days chart in SQLite",
-        ]
-      },
-      modes: [
-        {
-          name: 'Balanced',
-          completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'medium'),
-        },
-        {
-          name: 'Fast',
-          completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'low'),
-        },
-        {
-          name: 'Smart Thinking',
-          completionAdapter: createAgentCompletionAdapter('gpt-5.4', 'xhigh'),
-        },
-      ],
-      maxTokens: 10000,
-      reasoning: 'none',
-      sessionResource: {
-        resourceId: 'sessions',
-        idField: 'id',
-        titleField: 'title',
-        turnsField: 'turns',
-        askerIdField: 'asker_id',
-        createdAtField: 'created_at',
-      },
-      turnResource: {
-        resourceId: 'turns',
-        idField: 'id',
-        sessionIdField: 'session_id',
-        createdAtField: 'created_at',
-        promptField: 'prompt',
-        responseField: 'response',
-        debugField: 'dubbug',
-      },
+    ] : []),
+    new DashboardPlugin({
+      dashboardConfigsResourceId: 'dashboard_configs',
     }),
   ],
   hooks: {

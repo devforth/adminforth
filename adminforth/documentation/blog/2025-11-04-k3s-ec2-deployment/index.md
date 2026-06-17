@@ -205,7 +205,7 @@ resource "aws_instance" "ec2_instance" {
   }
 
   root_block_device {
-    volume_size = 10 // Size in GB for root partition
+    volume_size = 20 // Size in GB for root partition
     volume_type = "gp2"
 
     # Even if the instance is terminated, the volume will not be deleted, delete it manually if needed

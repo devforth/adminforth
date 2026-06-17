@@ -10,7 +10,11 @@ export default {
     listTableClickUrl: async (record: any, _adminUser: any, resource: any) => `/resource/${resource.resourceId}/show/${record.id}`,
   },
   columns: [
-    ...cars_sl.columns.filter(c => c.name !== "mileage" && c.name !== "photos" && c.name !== "generated_promo_picture"),
+    ...cars_sl.columns
+      .filter(c => c.name !== "mileage" && c.name !== "photos" && c.name !== "generated_promo_picture")
+      .map((column) => column.name === 'model'
+        ? { ...column, listCssClass: 'text-lightPrimary dark:text-darkPrimary' }
+        : column),
     {
       name: "mileage",
       type: "number",

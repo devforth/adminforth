@@ -250,7 +250,11 @@ export default class ConfigValidator implements IConfigValidator {
     bulkActions.push({
       label: `Delete checked`,
       icon: 'flowbite:trash-bin-outline',
-      confirm: 'Are you sure you want to delete selected items?',
+      confirm: {
+        title: 'Are you sure you want to delete selected items?',
+        message: 'Deleting {count} item. This process is irreversible. | Deleting {count} items. This process is irreversible.',
+      },
+      dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
       action: async ({ selectedIds, adminUser, response }) => {
         const connector = this.adminforth.connectors[res.dataSource];
@@ -1250,6 +1254,7 @@ export default class ConfigValidator implements IConfigValidator {
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
     }
+
 
     this.adminforth.config = newConfig as AdminForthConfig;
   }
