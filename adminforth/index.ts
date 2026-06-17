@@ -503,7 +503,7 @@ class AdminForth implements IAdminForth {
 ║                                                                            
 ╚════════════════════════════════════════════════════════════════════════════
       `);
-    }
+    } 
   }
 
   async discoverDatabases() {
