@@ -1,3 +1,6 @@
+---
+description: "Guide to tuning standard AdminForth list, show, edit, and create pages with field groups, sorting, sticky columns, conditional display, defaults, and layout options."
+---
 
 # Standard pages tuning
 
@@ -138,6 +141,25 @@ export default {
 ```
 
 >⚠️ Please note that sticky columns can only be applied to one column per resource.
+
+### Custom list column class
+
+You can add a custom CSS class to any list column with `listCssClass`. AdminForth applies it to both the header cell and the data cells for that column.
+Static Tailwind utility classes used here are collected into the generated Tailwind safelist during bundling, so you can use normal utility strings in the resource config.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+    {
+      name: "price",
+      listCssClass: "text-right font-semibold min-w-10",
+    },
+    ...
+  ]
+}
+```
 
 ### Conditional display
 You can conditionally display columns in forms and views based on the values of other fields in the current record using the `showIf` property. This enables dynamic layouts that automatically adapt to user input, creating more intuitive and context-aware interfaces.
@@ -315,6 +337,48 @@ export default {
     }
   ]
 ```
+
+### List Page Size Options
+You can define available pagination sizes using options.listPageSizeOptions. This allows users to choose how many records they want to see per page in the list view.
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+        listPageSize: 10,
+        // listPageSizeOptions can be a static array
+        //diff-add
+        listPageSizeOptions: [10, 20, 50],
+        // OR a function for dynamic options based on user role
+        //diff-add
+        listPageSizeOptions: ({ adminUser }) => {
+          //diff-add
+          if (adminUser?.dbUser?.role === 'superadmin') {
+            //diff-add
+            return [50, 100, 500];
+            //diff-add
+          }
+          //diff-add
+          return [10, 20, 50];
+          //diff-add
+        },
+      }
+    }
+  ]
+```
+#### How it works
+- listPageSize defines the default number of records per page when the list is opened.
+- listPageSizeOptions defines the available page size options shown to the user.
+
+For example: listPageSizeOptions: [10, 20, 50] will allow switching between 10 / 20 / 50 records per page.
+
+#### UI behavior
+Page size switching is implemented via a select dropdown (select input) in the table pagination controls.
+- User opens the select
+- Chooses a value (e.g. 20)
+- Table reloads with the new page size
+> ☝️Notes 
+If `listPageSizeOptions` is not provided (or resolves to an empty array), the page size select is not shown. The selected value updates the table immediately and triggers a data refetch. Use `listPageSize` to define the initial number of records per page, and `listPageSizeOptions` to define which page sizes the user can switch between.
 
 ### Virtual scroll
 

@@ -1,3 +1,7 @@
+---
+description: "Guide to replacing default field rendering with custom Vue components for list, show, create, edit, and filter views, including props and third-party packages."
+---
+
 # Custom record field rendering
 
 ## Customizing how AdminForth renders the cells with record values

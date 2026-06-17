@@ -1,4 +1,4 @@
-import carsResourseTemplate from "../../../dev-demo/resources/carsResourseTemplate.js";
+import carsResourseTemplate from "../../../dev-demo/resources/cars_resources/carsResourseTemplate.js";
 
 
 export default {

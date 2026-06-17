@@ -82,6 +82,7 @@ class CodeInjector implements ICodeInjector {
   adminforth: AdminForth;
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
+  publicFoldersToSync: { [key: string]: string } = {};
   devServerPort: number = null;
 
   spaTmpPath(): string {
@@ -93,25 +94,37 @@ class CodeInjector implements ICodeInjector {
   }
 
   async checkIconNames(icons: string[]) {
+    process.env.HEAVY_DEBUG && console.log(`Checking icon names: ${icons.join(', ')}`);
     const uniqueIcons = Array.from(new Set(icons));
+    process.env.HEAVY_DEBUG && console.log(`Unique icons: ${uniqueIcons.join(', ')}`);
     const collections = new Set(icons.map((icon) => icon.split(':')[0]));
+    process.env.HEAVY_DEBUG && console.log(`Icon collections: ${Array.from(collections).join(', ')}`);
     const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
-
+    process.env.HEAVY_DEBUG && console.log(`Icon package names: ${iconPackageNames.join(', ')}`);
     const iconPackages = (
-      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), name: pkg})))
+      await Promise.allSettled(
+        iconPackageNames.map(
+          async (pkg) => (
+            { 
+              pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg, 'index.js')).href), 
+              name: pkg
+            }
+          )
+        )
+      )
     );
-
+    process.env.HEAVY_DEBUG && console.log(`Icon packages load results: ${iconPackages.map(res => res.status === 'fulfilled' ? res.value.name : 'error:' + res.reason).join(', ')}`);
     const loadedIconPackages = iconPackages.filter(isFulfilled).map((res) => res.value).reduce((acc, { pkg, name }) => {
       acc[name.slice(`@iconify-prerendered/vue-`.length)] = pkg;
       return acc;
     }, {});
-
+    process.env.HEAVY_DEBUG && console.log(`Loaded icon packages: ${Object.keys(loadedIconPackages).join(', ')}`);
     uniqueIcons.forEach((icon) => {
       const [ collection, iconName ] = icon.split(':');
       const PascalIconName = 'Icon' + iconName.split('-').map((part, index) => {
         return part[0].toUpperCase() + part.slice(1);
       }).join('');
-
+      process.env.HEAVY_DEBUG && console.log(`Checking icon: ${icon}, collection: ${collection}, iconName: ${iconName}, PascalIconName: ${PascalIconName}`);
       if (!loadedIconPackages[collection]) {
         throw new Error(`Collection ${collection} not found`);
       }
@@ -125,6 +138,25 @@ class CodeInjector implements ICodeInjector {
   registerCustomComponent(filePath: string): void {
     const componentName = getComponentNameFromPath(filePath);
     this.allComponentNames[filePath] = componentName;
+  }
+
+  collectTailwindSafelist(): string[] {
+    const classes = new Set<string>();
+
+    for (const resource of this.adminforth.config.resources) {
+      for (const column of resource.columns || []) {
+        if (!column.listCssClass) {
+          continue;
+        }
+
+        column.listCssClass
+          .split(/\s+/)
+          .filter(Boolean)
+          .forEach((className) => classes.add(className));
+      }
+    }
+
+    return Array.from(classes);
   }
 
   cleanup() {
@@ -145,7 +177,11 @@ class CodeInjector implements ICodeInjector {
   }
 
 
-  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+  public async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    if (!dir) {
+      return false;
+    }
+
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     try {
@@ -327,6 +363,17 @@ class CodeInjector implements ICodeInjector {
     return spaDir;
   }
 
+  registerPluginPublicFoldersToSync() {
+    this.publicFoldersToSync = {};
+
+    for (const plugin of this.adminforth.activatedPlugins) {
+      const pluginPublicFolderPath = path.join(plugin.customFolderPath, 'public');
+      if (fs.existsSync(pluginPublicFolderPath)) {
+        this.publicFoldersToSync[pluginPublicFolderPath] = `./plugins/${plugin.className}/`;
+      }
+    }
+  }
+
   async updatePartials({ filesUpdated }: { filesUpdated: string[] }) {
     const spaDir = this.getSpaDir();
 
@@ -441,7 +488,8 @@ class CodeInjector implements ICodeInjector {
     }
 
     registerCustomPages(this.adminforth.config);
-    collectAssetsFromMenu(this.adminforth.config.menu);
+    const menuWithContributions = await this.adminforth.getMenuWithContributions();
+    collectAssetsFromMenu(menuWithContributions);
     registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
@@ -477,6 +525,8 @@ class CodeInjector implements ICodeInjector {
       this.srcFoldersToSync[customCompAbsPath] = './'
     }
 
+    this.registerPluginPublicFoldersToSync();
+
     // if this.adminforth.config.customization.favicon is set, copy it to assets
     const customFav = this.adminforth.config.customization?.favicon;
     if (customFav) {
@@ -498,6 +548,16 @@ class CodeInjector implements ICodeInjector {
         dereference: true,
         // exclude if node_modules comes after /custom/ in path
         filter: (src) => !src.includes(path.join('custom', 'node_modules')),
+      });
+    }
+
+    for (const [src, dest] of Object.entries(this.publicFoldersToSync)) {
+      const to = path.join(this.spaTmpPath(), 'public', dest);
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ publicFoldersToSync: fsExtra.copy from ${src}, ${to}`);
+
+      await fsExtra.copy(src, to, {
+        recursive: true,
+        dereference: true,
       });
     }
 
@@ -657,9 +717,11 @@ class CodeInjector implements ICodeInjector {
     // generate tailwind extend styles
     const stylesGenerator = new StylesGenerator(this.adminforth.config.customization?.styles); 
     const  stylesText = JSON.stringify(stylesGenerator.mergeStyles(), null, 2).slice(1, -1);
+    const safelistText = JSON.stringify(this.collectTailwindSafelist(), null, 2).slice(1, -1);
     let tailwindConfigPath = path.join(this.spaTmpPath(), 'tailwind.config.js');
     let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
     tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
+    tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND SAFELIST */', safelistText);
     await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     
 
@@ -699,10 +761,10 @@ class CodeInjector implements ICodeInjector {
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
-    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
+    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(menuWithContributions);
     if (!homepageMenuItem) {
       // find first item with path or resourceId. If we face a menu item with children earlier then path/resourceId, we should search in children
-      homepageMenuItem = await findFirstMenuItemWithResource(this.adminforth.config.menu);
+      homepageMenuItem = await findFirstMenuItemWithResource(menuWithContributions);
     }
     if (!homepageMenuItem) {
       throw new Error('No homepage found in menu and no menu item with path/resourceId found. AdminForth can not generate routes');
@@ -710,7 +772,7 @@ class CodeInjector implements ICodeInjector {
 
     let homePagePath = homepageMenuItem.path || `/resource/${homepageMenuItem.resourceId}`;
     if (!homePagePath) {
-      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+      homePagePath=menuWithContributions.filter((mi)=>mi.path)[0]?.path || `/resource/${menuWithContributions.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
 
     routes += `{
@@ -860,7 +922,11 @@ class CodeInjector implements ICodeInjector {
     this.allWatchers.push(watcher);
   }
 
-  async watchCustomComponentsForCopy({ customComponentsDir, destination }) {
+  async watchCustomComponentsForCopy({ customComponentsDir, destination, targetRoot = path.join('src', 'custom') }: {
+    customComponentsDir: string,
+    destination: string,
+    targetRoot?: string,
+  }) {
     if (!customComponentsDir) {
       return;
     }
@@ -917,7 +983,7 @@ class CodeInjector implements ICodeInjector {
         process.env.HEAVY_DEBUG && console.log(`🔎 destination ${destination}`);
         const isFile = fs.lstatSync(fileOrDir).isFile();
         if (isFile) {
-          const destPath = path.join(this.spaTmpPath(), 'src', 'custom', destination, relativeFilename);
+          const destPath = path.join(this.spaTmpPath(), targetRoot, destination, relativeFilename);
           process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
           await fsExtra.copy(fileOrDir, destPath);
           return;
@@ -1031,6 +1097,13 @@ class CodeInjector implements ICodeInjector {
           await this.watchCustomComponentsForCopy({ 
             customComponentsDir: src,
             destination: dest,
+          });
+        }),
+        ...Object.entries(this.publicFoldersToSync).map(async ([src, dest]) => {
+          await this.watchCustomComponentsForCopy({
+            customComponentsDir: src,
+            destination: dest,
+            targetRoot: 'public',
           });
         }),
       ]);
@@ -1149,7 +1222,7 @@ class CodeInjector implements ICodeInjector {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
-      };
+      }; 
       
       const nodeBinary = process.execPath;
       const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);

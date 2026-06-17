@@ -23,6 +23,7 @@ export default function carsAdminuserResourseTemplate(resourceId: string, carsRe
       },
       {
         name: 'adminuserId',
+        type: AdminForthDataTypes.STRING,
         foreignResource: { 
           resourceId: 'adminuser', 
           searchableFields: ['email'], 
@@ -31,6 +32,7 @@ export default function carsAdminuserResourseTemplate(resourceId: string, carsRe
       },
       {
         name: 'carId',
+        type: AdminForthDataTypes.STRING,
         foreignResource: { 
           resourceId: carsResourceId,
           searchableFields: ['model'],

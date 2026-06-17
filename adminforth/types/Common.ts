@@ -66,7 +66,7 @@ export enum ActionCheckSource {
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
-  BulkActionRequest = 'bulkActionRequest',
+  BulkActionRequest = 'bulkActionRequest',  // @deprecated beacuse whole bulk action is deprecated in favor of custom actions, never use this value in new code
   CustomActionRequest = 'customActionRequest',
 }
 
@@ -139,8 +139,23 @@ export interface AdminForthBulkActionCommon {
 
   /**
    * Confirmation message which will be displayed to user before action is executed.
+   * String value is shown as the dialog title without any message under it.
+   * Use object form to explicitly set a message (e.g. "This process is irreversible.")
+   * and/or button labels. `{count}` placeholder in message will be replaced with the
+   * number of selected records, pluralization is supported via `|` separator.
    */
-  confirm?: string,
+  confirm?: string | {
+    title?: string,
+    message?: string,
+    yes?: string,
+    no?: string,
+  },
+
+  /**
+   * When true, the confirmation dialog renders in red/danger style.
+   * Use for destructive bulk actions like delete.
+   */
+  dangerous?: boolean,
 
   /**
    * Success message which will be displayed to user after action is executed.
@@ -316,7 +331,8 @@ export type FieldGroup = {
 
 export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
   id: string;
-  hasBulkHandler?: boolean;
+  bulkHandler?: boolean;
+  allowed: boolean;
 }
 
 export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
@@ -330,7 +346,7 @@ export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsComm
   bulkActions?: AdminForthBulkActionFront[],
 }
 
-export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options'> {
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
   options: AdminForthOptionsForFrontend;
 }
 
@@ -471,7 +487,13 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
-      
+
+      /**
+        * Available page size options for list view, provided as an array of page sizes
+        * or a function returning them. When set together with `listPageSize`, the page
+        * size should be one of the values returned here.
+        */
+      listPageSizeOptions?: number[] | ((args: { adminUser: any, adminforth: any }) => number[] | Promise<number[]>);      
       /**
        * Whether to use virtual scroll in list view.
        */
@@ -983,6 +1005,11 @@ export interface AdminForthResourceColumnInputCommon {
   listSticky?: boolean;
 
   /**
+   * Custom CSS class applied to the column in list view header and cells.
+   */
+  listCssClass?: string;
+
+  /**
    * Show field only if certain conditions are met.
    */
   showIf?: Predicate;
@@ -1082,8 +1109,16 @@ export interface AdminForthConfigMenuItem {
 
   /**
    * Label for menu item which will be displayed in the admin panel.
+   * Can be a static string or a callback which receives the current admin user
+   * and returns the label dynamically.
+   *
+   * Example:
+   *
+   * ```ts
+   * label: (adminUser) => adminUser.dbUser.role === 'superadmin' ? 'Dashboard (CRS)' : 'Dashboard',
+   * ```
    */
-  label?: string,
+  label?: string | ((user: AdminUser, adminForth: IAdminForth) => Promise<string> | string),
 
   /**
    * Icon for menu item which will be displayed in the admin panel.
@@ -1164,7 +1199,7 @@ export interface AdminForthConfigMenuItem {
    * Optional callback which will be called before rendering the menu for each item.
    * Result of callback if not null will be used as a small badge near the menu item.
    */
-  badge?: string | number |  ((user: AdminUser) => Promise<string> | string | Promise<number> | number),
+  badge?: string | number | ((user: AdminUser, adminForth: IAdminForth) => Promise<string | number> | string | number),
 
   /**
    * Tooltip shown on hover for badge
@@ -1177,9 +1212,51 @@ export interface AdminForthConfigMenuItem {
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
   itemId?: string,  // todo move to runtime type
+
+
+  /**
+   * If set, menu item will be rendered as external link with this URL. Supported for AdminForthMenuTypes.PAGE and AdminForthMenuTypes.RESOURCE only!
+   * If URL starts with `http://` or `https://`, it will be treated as absolute URL. Otherwise, it will be treated as relative to admin panel base URL.
+   * Example of absolute URL:
+   * 
+   * ```ts
+   * url: 'https://google.com',
+   * ```
+   * 
+   * Example of relative URL:
+   * 
+   * ```ts
+   * url: '/custom-page',
+   * ```
+   */
   
   url?: string
+
+  /**
+   * Open menu item link in a new browser tab.
+   */
+  isOpenInNewTab?: boolean
 }
+
+export type AdminForthMenuTarget =
+  | string
+  | {
+    itemId?: string,
+    resourceId?: string,
+    path?: string,
+  };
+
+export type AdminForthMenuContribution = {
+  item: AdminForthConfigMenuItem,
+  placement?:
+    | { position: 'first' | 'last' }
+    | { before: AdminForthMenuTarget }
+    | { after: AdminForthMenuTarget },
+  order?: number,
+};
+
+export type MenuTarget = AdminForthMenuTarget;
+export type MenuContribution = AdminForthMenuContribution;
 
 
 export interface ResourceVeryShort {

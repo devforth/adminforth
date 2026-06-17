@@ -5,13 +5,13 @@
       class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
       @click="toggleMenu"
     >
-      <IconDotsHorizontalOutline class="w-6 h-6 text-lightPrimary dark:text-darkPrimary" />
+      <IconDotsHorizontalOutline class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150" />
     </div>
     <teleport to="body">
       <div
         v-if="showMenu"
         ref="menuRef"
-        class="z-40 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
+        class="af-list-actions-three-dots z-40 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
         :style="menuStyles"
       >
         <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('show'))">
@@ -70,7 +70,7 @@
                 <component
                   v-if="action.icon"
                   :is="getIcon(action.icon)"
-                  class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"
+                  class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
                 />
                 {{ $t(action.name) }}
               </component>               

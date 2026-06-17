@@ -1,5 +1,5 @@
 ---
-description: "Learn how to customize the branding and theming of your AdminForth application."
+description: "Guide to customizing AdminForth branding and theming, including logos, titles, sidebar presentation, colors, fonts, and single-theme setups."
 image: "/ogs/branding.png"  # Path to the OG image
 ---
 

@@ -1,3 +1,2 @@
 To run tests:
-1) Run `task start_app`
-2) Run `task run_tests`
+1) Run `task run_tests`

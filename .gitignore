@@ -4,3 +4,4 @@ plugins/*
 adapters/*
 !adapters/README.md
 background-jobs-dbs
+tests/jest_tests/db/

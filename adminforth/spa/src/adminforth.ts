@@ -35,6 +35,9 @@ class FrontendAPI implements FrontendAPIInterface {
   constructor() {
 
     this.menu = {
+      refresh: async () => {
+        console.log('refreshMenu')
+      },
       refreshMenuBadges: () => {
         console.log('refreshMenuBadges')
       }
@@ -118,11 +121,14 @@ class FrontendAPI implements FrontendAPIInterface {
 
   confirm(params: Parameters<FrontendAPIInterface['confirm']>[0]): ReturnType<FrontendAPIInterface['confirm']> {
     return new Promise((resolve, reject) => {
-      this.modalStore.setModalContent({ 
-        content: params.message, 
+      this.modalStore.setModalContent({
+        title: params.title,
+        guardMessage: params.guardMessage,
+        content: params.message,
         contentHTML: params.messageHtml,
         acceptText: params.yes || 'Yes',
-        cancelText: params.no || 'Cancel' 
+        cancelText: params.no || 'Cancel',
+        dangerous: params.dangerous ?? false,
       })
       this.modalStore.onAcceptFunction = resolve
       this.modalStore.onCancelFunction = reject

@@ -2,6 +2,7 @@
   <div>
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
+      id="af-header-nav"
       class="fixed h-14 top-0 z-30 w-full border-b drop-shadow-sm bg-lightNavbar dark:bg-darkNavbar dark:border-darkSidebarDevider"
     >
       <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
@@ -14,7 +15,7 @@
               </svg>
           </button>
         </div>
-        <div class="flex items-center">
+        <div class="flex items-center gap-4">
           <component 
             v-if="coreStore?.adminUser"
             v-for="c in coreStore?.config?.globalInjections?.header || []"
@@ -23,36 +24,38 @@
             :adminUser="coreStore.adminUser"
           />
 
-          <div class="flex items-center ms-3 ">
-            <Tooltip>
-              <IconWifiOff v-if="coreStore.isInternetError" class="blinking-icon w-8 h-8 text-red-500" />
-              <template #tooltip>
-                {{$t('Internet connection lost')}}
-              </template>
-            </Tooltip>
-            <span  
-              v-if="!coreStore.config?.singleTheme"
-              @click="toggleTheme" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
-              <IconMoonSolid class="w-5 h-5 text-blue-300" v-if="coreStore.theme !== 'dark'" />
-              <IconSunSolid class="w-5 h-5 text-yellow-300" v-else />
-            </span>
-            <div>
-              <button 
-                ref="dropdownUserButton"
-                type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                <span class="sr-only">{{ $t('Open user menu') }}</span>
-                  <img 
-                    v-if="coreStore.userAvatarUrl"
-                    class="w-8 h-8 rounded-full object-cover" 
-                    :src="coreStore.userAvatarUrl" 
-                    alt="user photo"
-                  />
-                <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                  <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
-                </svg>
-              </button>
-            </div>
-            <div class="z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
+          <Tooltip v-if="coreStore.isInternetError">
+            <IconWifiOff class="blinking-icon w-8 h-8 text-red-500 hover:scale-110 transition-transform duration-200" />
+            <template #tooltip>
+              {{$t('Internet connection lost')}}
+            </template>
+          </Tooltip>
+
+          <span  
+            v-if="!coreStore.config?.singleTheme"
+            class="flex items-center gap-1 block py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
+            <IconMoonSolid class="w-6 h-6 text-blue-300 hover:scale-110 cursor-pointer transition-transform duration-200" @click="toggleTheme" v-if="coreStore.theme !== 'dark'" />
+            <IconSunSolid class="w-6 h-6 text-yellow-300 hover:scale-110 cursor-pointer transition-transform duration-200" @click="toggleTheme" v-else />
+          </span>
+
+          <div>
+            <button 
+              ref="dropdownUserButton"
+              type="button" class=" hover:scale-110 transition-transform duration-200 flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+              <span class="sr-only">{{ $t('Open user menu') }}</span>
+                <img 
+                  v-if="coreStore.userAvatarUrl"
+                  class="w-8 h-8 rounded-full object-cover" 
+                  :src="coreStore.userAvatarUrl" 
+                  alt="user photo"
+                />
+              <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </div>
+          <Teleport to="body">
+            <div class="af-settings-popup z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
               <div class="px-4 py-3" role="none">
                 <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                   {{ coreStore.userFullname }}
@@ -78,7 +81,7 @@
                 </li>
               </ul>
             </div>
-          </div>
+          </Teleport>
         </div>
       </div>
     </nav>
@@ -134,6 +137,7 @@
     <component
       v-for="c in coreStore?.config?.globalInjections?.everyPageBottom || []"
       :is="getCustomComponent(c)"
+      :adminUser="coreStore.adminUser || null"
       :meta="c.meta"
     />
   </div>
@@ -181,7 +185,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, onBeforeMount } from 'vue';
+import { computed, nextTick, onMounted, ref, watch, onBeforeMount } from 'vue';
 import { RouterView } from 'vue-router';
 import { Dropdown } from 'flowbite'
 import './index.scss'
@@ -308,11 +312,14 @@ watch(route, () => {
 });
 
 
-watch(dropdownUserButton, (dropdownUserButton) => {
+watch(dropdownUserButton, async (dropdownUserButton) => {
   if (dropdownUserButton) {
+    await nextTick();
+    const dropdownUser = document.querySelector('#dropdown-user') as HTMLElement;
+    const dropdownUserTrigger = document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement;
     const dd = new Dropdown(
-      document.querySelector('#dropdown-user') as HTMLElement,
-      document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
+      dropdownUser,
+      dropdownUserTrigger,
     );
     closeUserMenuDropdown = () => {
       dd.hide();
@@ -328,11 +335,14 @@ async function loadPublicConfig() {
 
 // initialize components based on data attribute selectors
 onMounted(async () => {
-  loadMenu(); // run this in async mode
-  loadPublicConfig(); // and this
+  await loadPublicConfig(); // run this in async mode
+  await loadMenu(); // and this
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
-
+  document.documentElement.setAttribute('data-theme', theme.value);
+  menu.refresh = async () => {
+    await coreStore.refreshMenu();
+  }
   menu.refreshMenuBadges = async () => {
     await coreStore.fetchMenuBadges();
   }

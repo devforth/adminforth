@@ -43,9 +43,13 @@
               </div>
             </div>
           </li>
-          <li v-for="action in customActions" :key="action.id">
-            <div class="wrapper"> 
+          <li v-for="(action, i) in customActions" :key="action.id">
+            <div 
+              class="wrapper"                 
+              @click="injectedComponentClick(threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i)"
+            > 
               <component
+                :ref="(el: any) => setComponentRef(el, threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i)"
                 :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
                 :meta="formatComponent(action.customComponent).meta"
                 @callAction="(payload? : Object) => handleActionClick(action, payload)"
@@ -55,7 +59,7 @@
                     <component 
                       v-if="action.icon && !actionLoadingStates[action.id!]" 
                       :is="getIcon(action.icon)" 
-                      class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                      class="w-4 h-4 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
                     />
                     <Spinner
                       v-if="actionLoadingStates[action.id!]"
@@ -79,7 +83,7 @@
                 <component 
                   v-if="action.icon" 
                   :is="getIcon(action.icon)" 
-                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary"
+                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
                 />
                 {{ action.label }}
               </div>
@@ -99,7 +103,6 @@ import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
-import type { AdminForthActionInput } from '@/types/Back';
 import { Spinner } from '@/afcl';
 
 const { list, alert} = useAdminforth();
@@ -133,7 +136,7 @@ function setComponentRef(el: ComponentPublicInstance | null, index: number) {
   }
 }
 
-async function handleActionClick(action: AdminForthActionInput, payload: any) {
+async function handleActionClick(action: AdminForthActionFront, payload: any) {
   list.closeThreeDotsDropdown();
   await executeCustomAction({
     actionId: action.id,
@@ -173,6 +176,7 @@ function startBulkAction(actionId: string) {
 }
 
 async function injectedComponentClick(index: number) {
+  console.log('Injected component click triggered for index:', index);
   const componentRef = threeDotsDropdownItemsRefs.value[index];
   if (componentRef && 'click' in componentRef) {
     (componentRef as any).click?.();

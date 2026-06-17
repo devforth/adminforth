@@ -160,14 +160,15 @@ const csscolors = {
 }
 
 
-export async function getLoginPromptHTML(loginPrompt: string | Function) {
-  if(typeof loginPrompt === 'function') {
-    loginPrompt = await loginPrompt();
-    if (!loginPrompt) {
-      return null;
-    }
+export async function getLoginPromptHTML(
+  loginPrompt: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined,
+): Promise<string | null> {
+  if (typeof loginPrompt === 'function') {
+    const resolvedLoginPrompt = await loginPrompt();
+    return resolvedLoginPrompt || null;
   }
-  return loginPrompt;
+
+  return loginPrompt || null;
 }
 
 export function guessLabelFromName(name) {
@@ -207,6 +208,24 @@ export function getComponentNameFromPath(filePath) {
 
 export function listify(param?: Array<Function>) {
   return param || [];
+}
+export function parseLooseJson(input: string): any {
+  try {
+    return JSON.parse(input);
+  } catch {
+  }
+
+  const keywords = ['true', 'false', 'null'];
+  const normalized = input
+    .replace(/([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g, '$1"$2"$3')
+    .replace(/(:\s*)([A-Za-z_$][\w$]*)(?=\s*[,}\]])/g, (match, before, word) =>
+      keywords.includes(word) ? match : `${before}"${word}"`
+    )
+    .replace(/([\[,]\s*)([A-Za-z_$][\w$]*)(?=\s*[,\]])/g, (match, before, word) =>
+      keywords.includes(word) ? match : `${before}"${word}"`
+    );
+
+  return JSON.parse(normalized);
 }
 
 export function deepMerge(target, source) {

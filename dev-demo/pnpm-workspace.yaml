@@ -1,2 +1,10 @@
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  better-sqlite3: true
+  esbuild: true
+  prisma: true
+minimumReleaseAgeExclude:
+  - '@adminforth/connector-sqlite@1.0.0'
 overrides:
   adminforth: link:../adminforth

@@ -3,6 +3,7 @@ version: '3'
 vars:
   PLUGINS_DIR: "../plugins"
   ADAPTERS_DIR: "../adapters"
+  CONNECTORS_DIR: "../connectors"
   PULL_JOBS: 30
   PNPM_JOBS: 10
   PLUGINS:
@@ -31,9 +32,10 @@ vars:
     - "adminforth-many2many"
     - "adminforth-background-jobs"
     - "adminforth-auto-remove"
+    - "adminforth-agent"
+    - "adminforth-dashboard"
 
   ADAPTERS:
-    - "adminforth-completion-adapter-open-ai-chat-gpt"
     - "adminforth-email-adapter-aws-ses"
     - "adminforth-email-adapter-mailgun"
     - "adminforth-oauth-adapter-google"
@@ -42,6 +44,8 @@ vars:
     - "adminforth-oauth-adapter-keycloak"
     - "adminforth-oauth-adapter-microsoft"
     - "adminforth-oauth-adapter-twitch"
+    - "adminforth-oauth-adapter-telegram"
+    - "adminforth-chat-surface-adapter-telegram"
     - "adminforth-image-generation-adapter-openai"
     - "adminforth-storage-adapter-amazon-s3"
     - "adminforth-storage-adapter-local"
@@ -49,11 +53,21 @@ vars:
     - "adminforth-key-value-adapter-ram"
     - "adminforth-login-captcha-adapter-cloudflare"
     - "adminforth-login-captcha-adapter-recaptcha"
-    - "adminforth-completion-adapter-google-gemini"
     - "adminforth-key-value-adapter-redis"
     - "adminforth-key-value-adapter-leveldb"
     - "adminforth-image-generation-adapter-nano-banana"
+    - "adminforth-completion-adapter-openai-responses"
+    - "adminforth-completion-adapter-anthropic-messages"
+    - "adminforth-completion-adapter-google-gemini"
+    - "adminforth-audio-adapter-openai"
 
+  CONNECTORS:
+    - "adminforth-connector-clickhouse"
+    - "adminforth-connector-mongo"
+    - "adminforth-connector-mysql"
+    - "adminforth-connector-postgres"
+    - "adminforth-connector-sqlite"
+    - "adminforth-connector-qdrant"
 
 tasks:
 
@@ -97,10 +111,62 @@ tasks:
 
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
-            (cd "${name}" && pnpm install)
+            (cd "${name}" && CI=true pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
+        ' _ {}
+
+  update_adminforth_repos:
+    internal: true
+    cmds:
+      - |
+        set -euo pipefail
+        cd "{{.DIR}}"
+
+        repos=({{range .REPOS}}{{.}} {{end}})
+
+        printf '%s\n' "${repos[@]}" | xargs -n1 -P"{{.PNPM_JOBS}}" -I{} bash -c '
+          set -euo pipefail
+          name="$1"
+
+          if [ ! -d "${name}" ]; then
+            echo "Directory ${name} does not exist, skipping"
+            exit 0
+          fi
+
+          echo "Updating adminforth in ${name}"
+          cd "${name}"
+
+          if ! git diff --cached --quiet; then
+            echo "Repository ${name} has staged changes, skipping"
+            exit 0
+          fi
+
+          if ! git diff --quiet -- package.json || ! git diff --cached --quiet -- package.json; then
+            echo "Repository ${name} has pending dependency file changes, skipping"
+            exit 0
+          fi
+
+          if [ -f pnpm-lock.yaml ] && { ! git diff --quiet -- pnpm-lock.yaml || ! git diff --cached --quiet -- pnpm-lock.yaml; }; then
+            echo "Repository ${name} has pending dependency file changes, skipping"
+            exit 0
+          fi
+
+          CI=true pnpm add adminforth@latest --save-peer
+
+          git add package.json
+          if [ -e pnpm-lock.yaml ]; then
+            git add pnpm-lock.yaml
+          fi
+
+          if git diff --cached --quiet; then
+            echo "No adminforth update needed in ${name}"
+            exit 0
+          fi
+
+          git commit -m "fix: update adminforth version"
+          git push
         ' _ {}
 
   pull_plugins:
@@ -121,6 +187,15 @@ tasks:
           REPOS:
             ref: .ADAPTERS
 
+  pull_connectors:
+    desc: Pull connector repositories
+    cmds:
+      - task: pull_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS          
+
   pnpm_plugins:
     desc: Install plugin dependencies
     cmds:
@@ -138,3 +213,21 @@ tasks:
           DIR: "{{.ADAPTERS_DIR}}"
           REPOS:
             ref: .ADAPTERS
+  
+  pnpm_connectors:
+    desc: Install connector dependencies
+    cmds:
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS
+
+  update_adminforth_plugins:
+    desc: Update adminforth to latest in plugin repositories, commit, and push
+    cmds:
+      - task: update_adminforth_repos
+        vars:
+          DIR: "{{.PLUGINS_DIR}}"
+          REPOS:
+            ref: .PLUGINS

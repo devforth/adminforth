@@ -4,7 +4,6 @@ import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Filters } from 'adminforth';
-import { logger } from 'adminforth';
 import cars_SQLITE_resource from './resources/cars_sl_allow_create.js';
 
 import cars_sl_dont_allow_create from './resources/cars_sl_dont_allow_create.js';
@@ -21,8 +20,18 @@ import cars_sl_dont_allow_delete_by_hook from './resources/cars_sl_dont_allow_de
 
 import carsDescriptionImage from '../../dev-demo/resources/cars_description_image.js';
 import passkeysResource from '../../dev-demo/resources/passkeys.js';
+import polymorphicCarRefs from './resources/polymorphic_car_refs.js';
 
 const ADMIN_BASE_URL = '';
+const appFilePath = fileURLToPath(import.meta.url);
+const appDir = path.dirname(appFilePath);
+const sqliteDbPath = path.join(appDir, '.db.sqlite');
+const customComponentsDir = path.join(appDir, 'custom');
+
+process.env.ADMINFORTH_SECRET ??= '123';
+process.env.NODE_ENV ??= 'test';
+process.env.SQLITE_URL ??= `sqlite://${sqliteDbPath}`;
+process.env.SQLITE_FILE_URL ??= `file:${sqliteDbPath}`;
 
 export const admin = new AdminForth({
   baseUrl: ADMIN_BASE_URL,
@@ -41,6 +50,7 @@ export const admin = new AdminForth({
     },
   },
   customization: {
+    customComponentsDir,
     brandName: "application",
     title: "application",
     favicon: '@@/assets/favicon.png',
@@ -86,6 +96,7 @@ export const admin = new AdminForth({
     cars_sl_dont_allow_delete_by_hook,
 
     carsDescriptionImage,
+    polymorphicCarRefs,
     passkeysResource
   ],
   menu: [
@@ -105,7 +116,7 @@ const port = 3333;
 
 admin.express.serve(app);
 
-admin.discoverDatabases().then(async () => {
+const appReady = admin.discoverDatabases().then(async () => {
   if (await admin.resource('adminuser').count() === 0) {
     await admin.resource('adminuser').create({
       email: 'adminforth',
@@ -115,6 +126,35 @@ admin.discoverDatabases().then(async () => {
   }
 });
 
-admin.express.listen(port, () => {});
+async function closeApplication() {
+  await Promise.all(Object.values(admin.connectors).map(async (connector: any) => {
+    if (typeof connector?.close === 'function') {
+      await connector.close();
+    }
+  }));
 
-export { app };
+  if (admin.express.server?.listening) {
+    await new Promise<void>((resolve, reject) => {
+      admin.express.server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+}
+
+const isMainModule = process.argv[1] ? path.resolve(process.argv[1]) === appFilePath : false;
+
+if (isMainModule) {
+  appReady.then(() => {
+    admin.express.listen(port, () => {});
+  }).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
+
+export { app, appReady, closeApplication };

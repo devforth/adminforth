@@ -32,7 +32,7 @@
         <img v-if="coreStore.config?.iconOnlySidebar?.logo" :src="loadFile(coreStore.config?.iconOnlySidebar?.logo || '')" :alt="`${ coreStore.config?.brandName } Logo`" class="af-sidebar-icon-only-logo h-8" :class="{ 'hidden': !(coreStore.config?.showBrandLogoInSidebar !== false && coreStore.config?.iconOnlySidebar?.logo && iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering) }" />
         <span 
           v-if="coreStore.config?.showBrandNameInSidebar && (!iconOnlySidebarEnabled || !isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))"
-          class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText"
+          class="af-title self-center text-lightNavbarText-size font-semibold sm:text-lightNavbarText-size whitespace-nowrap dark:text-darkSidebarText text-lightSidebarText truncate"
         >
           {{ coreStore.config?.brandName }}
         </span>
@@ -67,7 +67,6 @@
             <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full px-3.5 py-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
                 :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                 :aria-controls="`dropdown-example${i}`"
-                :data-collapse-toggle="`dropdown-example${i}`"
             >
               <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
               <span class="overflow-hidden flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
@@ -90,13 +89,15 @@
               </svg>
             </button>
 
-            <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
-              <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                <li class="af-sidebar-menu-link">
-                    <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
+            <transition name="slow-drop">
+              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1 overflow-hidden">              
+                <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
+                  <li class="af-sidebar-menu-link">
+                      <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
                   </li>
-              </template>
-          </ul>
+                </template>
+              </ul>
+            </transition>
       </li>
       <li v-else class="af-sidebar-menu-link">
         <MenuLink :item="item" @click="$emit('hideSidebar')"/>
@@ -112,7 +113,6 @@
                 <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button relative flex items-center h-10 w-full px-3.5 py-2 text-base text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
                     :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                     :aria-controls="`dropdown-example${i}`"
-                    :data-collapse-toggle="`dropdown-example${i}`"
                 >
                     <component v-if="item.icon" :is="getIcon(item.icon)" class="min-w-5 min-h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
@@ -163,7 +163,7 @@
      </ul>
 
 
-      <div id="dropdown-cta" class="p-4 mt-6 w-[230px] rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+      <div id="dropdown-cta" class="p-4 mt-6 w-[14.375rem] rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
         fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
         v-if="(ctaBadge && !isSidebarIconOnly) || (ctaBadge && isSidebarIconOnly && isSidebarHovering)"
       >
@@ -186,7 +186,7 @@
             </svg>
           </button>
         </div>
-        <p class="mb-3 text-sm " v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
+        <p class="mb-3 text-sm" v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
         <p class="mb-3 text-sm fill-lightNavbarText dark:fill-darkPrimary text-lightNavbarText dark:text-darkNavbarPrimary" v-else>
           {{ ctaBadge.text }}  
         </p>
@@ -290,6 +290,25 @@
   .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb,
   .dark .sidebar-scroll:active::-webkit-scrollbar-thumb {
     background-color: rgba(75, 85, 99, 0.4);
+  }
+
+  /* Custom animation for dropdown */
+  .slow-drop-enter-active,
+  .slow-drop-leave-active {
+    overflow: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .slow-drop-enter-from,
+  .slow-drop-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  .slow-drop-enter-to,
+  .slow-drop-leave-from {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   /* For browsers that support overlay scrollbars natively */
