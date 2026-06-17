@@ -41,8 +41,7 @@ const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
 import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
-const twoFactorsAuth = useTwoFactorsAuth();
-
+  const { get2FaConfirmationResult } = useTwoFactorsAuth();
 const valueStart = ref()
 
 watch(valueStart, (newVal) => {
@@ -105,7 +104,7 @@ async function get2FaConfirmationResultWindow() {
 }
 
 async function get2FaConfirmationResultTwoFactorsAuth() {
-  const verificationResult = await twoFactorsAuth.get2FaConfirmationResult();  // this will ask user to enter code
+  const verificationResult = await get2FaConfirmationResult();  // this will ask user to enter code
   console.log('2FA verification result (twoFactorsAuth):', verificationResult);
 }
 </script>

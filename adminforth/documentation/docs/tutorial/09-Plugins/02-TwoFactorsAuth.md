@@ -293,9 +293,9 @@ To do it, first, create frontend custom component which wraps and intercepts cli
 </template>
 
 <script setup lang="ts">
-  import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+  import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
-  const { get2FaConfirmationResult } = use2faApi();
+  const { get2FaConfirmationResult } = useTwoFactorsAuth();
   const emit = defineEmits<{ (e: 'callAction', payload?: any): void }>();
   const props = defineProps<{ disabled?: boolean; meta?: Record<string, any> }>();
 
@@ -389,9 +389,9 @@ Frontend (Save Interceptor component injected via pageInjections):
 ```vue title='/custom/SaveInterceptor.vue'
 <script setup>
 import { useAdminforth } from '@/adminforth';
-import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
-const { get2FaConfirmationResult } = use2faApi();
+const { get2FaConfirmationResult } = useTwoFactorsAuth();
 const { registerSaveInterceptor } = useAdminforth();
 
 registerSaveInterceptor(async ({ action, values, resource }) => {
@@ -494,9 +494,9 @@ Imagine you have some button which does some API call
 
 <script setup lang="ts">
 import { callApi } from '@/utils';
-import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
-const { get2FaConfirmationResult } = use2faApi();
+const { get2FaConfirmationResult } = useTwoFactorsAuth();
 
 async function callAdminAPI() {
   const verificationResult = await get2FaConfirmationResult();
@@ -538,9 +538,9 @@ You might want to protect this call with a second factor also. To do it, we need
 <script setup lang="ts">
 import { callApi } from '@/utils';
 import { useAdminforth } from '@/adminforth';
-import { use2faApi } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
-const { get2FaConfirmationResult } = use2faApi();
+const { get2FaConfirmationResult } = useTwoFactorsAuth();
 const { alert } = useAdminforth();
 
 async function callAdminAPI() {
