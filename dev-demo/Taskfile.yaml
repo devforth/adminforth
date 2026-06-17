@@ -153,7 +153,7 @@ tasks:
             exit 0
           fi
 
-          CI=true pnpm add adminforth@latest --save-peer
+          CI=true PNPM_CONFIG_MINIMUM_RELEASE_AGE=0 PNPM_CONFIG_DANGEROUSLY_ALLOW_ALL_BUILDS=true pnpm add adminforth@latest --save-prefix='^' --save-peer
 
           git add package.json
           if [ -e pnpm-lock.yaml ]; then
@@ -231,3 +231,21 @@ tasks:
           DIR: "{{.PLUGINS_DIR}}"
           REPOS:
             ref: .PLUGINS
+
+  update_adminforth_adapters:
+    desc: Update adminforth to latest in adapter repositories, commit, and push
+    cmds:
+      - task: update_adminforth_repos
+        vars:
+          DIR: "{{.ADAPTERS_DIR}}"
+          REPOS:
+            ref: .ADAPTERS
+
+  update_adminforth_connectors:
+    desc: Update adminforth to latest in connector repositories, commit, and push
+    cmds:
+      - task: update_adminforth_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS

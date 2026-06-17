@@ -2,6 +2,11 @@ import { Express, Response } from "express";
 import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
+import LevelDBKeyValueAdapter from '../adapters/adminforth-key-value-adapter-leveldb/index.js';
+
+const levelDbAdapter = new LevelDBKeyValueAdapter({
+  dbPath: './testdb',
+});
 
 const DASHBOARD_CAR_SOURCES = [
   { resourceId: 'cars_sl', label: 'SQLite' },
@@ -184,7 +189,32 @@ export function initApi(app: Express, admin: IAdminForth) {
         const { adminUser } = _req;
         const t2fa = admin.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
         const verifyResult = await t2fa.verifyAuto(adminUser);
-        res.json({ message: "2FA call received!" });
+        res.json({ message: "2FA call received!", verifyResult });
+      }
+    )
+  );
+  app.post(`${admin.config.baseUrl}/api/getLevelDbKeys/`,
+    admin.express.authorize(
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        console.log('Received getLevelDbKeys');
+        const { prefix } = _req.body;
+        const keys = await levelDbAdapter.listByPrefix(prefix, 100);
+        res.json({ keys });
+      }
+    )
+  );
+  app.post(`${admin.config.baseUrl}/api/addLevelDbKey/`,
+    admin.express.authorize(
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        console.log('Received addLevelDbKey');
+        const {key, value} = _req.body;
+        await levelDbAdapter.set(key, value);
+        // for (let i = 0; i < 100; i++) {
+        //   await levelDbAdapter.set(`clean=true||${new Date().toISOString()}||record_${i}`, `true`);
+        //   console.log(`Added record ${i}`);
+        //   await new Promise((resolve) => setTimeout(resolve, 100));
+        // }
+        res.json({ ok: true });
       }
     )
   );
