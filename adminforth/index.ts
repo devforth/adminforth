@@ -499,7 +499,7 @@ class AdminForth implements IAdminForth {
 ║  💡 SOLUTION                                                               
 ║  Install the required package:                                             
 ║                                                                            
-║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}                       ║
+║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}
 ║                                                                            
 ╚════════════════════════════════════════════════════════════════════════════
       `);

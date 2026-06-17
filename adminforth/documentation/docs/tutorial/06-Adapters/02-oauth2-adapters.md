@@ -55,3 +55,11 @@ pnpm i @adminforth/oauth-adapter-twitch
 ```
 
 Adds support for Twitch authentication, useful for streaming or creator-oriented platforms.
+
+## Clerk OAuth Adapter
+
+```bash
+pnpm i @adminforth/clerk-oauth-adapter
+```
+
+Enables sign-in via [Clerk](https://clerk.com/) — a hosted authentication platform with built-in user management, MFA, and social logins.
