@@ -1,7 +1,5 @@
 <template>
   <div class="rounded-default">
-    <pre>
-  </pre>
     <form autocomplete="off" @submit.prevent>
       <div v-if="!groups || groups.length === 0">
         <GroupsTable
@@ -76,7 +74,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useCoreStore } from "@/stores/core";
 import GroupsTable from '@/components/GroupsTable.vue';
 import { useI18n } from 'vue-i18n';
-import { type AdminForthResourceColumnCommon, type AdminForthResourceCommon } from '@/types/Common';
+import { type AdminForthResourceColumnCommon, type AdminForthResourceFrontend } from '@/types/Common';
 import { Mutex } from 'async-mutex';
 import debounce from 'lodash.debounce';
 
@@ -88,7 +86,7 @@ const coreStore = useCoreStore();
 const router = useRouter();
 const route = useRoute();
 const props = defineProps<{
-  resource: AdminForthResourceCommon,
+  resource: AdminForthResourceFrontend,
   record: any,
   validatingMode: boolean,
   source: 'create' | 'edit',
@@ -146,6 +144,7 @@ const columnError = (column: AdminForthResourceColumnCommon) => {
     if (column.type === 'json' && !column.isArray?.enabled && currentValues.value[column.name]) {
     const value = currentValues.value[column.name];              
       try {
+        // add object check to allow json fields to be objects in edit mode without throwing validation error, but still validate if the string is a valid json or not
         if (typeof value === 'object') {
           JSON.parse(JSON.stringify(value));
         } 
@@ -280,6 +279,21 @@ watch(() => props.resource.columns, async (newColumns) => {
         columnEmptyResultsCount[column.name] = 0;
         
         await loadMoreOptions(column.name);
+
+        const currentFkValue = props.record?.[column.name];
+        if (currentFkValue != null && currentFkValue !== '') {
+          const inOptions = columnOptions.value[column.name]?.some((opt: any) => opt.value == currentFkValue);
+          if (!inOptions) {
+            const result = await callAdminForthApi({
+              method: 'POST',
+              path: '/get_resource_foreign_data',
+              body: { resourceId: router.currentRoute.value.params.resourceId, column: column.name, limit: 1, offset: 0, currentValue: currentFkValue },
+            });
+            if (result?.items?.length) {
+              columnOptions.value[column.name].unshift(...result.items);
+            }
+          }
+        }
       }
     }
   }
@@ -292,6 +306,9 @@ onMounted(() => {
     if (column.type === 'json' && currentValues.value) {
       if (column.isArray?.enabled) {
         // if value is null or undefined, we should set it to empty array
+        if (column.showIn?.[mode.value] === false) {
+          return; 
+        }
         if (!currentValues.value[column.name]) {
           currentValues.value[column.name] = [];
         } else {
@@ -304,6 +321,8 @@ onMounted(() => {
           }
         }
       } else if (currentValues.value[column.name]) {
+        // Todo: reconsider basic issue
+        // if value is not string, we should stringify it, but object we already stringify in setCurrentValue, so we should not stringify it again to prevent double stringification
         if (typeof currentValues.value[column.name] !== 'string') {
           currentValues.value[column.name] = JSON.stringify(currentValues.value[column.name], null, 2)
           }
@@ -322,7 +341,7 @@ async function loadMoreOptions(columnName: string, searchTerm = '') {
     columnOptions,
     columnLoadingState,
     columnOffsets,
-    columnEmptyResultsCount
+    columnEmptyResultsCount,
   });
 }
 
@@ -471,6 +490,13 @@ async function validateUsingUserValidationFunction(editableColumnsInner: AdminFo
     }
   }
 }
+
+watch(customComponentsInValidity, () => {
+  editableColumns.value?.forEach(column => {
+    checkIfColumnHasError(column);
+  });
+  isValid.value = checkIfAnyColumnHasErrors();
+});
 
 defineExpose({
   columnError,

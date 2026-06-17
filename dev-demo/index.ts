@@ -1,5 +1,6 @@
 import express from 'express';
-import AdminForth, {  Filters } from '../adminforth/index.js';
+import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
+import * as z from 'zod';
 import usersResource from "./resources/adminuser.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -18,10 +19,13 @@ import m2m_pg from './resources/many2many_resources/m2m_PG.js';
 import m2m_mongo from './resources/many2many_resources/m2m_mongo.js';
 import m2m_ch from './resources/many2many_resources/m2m_ch.js';
 
-import background_jobs_resource from './resources/background_jobs.js';
+import background_jobs_resource, { EXAMPLE_JOB_HANDLER_NAME, startExampleBackgroundJob } from './resources/background_jobs.js';
 import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js';
 
 import auditLogsResource from "./resources/auditLogs.js"
+import sessionsResource from "./resources/agent_resources/sessions.js";
+import dashboardConfigsResource from './resources/dashboard_configs.js';
+import turnsResource from './resources/agent_resources/turns.js';
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
@@ -55,7 +59,7 @@ export const admin = new AdminForth({
       }
       const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
       return imageUrl;
-    },
+    }, 
   },
   customization: {
     brandName: "dev-demo",
@@ -134,7 +138,10 @@ export const admin = new AdminForth({
     passkeysResource,
     carsDescriptionImage,
     translations,
-    background_jobs_resource
+    background_jobs_resource,
+    sessionsResource,
+    turnsResource,
+    dashboardConfigsResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -143,6 +150,19 @@ export const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/AfComponents.vue',
       path: '/af-components',
+      itemId: 'menuTimestamp',
+      badge: async (adminUser: AdminUser, adminForth: IAdminForth) => {
+        const now = new Date();
+        return now.getSeconds();
+      },
+      badgeTooltip: 'Seconds in current minute',  
+    },
+    {
+      label: 'Dashboard',
+      path: '/overview',
+      homepage: true,
+      icon: 'flowbite:chart-pie-solid',
+      component: '@@/Dashboard.vue',
     },
     {
       type: 'divider'
@@ -155,7 +175,6 @@ export const admin = new AdminForth({
         {
           label: 'Cars (SQLITE)',
           resourceId: 'cars_sl',
-          homepage: true,
         },
         {
           label: 'Cars (MySQL)',
@@ -182,6 +201,12 @@ export const admin = new AdminForth({
       type: 'gap'
     },
     {
+      label: 'System tests',
+      icon: 'flowbite:shield-solid',
+      component: '@@/SystemTest.vue',
+      path: '/system-tests',
+    },
+    {
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'adminuser'
@@ -200,70 +225,166 @@ export const admin = new AdminForth({
       label: 'Background Jobs',
       icon: 'flowbite:briefcase-solid',
       resourceId: 'jobs',
+    },
+    {
+      label: 'Agent Sessions',
+      icon: 'heroicons:sparkles-solid',
+      resourceId: 'sessions',
+    },
+    {
+      label: 'Agent Turns',
+      icon: 'heroicons:sparkles-solid',
+      resourceId: 'turns',
     }
   ],
 });
+
+let lastJobId: string | null = null;
+let taskNumberCounter = 0;
 
 if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const app = express();
   app.use(express.json());
 
   app.post(`${ADMIN_BASE_URL}/api/create-job/`,
-    admin.express.authorize(
-      async (req: any, res: any) => {
+    admin.express.withSchema(
+      {
+        description: 'Starts the demo background job and returns immediate job start confirmation.',
+        request: z.object({}),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
         const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
         if (!backgroundJobsPlugin) {
           res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
           return;
         }
-        backgroundJobsPlugin.startNewJob(
-          'Example Job', //job name
-          req.adminUser, // adminuser
-          [
-            { state: { step: 1 } },
-            { state: { step: 2 } },
-            { state: { step: 3 } },
-            { state: { step: 4 } },
-            { state: { step: 5 } },
-            { state: { step: 6 } },
-          ], //initial tasks
-          'example_job_handler', //job handler name
-        )
-        res.json({ok: true, message: 'Job started' });
-      }
-    ),
+        const newJobId = await startExampleBackgroundJob(backgroundJobsPlugin, req.adminUser);
+        lastJobId = newJobId;
+        taskNumberCounter = 12; // just random number
+        res.json({ok: true, message: 'Job started', jobId: newJobId });
+        }
+      ),
+    )
+  );
+
+  app.post(`${ADMIN_BASE_URL}/api/add-task-to-last-job/`,
+    admin.express.withSchema(
+      {
+        description: 'Add a task to the last started job.',
+        request: z.object({}),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
+          if (!lastJobId) {
+            res.status(400).json({ error: 'No job has been started yet' });
+            return;
+          }
+          const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
+          if (!backgroundJobsPlugin) {
+            res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
+            return;
+          }
+          try {
+            await backgroundJobsPlugin.addNewTasksToExistingJob(lastJobId, [{
+              state: {
+                task_number: taskNumberCounter++,
+                task_counter: 0.1,
+              },
+            }]);
+          } catch (error) {
+            logger.error('Error adding task to the last job:', error);
+            res.status(500).json({ error: 'Error adding task to the last job' });
+            return;
+          }
+          res.json({ok: true, message: 'Task added to last job', jobId: lastJobId });
+        }
+      ),
+    )
+  );
+
+  app.post(`${ADMIN_BASE_URL}/api/delete-task-from-last-job/`,
+    admin.express.withSchema(
+      {
+        description: 'Delete a task from the last started job.',
+        request: z.object({
+          taskIndex: z.number(),
+        }),
+        response: z.object({
+          ok: z.boolean(),
+          message: z.string(),
+        }),
+      },
+      admin.express.authorize(
+        async (req: any, res: any) => {
+          if (!lastJobId) {
+            res.status(400).json({ error: 'No job has been started yet' });
+            return;
+          }
+          const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
+          if (!backgroundJobsPlugin) {
+            res.status(404).json({ error: 'BackgroundJobsPlugin not found' });
+            return;
+          }
+          try {
+            await backgroundJobsPlugin.deleteTasksFromExistingJob(lastJobId, req.body.taskIndex);
+
+          } catch (error) {
+            logger.error('Error deleting task from the last job:', error);
+            res.status(500).json({ error: 'Error deleting task from the last job' });
+            return;
+          }
+          res.json({ok: true, message: 'Task deleted from last job', jobId: lastJobId });
+        }
+      ),
+    )
   );
 
   initApi(app, admin);
 
-  const port = 3123;
+  const port = Number(process.env.PORT || 3123);
   
   admin.bundleNow({ hotReload: process.env.NODE_ENV === 'development' }).then(() => {
     logger.info('Bundling AdminForth SPA done.');
   });
-
+ 
   admin.express.serve(app);
 
   const backgroundJobsPlugin = admin.getPluginByClassName<BackgroundJobsPlugin>('BackgroundJobsPlugin');
 
   backgroundJobsPlugin.registerTaskHandler({
     // job handler name
-    jobHandlerName: 'example_job_handler',
+    jobHandlerName: EXAMPLE_JOB_HANDLER_NAME,
     //handler function
-    handler: async ({ setTaskStateField, getTaskStateField }) => {
-      const state = await getTaskStateField();
-      console.log('State of the task at the beginning of the job handler:', state);
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      await setTaskStateField({[state.step]: `Step ${state.step} completed`});
-      const updatedState = await getTaskStateField();
-      console.log('State of the task after setting the new state in the job handler:', updatedState);
+    handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
+      const state = await getState();
+
+      for (let second = 0; second < 3; second++) {
+        const taskCounter = await getTaskStateField('task_counter');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await setTaskStateField('task_counter', taskCounter+1);
+      }
+
+      await backgroundJobsPlugin.updateJobFieldsAtomically(jobId, async () => {
+        const jobState = await backgroundJobsPlugin.getJobState(jobId);
+        await backgroundJobsPlugin.setJobStateField(jobId, 'counter', jobState.counter + 1);
+        await backgroundJobsPlugin.setJobStateField(jobId, 'commited_tasks', `${jobState.commited_tasks}${state.task_number} `);
+      });
     },
     //limit of tasks, that are running in parallel
-    parallelLimit: 1
+    parallelLimit: 2
   })
   
   backgroundJobsPlugin.registerTaskDetailsComponent({
-    jobHandlerName: 'example_job_handler', // Handler name
+    jobHandlerName: EXAMPLE_JOB_HANDLER_NAME, // Handler name
     component: { 
       file: '@@/JobCustomComponent.vue'  //custom component for the job details
     },

@@ -37,6 +37,8 @@ function detectAdminforthVersion() {
 }
 
 const adminforthVersion = detectAdminforthVersion();
+const SUPPORTED_DB_URL_SCHEMES = ['sqlite://', 'postgresql://', 'mongodb://', 'mysql://', 'clickhouse://'];
+const PRISMA_MIGRATION_DB_PROTOCOLS = ['sqlite', 'postgres', 'postgresql', 'mysql'];
 
 
 export function parseArgumentsIntoOptions(rawArgs) {
@@ -94,12 +96,33 @@ export async function promptForMissingOptions(options) {
   }
 
   const answers = await inquirer.prompt(questions);
-  return {
+  const resolvedOptions = {
       ...options,
       appName: options.appName || answers.appName,
       db: options.db || answers.db,
       useNpm: options.useNpm || answers.useNpm,
   };
+
+  if (
+    resolvedOptions.includePrismaMigrations === undefined &&
+    isPrismaMigrationDbUrl(resolvedOptions.db)
+  ) {
+    const prismaAnswer = await inquirer.prompt([{
+      type: 'select',
+      name: 'includePrismaMigrations',
+      message: 'Include Prisma migrations? >',
+      choices: [
+        { name: 'Yes', value: true },
+        { name: 'No', value: false },
+      ],
+      default: true,
+    }]);
+    resolvedOptions.includePrismaMigrations = prismaAnswer.includePrismaMigrations;
+  } else {
+    resolvedOptions.includePrismaMigrations = Boolean(resolvedOptions.includePrismaMigrations);
+  }
+
+  return resolvedOptions;
 }
 
 function checkNodeVersion(minRequiredVersion = 20) {
@@ -118,6 +141,15 @@ function parseConnectionString(dbUrl) {
   return new ConnectionString(dbUrl);
 }
 
+function isPrismaMigrationDbUrl(dbUrl) {
+  try {
+    const connectionString = parseConnectionString(dbUrl);
+    return PRISMA_MIGRATION_DB_PROTOCOLS.includes(connectionString.protocol);
+  } catch {
+    return false;
+  }
+}
+
 function detectDbProvider(protocol) {
   if (protocol.startsWith('sqlite')) {
     return 'sqlite';
@@ -127,25 +159,27 @@ function detectDbProvider(protocol) {
     return 'mongodb';
   } else if (protocol.startsWith('mysql')) {
     return 'mysql';
+  } else if (protocol.startsWith('clickhouse')) {
+    return 'clickhouse';
   }
 
-  const message = `Unknown database provider for ${protocol}. Only SQLite, PostgreSQL, and MongoDB are supported now.`;
+  const message = `Unknown database provider for ${protocol}. Supported database URL schemes: ${SUPPORTED_DB_URL_SCHEMES.join(', ')}.`;
   throw new Error(message);
 }
 
 function generateDbUrlForPrisma(connectionString) {
+  if (!PRISMA_MIGRATION_DB_PROTOCOLS.includes(connectionString.protocol))
+    return null;
   if (connectionString.protocol.startsWith('sqlite'))
     return `file:${connectionString.host}`;
-  if (connectionString.protocol.startsWith('mongodb'))
-    return null;
   return connectionString.toString();
 }
 
 function generateDbUrlForPrismaProd(connectionString) {
+  if (!PRISMA_MIGRATION_DB_PROTOCOLS.includes(connectionString.protocol))
+    return null;
   if (connectionString.protocol.startsWith('sqlite'))
     return `file:/code/db/${connectionString.host}`;
-  if (connectionString.protocol.startsWith('mongodb'))
-    return null;
   return connectionString.toString();
 }
 
@@ -246,7 +280,7 @@ async function scaffoldProject(ctx, options, cwd) {
   await fse.copy(sourceAssetsDir, targetAssetsDir);
 
   // Write templated files
-  await writeTemplateFiles(dirname, projectDir, options.useNpm, {
+  await writeTemplateFiles(dirname, projectDir, options.useNpm, options.includePrismaMigrations, {
     dbUrl: connectionString.toString(),
     dbUrlProd: connectionStringProd,
     prismaDbUrl,
@@ -260,28 +294,36 @@ async function scaffoldProject(ctx, options, cwd) {
   return projectDir;  // Return the new directory path
 }
 
-async function writeTemplateFiles(dirname, cwd, useNpm, options) {
+function getPackageManagerTemplateData(useNpm, nodeMajor) {
+  return {
+    packageManager: useNpm ? 'npm' : 'pnpm',
+    packageManagerRun: useNpm ? 'npm run' : 'pnpm',
+    packageManagerScriptArgSeparator: useNpm ? ' -- ' : ' ',
+    packageManagerExec: useNpm ? 'npx' : 'pnpm exec',
+    packageManagerEnvDev: useNpm ? 'npm run _env:dev --' : 'pnpm _env:dev',
+    packageManagerEnvProd: useNpm ? 'npm run _env:prod --' : 'pnpm _env:prod',
+    dockerBaseImage: useNpm ? `node:${nodeMajor}-slim` : 'devforth/node20-pnpm:latest',
+    dockerAdditionalManifestFiles: useNpm ? 'package-lock.json' : 'pnpm-lock.yaml pnpm-workspace.yaml',
+    dockerPackageInstallSubcommand: useNpm ? 'ci' : 'i',
+  };
+}
+
+async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
   const { 
     dbUrl, prismaDbUrl, appName, provider, nodeMajor,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
+  const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
+  const resolvedPrismaDbUrl = includePrismaMigrations ? prismaDbUrl : null;
+  const resolvedPrismaDbUrlProd = includePrismaMigrations ? prismaDbUrlProd : null;
+  const connectorProvider = provider === 'postgresql' ? 'postgres' : 
+    provider === 'mongodb' ? 'mongo' : provider;
 
   // Build a list of files to generate
   const templateTasks = [
     {
       src: 'tsconfig.json.hbs',
       dest: 'tsconfig.json',
-      data: {},
-    },
-    {
-      src: 'schema.prisma.hbs',
-      dest: 'schema.prisma',
-      data: { provider },
-      condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
-    },
-    {
-      src:  'prisma.config.ts.hbs',
-      dest: 'prisma.config.ts',
       data: {},
     },
     {
@@ -302,23 +344,53 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     {
       src: '.env.local.hbs',
       dest: '.env.local',
-      data: { dbUrl: checkIfDatabaseLocal(dbUrl) ? dbUrl : null, prismaDbUrl },
+      data: { dbUrl: checkIfDatabaseLocal(dbUrl) ? dbUrl : null, prismaDbUrl: resolvedPrismaDbUrl },
     },
     {
       src: '.env.prod.hbs',
       dest: '.env.prod',
-      data: { prismaDbUrlProd, dbUrlProd },
+      data: { prismaDbUrlProd: resolvedPrismaDbUrlProd, dbUrlProd },
     },
     {
       src: 'readme.md.hbs',
       dest: 'README.md',
-      data: { dbUrl, prismaDbUrl, appName, sqliteFile, useNpm },
+      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl, appName, sqliteFile },
+    },
+    {
+      src: 'AGENTS.md.hbs',
+      dest: 'AGENTS.md',
+      data: { prismaDbUrl: resolvedPrismaDbUrl },
+    },
+    {
+      src: 'CLAUDE.md.hbs',
+      dest: 'CLAUDE.md',
+      data: {},
+    },
+    {
+      src: '.agents/skills/adminforth/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth/SKILL.md',
+      data: { prismaDbUrl: resolvedPrismaDbUrl },
+    },
+    {
+      src: '.agents/skills/adminforth-permissions/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-permissions/SKILL.md',
+      data: {},
+    },
+    {
+      src: '.agents/skills/adminforth-hooks/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-hooks/SKILL.md',
+      data: {},
+    },
+    {
+      src: '.agents/skills/adminforth-custom-vue/SKILL.md.hbs',
+      dest: '.agents/skills/adminforth-custom-vue/SKILL.md',
+      data: {},
     },
     {
       // We'll write .env using the same content as .env.sample
-      src: '.env.local.hbs',
+      src: '.env.hbs',
       dest: '.env',
-      data: {dbUrl, prismaDbUrl},
+      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl },
     },
     {
       src: 'adminuser.ts.hbs',
@@ -340,7 +412,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     {
       src: 'Dockerfile.hbs',
       dest: 'Dockerfile',
-      data: { nodeMajor, useNpm },
+      data: {},
     },
     {
       src: 'package.json.hbs',
@@ -348,7 +420,8 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
       data: { 
         appName,
         adminforthVersion: adminforthVersion,
-        useNpm
+        includePrismaMigrations: Boolean(resolvedPrismaDbUrl),
+        connectorProvider: connectorProvider,
       },
     },
     {
@@ -373,18 +446,37 @@ async function writeTemplateFiles(dirname, cwd, useNpm, options) {
     )
   }
 
+  if (resolvedPrismaDbUrl) {
+    templateTasks.push(
+      {
+        src: 'schema.prisma.hbs',
+        dest: 'schema.prisma',
+        data: { provider },
+        condition: Boolean(prismaDbUrl), // only create if prismaDbUrl is truthy
+      },
+      {
+        src:  'prisma.config.ts.hbs',
+        dest: 'prisma.config.ts',
+        data: {},
+      },
+    )
+  }
+
   for (const task of templateTasks) {
     // If a condition is specified and false, skip this file
     if (task.condition === false) continue;
 
     const destPath = path.join(cwd, task.dest);
-    // fse.ensureDirSync(path.dirname(destPath));
+    await fse.ensureDir(path.dirname(destPath));
 
     if (task.empty) {
       await fs.promises.writeFile(destPath, '');
     } else {
       const templatePath = path.join(dirname, 'templates', task.src);
-      const compiled = renderHBSTemplate(templatePath, task.data);
+      const compiled = renderHBSTemplate(templatePath, {
+        ...packageManagerTemplateData,
+        ...task.data,
+      });
       await fs.promises.writeFile(destPath, compiled);
     }
   }
@@ -394,17 +486,17 @@ async function installDependenciesPnpm(ctx, cwd) {
   const isWindows = process.platform === 'win32';
 
   const nodeBinary = process.execPath; 
-  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'pnpm.cmd' : 'pnpm');
+  const pnpmPath = path.join(path.dirname(nodeBinary), isWindows ? 'pnpm.cmd' : 'pnpm');
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([
-      await execAsync(`pnpm install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`pnpm install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
     const res = await Promise.all([
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
 }
@@ -417,13 +509,13 @@ async function installDependenciesNpm(ctx, cwd) {
   const customDir = ctx.customDir;
   if (isWindows) {
     const res = await Promise.all([
-      await execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
     const res = await Promise.all([
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-      await execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
 }
@@ -435,6 +527,7 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
+  if (options.includePrismaMigrations && !skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' pnpm makemigration --name init && pnpm migrate:local')}\n`;
@@ -456,6 +549,7 @@ function generateFinalInstructionsNpm(skipPrismaSetup, options) {
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
 
+  if (options.includePrismaMigrations && !skipPrismaSetup)
     instruction += `
   ${chalk.dim('// Generate and apply initial migration')}
   ${chalk.dim('$')}${chalk.cyan(' npm run makemigration -- --name init && npm run migrate:local')}\n`;

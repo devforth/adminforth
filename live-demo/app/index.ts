@@ -1,11 +1,16 @@
-import betterSqlite3 from 'better-sqlite3';
 import express from 'express';
-import AdminForth, { AdminForthDataTypes, Filters,  AdminForthResource, AdminForthResourceColumn  } from 'adminforth';
+import type { Request, Response } from 'express';
+import AdminForth, { Filters } from 'adminforth';
+import type { AdminUser } from 'adminforth';
 import fs from 'fs';
 import usersResource from "./resources/users";
 import apartmentsResource from "./resources/apartments";
 import auditLogsResource from "./resources/auditLogs"
 import translations from "./resources/translations";
+import sessionsResource from './resources/agent_resources/sessions';
+import turnsResource from './resources/agent_resources/turns';
+import checkpointsResource from './resources/agent_resources/checkpoints';
+import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
 
@@ -42,20 +47,12 @@ new AdminForth({
     announcementBadge: (adminUser: AdminUser) => {
       return {
         html: `
-<svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="16" height="16" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
+<svg xmlns="http://www.w3.org/2000/svg" style="display:inline; margin-top: -4px" width="1rem" height="1rem" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279-7.416-3.967-7.417 3.967 1.481-8.279-6.064-5.828 8.332-1.151z"/></svg> 
 <a href="https://github.com/devforth/adminforth" style="font-weight: bold; text-decoration: underline" target="_blank">Star us on GitHub</a> to support a project!`,
         closable: true,
         // title: 'Support us for free',
       }
     },
-      globalInjections: {
-      header: [
-        {
-          file: '@/custom/GitHubButton.vue',
-          meta: { thinEnoughToShrinkHeader: true }
-        }
-      ]
-    }
   },
 
   dataSources: [
@@ -69,6 +66,10 @@ new AdminForth({
     usersResource,
     auditLogsResource,
     translations,
+    sessionsResource,
+    turnsResource,
+    checkpointsResource,
+    jobs_resource,
   ],
   menu: [
 
@@ -116,6 +117,17 @@ new AdminForth({
       icon: 'flowbite:search-outline',
       resourceId: 'audit_logs',
     },
+    {
+      type: 'gap'
+    },
+    {
+      type: 'divider'
+    },
+    {
+      label: 'Demo source',
+      icon: 'mdi:github',
+      url: 'https://github.com/devforth/adminforth/tree/main/live-demo/app',
+    },
   ],
 });
 
@@ -127,7 +139,7 @@ async function seedDatabase() {
     await admin.resource('aparts').create({
       id: randomUUID(),
       title: `Apartment ${i}`,
-      square_meter: (Math.random() * 100).toFixed(1),
+      square_meter: +(Math.random() * 100).toFixed(1),
       price: (Math.random() * 10000).toFixed(2),
       number_of_rooms: Math.floor(Math.random() * 4) + 1,
       description: 'Next gen apartments',
@@ -151,8 +163,26 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
 
   app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
-    admin.express.authorize(
-      async (req, res) => {
+    admin.express.withSchema(
+      {
+        description: 'Returns aggregated dashboard metrics used by the live demo dashboard page.',
+        response: {
+          type: 'object',
+          properties: {
+            apartsByDays: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+            totalAparts: { type: 'number' },
+          },
+          additionalProperties: true,
+        },
+      },
+      admin.express.authorize(
+        async (req: Request, res: Response) => {
         const db = admin.resource('aparts').dataConnector.client;
         const days = req.body.days || 7;
         const apartsByDays = await db.prepare(
@@ -237,7 +267,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
           totalUnlistedPrice,
           listedVsUnlistedPriceByDays,
         });
-      }
+        }
+      )
     )
   );
   

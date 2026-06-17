@@ -1,8 +1,9 @@
-import { 
-  AdminForthConfig, 
-  AdminForthResource, 
-  IAdminForth, IConfigValidator, 
+import {
+  AdminForthConfig,
+  AdminForthResource,
+  IAdminForth, IConfigValidator,
   AdminForthBulkAction,
+  AdminForthActionInput,
   AdminForthInputConfig,
   AdminForthConfigCustomization,
   AdminForthResourceInput,
@@ -249,7 +250,11 @@ export default class ConfigValidator implements IConfigValidator {
     bulkActions.push({
       label: `Delete checked`,
       icon: 'flowbite:trash-bin-outline',
-      confirm: 'Are you sure you want to delete selected items?',
+      confirm: {
+        title: 'Are you sure you want to delete selected items?',
+        message: 'Deleting {count} item. This process is irreversible. | Deleting {count} items. This process is irreversible.',
+      },
+      dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
       action: async ({ selectedIds, adminUser, response }) => {
         const connector = this.adminforth.connectors[res.dataSource];
@@ -388,7 +393,7 @@ export default class ConfigValidator implements IConfigValidator {
     });
   }
 
-  validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): any[] {
+  validateAndNormalizeCustomActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): AdminForthActionInput[] {
     if (!resInput.options?.actions) {
       return [];
     }
@@ -416,18 +421,26 @@ export default class ConfigValidator implements IConfigValidator {
       if (!action.id) {
         action.id = md5hash(action.name);
       }
+
+      const defaultListValue = !!(action.action || action.url);
+
       if (!action.showIn) {
         action.showIn = {
-          list: true,
+          list: defaultListValue,
           listThreeDotsMenu: false,
           showButton: false,
           showThreeDotsMenu: false,
         }
       } else {
-        action.showIn.list = action.showIn.list ?? true;
+        action.showIn.list = action.showIn.list ?? defaultListValue;
         action.showIn.listThreeDotsMenu = action.showIn.listThreeDotsMenu ?? false;
         action.showIn.showButton = action.showIn.showButton ?? false;
         action.showIn.showThreeDotsMenu = action.showIn.showThreeDotsMenu ?? false;
+      }
+
+      if (typeof action.allowed === 'boolean') {
+        const val = action.allowed;
+        action.allowed = () => val;
       }
 
       const shownInNonBulk = action.showIn.list || action.showIn.listThreeDotsMenu || action.showIn.showButton || action.showIn.showThreeDotsMenu;
@@ -436,7 +449,7 @@ export default class ConfigValidator implements IConfigValidator {
       }
     });
 
-    return actions;
+    return actions as AdminForthActionInput[];
   }
 
   validateAndNormalizeResources(errors: string[], warnings: string[]): AdminForthResource[] {
@@ -477,6 +490,10 @@ export default class ConfigValidator implements IConfigValidator {
         };
 
         col.required = typeof inCol.required === 'boolean' ? { create: inCol.required, edit: inCol.required } : inCol.required;
+
+        if (col.name.trim() !== col.name) {
+          errors.push(`Resource "${res.resourceId}" column name "${col.name}" must not have leading or trailing spaces`);
+        }
 
         // check for duplicate column names
         if (resInput.columns.findIndex((c) => c.name === col.name) !== inColIndex) {
@@ -1237,6 +1254,7 @@ export default class ConfigValidator implements IConfigValidator {
     if (errors.length > 0) {
       throw new Error(`Invalid AdminForth config: ${errors.join(', ')}`);
     }
+
 
     this.adminforth.config = newConfig as AdminForthConfig;
   }

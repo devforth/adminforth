@@ -1,3 +1,7 @@
+---
+description: "Guide to defining AdminForth actions for single records and bulk flows, including UI options, handlers, confirmation dialogs, and custom execution logic."
+---
+
 # Actions
 
 ## Single record actions
@@ -48,7 +52,7 @@ Here's how to add a custom action:
 - `icon`: Icon to show (using Flowbite icon set)
 - `allowed`: Function to control access to the action
 - `action`: Handler function that executes when action is triggered for a **single** record
-- `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Bulk button with bulkHandler](#bulk-button-with-bulkhandler))
+- `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Dedicated bulk handler](#dedicated-bulk-handler))
 - `showIn`: Controls where the action appears
   - `list`: whether to show as an icon button per row in the list view
   - `listThreeDotsMenu`: whether to show in the three-dots menu per row in the list view
@@ -74,6 +78,8 @@ When `showIn.bulkButton` is `true` and only `action` (not `bulkHandler`) is defi
   }
 }
 ```
+
+### Dedicated bulk handler
 
 If your operation can be expressed more efficiently as a single batched query (e.g., a single `UPDATE … WHERE id IN (…)`), define `bulkHandler` instead. AdminForth will call it **once** with all selected record IDs:
 
@@ -107,6 +113,53 @@ If your operation can be expressed more efficiently as a single batched query (e
 | `bulkHandler` | `async ({ recordIds, adminUser, adminforth, resource, response, tr }) => { ok, error?, message? }` | Called with all selected IDs at once. Falls back to calling `action` per record in parallel if omitted. |
 | `bulkConfirmationMessage` | `string` | Confirmation dialog text shown before the bulk action executes. |
 | `bulkSuccessMessage` | `string` | Success message shown after the bulk operation. Defaults to `"N out of M items processed successfully"`. |
+
+## Standalone Bulk Actions
+
+For operations that only apply to multiple selected records, use `options.bulkActions`. The built-in **Delete checked** action is a good reference.
+
+```ts title="./resources/apartments.ts"
+{
+  resourceId: 'aparts',
+  options: {
+    bulkActions: [
+      {
+        label: 'Send Invitation',
+        icon: 'flowbite:envelope-solid',
+        confirm: 'Are you sure you want to send invitation emails?',
+        allowed: async ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+        action: async ({ selectedIds }) => {
+          await sendBulkInvitations(selectedIds);
+          return { ok: true, successMessage: `Sent to ${selectedIds.length} users` };
+        },
+      },
+    ],
+  },
+}
+```
+
+### Confirmation dialog
+
+Pass `confirm` to show a dialog before the action runs.
+
+**String** — shown as the dialog title, no secondary message:
+
+```ts
+confirm: 'Are you sure you want to send invitation emails?',
+```
+
+**Object** — full control over the dialog. `{count}` in `message` is replaced with the number of selected records; `|` separates singular and plural forms:
+
+```ts
+confirm: {
+  title: 'Are you sure you want to archive the selected items?',
+  message: 'Archiving {count} item. This process is irreversible. | Archiving {count} items. This process is irreversible.',
+  yes: 'Archive',
+  no: 'Cancel',
+},
+```
+
+Omit `confirm` entirely to skip the dialog and run the action immediately.
 
 ### Access Control
 
@@ -161,9 +214,12 @@ Instead of defining an `action` handler, you can specify a `url` that the user w
 }
 ```
 
+> ☝️ Note: You cannot specify both `action` and `url` for the same action - only one should be used.
+
 The URL can be:
 - A relative path within your admin panel (starting with '/')
 - An absolute URL (starting with 'http://' or 'https://')
+- function which creates URL based on record fields
 
 To open the URL in a new tab, append `target=_blank` as a query parameter. If the URL already has query parameters, use `&target=_blank`; otherwise use `?target=_blank`:
 
@@ -179,7 +235,46 @@ To open the URL in a new tab, append `target=_blank` as a query parameter. If th
 }
 ```
 
-> ☝️ Note: You cannot specify both `action` and `url` for the same action - only one should be used.
+Example to generate dynamic URL:
+
+```ts
+{
+  name: 'View on Google',
+  icon: 'flowbite:external-link-solid',
+  url: async ({record, recordId, adminUser, resource }) => `https://google.com/search?q=Apartment ${record.title}`,
+  showIn: {
+    list: true,
+    showButton: true
+  }
+}
+```
+
+> ☝️ Note: Though url function might be async we recommend to omit long awaits, or ideally don't use them at all, cause slow execution of this hook might be a subject of bottleneck for resource pages rendering. For built actions the async functions would be called in parallel to optimize loading speed.
+
+
+### Deep-level redirects.
+
+Using `url` prop described above is recommended way to implementing URL navigation from actions (internal or external), because URLs are rendered into direct anchour tag and support all anchour features (like Open in new tab). 
+
+However, rearely you might also like to decide whether to redirect only after performing some logic (conditionally). This way is not recommended for most of cases, because it is not compatible with action native features (we can't know URL before executing action body):
+
+
+```ts
+{
+  name: 'View on Google',
+  icon: 'flowbite:external-link-solid',
+  action: async ({ recordId }) => {
+    if (await testSomething(recordId)) {
+        return { ok: true, redirectUrl: 'https://google.com/search?q=apartment' };
+    };
+    return { ok: true, successMessage: 'Done' };
+  },
+  showIn: {
+    list: true,
+    showButton: true
+  }
+}
+```
 
 ## Custom Component
 
@@ -224,7 +319,7 @@ Keep the `<slot />` (that's where AdminForth renders the default button) and emi
   <!-- Keep the slot: AdminForth renders the default action button/icon here -->
   <!-- Emit `callAction` (optionally with a payload) to trigger the action when the wrapper is clicked -->
   <!-- Example: provide `meta.extra` to send custom data. In list views we merge with `row` so recordId context is kept. -->
-  <div :style="styleObj" @click="emit('callAction', { ...props.row, ...(props.meta?.extra ?? {}) })">
+  <div :style="styleObj" @click="click({ ...props.row, ...(props.meta?.extra ?? {}) })">
     <slot />
   </div>
 </template>
@@ -248,6 +343,14 @@ const styleObj = computed(() => ({
   borderRadius: (props.meta?.radius ?? 8) + 'px',
   padding: (props.meta?.padding ?? 2) + 'px',
 }));
+
+function click(payload: any) {
+  emit('callAction', { ...props.row, ...(props.meta?.extra ?? {}) })
+}
+//we need to define this expose, because padding is added by adminforth wrapper and to trigger click on this padding we use this expose
+defineExpose({
+  click
+});
 </script>
 ```
 
@@ -304,3 +407,46 @@ Backend handler: read the payload via `extra`.
 Notes:
 - If you don’t emit a payload, the default behavior is used by the UI (e.g., in lists the current row context is used). When you do provide a payload, it will be forwarded to the backend as `extra` for your action handler.
 - You can combine default context with your own payload by merging before emitting, for example: `emit('callAction', { ...row, asListed: true })` if your component has access to the row object.
+
+## Start actions programmatically
+You can execute resource actions manually using adminforth.runAction(). This is useful inside hooks, plugins, cron jobs, custom endpoints, or any backend automation.
+
+```ts title="./resources/apartments.ts"
+actions: [
+  {
+  //diff-add
+  id: 'testToggle listedAction',
+  name: 'Toggle listed',
+  icon: 'flowbite:eye-solid',
+  ...  
+  }
+]
+```
+Then execute it from a hook for example:
+
+```ts title="./resources/apartments.ts"
+hooks: {
+      ...
+      afterSave: async ({ record, adminUser, resource, adminforth }: { record: any, adminUser: AdminUser, resource: AdminForthResource, adminforth: any }) => {
+
+        await adminforth.runAction({
+          actionId: 'Toggle listed',
+          resourceId: resource.resourceId,
+          recordId: record.id,
+          adminUser,
+        });
+
+        return { ok: true };
+      },
+    },
+```
+
+runAction() automatically:
+- finds the resource
+- finds the action
+- checks permissions via allowed
+- executes the action handler
+- passes full action context (recordId, adminUser, extra, etc.)
+
+> ☝️ runAction() is not limited to hooks — you can call it anywhere you have access to the AdminForth instance.
+

@@ -15,7 +15,7 @@ import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
 import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
 import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
 
-import CompletionAdapterOpenAIChatGPT from '../../../adapters/adminforth-completion-adapter-open-ai-chat-gpt/index.js';
+import CompletionAdapterOpenAIResponses from '../../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
 import ImageGenerationAdapterOpenAI from '../../../adapters/adminforth-image-generation-adapter-openai/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../../adapters/adminforth-storage-adapter-local/index.js";
@@ -25,12 +25,22 @@ import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
 
-export default function carsResourseTemplate(resourceId: string, dataSource: string, pkFileldName: string) {
+const CAR_RESOURCE_DB_LABELS = {
+  sqlite: 'SQLite',
+  mysql: 'MySQL',
+  postgres: 'PostgreSQL',
+  mongo: 'MongoDB',
+  clickhouse: 'ClickHouse',
+} as const;
+
+type CarResourceDataSource = keyof typeof CAR_RESOURCE_DB_LABELS;
+
+export default function carsResourseTemplate(resourceId: string, dataSource: CarResourceDataSource, pkFileldName: string) {
   return {
     dataSource: dataSource,
     table: 'cars',
     resourceId: resourceId,
-    label: 'Cars',
+    label: `Car - ${CAR_RESOURCE_DB_LABELS[dataSource]}`,
     recordLabel: (r) => `🚘 ${r.model} 🚗`,
 
     /*********************************************************************************
@@ -166,6 +176,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         name: 'secret_field',
         type: AdminForthDataTypes.STRING,
         backendOnly: true,
+        showIn: {
+          all: false,
+        }
       }
     ],
     plugins: [
@@ -187,6 +200,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           region: process.env.AWS_REGION as string,
           accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: "public-read"
         }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -207,6 +221,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           region: process.env.AWS_REGION as string,
           accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: "public-read"
         }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -230,7 +245,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         },
         ...(process.env.OPENAI_API_KEY ? {
           completion: {
-            adapter: new CompletionAdapterOpenAIChatGPT({
+            adapter: new CompletionAdapterOpenAIResponses({
               openAiApiKey: process.env.OPENAI_API_KEY as string,
               model: 'gpt-5-mini',
             }),
@@ -250,6 +265,20 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
       }),
       new ForeignInlineListPlugin({
         foreignResourceId: 'cars_description_images',
+        modifyTableResourceConfig(resourceConfig) {
+          return {
+            ...resourceConfig,
+            options: {
+              ...resourceConfig.options,
+              allowedActions: {
+                ...resourceConfig.options?.allowedActions,
+                create: false,
+                edit: false,
+                delete: false,
+              }
+            }
+          }
+        },
       }),
       new QuickFiltersPlugin({
         filters: [
@@ -267,9 +296,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
           },
         ]
       }),
-      new Many2ManyPlugin({
-        linkedResourceId: 'adminuser'
-      }),
+      // new Many2ManyPlugin({
+      //   linkedResourceId: 'adminuser'
+      // }),
     /*********************************************************************************
      
                                         AI Plugins
@@ -287,6 +316,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
               region: process.env.AWS_REGION as string,
               accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
               secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              s3ACL: "public-read"
             }),
             
             pathColumnName: 'generated_promo_picture',
@@ -312,7 +342,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         }),
         new TextCompletePlugin({
           fieldName: 'model',
-          adapter: new CompletionAdapterOpenAIChatGPT({
+          adapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-5-nano',
             extraRequestBodyParameters: {
@@ -323,7 +353,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: str
         new BulkAiFlowPlugin({
           actionName: 'Generate description and Price',
           askConfirmationBeforeGenerating: true,
-          textCompleteAdapter: new CompletionAdapterOpenAIChatGPT({
+          textCompleteAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: "gpt-5-mini",
             extraRequestBodyParameters: {

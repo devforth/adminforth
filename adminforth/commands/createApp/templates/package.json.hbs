@@ -8,26 +8,17 @@
   "license": "ISC",
   "description": "",
   "scripts": {
-    {{#unless useNpm}}
-    "dev": "pnpm _env:dev tsx watch index.ts",
-    "prod": "pnpm _env:prod tsx index.ts",
-    "start": "pnpm dev",
-    "makemigration": "pnpm _env:dev npx --yes prisma migrate dev --create-only",
-    "migrate:local": "pnpm _env:dev npx --yes prisma migrate deploy",
-    "migrate:prod": "pnpm _env:prod npx --yes prisma migrate deploy",
+    "dev": "{{packageManagerEnvDev}} tsx watch index.ts",
+    "build": "{{packageManagerEnvProd}} tsup index.ts --format esm --clean",
+    "prod": "{{packageManagerEnvProd}} node dist/index.js",
+    "start": "{{packageManagerRun}} dev",
+    {{#if includePrismaMigrations}}
+    "makemigration": "{{packageManagerEnvDev}} npx --yes prisma migrate dev --create-only",
+    "migrate:local": "{{packageManagerEnvDev}} npx --yes prisma migrate deploy",
+    "migrate:prod": "{{packageManagerEnvProd}} npx --yes prisma migrate deploy",
+    {{/if}}
     "_env:dev": "dotenvx run -f .env -f .env.local --",
     "_env:prod": "dotenvx run -f .env.prod --"
-    {{/unless}}
-    {{#if useNpm}}
-      "dev": "npm run _env:dev -- tsx watch index.ts",
-      "prod": "npm run _env:prod -- tsx index.ts",
-      "start": "npm run dev",
-      "makemigration": "npm run _env:dev -- npx --yes prisma migrate dev --create-only",
-      "migrate:local": "npm run _env:dev -- npx --yes prisma migrate deploy",
-      "migrate:prod": "npm run _env:prod -- npx --yes prisma migrate deploy",
-      "_env:dev": "dotenvx run -f .env -f .env.local --",
-      "_env:prod": "dotenvx run -f .env.prod --"
-    {{/if}}
   },
   "engines": {
     "node": ">=20"
@@ -35,14 +26,18 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.34.0",
     "adminforth": "{{adminforthVersion}}",
-    "express": "latest-4"
+    "@adminforth/connector-{{connectorProvider}}": "latest",
+    "express": "latest-4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "typescript": "5.4.5",
+    "typescript": "6.0.3",
+    "tsup": "^8.5.1",
     "tsx": "4.11.2",
     "@types/express": "^4.17.21",
-    "@types/node": "latest",
+    "@types/node": "latest"{{#if includePrismaMigrations}},
     "@prisma/client": "latest",
     "prisma": "^7.0.0"
+    {{/if}}
   }
 }

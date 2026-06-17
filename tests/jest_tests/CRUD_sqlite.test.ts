@@ -1,7 +1,11 @@
 import request from 'supertest';
+import { agent, app, closeApplication } from './testApp';
 
-const agent = request.agent('localhost:3333');
 let authCookie: string;
+
+afterAll(async () => {
+  await closeApplication();
+});
 
 describe('POST /create_record', () => {
   const requestBody: any ={
@@ -31,13 +35,17 @@ describe('POST /create_record', () => {
         password: 'adminforth',
       });
     expect(res.status).toEqual(200);
-    authCookie = res.headers['set-cookie']?.[0];
+    authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
     expect(authCookie).toContain('adminforth_');
   });
 
-  it('throw an error, that unauthorized access is blocked after login', async () => {
-    const res = await agent
-      .post('/adminapi/v1/create_record');
+  it('blocks create_record for unauthenticated requests', async () => {
+    const res = await request(app)
+      .post('/adminapi/v1/create_record')
+      .send({
+        ...requestBody,
+        resourceId: 'cars_sl',
+      });
     expect(res.status).toEqual(401);
   });
 
@@ -298,7 +306,7 @@ describe('POST /update_record', () => {
         password: 'adminforth',
       });
     expect(res.status).toEqual(200);
-    authCookie = res.headers['set-cookie']?.[0];
+    authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
     expect(authCookie).toContain('adminforth_');
   });
 
@@ -377,6 +385,11 @@ describe('POST /update_record', () => {
       .post('/adminapi/v1/update_record')
       .send({
         resourceId: 'non_existent_resource',
+        recordId: '21345667',
+        meta: {},
+        record: {
+          model: 'Abobus2',
+        },
       });
     expect(res.status).toEqual(200);
     expect(res.body.error).toBe("Resource 'non_existent_resource' not found");
@@ -676,6 +689,243 @@ describe('POST /get_resource_data', () => {
     });
   });
 
+  it('returns list data for boolean filters without mutating the count path input', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [{ field: 'price', direction: 'desc' }],
+        filters: [
+          { field: 'id', operator: 'eq', value: createdRecordId },
+          { field: 'listed', operator: 'eq', value: true },
+        ],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.total).toBeGreaterThanOrEqual(1);
+    expect(res.body.data[0]).toMatchObject({
+      id: createdRecordId,
+      listed: true,
+    });
+  });
+
+  it('keeps computed helper fields when columns are not requested', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createdRecordId }],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]._label).toBe('🚘 Abobus amogus 🚗');
+    expect(res.body.data[0]._clickUrl).toBe(`/resource/cars_sl/show/${createdRecordId}`);
+  });
+
+  it('returns requested columns with computed list helper fields', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createdRecordId }],
+        columns: ['model', 'price'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toEqual({
+      model: 'Abobus amogus',
+      price: 1234,
+      _label: '🚘 Abobus amogus 🚗',
+      _clickUrl: `/resource/cars_sl/show/${createdRecordId}`,
+    });
+  });
+
+  it('returns an error for unknown requested columns', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [],
+        columns: ['missing_column'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe('Column missing_column not found in resource cars_sl');
+  });
+
+  it('supports selecting only a virtual column without leaking internal fallback columns', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'adminuser',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'email', operator: 'eq', value: 'adminforth' }],
+        columns: ['password'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toEqual({
+      _label: '👤 adminforth',
+    });
+  });
+
+  it('projects requested foreign columns after reference post-processing', async () => {
+    const adminUserRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'adminuser',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'email', operator: 'eq', value: 'adminforth' }],
+        columns: ['id'],
+      });
+
+    expect(adminUserRes.status).toEqual(200);
+    expect(adminUserRes.body.error).toBeUndefined();
+    const adminUserId = adminUserRes.body.data[0].id;
+
+    const updateRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/update_record')
+      .send({
+        resourceId: 'cars_sl',
+        recordId: createdRecordId,
+        meta: {},
+        record: {
+          seller_id: adminUserId,
+        },
+      });
+
+    expect(updateRes.status).toEqual(200);
+    expect(updateRes.body.error).toBeUndefined();
+
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'cars_sl',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createdRecordId }],
+        columns: ['seller_id'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toMatchObject({
+      seller_id: {
+        label: '👤 adminforth',
+        pk: adminUserId,
+      },
+      _label: '🚘 Abobus amogus 🚗',
+    });
+  });
+
+  it('projects polymorphic foreign columns without leaking polymorphic discriminator columns', async () => {
+    const createRes = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send({
+        resourceId: 'polymorphic_car_refs',
+        record: {
+          record_id: createdRecordId,
+          image_path: 'test-image.png',
+        },
+        requiredColumnsToSkip: [],
+        meta: {},
+      });
+
+    expect(createRes.status).toEqual(200);
+    expect(createRes.body.error).toBeUndefined();
+
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'polymorphic_car_refs',
+        source: 'list',
+        limit: 1,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'eq', value: createRes.body.newRecordId }],
+        columns: ['record_id'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data[0]).toMatchObject({
+      record_id: {
+        label: '🚘 Abobus amogus 🚗',
+        pk: createdRecordId,
+      },
+    });
+    expect(res.body.data[0]._label.startsWith('Polymorphic car refs ')).toBe(true);
+    expect(res.body.data[0].resource_id).toBeUndefined();
+  });
+
+  describe('POST /get_resource', () => {
+    beforeAll(async () => {
+      const res = await agent
+        .post('/adminapi/v1/login')
+        .send({
+          username: 'adminforth',
+          password: 'adminforth',
+        });
+      expect(res.status).toEqual(200);
+      authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
+      expect(authCookie).toContain('adminforth_');
+    });
+
+    it('does not expose backend-only resource metadata in frontend resource payload', async () => {
+      const res = await agent
+        .set('Cookie', authCookie)
+        .post('/adminapi/v1/get_resource')
+        .send({
+          resourceId: 'cars_sl',
+        });
+
+      expect(res.status).toEqual(200);
+      expect(res.body.error).toBeUndefined();
+      expect(res.body.resource.resourceId).toBe('cars_sl');
+      expect(res.body.resource.table).toBeUndefined();
+      expect(res.body.resource.dataSource).toBeUndefined();
+      expect(res.body.resource.dataSourceColumns).toBeUndefined();
+      expect(res.body.resource.columns.find((column: any) => column.name === 'model').listCssClass).toBe('text-lightPrimary dark:text-darkPrimary');
+    });
+  });
+
   it('should throw error, that resource is not found', async () => {
     const res = await agent      .set('Cookie', authCookie)
       .post('/adminapi/v1/get_resource_data')
@@ -816,6 +1066,7 @@ describe('POST /delete_record', () => {
       .post('/adminapi/v1/delete_record')
       .send({
         resourceId: 'non_existent_resource',
+        primaryKey: 'non_existent_id',
       });
     expect(res.status).toEqual(200);
     expect(res.body.error).toBe("Resource 'non_existent_resource' not found");

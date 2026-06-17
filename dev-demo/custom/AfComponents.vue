@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex gap-10">
+  <div class="flex flex-wrap gap-10 max-w-screen">
     <div class="flex flex-col max-w-[200px] m-10 mt-20 gap-10">
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 
@@ -12,7 +12,7 @@
         :loader="false" class="w-full" mode="secondary">
         Secondary button
       </Button>
-
+ 
       <Button @click="doSmth" 
           :loader="true" class="w-full mt-4">
         Your button text
@@ -376,12 +376,8 @@
       ]" 
       :expandDepth="2" 
     />
-
   </div>
-
-
   </div>
-
 </template>
 
 <script setup lang="ts">
@@ -493,15 +489,6 @@ function doSmth(){
   adminforth.alert({message: 'You clicked the button!', variant: 'success' })
 }
 
-async function createJob() {
-  try {
-    const res = await callApi({path: '/api/create-job/', method: 'POST'});
-    console.log('Job created successfully:', res);
-  } catch (error) {
-    console.error('Error creating job:', error);
-  }
-}
-
 async function loadPageData(data) {  
   const { offset, limit } = data;
   // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
@@ -522,4 +509,5 @@ watch(numberInput, (newVal) => {
 watch(textInput, (newVal) => {
   console.log('Text input changed:', newVal, typeof newVal);
 });
+
 </script>

@@ -1,7 +1,7 @@
 version: '3'
 tasks:
   start_app:
-    desc: "Start the application server for testing"
+    desc: "Start the application server manually for debugging"
     cmds:
       - "cd application && pnpm migrate:local && pnpm install && pnpm start"
   
@@ -13,4 +13,5 @@ tasks:
   run_tests:
     desc: "Run unit tests"
     cmds:
+      - "cd application && pnpm install"
       - "cd jest_tests && pnpm install && pnpm test"

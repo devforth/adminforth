@@ -1,11 +1,11 @@
 import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import { callAdminForthApi } from '@/utils';
-import { type AdminForthResourceCommon } from '../types/Common';
+import { type AdminForthResourceFrontend } from '../types/Common';
 import { useAdminforth } from '@/adminforth';
 import { showErrorTost } from '@/composables/useFrontendApi'
 
 let getResourceDataLastAbortController: AbortController | null = null;
-export async function getList(resource: AdminForthResourceCommon, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
+export async function getList(resource: AdminForthResourceFrontend, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
   let rows: any[] = [];
   let totalRows: number | null = null;
   if (!isPageLoaded) {
@@ -29,6 +29,9 @@ export async function getList(resource: AdminForthResourceCommon, isPageLoaded: 
     },
     abortSignal: abortController.signal
   });
+  if (abortController.signal.aborted) {
+    return;
+  }
   if (data.error) {
     showErrorTost(data.error);
     rows = [];
@@ -53,15 +56,24 @@ export async function getList(resource: AdminForthResourceCommon, isPageLoaded: 
 
 
 
-export async function startBulkAction(actionId: string, resource: AdminForthResourceCommon, checkboxes: { value: any[] }, 
-  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>) {
+export async function startBulkAction(actionId: string, resource: AdminForthResourceFrontend, checkboxes: { value: any[] }, 
+  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>, t: (key: string, vars?: Record<string, any>) => string) {
   const action = resource?.options?.bulkActions?.find(a => a.id === actionId);
   const { confirm, alert } = useAdminforth();
 
   if (action?.confirm) {
-    const confirmed = await confirm({
-      message: action.confirm,
-    });
+    const confirmed = await confirm(
+      typeof action.confirm === 'string'
+        ? {
+            title: action.confirm,
+            dangerous: action.dangerous ?? false,
+          }
+        : {
+            ...action.confirm,
+            message: action.confirm.message && t(action.confirm.message, { count: checkboxes.value.length }),
+            dangerous: action.dangerous ?? false,
+          }
+    );
     if (!confirmed) {
       return;
     }
