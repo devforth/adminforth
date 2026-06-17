@@ -20,6 +20,13 @@
     <Button @click="doTest2faCall">
       Test 2FA API Call
     </Button>
+
+    <Button @click="get2FaConfirmationResultWindow">
+      2fa window.get2FaConfirmationResult (global window api)
+    </Button>
+    <Button @click="get2FaConfirmationResultTwoFactorsAuth">
+      2fa twoFactorsAuth.get2FaConfirmationResult
+    </Button>
   </div>
 </template>
 
@@ -32,7 +39,9 @@ import { callApi } from '@/utils';
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
+import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faApi.ts';
 
+const twoFactorsAuth = useTwoFactorsAuth();
 
 const valueStart = ref()
 
@@ -88,5 +97,15 @@ async function doTest2faCall() {
   } catch (error) {
     console.error('2FA API error:', error);
   }
+}
+
+async function get2FaConfirmationResultWindow() {
+  const verificationResult = await window.adminforthTwoFaModal.get2FaConfirmationResult();  // this will ask user to enter code
+  console.log('2FA verification result (window):', verificationResult);
+}
+
+async function get2FaConfirmationResultTwoFactorsAuth() {
+  const verificationResult = await twoFactorsAuth.get2FaConfirmationResult();  // this will ask user to enter code
+  console.log('2FA verification result (twoFactorsAuth):', verificationResult);
 }
 </script>
