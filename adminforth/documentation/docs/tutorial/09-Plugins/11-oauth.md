@@ -486,10 +486,12 @@ pnpm install @adminforth/clerk-oauth-adapter --save
 
 1. Go to the [Clerk Dashboard](https://dashboard.clerk.com) and open your application.
 2. In the left sidebar, go to **Configure** → **Developers** → **OAuth Applications**.
-3. Click **Add OAuth Application**, give it a name.
-4. Copy **Client Secret** from the OAuth application creation modal.
+3. Click **Add OAuth Application** and give it a name.
+4. Copy the **Client Secret** from the OAuth application creation modal.
 5. After copying, Clerk redirects you to the application page, where you can copy the **Client ID** and **Domain**.
 6. Add the credentials to your `.env` file:
+7. In **Redirect URLs**, add `https://your-domain/oauth/callback` and `http://localhost:3500/oauth/callback`. Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
+8. In **Scopes**, check the **openid** checkbox.
 
 ```bash
 CLERK_CLIENT_ID=your_clerk_client_id
