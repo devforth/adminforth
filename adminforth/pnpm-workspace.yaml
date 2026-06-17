@@ -15,3 +15,5 @@ minimumReleaseAgeExclude:
   - '@adminforth/connector-postgres@1.0.1'
   - '@adminforth/connector-sqlite@1.0.1'
   - adminforth@3.0.2
+
+minimumReleaseAge: 0
