@@ -10,16 +10,15 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
-      <button
+      <RouterLink
         v-if="hasListNavContext && coreStore.resourceOptions?.showNextButton !== false"
-        :disabled="!hasNextRecord || isFetchingNextPage"
-        @click="goToNextRecord()"
-        :class="!hasNextRecord ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
+        :to="nextRecordRoute ?? $route"
+        :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
         class="af-button-shadow h-[34px] inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
       >
         <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />
         {{ $t('Next') }}
-      </button>
+      </RouterLink>
 
       <template v-if="coreStore.resource?.options?.actions">
 
@@ -193,7 +192,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
@@ -311,6 +310,7 @@ const allColumns = computed(() => {
 });
 
 const isFetchingNextPage = ref(false);
+const nextPageRecords = ref<string[]>([]);
 
 const hasListNavContext = computed(() =>
   coreStore.listResourceId === route.params.resourceId && coreStore.listRecordIds.length > 0
@@ -331,16 +331,26 @@ const hasNextRecord = computed(() => {
   return coreStore.listRecordIds.length === coreStore.listPageSize;
 });
 
-async function goToNextRecord() {
-  if (!hasNextRecord.value) return;
-
+const nextRecordRoute = computed(() => {
+  if (!hasNextRecord.value) return null;
   if (!isLastOnCurrentPage.value) {
-    router.push({
+    return {
       name: 'resource-show',
       params: { resourceId: route.params.resourceId, primaryKey: coreStore.listRecordIds[currentRecordIndex.value + 1] },
-    });
-    return;
+    };
   }
+  if (nextPageRecords.value.length > 0) {
+    return {
+      name: 'resource-show',
+      params: { resourceId: route.params.resourceId, primaryKey: nextPageRecords.value[0] },
+    };
+  }
+  return null;
+});
+
+async function prefetchNextPage() {
+  if (!hasListNavContext.value || isFetchingNextPage.value) return;
+  if (coreStore.listRecordIds.length !== coreStore.listPageSize) return;
 
   isFetchingNextPage.value = true;
   try {
@@ -357,18 +367,28 @@ async function goToNextRecord() {
       },
     });
     if (response?.recordIds?.length) {
-      console.log('[Next] fetched next page records:', response.recordIds);
-      coreStore.listRecordIds = response.recordIds;
-      coreStore.listPage += 1;
-      router.push({
-        name: 'resource-show',
-        params: { resourceId: route.params.resourceId, primaryKey: response.recordIds[0] },
-      });
+      nextPageRecords.value = response.recordIds;
     }
   } finally {
     isFetchingNextPage.value = false;
   }
 }
+
+watch(isLastOnCurrentPage, (isLast) => {
+  if (isLast) {
+    prefetchNextPage();
+  } else {
+    nextPageRecords.value = [];
+  }
+}, { immediate: true });
+
+watch(() => route.params.primaryKey, (newKey) => {
+  if (nextPageRecords.value.length > 0 && String(newKey) === String(nextPageRecords.value[0])) {
+    coreStore.listRecordIds = nextPageRecords.value;
+    coreStore.listPage += 1;
+    nextPageRecords.value = [];
+  }
+});
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
