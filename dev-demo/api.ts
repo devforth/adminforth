@@ -2,11 +2,7 @@ import { Express, Response } from "express";
 import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
-import LevelDBKeyValueAdapter from '../adapters/adminforth-key-value-adapter-leveldb/index.js';
-
-const levelDbAdapter = new LevelDBKeyValueAdapter({
-  dbPath: './testdb',
-});
+import { levelDbAdapter } from './utils.js';
 
 const DASHBOARD_CAR_SOURCES = [
   { resourceId: 'cars_sl', label: 'SQLite' },

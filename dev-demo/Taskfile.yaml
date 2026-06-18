@@ -48,6 +48,7 @@ vars:
     - "adminforth-chat-surface-adapter-telegram"
     - "adminforth-image-generation-adapter-openai"
     - "adminforth-storage-adapter-amazon-s3"
+    - "adminforth-storage-adapter-s3-compatible"
     - "adminforth-storage-adapter-local"
     - "adminforth-image-vision-adapter-openai"
     - "adminforth-key-value-adapter-ram"
