@@ -62,6 +62,36 @@ R2_BUCKET_REGION=auto
   }),
 ```
 
+### MinIO setup
+
+1) If you don't have running instanse, then run it with command
+```bash
+  docker run \
+    -p 9000:9000 \
+    -p 9001:9001 \
+    -e MINIO_ROOT_USER=minioadmin \
+    -e MINIO_ROOT_PASSWORD=minioadmin \
+    minio/minio server /data --console-address ":9001"
+```
+2) Create bucket
+3) Setup adapter: 
+```ts
+  import LevelDBKeyValueAdapter from '@adminforth/key-value-adapter-leveldb';
+
+  new AdminForthAdapterS3CompatibleStorage({
+    accessKeyId: 'minioadmin',
+    secretAccessKey: 'minioadmin',
+    endpoint: 'http://localhost:9000',
+    bucket: 'adminforth-dev-demo',
+    region: 'us-east-1',
+    s3ACL: 'private',
+    cleanupKeyValueAdapter: levelDbAdapter,
+    forcePathStyle: true,
+    cleanupCheckInterval: '30m',
+    cleanupGracePeriod: '5d'
+  }),
+```
+
 ## Local Storage Adapter
 
 ```bash
