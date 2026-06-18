@@ -23,11 +23,13 @@ pnpm add @adminforth/storage-adapter-s3-compatible
 
 Provides S3 compatible interface for object storage services such as MinIO, Wasabi, Cloudflare R2 or other third-party S3 providers.
 
+>‼️Since levelDb is used for storing keys of objects that should/shouldn't be deleted, so this is important to use docker volume on deployed application, so you will not loose this data after re-deploy 
+
+>‼️It is not recomended to use the same Key/value adapter for the adapter multiple instances, because it can cause unpredictable behavior of cleanup scheduler
 
 ### Cloudflare R2 setup example
 
 This adapter requires key/value adapter. For example, we will be using levelDb adapter.
->‼️Since levelDb is used for storing keys of objects, that should/shouldn't be deleted, so this is important to use docker volume on deployed application, so you will not loose this data after re-deploy 
 ```bash
 pnpm add @adminforth/key-value-adapter-leveldb
 ```
@@ -54,8 +56,8 @@ R2_BUCKET_REGION=auto
     region: process.env.R2_BUCKET_REGION as string,
     s3ACL: "private",
     cleanupKeyValueAdapter: new LevelDBKeyValueAdapter({
-      dbPath: './cloudflare_r2_storage_keys',
-    });,
+      dbPath: './stores/cloudflare_r2_storage_keys',
+    }),
     forcePathStyle: true,
     cleanupCheckInterval: '30m',
     cleanupGracePeriod: '5d'
@@ -73,7 +75,7 @@ R2_BUCKET_REGION=auto
     -e MINIO_ROOT_PASSWORD=minioadmin \
     minio/minio server /data --console-address ":9001"
 ```
-2) Create bucket
+2) Go to http://127.0.0.1:9000 and create bucket
 3) Setup adapter: 
 ```ts
   import LevelDBKeyValueAdapter from '@adminforth/key-value-adapter-leveldb';
@@ -85,7 +87,9 @@ R2_BUCKET_REGION=auto
     bucket: 'adminforth-dev-demo',
     region: 'us-east-1',
     s3ACL: 'private',
-    cleanupKeyValueAdapter: levelDbAdapter,
+    cleanupKeyValueAdapter: new LevelDBKeyValueAdapter({
+      dbPath: './stores/minio_storage_keys',
+    }),
     forcePathStyle: true,
     cleanupCheckInterval: '30m',
     cleanupGracePeriod: '5d'
