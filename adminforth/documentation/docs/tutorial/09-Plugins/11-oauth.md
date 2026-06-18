@@ -492,6 +492,21 @@ Links to adapters:
 [Keycloak](https://github.com/devforth/adminforth-oauth-adapter-keycloak)
 
 
+## Starting OAuth flow from an external page
+
+If you have an external website with a "Sign in" button that should open the AdminForth OAuth flow directly — without showing the login form first — use the `start_oauth` query parameter:
+
+```
+https://your-admin.example.com/login?start_oauth=google
+https://your-admin.example.com/login?start_oauth=clerk
+```
+
+The value must match the provider name (case-insensitive). AdminForth will immediately redirect the user to the OAuth provider, skipping the login page entirely.
+
+The provider name is derived from the adapter class name — for example `AdminForthAdapterOauth2Google` → `google`, `AdminForthAdapterOauth2Clerk` → `clerk`.
+
+If the specified provider is not found, an error toast is shown on the login page. If `start_oauth` is provided without a value (`?start_oauth`), nothing happens and the regular login form is displayed.
+
 ## Fill user full name
 
 If you have a fullName field in your users resource, you can add it to the plugin setup:
