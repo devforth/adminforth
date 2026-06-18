@@ -13,6 +13,7 @@
       <RouterLink
         v-if="hasListNavContext && coreStore.resourceOptions?.showNextButton !== false"
         :to="nextRecordRoute ?? $route"
+        @click="handleNextClick()"
         :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
         class="af-button-shadow h-[34px] inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
       >
@@ -382,13 +383,13 @@ watch(isLastOnCurrentPage, (isLast) => {
   }
 }, { immediate: true });
 
-watch(() => route.params.primaryKey, (newKey) => {
-  if (nextPageRecords.value.length > 0 && String(newKey) === String(nextPageRecords.value[0])) {
+function handleNextClick() {
+  if (isLastOnCurrentPage.value && nextPageRecords.value.length > 0) {
     coreStore.listRecordIds = nextPageRecords.value;
     coreStore.listPage += 1;
     nextPageRecords.value = [];
   }
-});
+}
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
