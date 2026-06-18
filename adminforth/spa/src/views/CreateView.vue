@@ -77,7 +77,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent, atob_function } from '@/utils';
 import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref  } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -177,14 +177,14 @@ onMounted(async () => {
     if (userUseMultipleEncoding) {
       initialValues.value = { ...initialValues.value, ...JSON.parse(decodeURIComponent((route.query.values as string))) };
     } else {
-      initialValues.value = { ...initialValues.value, ...JSON.parse(atob(route.query.values as string)) };
+      initialValues.value = { ...initialValues.value, ...JSON.parse(atob_function(route.query.values as string)) };
     }
   }
   if (route.query.readonlyColumns) {
     if (userUseMultipleEncoding) {
       readonlyColumns.value = JSON.parse(decodeURIComponent((route.query.readonlyColumns as string)));
     } else {
-      readonlyColumns.value = JSON.parse(atob(route.query.readonlyColumns as string));
+      readonlyColumns.value = JSON.parse(atob_function(route.query.readonlyColumns as string));
     }
   }
   record.value = initialValues.value;
