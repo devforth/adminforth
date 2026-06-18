@@ -21,6 +21,7 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 const AUTOLOGIN_QUERY_PARAM = 'autologin';
+const START_OAUTH_QUERY_PARAM = 'start_oauth';
 
 export function getAutologinCredentials(autologin: unknown): { username: string, password: string } | null {
   if (typeof autologin !== 'string') {
@@ -116,6 +117,12 @@ export async function redirectToLogin() {
 
   if (currentPath !== '/login' && currentPath !== homePagePath) {
     query.next = next;
+  }
+  
+  const currentQuery = router.currentRoute.value.query;
+
+  if (START_OAUTH_QUERY_PARAM in currentQuery) {
+    query[START_OAUTH_QUERY_PARAM] = (currentQuery[START_OAUTH_QUERY_PARAM] as string) ?? '';
   }
 
   await router.push({ name: 'login', query });
