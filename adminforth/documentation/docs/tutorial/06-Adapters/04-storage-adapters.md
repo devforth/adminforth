@@ -56,8 +56,9 @@ R2_BUCKET_REGION=auto
     region: process.env.R2_BUCKET_REGION as string,
     s3ACL: "private",
     cleanupKeyValueAdapter: new LevelDBKeyValueAdapter({
-      dbPath: './stores/cloudflare_r2_storage_keys',
-    }),
+      // ensure /stores/ folder is a persisted/backed up point, if you running in docker ensure ensure you mount /stores/ as volume
+      dbPath: process.env.NODE_ENV === production ? '/stores/cloudflare_r2_storage_keys' : './cloudflare_r2_storage_keys',
+    });,
     forcePathStyle: true,
     cleanupCheckInterval: '30m',
     cleanupGracePeriod: '5d'
@@ -88,7 +89,8 @@ R2_BUCKET_REGION=auto
     region: 'us-east-1',
     s3ACL: 'private',
     cleanupKeyValueAdapter: new LevelDBKeyValueAdapter({
-      dbPath: './stores/minio_storage_keys',
+      // ensure /stores/ folder is a persisted/backed up point, if you running in docker ensure ensure you mount /stores/ as volume
+      dbPath: process.env.NODE_ENV === production ? '/stores/minio_storage_keys' : './minio_storage_keys',
     }),
     forcePathStyle: true,
     cleanupCheckInterval: '30m',
