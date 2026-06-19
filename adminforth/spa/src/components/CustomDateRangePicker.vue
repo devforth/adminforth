@@ -225,8 +225,8 @@ function removeChangeDateListener() {
 }
 
 function destroyDatepickerElement() {
-  datepickerStartObject.value.destroy();
-  datepickerEndObject.value.destroy();
+  datepickerStartObject.value?.destroy?.();
+  datepickerEndObject.value?.destroy?.();
 }
 
 function setStartDate(event) {
