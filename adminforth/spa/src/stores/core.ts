@@ -220,6 +220,10 @@ export const useCoreStore = defineStore('core', () => {
         resourceId,
       }
     });
+    if (!res) {
+      isResourceFetching.value = false;
+      return;
+    }
     if (res.error) {
       resourceColumnsError.value = res.error;
     } else {
