@@ -503,54 +503,63 @@ export function slugifyString(str: string): string {
 }
 
 export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth): Promise<{ error: string | null }> {
-    const { adminUser, response } = context;
+  const { adminUser, response } = context;
 
-    const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
+  const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
-    for (const childRes of childResources) {
-      const foreignColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
+  for (const childRes of childResources) {
+    const foreignColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
 
-      if (!foreignColumn?.foreignResource?.onDelete) continue;
+    if (!foreignColumn?.foreignResource?.onDelete) continue;
 
-      const strategy = foreignColumn.foreignResource.onDelete;
+    const strategy = foreignColumn.foreignResource.onDelete;
 
-      const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
+    const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
 
-      const childPk = childRes.columns.find(c => c.primaryKey)?.name;
+    const childPk = childRes.columns.find(c => c.primaryKey)?.name;
 
-      if (strategy === 'cascade') {
-        for (const childRecord of childRecords) {
-          const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
-          if (childResult?.error) {
-            return childResult;
-          }
-          const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
-          if (deleteChild.error) return { error: deleteChild.error };
-          if (childResult?.error) {
-            return childResult;
-          }
+    if (strategy === 'cascade') {
+      for (const childRecord of childRecords) {
+        const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
+        if (childResult?.error) {
+          return childResult;
         }
-      }
-
-      if (strategy === 'setNull') {
-        for (const childRecord of childRecords) {
-          await adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
+        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
+        if (deleteChild.error) return { error: deleteChild.error };
+        if (childResult?.error) {
+          return childResult;
         }
       }
     }
 
-    return { error: null };
+    if (strategy === 'setNull') {
+      for (const childRecord of childRecords) {
+        await adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
+      }
+    }
   }
 
-  export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
-    if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
-      throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
-    }
-    if (hookResponse.ok === false && !hookResponse.error) {
-      return { error: hookResponse.error ?? 'Operation aborted by hook' };
-    }
-    if (hookResponse.error) {
-      return { error: hookResponse.error };
-    }
-    return null;
+  return { error: null };
+}
+
+export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
+  if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
+    throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
   }
+  if (hookResponse.ok === false && !hookResponse.error) {
+    return { error: hookResponse.error ?? 'Operation aborted by hook' };
+  }
+  if (hookResponse.error) {
+    return { error: hookResponse.error };
+  }
+  return null;
+}
+
+export function checkIfFieldIsInsideResourceColumns(fieldName: string, resource: AdminForthResource): boolean {
+  for (const column of resource.columns) {
+    if (column.name === fieldName) {
+      return true;
+    }
+  }
+  return false;
+}
