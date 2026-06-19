@@ -258,7 +258,7 @@ async function sendChangeToApproval({
 //diff-add 
     return { ok: true };
 //diff-add 
-  // }
+  }
 //diff-add
 //diff-add 
   const pkColumnName = resource.columns.find((column: any) => column.primaryKey)?.name || 'id';
