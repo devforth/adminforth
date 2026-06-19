@@ -5,6 +5,6 @@ export const levelDbAdapter = new LevelDBKeyValueAdapter({
   dbPath: './testdb',
 });
 
-export const redisAdapter = new RedisKeyValueAdapter({
-  redisUrl: 'redis://localhost:6379',
-})
+// export const redisAdapter = new RedisKeyValueAdapter({
+//   redisUrl: 'redis://localhost:6379',
+// })
