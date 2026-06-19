@@ -49,6 +49,7 @@ export * from './types/Common.js';
 export * from './types/adapters/index.js';
 export * from './modules/filtersTools.js';
 export * from './modules/requestContext.js';
+export * from './modules/utils.js';
 export { interpretResource };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
