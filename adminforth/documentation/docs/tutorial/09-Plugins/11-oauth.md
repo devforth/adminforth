@@ -481,7 +481,7 @@ plugins: [
 Install Adapter:
 
 ```bash
-pnpm install @adminforth/clerk-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-clerk --save
 ```
 
 1. Go to the [Clerk Dashboard](https://dashboard.clerk.com) and open your application.
@@ -502,7 +502,7 @@ CLERK_DOMAIN=https://your-app.clerk.accounts.dev
 Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterClerkOauth2 from '@adminforth/clerk-oauth-adapter';
+import AdminForthAdapterClerkOauth2 from '@adminforth/oauth-adapter-clerk';
 
 // ... existing resource configuration ...
 plugins: [
