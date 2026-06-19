@@ -180,6 +180,7 @@
       @update:records="getListInner"
       @update:pageSize="(newSize) => { pageSize = newSize; page = 1; }"
       :sort="sort"
+      :filters="filtersStore.filters"
       :pageSizeOptions="Array.isArray(coreStore.resource?.options?.listPageSizeOptions) ? coreStore.resource?.options?.listPageSizeOptions : []"
       :pageSize="pageSize"
       :totalRows="totalRows"
