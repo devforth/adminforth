@@ -190,21 +190,28 @@ The plugin replaces the default rendering of the `data` column with a diff viewe
 Import the approval resource in `index.ts` and add it to the AdminForth resource list and menu:
 
 ```ts title="./index.ts"
-//diff-add import crudManualApproveResource from './resources/crud_manual_approve.js';
+//diff-add
+import crudManualApproveResource from './resources/crud_manual_approve.js';
 
 export const admin = new AdminForth({
   // ...
   resources: [
     // ...
-    //diff-add crudManualApproveResource,
+    //diff-add 
+    crudManualApproveResource,
   ],
   menu: [
     // ...
-    //diff-add {
-    //diff-add   label: 'Approvals',
-    //diff-add   icon: 'flowbite:clipboard-check-solid',
-    //diff-add   resourceId: 'crud_manual_approve',
-    //diff-add },
+    //diff-add 
+    {
+    //diff-add
+      label: 'Approvals',
+    //diff-add
+      icon: 'flowbite:clipboard-check-solid',
+    //diff-add
+      resourceId: 'crud_manual_approve',
+    //diff-add
+    },
   ],
 });
 ```
@@ -217,47 +224,83 @@ Open `resources/apartments.ts` and add the helper and hooks below:
 
 ```ts title="./resources/apartments.ts"
 import { AdminForthDataTypes, type AdminForthResourceInput } from 'adminforth';
-//diff-add import { crudApprovePlugin } from './crud_manual_approve.js';
+//diff-add 
+import { crudApprovePlugin } from './crud_manual_approve.js';
 
-//diff-add async function sendChangeToApproval({
-//diff-add   resource,
-//diff-add   action,
-//diff-add   record,
-//diff-add   updates,
-//diff-add   oldRecord,
-//diff-add   recordId,
-//diff-add   adminUser,
-//diff-add   extra,
-//diff-add }: any) {
-//diff-add   // When the CRUD Approve plugin applies an already approved change,
-//diff-add   // it marks the request with this flag. In that case we must not create
-//diff-add   // another approval request, otherwise the operation would loop forever.
-//diff-add   if (extra?.adminforth_plugin_crud_approve?.callingFromApprovalPlugin) {
-//diff-add     return { ok: true };
-//diff-add   }
+//diff-add 
+async function sendChangeToApproval({
+//diff-add 
+  resource,
+//diff-add 
+  action,
+//diff-add 
+  record,
+//diff-add 
+  updates,
+//diff-add 
+  oldRecord,
+//diff-add 
+  recordId,
+//diff-add 
+  adminUser,
+//diff-add 
+  extra,
+//diff-add 
+}: any) {
+//diff-add 
+  // When the CRUD Approve plugin applies an already approved change,
+//diff-add 
+  // it marks the request with this flag. In that case we must not create
+//diff-add 
+  // another approval request, otherwise the operation would loop forever.
+//diff-add 
+  if (extra?.adminforth_plugin_crud_approve?.callingFromApprovalPlugin) {
+//diff-add 
+    return { ok: true };
+//diff-add 
+  // }
 //diff-add
-//diff-add   const pkColumnName = resource.columns.find((column: any) => column.primaryKey)?.name || 'id';
-//diff-add   const data = recordId ? { [pkColumnName]: recordId } : record;
+//diff-add 
+  const pkColumnName = resource.columns.find((column: any) => column.primaryKey)?.name || 'id';
+//diff-add 
+  const data = recordId ? { [pkColumnName]: recordId } : record;
 //diff-add
-//diff-add   const result = await crudApprovePlugin.createApprovalRequest({
-//diff-add     resource,
-//diff-add     action,
-//diff-add     data,
-//diff-add     user: adminUser,
-//diff-add     record,
-//diff-add     oldRecord,
-//diff-add     updates,
-//diff-add     extra,
-//diff-add   });
+//diff-add 
+  const result = await crudApprovePlugin.createApprovalRequest({
+//diff-add 
+    resource,
+//diff-add 
+    action,
+//diff-add 
+    data,
+//diff-add 
+    user: adminUser,
+//diff-add 
+    record,
+//diff-add 
+    oldRecord,
+//diff-add 
+    updates,
+//diff-add 
+    extra,
+//diff-add 
+  });
 //diff-add
-//diff-add   if (result.error) {
-//diff-add     return { ok: false, error: result.error };
-//diff-add   }
+//diff-add 
+  if (result.error) {
+//diff-add 
+    return { ok: false, error: result.error };
+//diff-add 
+  }
 //diff-add
-//diff-add   // Stop the original mutation. The real create/edit/delete will be executed
-//diff-add   // later only if a reviewer approves the request.
-//diff-add   return { ok: true, error: "Action sent for manual approval" };
-//diff-add }
+//diff-add 
+  // Stop the original mutation. The real create/edit/delete will be executed
+//diff-add 
+  // later only if a reviewer approves the request.
+//diff-add 
+  return { ok: true, error: "Action sent for manual approval" };
+//diff-add
+}
 
 export default {
   dataSource: 'maindb',
@@ -268,23 +311,40 @@ export default {
   columns: [
     // ...
   ],
-  //diff-add hooks: {
-  //diff-add   create: {
-  //diff-add     beforeSave: async (args: any) => {
-  //diff-add       return sendChangeToApproval({ ...args, action: 'create' });
-  //diff-add     },
-  //diff-add   },
-  //diff-add   edit: {
-  //diff-add     beforeSave: async (args: any) => {
-  //diff-add       return sendChangeToApproval({ ...args, action: 'edit' });
-  //diff-add     },
-  //diff-add   },
-  //diff-add   delete: {
-  //diff-add     beforeSave: async (args: any) => {
-  //diff-add       return sendChangeToApproval({ ...args, action: 'delete' });
-  //diff-add     },
-  //diff-add   },
-  //diff-add },
+  //diff-add
+  hooks: {
+  //diff-add
+    create: {
+  //diff-add
+      beforeSave: async (args: any) => {
+  //diff-add
+        return sendChangeToApproval({ ...args, action: 'create' });
+  //diff-add
+      },
+  //diff-add
+    },
+  //diff-add
+    edit: {
+  //diff-add
+      beforeSave: async (args: any) => {
+  //diff-add
+        return sendChangeToApproval({ ...args, action: 'edit' });
+  //diff-add
+      },
+  //diff-add
+    },
+  //diff-add
+    delete: {
+  //diff-add
+      beforeSave: async (args: any) => {
+  //diff-add
+        return sendChangeToApproval({ ...args, action: 'delete' });
+  //diff-add
+      },
+  //diff-add
+    },
+  //diff-add
+  },
   options: {
     listPageSize: 10,
     allowedActions: {
