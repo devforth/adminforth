@@ -129,11 +129,12 @@
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "@adminforth/connector-clickhouse": "^1.0.2",
-    "@adminforth/connector-mongo": "^1.0.1",
-    "@adminforth/connector-mysql": "^1.0.1",
-    "@adminforth/connector-postgres": "^1.0.1",
-    "@adminforth/connector-sqlite": "^1.0.1"
+    "@adminforth/connector-clickhouse": "^1.0.4",
+    "@adminforth/connector-mongo": "^1.0.3",
+    "@adminforth/connector-mysql": "^1.0.3",
+    "@adminforth/connector-postgres": "^1.0.4",
+    "@adminforth/connector-sqlite": "^1.0.3",
+    "@adminforth/connector-qdrant": "^1.0.4"
   },
   "peerDependenciesMeta": {
     "@adminforth/connector-sqlite": {
