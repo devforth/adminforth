@@ -344,6 +344,7 @@ type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
 export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
   actions?: AdminForthActionFront[],
   bulkActions?: AdminForthBulkActionFront[],
+  showNextButton?: boolean,
 }
 
 export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
@@ -535,7 +536,14 @@ export interface AdminForthResourceInputCommon {
       /**
        * Whether to refresh existing list rows automatically every N seconds.
        */
-      listRowsAutoRefreshSeconds?: number, 
+      listRowsAutoRefreshSeconds?: number,
+
+      /**
+       * Whether to show the "Next" navigation button on the show page.
+       * Allows cycling through records respecting current list filters and sorting.
+       * Defaults to `true`.
+       */
+      showNextButton?: boolean,
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.
