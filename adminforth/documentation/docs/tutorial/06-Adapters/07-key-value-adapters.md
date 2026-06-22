@@ -36,7 +36,7 @@ Redis uses in-memory storage with $O(1)$ get complexity. It is a great fit for l
 import RedisKeyValueAdapter from '@adminforth/key-value-adapter-redis';
 
 const adapter = new RedisKeyValueAdapter({
-  redisUrl: '127.0.0.1:6379',
+  redisUrl: 'redis://localhost:6379',
 });
 
 adapter.set('test-key', 'test-value', 120);

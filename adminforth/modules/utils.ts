@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import crypto from 'crypto';
 import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
+import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
 // @ts-ignore-next-line
 
 
@@ -400,9 +401,26 @@ export function md5hash(str:string) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
-export function convertPeriodToSeconds(period: string): number {
+function isPeriodUnit(unit: string): unit is PeriodUnit {
+  return (PERIOD_UNITS as readonly string[]).includes(unit);
+}
+
+function parsePositiveInteger(value: string, fieldName: string, source: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${fieldName} must be a positive integer, got: "${source}"`);
+  }
+  return parsed;
+}
+
+export function convertPeriodToSeconds(period: PeriodString): number {
+    const value = period.slice(0, -1);
     const periodChar = period.slice(-1);
-    const duration = parseInt(period.slice(0, -1));
+    if (!isPeriodUnit(periodChar)) {
+      throw new Error(`Invalid period: ${period}`);
+    }
+
+    const duration = parsePositiveInteger(value, 'Period', period);
     if (periodChar === 's') {
       return duration;
     } else if (periodChar === 'm') {
@@ -420,23 +438,35 @@ export class RateLimiter {
 
   rateLimiter: RateLimiterAbstract;
 
-
-  durStringToSeconds(rate: string): number {
-    if (!rate) {
-      throw new Error('Rate duration is required');
+  static parseRate(rate: unknown): { points: number, duration: number } {
+    if (typeof rate !== 'string') {
+      throw new Error('Rate limit must be a string in format "500/5m"');
     }
 
+    const parts = rate.split('/');
+    if (parts.length !== 2) {
+      throw new Error(`Rate limit must be in format "500/5m", got: "${rate}"`);
+    }
 
-    return convertPeriodToSeconds(rate);
+    const [pointsPart, period] = parts;
+    const periodValue = period.slice(0, -1);
+    const periodUnit = period.slice(-1);
+    if (!periodValue || !isPeriodUnit(periodUnit)) {
+      throw new Error(`Rate limit must be in format "500/5m", got: "${rate}"`);
+    }
+
+    return {
+      points: parsePositiveInteger(pointsPart, 'Rate limit points', rate),
+      duration: convertPeriodToSeconds(period as PeriodString),
+    };
   }
 
 
   constructor(rate: string) {
-    const [points, duration] = rate.split('/');
-    const durationSeconds = this.durStringToSeconds(duration);
+    const { points, duration } = RateLimiter.parseRate(rate);
     const opts = {
-      points: parseInt(points),
-      duration: durationSeconds, // Per second
+      points,
+      duration, // Per second
     };
     this.rateLimiter = new RateLimiterMemory(opts);
   }

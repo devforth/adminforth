@@ -3,7 +3,7 @@
     <span v-if="leftLabel" class="absolute -top-6 left-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ leftLabel }}</span>
     <span v-if="rightLabel" class="absolute -top-6 right-0 text-sm text-lightProgressBarText dark:text-darkProgressBarText">{{ rightLabel }}</span>
     <div 
-      class="bg-lightProgressBarFilledColor dark:bg-darkProgressBarFilledColor h-2.5 rounded-full transition-all duration-300 ease-in-out"
+      class="bg-lightPrimary dark:bg-darkPrimary h-2.5 rounded-full transition-all duration-300 ease-in-out"
       :class="{ 'progress-bar': showAnimation, [`h-${props.height}`]: props.height }"  
       :style="{ width: `${percentage}%` }"
     ></div>

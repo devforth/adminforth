@@ -2,6 +2,7 @@ import express from 'express';
 import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
 import * as z from 'zod';
 import usersResource from "./resources/adminuser.js";
+import externalIdentitiesResource from "./resources/external_identities.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Decimal } from 'decimal.js';
@@ -30,6 +31,8 @@ import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
+import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
+
 import { logger } from '../adminforth/modules/logger.js';
 
 const ADMIN_BASE_URL = '';
@@ -37,6 +40,7 @@ const ADMIN_BASE_URL = '';
 export const admin = new AdminForth({
   baseUrl: ADMIN_BASE_URL,
   auth: {
+    rateLimit: ['5/5m'],
     usersResourceId: 'adminuser',
     usernameField: 'email',
     passwordHashField: 'password_hash',
@@ -124,6 +128,7 @@ export const admin = new AdminForth({
   ],
   resources: [
     usersResource,
+    externalIdentitiesResource,
     auditLogsResource,
     cars_SQLITE_resource,
     cars_MyS_resource,
@@ -142,6 +147,7 @@ export const admin = new AdminForth({
     sessionsResource,
     turnsResource,
     dashboardConfigsResource,
+    adminExternalIdentitiesResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
