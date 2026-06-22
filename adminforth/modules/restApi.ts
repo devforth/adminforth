@@ -20,7 +20,7 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
@@ -665,6 +665,7 @@ export async function interpretResource(
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   adminforth: IAdminForth;
+  loginRateLimiters: RateLimiter[] = [];
   
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
@@ -718,6 +719,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   }
 
   registerEndpoints(server: IHttpServer) {
+    this.loginRateLimiters = this.adminforth.config.auth.rateLimit.map((rate) => new RateLimiter(rate));
+
     server.endpoint({
       noAuth: true,
       method: 'POST',
@@ -725,6 +728,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
         const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
+        const loginRateLimitKey = this.adminforth.auth.getClientIp(headers) || 'unknown';
+        const rateLimitResults = await Promise.all(this.loginRateLimiters.map((limiter) => limiter.consume(loginRateLimitKey)));
+        if (!rateLimitResults.every(Boolean)) {
+          response.setStatus(429);
+          return { error: await tr('Too many login attempts, please try again later', 'errors') };
+        }
+
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
