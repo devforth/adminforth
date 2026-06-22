@@ -137,3 +137,20 @@ model dashboard_configs {
 
   @@index([slug])
 }
+
+model AdminUserExternalIdentity {
+  id             String   @id @default(uuid())
+  adminUserId    String
+  provider       String
+  subject        String
+  externalUserId String?
+  email          String?
+  phone          String?
+  fullName       String?
+  avatarUrl      String?
+  meta           Json?
+  createdAt      DateTime @default(now())
+
+  @@unique([provider, subject])
+  @@index([adminUserId])
+}

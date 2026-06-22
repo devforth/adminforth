@@ -215,6 +215,14 @@ export default {
           role: 'user',
         },
       },
+      externalIdentityResource: {
+        resourceId: 'admin_user_external_identities',
+        emailField: 'email',
+        phoneField: 'phone',
+        fullNameField: 'fullName',
+        avatarUrlField: 'avatarUrl',
+        metaField: 'meta',
+      },
     }),
     ...(process.env.OPENAI_API_KEY ? 
     [
