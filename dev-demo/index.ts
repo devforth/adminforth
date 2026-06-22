@@ -30,6 +30,8 @@ import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
+import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
+
 import { logger } from '../adminforth/modules/logger.js';
 
 const ADMIN_BASE_URL = '';
@@ -142,6 +144,7 @@ export const admin = new AdminForth({
     sessionsResource,
     turnsResource,
     dashboardConfigsResource,
+    adminExternalIdentitiesResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
