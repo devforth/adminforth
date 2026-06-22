@@ -2,6 +2,7 @@ import express from 'express';
 import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
 import * as z from 'zod';
 import usersResource from "./resources/adminuser.js";
+import externalIdentitiesResource from "./resources/external_identities.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Decimal } from 'decimal.js';
@@ -39,6 +40,7 @@ const ADMIN_BASE_URL = '';
 export const admin = new AdminForth({
   baseUrl: ADMIN_BASE_URL,
   auth: {
+    rateLimit: ['5/5m'],
     usersResourceId: 'adminuser',
     usernameField: 'email',
     passwordHashField: 'password_hash',
@@ -126,6 +128,7 @@ export const admin = new AdminForth({
   ],
   resources: [
     usersResource,
+    externalIdentitiesResource,
     auditLogsResource,
     cars_SQLITE_resource,
     cars_MyS_resource,

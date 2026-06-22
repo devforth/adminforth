@@ -14,11 +14,12 @@ import {
   ShowInInput,
   ShowInLegacyInput,
   ShowInModernInput,
+  RateLimitString,
 } from "../types/Back.js";
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, md5hash, suggestIfTypo, slugifyString } from './utils.js';
+import { guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -34,6 +35,8 @@ import { afLogger } from "./logger.js";
 import {cascadeChildrenDelete} from './utils.js'
 
 const DEBOUNCE_TIME_MS = 300;
+const DEFAULT_AUTH_RATE_LIMIT: RateLimitString[] = ['500/5m', '5000/1h', '10000/1d'];
+
 export default class ConfigValidator implements IConfigValidator {
 
   customComponentsDir: string | undefined;
@@ -1209,6 +1212,19 @@ export default class ConfigValidator implements IConfigValidator {
           const match = duration.match(/^(\d+)([smhd])$/);
           if (!match) {
             errors.push(`auth.rememberMeDuration must be in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days), got: "${duration}"`);
+          }
+        }
+      }
+
+      newConfig.auth.rateLimit = newConfig.auth.rateLimit || [...DEFAULT_AUTH_RATE_LIMIT];
+      if (!Array.isArray(newConfig.auth.rateLimit)) {
+        errors.push(`auth.rateLimit must be an array of strings in format "500/5m"`);
+      } else {
+        for (const rateLimit of newConfig.auth.rateLimit) {
+          try {
+            RateLimiter.parseRate(rateLimit);
+          } catch (e) {
+            errors.push(`auth.rateLimit ${e.message}`);
           }
         }
       }

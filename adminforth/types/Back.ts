@@ -18,6 +18,11 @@ import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections,
   type ColumnMinMaxValue,
 } from './Common.js';
 
+export const PERIOD_UNITS = ['s', 'm', 'h', 'd'] as const;
+export type PeriodUnit = typeof PERIOD_UNITS[number];
+export type PeriodString = `${bigint}${PeriodUnit}`;
+export type RateLimitString = `${bigint}/${PeriodString}`;
+
 export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
@@ -1718,6 +1723,13 @@ export interface AdminForthInputConfig {
        * @deprecated Use rememberMeDuration instead.
        */ 
       rememberMeDays?: number,
+
+      /**
+       * Rate limits for login attempts.
+       * Format: "requests/period", where period is "1s", "1m", "1h", or "1d".
+       * Default: ['500/5m', '5000/1h', '10000/1d']
+       */
+      rateLimit?: RateLimitString[],
 
 
       /**

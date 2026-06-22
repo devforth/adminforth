@@ -30,6 +30,31 @@ new AdminForth({
 In this case users who will check "Remember me" checkbox will be logged in for 7 days instead of 24 hours.
 
 
+## Login rate limits
+
+AdminForth rate-limits login attempts by client IP using `auth.rateLimit`. Password login, OAuth login, and passkey login use the same configured limits, but each login method has its own independent rate-limit bucket.
+
+By default AdminForth uses:
+
+```ts
+['500/5m', '5000/1h', '10000/1d']
+```
+
+You can override it in the app config:
+
+```ts ./index.ts
+new AdminForth({
+  ...
+  auth: {
+    rateLimit: ['10/5m', '100/1h', '500/1d']
+  }
+})
+```
+
+The format is `requests/period`, where period can use `s`, `m`, `h`, or `d`.
+Because rate limits are keyed by client IP, configure `auth.clientIpHeader` when AdminForth runs behind a trusted CDN or reverse proxy. See [Trusting client IP addresses](#trusting-client-ip-addresses).
+
+
 ## Password strength
 
 AdminForth allows to set validation RegExp based rules for any field. This can be reused for password strength validation.
