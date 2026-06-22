@@ -19,6 +19,7 @@ You can use it to build your AdminForth application in Docker container.
 > at build time. If you will remove it, your AdminForth application will still work, but will cause some downtime during app restart/redeploy because bundling will happen at runtime after you start the `index.ts` file. When `npx adminforth bundle` command is executed at build time, the call do `bundleNow()` inside of `index.ts` file will actually do nothing.
 
 
+
 ## Building the image
 
 Now you can build your image:
@@ -40,6 +41,33 @@ docker run -p 3500:3500 \
 > Pay attention, that ADMINFORTH_SECRET environment should be in deployed app as well
 
 Now open your browser and go to `http://localhost:3500` to see your AdminForth application running in Docker container.
+
+
+## Reducing docker image build time
+
+By default `Dockerfile` created by adminforth CLI is configured in a way to rebuild adminforth SPA from scratch on every build:
+
+```
+RUN pnpm/npm adminforth bundle
+```
+
+If you want to speed up your build, you can use Docker cache for /tmp folder and change this line to:
+
+```
+RUN --mount=type=cache,target=/tmp pnpm/npm adminforth bundle
+```
+
+This will cache all /tmp folder between builds and speed up the build process significantly. However you need to ensure that your build daemon persists cache from `--mount=type=cache` mounts. Most of vendor CI build daemons like Github actions Default runner will not persist cache between builds so adding `--mount=type=cache` will not help in such case and you need to use dedicated caching solutions.
+
+To verify build performance locally you can do next:
+1) Modify any custom vue file
+2) Run `docker build -t myadminapp .`. This populates docker cache with bundled SPA
+3) Modify same cusom vue file again
+4) Run `time docker build -t myadminapp .` and check resulting time.
+
+First we recommend repeat steps 1-4 without `--mount=type=cache` on your docker daemon to see how much time it takes to build without cache and then add `--mount=type=cache` and repeat steps 1-4 again to see the difference in build times. Then experiment with your CI caching solution to achieve similar build times.
+
+
 
 ## Automating deployments with CI
 
