@@ -5,15 +5,13 @@ import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/inde
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
-import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
-import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-oauth-adapter-google/index.js';
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
-import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
 import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import AdminForthAgent from '../../plugins/adminforth-agent/index.js';
 import CompletionAdapterOpenAIResponses from '../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import OpenAIAudioAdapter from '../../adapters/adminforth-audio-adapter-openai/index.js';
+import OAuthPlugin from './configs/oauthPluginConfig.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
@@ -199,23 +197,7 @@ export default {
         role: 'user',
       },
     }),
-    new OAuthPlugin({
-      userAvatarField: "avatar",
-      adapters: [
-        new AdminForthAdapterGoogleOauth2({
-          clientID: process.env.GOOGLE_CLIENT_ID as string,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-          useOpenIdConnect: false,
-        }),
-      ],
-      emailField: 'email',
-      openSignup: {
-        enabled: true,
-        defaultFieldValues: { // Set default values for new users
-          role: 'user',
-        },
-      },
-    }),
+    OAuthPlugin,
     ...(process.env.OPENAI_API_KEY ? 
     [
       new AdminForthAgent({

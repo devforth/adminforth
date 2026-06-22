@@ -20,7 +20,7 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
@@ -167,8 +167,6 @@ const filterConditionSchema: AnySchemaObject = {
     operator: { type: 'string', enum: SIMPLE_FILTER_OPERATORS },
     value: {},
     rightField: { type: 'string' },
-    insecureRawSQL: { type: 'string' },
-    insecureRawNoSQL: {},
   },
   additionalProperties: true,
   examples: [filterConditionExample],
@@ -241,6 +239,31 @@ const commonFiltersSchema: AnySchemaObject = {
     { $ref: '#/$defs/filterNode' },
   ],
 };
+
+function hasApiRawFilter(filters: any): boolean {
+  if (!filters || typeof filters !== 'object') {
+    return false;
+  }
+
+  if (Array.isArray(filters)) {
+    return filters.some(hasApiRawFilter);
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(filters, 'insecureRawSQL') ||
+    Object.prototype.hasOwnProperty.call(filters, 'insecureRawNoSQL')
+  ) {
+    return true;
+  }
+
+  return Array.isArray(filters.subFilters) && filters.subFilters.some(hasApiRawFilter);
+}
+
+function rejectApiRawFilters(filters: any): { error: string } | undefined {
+  if (hasApiRawFilter(filters)) {
+    return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
+  }
+}
 
 function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
   return {
@@ -643,6 +666,7 @@ export async function interpretResource(
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   adminforth: IAdminForth;
+  loginRateLimiters: RateLimiter[] = [];
   
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
@@ -696,6 +720,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   }
 
   registerEndpoints(server: IHttpServer) {
+    this.loginRateLimiters = this.adminforth.config.auth.rateLimit.map((rate) => new RateLimiter(rate));
+
     server.endpoint({
       noAuth: true,
       method: 'POST',
@@ -703,6 +729,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
         const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
+        const loginRateLimitKey = this.adminforth.auth.getClientIp(headers) || 'unknown';
+        const rateLimitResults = await Promise.all(this.loginRateLimiters.map((limiter) => limiter.consume(loginRateLimitKey)));
+        if (!rateLimitResults.every(Boolean)) {
+          response.setStatus(429);
+          return { error: await tr('Too many login attempts, please try again later', 'errors') };
+        }
+
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
@@ -1291,6 +1324,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+        const rawFilterError = rejectApiRawFilters(body.filters);
+        if (rawFilterError) {
+          return rawFilterError;
+        }
 
         const meta = { requestBody: body, pk: undefined };
         if (source === 'edit' || source === 'show') {
@@ -1698,6 +1735,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+        const rawFilterError = rejectApiRawFilters(filters);
+        if (rawFilterError) {
+          return rawFilterError;
+        }
 
         const meta = { requestBody: body, pk: undefined };
         const { allowedActions } = await interpretResource(
@@ -1777,6 +1818,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
         if (!columnConfig.foreignResource) {
           return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
+        }
+        const rawFilterError = rejectApiRawFilters(body.filters);
+        if (rawFilterError) {
+          return rawFilterError;
         }
 
         const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);

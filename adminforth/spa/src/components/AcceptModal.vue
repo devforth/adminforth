@@ -39,20 +39,17 @@
           <hr class="border-t-2 border-gray-300 dark:border-gray-500 my-6">
 
           <div class="flex justify-center gap-4 w-full">
-            <button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" class="flex-1 py-2.5 px-4 text-sm font-medium text-gray-700 bg-white rounded-default border border-gray-200 hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 transition-all dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            <Button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" variant="secondary" class="flex-1">
                 {{ modalStore?.modalContent?.cancelText }}
-            </button>
+            </Button>
             
-            <button
+            <Button
               @click="()=>{ modalStore.onAcceptFunction(true);modalStore.togleModal()}"
               type="button"
-              class="flex-1 flex items-center justify-center py-2.5 px-4 text-sm font-medium transition-all focus:outline-none
-                    border-none rounded-default shadow-sm focus:z-10 focus:ring-4 gap-1"
-              :class="modalStore.modalContent.dangerous
-                ? 'text-lightAcceptModalConfirmButtonText dark:text-darkAcceptModalConfirmButtonText bg-lightAcceptModalConfirmButtonBackground dark:bg-darkAcceptModalConfirmButtonBackground hover:bg-lightAcceptModalConfirmButtonBackgroundHover dark:hover:bg-darkAcceptModalConfirmButtonBackgroundHover focus:ring-lightAcceptModalConfirmButtonFocus dark:focus:ring-darkAcceptModalConfirmButtonFocus'
-                : 'text-lightButtonsText dark:text-darkButtonsText bg-lightButtonsBackground dark:bg-darkButtonsBackground hover:bg-lightButtonsHover dark:hover:bg-darkButtonsHover focus:ring-lightButtonFocusRing dark:focus:ring-darkButtonFocusRing'">
+              class="flex-1"
+              :variant="modalStore.modalContent.dangerous ? 'danger' : 'primary'">
                 {{ modalStore?.modalContent?.acceptText }}
-            </button>
+            </Button>
           </div>
 
           <div v-if="modalStore?.modalContent?.guardMessage" class="flex items-center justify-center mt-6 text-xs text-gray-400 gap-1.5 font-medium">
@@ -69,7 +66,7 @@
 <script setup lang="ts">
 import { watch, ref } from 'vue';
 import { useModalStore } from '@/stores/modal';
-import { Modal } from '@/afcl';
+import { Button, Modal } from '@/afcl';
 import { IconClipboardDocumentSolid, IconShieldCheck } from '@iconify-prerendered/vue-heroicons';
 
 

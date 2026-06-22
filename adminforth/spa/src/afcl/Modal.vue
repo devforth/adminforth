@@ -116,7 +116,7 @@ async function cancel() {
     const shouldCancel = await props.beforeCancelFunction?.();
     if (shouldCancel === false) return;
   }
-  isModalOpen.value = false;
+  close();
 }
 
 defineOptions({
