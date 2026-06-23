@@ -1839,7 +1839,6 @@ export interface AdminForthInputConfig {
      * 
      */
     componentsToExplicitRegister?: AdminForthComponentDeclarationFull[]
-
  
     /**
      * List of plugins that should be applied in global scope.
