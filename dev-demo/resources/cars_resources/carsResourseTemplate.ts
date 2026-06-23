@@ -14,7 +14,6 @@ import ForeignInlineShowPlugin from '../../../plugins/adminforth-foreign-inline-
 import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
 import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
 import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
-import JsonEditorPlugin from '../../../plugins/adminforth-json-editor/index.js';
 
 import CompletionAdapterOpenAIResponses from '../../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
