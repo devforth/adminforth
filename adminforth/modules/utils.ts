@@ -572,18 +572,18 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
   return { error: null };
 }
 
-export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
-  if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
-    throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+  export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
+    if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
+      throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+    }
+    if (hookResponse.ok === false && !hookResponse.error) {
+      return { error: hookResponse.error ?? 'Operation aborted by hook' };
+    }
+    if (hookResponse.error) {
+      return { error: hookResponse.error };
+    }
+    return null;
   }
-  if (hookResponse.ok === false && !hookResponse.error) {
-    return { error: hookResponse.error ?? 'Operation aborted by hook' };
-  }
-  if (hookResponse.error) {
-    return { error: hookResponse.error };
-  }
-  return null;
-}
 
 export function checkIfFieldIsInsideResourceColumns(fieldName: string, resource: AdminForthResource): boolean {
   for (const column of resource.columns) {
@@ -623,3 +623,25 @@ export function applyRegexValidation(value, validation) {
     }
   }
 }
+
+ export function formatHugePluginError(message: string) {
+    const RED = '\x1b[31m';
+    const BG = '\x1b[41m';
+    const WHITE = '\x1b[97m';
+    const BOLD = '\x1b[1m';
+    const RESET = '\x1b[0m';
+
+    const horizontal = '═'.repeat(100);
+
+    return `
+  ${BG}${WHITE}${BOLD}
+  ╔${horizontal}╗
+  ║${' '.repeat(100)}║
+  ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
+  ║${' '.repeat(100)}║
+  ║  ${message.padEnd(98)}║
+  ║${' '.repeat(100)}║
+  ╚${horizontal}╝
+  ${RESET}
+`;
+  }
