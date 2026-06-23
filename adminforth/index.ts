@@ -43,7 +43,6 @@ export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
 export { configureLogger } from './modules/logger.js';
-export type { AdminForthLoggerConfig } from './modules/logger.js';
 
 // exports
 export * from './types/Back.js';

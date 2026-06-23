@@ -1,17 +1,5 @@
 import pino from 'pino';
-
-export interface AdminForthLoggerConfig {
-  singleLine?: boolean;
-
-  levels?: {
-    user?: string;
-    af?: string;
-    db?: string;
-  };
-
-  customLevels?: Record<string, number>;
-  customColors?: Record<string, string>;
-}
+import type { AdminForthLoggerConfig } from '../types/Back.js';
 
 function envBool(value: string | undefined): boolean {
   return value === 'true' || value === '1';
