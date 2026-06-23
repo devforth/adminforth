@@ -34,6 +34,8 @@ import adminExternalIdentitiesResource from './resources/adminUserExternalIdenti
 
 import { logger } from '../adminforth/modules/logger.js';
 
+import { globalPlugins } from './globalPlugins.js';
+
 const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
@@ -241,6 +243,7 @@ export const admin = new AdminForth({
       resourceId: 'turns',
     }
   ],
+  globalPlugins: globalPlugins,
 });
 
 let lastJobId: string | null = null;
@@ -414,6 +417,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -430,6 +434,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -447,6 +452,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -464,6 +470,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -481,6 +488,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }

@@ -637,6 +637,7 @@ export interface IAdminForthPlugin {
   pluginOptions: any;
   resourceConfig: AdminForthResource;
   className: string;
+  pluginsScope: 'resource' | 'global';
 
   /**
    * Before activating all plugins are sorted by this number and then activated in order.
@@ -654,7 +655,15 @@ export interface IAdminForthPlugin {
    * @param adminforth Instance of IAdminForth
    * @param resourceConfig Resource configuration object which will be modified by plugin
    */
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: IAdminForthPlugin, resource: AdminForthResource}[]): void;
+  modifyResourceConfig?(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: IAdminForthPlugin, resource: AdminForthResource}[]): void;
+  
+
+  /**
+   * This method is used for plugins, applied in global scope (pluginsScope = 'global')
+   * @param adminforth Instance of IAdminForth
+   */
+  modifyGlobalConfig?(adminforth: IAdminForth): void;
+
   componentPath(componentFile: string): string;
 
   /**
@@ -1846,6 +1855,11 @@ export interface AdminForthInputConfig {
      * ```
      */
     logger?: AdminForthLoggerConfig,
+ 
+    /**
+     * List of plugins that should be applied in global scope.
+     */
+    globalPlugins?: Array<IAdminForthPlugin>,
 }
 
 
