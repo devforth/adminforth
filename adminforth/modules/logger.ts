@@ -6,7 +6,7 @@ const baseLogger = pino({
     options: {
       colorize: true,
       ignore: 'pid,hostname',
-      singleLine: process.env.LOG_SINGLE_LINE === 'true' || process.env.LOG_SINGLE_LINE === '1',
+      singleLine: process.env.AF_LOG_SINGLE_LINE === 'true' || process.env.AF_LOG_SINGLE_LINE === '1',
     }
   },
 });
