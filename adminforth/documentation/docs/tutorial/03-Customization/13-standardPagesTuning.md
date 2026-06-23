@@ -542,6 +542,26 @@ And `edit` action will be available as quick action:
      
 
 
+## Show
+
+### Next record button
+
+By default, when a user opens a record from the list view, a **Next** button appears on the show page. It allows navigating through records one by one, respecting the current filters and sorting applied in the list. When the user reaches the last record on the current page, AdminForth automatically fetches the next page and continues navigation seamlessly.
+
+To disable the Next button for a resource, set `showNextButton` to `false`:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  options: {
+//diff-add
+    showNextButton: false,
+  }
+}
+```
+
+> ☝️ The Next button is only shown when the user navigates to the show page from the list view. Opening a record directly via URL will not display the button.
+
 ## Creating
 
 ### Fill with default values

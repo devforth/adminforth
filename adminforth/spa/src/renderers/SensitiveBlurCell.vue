@@ -1,7 +1,7 @@
 <template>
   <div class="inline-flex items-center gap-1">
     <div
-      class="overflow-hidden max-w-[200px] max-h-[20px] rounded-default"
+      class="overflow-hidden max-h-[20px] rounded-default"
       :title="show ? $t('Click to hide') : $t('Click to show')"
       @click="toggle"
     >
