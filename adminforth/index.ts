@@ -38,11 +38,10 @@ import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './modules/restApi.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
-import { afLogger, configureLogger } from './modules/logger.js';
+import { afLogger } from './modules/logger.js';
 export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
-export { configureLogger } from './modules/logger.js';
 
 // exports
 export * from './types/Back.js';
@@ -207,9 +206,6 @@ class AdminForth implements IAdminForth {
   }
 
   constructor(config: AdminForthInputConfig) {
-    if (config.logger) {
-      configureLogger(config.logger);
-    }
     afLogger.trace('🔧 AdminForth constructor started');
     
     if (global.adminforth) {
