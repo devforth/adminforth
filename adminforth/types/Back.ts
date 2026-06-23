@@ -2,7 +2,6 @@ import type { Express, Request, Response } from 'express';
 import type { AnySchemaObject } from 'ajv';
 import type { Writable } from 'stream';
 import type { ZodType } from 'zod';
-import type { AdminForthLoggerConfig } from '../modules/logger.js';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
@@ -23,6 +22,19 @@ export const PERIOD_UNITS = ['s', 'm', 'h', 'd'] as const;
 export type PeriodUnit = typeof PERIOD_UNITS[number];
 export type PeriodString = `${bigint}${PeriodUnit}`;
 export type RateLimitString = `${bigint}/${PeriodString}`;
+
+export interface AdminForthLoggerConfig {
+  singleLine?: boolean;
+
+  levels?: {
+    user?: string;
+    af?: string;
+    db?: string;
+  };
+
+  customLevels?: Record<string, number>;
+  customColors?: Record<string, string>;
+}
 
 export interface ICodeInjector {
   srcFoldersToSync: Object;
