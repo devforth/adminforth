@@ -1,3 +1,7 @@
+---
+description: "Step-by-step guide to creating an AdminForth app with the CLI (bootstrapping), understanding the generated project structure, running migrations, and starting the server."
+---
+
 # Getting Started
 
 This page provides a step-by-step guide to quickly get started with AdminForth using the `adminforth` CLI.
@@ -14,6 +18,7 @@ nvm install 20
 nvm alias default 20
 nvm use 20
 ```
+
 
 ## Creating an AdminForth Project
 
@@ -47,7 +52,7 @@ CLI options:
 > Format is `<scheme>://<username>:<password>@<host>:<port>/<database>`. Examples:
 >
 > - SQLite — `sqlite://.db.sqlite`. If database not yet exists it will be created
-> - PostgreSQL — `postgres://user:password@localhost:5432/dbname`
+> - PostgreSQL — `postgresql://user:password@localhost:5432/dbname`
 > - MongoDB — `mongodb://localhost:27017/dbname`
 > - Clickhouse — `clickhouse://localhost:8123/dbname`
 > - MySQL — `mysql://user:password@localhost:3306/dbname`

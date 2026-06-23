@@ -1,7 +1,5 @@
 <template>
   <div class="rounded-default">
-    <pre>
-  </pre>
     <form autocomplete="off" @submit.prevent>
       <div v-if="!groups || groups.length === 0">
         <GroupsTable
@@ -308,6 +306,9 @@ onMounted(() => {
     if (column.type === 'json' && currentValues.value) {
       if (column.isArray?.enabled) {
         // if value is null or undefined, we should set it to empty array
+        if (column.showIn?.[mode.value] === false) {
+          return; 
+        }
         if (!currentValues.value[column.name]) {
           currentValues.value[column.name] = [];
         } else {

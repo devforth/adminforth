@@ -5,6 +5,7 @@ import { AdminUser } from "../types/Common.js";
 
 export class WebSocketClient implements IWebSocketClient {
   id: string;
+  clientId?: string;
   lastPing: number;
   topics: Set<string>;
   adminUser: AdminUser;
@@ -14,8 +15,9 @@ export class WebSocketClient implements IWebSocketClient {
   onMessage: (handler: (message: string) => void) => void;
   onClose: (handler: () => void) => void;
 
-  constructor({ id, send, close, onMessage, onClose, adminUser }) {
+  constructor({ id, clientId, send, close, onMessage, onClose, adminUser }) {
     this.id = id;
+    this.clientId = clientId;
     this.send = send;
     this.close = close;
     this.onMessage = onMessage;

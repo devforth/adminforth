@@ -3,20 +3,24 @@ import { defineStore } from 'pinia'
 
  type ModalContentType = {
   title?: string;
+  guardMessage?: string;
   content?: string;
   contentHTML?: string;
   acceptText?: string;
   cancelText?: string;
+  dangerous?: boolean;
  }
 
 
 export const useModalStore = defineStore('modal', () => {
   const modalContent = ref({
     title: 'title',
+    guardMessage: 'guardMessage',
     content: '',
     contentHTML: '',
     acceptText: 'acceptText',
     cancelText: 'cancelText',
+    dangerous: false,
   });  
   const isOpened = ref(false);
   const onAcceptFunction: any = ref(()=>{});
@@ -32,21 +36,25 @@ export const useModalStore = defineStore('modal', () => {
   }
   function setModalContent(content: ModalContentType) {
     modalContent.value = {
-      title: content.title || 'title',
+      title: content.title || '',
+      guardMessage: content.guardMessage || '',
       content: content.content || '',
       contentHTML: content.contentHTML || '',
       acceptText: content.acceptText || 'acceptText',
       cancelText: content.cancelText || 'cancelText',
+      dangerous: content.dangerous ?? false,
     };
   }
   function resetmodalState() {
     isOpened.value = false;
     modalContent.value = {
       title: 'title',
+      guardMessage: 'guardMessage',
       content: 'content',
       contentHTML: '',
       acceptText: 'acceptText',
       cancelText: 'cancelText',
+      dangerous: false,
     };
     setOnAcceptFunction(()=>{});
 

@@ -153,13 +153,13 @@
       <button 
         :disabled="!filtersStore.visibleFiltersCount"
         type="button" 
-        class="flex gap-1 items-center py-1 pr-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
+        class="flex gap-1 items-center py-1 pr-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded-default border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clear"><IconCloseOutline class="ml-3"/> {{ $t('Clear all') }}</button>
 
    </div>
   </div>
 
-  <div v-if="show"  class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0  z-30"
+  <div v-if="show"  class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0  z-40"
     @click="$emit('hide')">
   </div>
 </template>
@@ -195,6 +195,7 @@ const props = defineProps<{
   filters?: AdminforthFilterStore['filters'],
   show: Boolean,
   columnsMinMax: ColumnMinMaxValue,
+  resourceId?: string,
   filtersStore: AdminforthFilterStoreUnwrapped
 }>();
 
@@ -235,7 +236,7 @@ async function loadMoreOptions(columnName: string, searchTerm = '') {
     columnName,
     searchTerm,
     columns: props.columns,
-    resourceId: router.currentRoute.value.params.resourceId as string,
+    resourceId: props.resourceId ?? router.currentRoute.value.params.resourceId as string,
     columnOptions,
     columnLoadingState,
     columnOffsets,

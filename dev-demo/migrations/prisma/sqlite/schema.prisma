@@ -127,3 +127,30 @@ model turns {
   response      String?
   dubbug        String?
 }
+
+model dashboard_configs {
+  id        String @id
+  slug      String @unique
+  label     String
+  revision  Int
+  config    Json
+
+  @@index([slug])
+}
+
+model AdminUserExternalIdentity {
+  id             String   @id @default(uuid())
+  adminUserId    String
+  provider       String
+  subject        String
+  externalUserId String?
+  email          String?
+  phone          String?
+  fullName       String?
+  avatarUrl      String?
+  meta           Json?
+  createdAt      DateTime @default(now())
+
+  @@unique([provider, subject])
+  @@index([adminUserId])
+}

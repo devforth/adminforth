@@ -60,6 +60,11 @@ export interface CompletionAdapter {
     content?: string;
     finishReason?: string;
     error?: string;
+    used_tokens?: {
+      input_uncached: number;
+      input_cached: number;
+      output: number;
+    };
   }>;
 
   /**

@@ -255,6 +255,8 @@ resource "null_resource" "sync_files_and_run" {
     # heredoc syntax
     # remove files that where deleted on the source
     command = <<-EOF
+    set -eu
+
     #  -o StrictHostKeyChecking=no
     rsync -t -av -e "ssh -i ./.keys/id_rsa -o StrictHostKeyChecking=no" \
       --delete \

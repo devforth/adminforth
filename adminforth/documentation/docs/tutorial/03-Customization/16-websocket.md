@@ -1,17 +1,25 @@
+---
+description: "Guide to AdminForth WebSocket usage, including client subscriptions, publish authorization, initial loading, and real-time updates for custom pages or components."
+---
 
 # Websocket
 
 AdminForth provide own build-in websocket interface which allows to stream some data to frontend from backend.
+
+If in production you run through a reverse proxy such as Nginx, ensure websocket upgrade is enabled on the `/afws` path under your AdminForth base URL, otherwise websocket will not work. See [Deploy in Docker > Nginx version](/docs/tutorial/deploy#nginx-version).
 
 In two words, to subscribe to a topic from any frontend component you need to do next
 
 ```javascript
 import websocket from '@/websocket';
 
-websocket.subscribe('/topic-name', (data) => {
+const unsubscribe = websocket.subscribe('/topic-name', (data) => {
   // this callback called when we receive publish in topic from the websocket
   console.log(data);
 });
+
+// later, for example when the component is unmounted
+unsubscribe();
 ```
 
 On server you can publish data to the topic by calling
@@ -69,17 +77,17 @@ const props = defineProps({
 });
 
 const totalCost: Ref<number|null> = ref(null);
+let unsubscribePropertyCost: (() => void) | undefined;
 
 onMounted(() => {
-  websocket.subscribe(`/property-cost/${props.adminUser!.pk}`, (data: any) => {
+  unsubscribePropertyCost = websocket.subscribe(`/property-cost/${props.adminUser!.pk}`, (data: any) => {
     // this callback called when we receive publish in topic from the websocket
     totalCost.value = data.totalCost;
   });
 });
 
 onUnmounted(() => {
-  // will be called on logout
-  websocket.unsubscribeAll();
+  unsubscribePropertyCost?.();
 });
 
 </script>

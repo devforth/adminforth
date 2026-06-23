@@ -7,6 +7,7 @@
         :show="filtersShow"
         @hide="filtersShow = false"
         :filtersStore="filtersStore"
+        :resourceId="coreStore.resource?.resourceId"
       />
     </Teleport>
 
@@ -34,7 +35,7 @@
         @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"
         data-tooltip-target="tooltip-remove-all"
-        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText af-button-shadow 
+        class="flex gap-1  items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText af-button-shadow 
           focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder h-[2.125rem]
           hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 
           focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
@@ -78,7 +79,7 @@
           <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 
           via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none
            focus:ring-purple-300 dark:focus:ring-purple-800 
-            font-medium rounded-sm text-xs px-1 ml-1 text-center ">
+            font-medium rounded-default text-xs px-1 ml-1 text-center ">
             {{ action.badge }}            
           </div>
         </button>
@@ -124,7 +125,7 @@
       </RouterLink>
 
       <button
-        class="af-filter-button flex gap-1 items-center py-1 h-[2.125rem] px-3 me-2 af-button-shadow text-sm font-medium 
+        class="af-filter-button flex gap-1 items-center py-1 h-[2.125rem] px-3 af-button-shadow text-sm font-medium 
           text-lightListViewButtonText transition-all focus:outline-none bg-lightListViewButtonBackground rounded border 
           border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
           focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
@@ -135,11 +136,18 @@
       >
         <IconFilterOutline class="w-4 h-4"/>
         {{ $t('Filter') }}
-        <span
-          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-          v-if="filtersStore.visibleFiltersCount">
-            {{ filtersStore.visibleFiltersCount }}
-        </span>
+        <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
+          <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
+              {{ filtersStore.visibleFiltersCount }}
+          </span>
+          
+          <div 
+            @click.stop="filtersStore.clearFilters()"
+            class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+          >
+            <IconCloseOutline class="w-4 h-4 text-red-500" />
+          </div>
+        </div>
       </button>
 
       <ThreeDotsMenu 
@@ -170,7 +178,10 @@
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
       @update:records="getListInner"
+      @update:pageSize="(newSize) => { pageSize = newSize; page = 1; }"
       :sort="sort"
+      :filters="filtersStore.filters"
+      :pageSizeOptions="Array.isArray(coreStore.resource?.options?.listPageSizeOptions) ? coreStore.resource?.options?.listPageSizeOptions : []"
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
@@ -224,12 +235,13 @@ import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } f
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip, Spinner } from '@/afcl'
 import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
-
+import { useI18n } from 'vue-i18n';
 
 import {
   IconBanOutline,
   IconFilterOutline,
-  IconPlusOutline
+  IconPlusOutline,
+  IconCloseOutline
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
@@ -239,6 +251,7 @@ const filtersShow = ref(false);
 const { list, alert } = useAdminforth();
 const coreStore = useCoreStore();
 const filtersStore = useFiltersStore();
+const { t } = useI18n();
 
 const route = useRoute();
 
@@ -260,7 +273,23 @@ const customActionLoadingStates = ref<{[key: string]: boolean}>({});
 const DEFAULT_PAGE_SIZE = 10;
 
 
-const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
+const pageSize = ref(DEFAULT_PAGE_SIZE);
+
+const syncPageSize = () => {
+  const resourceId = route.params.resourceId;
+  const savedSize = localStorage.getItem(`pageSize_${resourceId}`);
+
+  if (savedSize) {
+    pageSize.value = parseInt(savedSize);
+  } 
+  else if (coreStore.resource?.options?.listPageSize) {
+    pageSize.value = coreStore.resource.options.listPageSize;
+  } 
+  else {
+    pageSize.value = DEFAULT_PAGE_SIZE;
+  }
+};
+
 const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
@@ -322,7 +351,7 @@ async function refreshExistingList(pk?: any) {
 }
 
 async function startBulkActionInner(actionId: string) {
-  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner);
+  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner, t);
 }
 
 async function startCustomBulkActionInner(actionId: string | number) {
@@ -333,6 +362,7 @@ async function startCustomBulkActionInner(actionId: string | number) {
     resourceId: route.params.resourceId as string,
     recordIds: checkboxes.value,
     confirmMessage: action?.bulkConfirmationMessage,
+    confirmDangerous: action?.bulkDangerous ?? false,
     resource: coreStore.resource!,
     setLoadingState: (loading: boolean) => {
       customActionLoadingStates.value[actionId] = loading;
@@ -395,6 +425,9 @@ async function init() {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string
   });
+
+  syncPageSize();
+
   isPageLoaded.value = true;
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
 
@@ -445,7 +478,7 @@ async function init() {
   }
 }
 
-watch([page, sort, () => filtersStore.filters], async () => {
+watch([page, sort, pageSize, () => filtersStore.filters], async () => {
   // console.log('🔄️ page/sort/filter change fired, page:', page.value);
   await getListInner();
 }, { deep: true });

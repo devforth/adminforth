@@ -5,15 +5,27 @@ import { Express } from 'express';
 import type { AnySchemaObject } from 'ajv';
 import { apiReference } from '@scalar/express-api-reference';
 import fetch from 'node-fetch';
-import { AdminUserAuthorizeFunction, IAdminForth, IAdminForthExpressRouteSchema, IExpressHttpServer, HttpExtra } from '../types/Back.js';
+import {
+  AdminUserAuthorizeFunction,
+  IAdminForth,
+  IAdminForthAuthenticatedEndpointOptions,
+  IAdminForthEndpointOptions,
+  IAdminForthExpressRouteSchema,
+  IAdminForthNoAuthEndpointOptions,
+  IExpressHttpServer,
+  HttpExtra,
+} from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import { AdminUser } from '../types/Common.js';
 import http from 'http';
+import type { AddressInfo } from 'net';
 import { randomUUID } from 'crypto';
 import { listify } from '../modules/utils.js';
 import { afLogger } from '../modules/logger.js';
+import { ADMINFORTH_CLIENT_ID_HEADER, runWithRequestContext } from '../modules/requestContext.js';
 import * as z from 'zod';
+import multer from 'multer';
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -41,6 +53,11 @@ function parseCookiesString(cookiesString: string): Array<{
   return result;
 }
 
+function getHeaderString(headers: Record<string, any>, name: string): string | undefined {
+  const value = headers[name];
+  return typeof value === 'string' ? value : undefined;
+}
+
 async function parseExpressCookie(req): Promise<
   Array<{
     key: string, 
@@ -61,6 +78,7 @@ const EXPRESS_REGEXP_PARAM_CAPTURE_RE = /\(\?:\(\[\^\\\/]\+\?\)\)/g;
 const EXPRESS_REGEXP_ESCAPED_SLASH_RE = /\\\//g;
 const EXPRESS_REGEXP_TRAILING_DOLLAR_RE = /\$$/;
 const EXPRESS_REGEXP_LEADING_CARET_RE = /^\^/;
+type MulterParser = (req: any, res: any, callback: (error?: unknown) => void) => void;
 
 type RegisteredExpressRouteSchema = IAdminForthExpressRouteSchema & {
   request?: AnySchemaObject;
@@ -153,9 +171,14 @@ class ExpressServer implements IExpressHttpServer {
   adminforth: IAdminForth;
   server: http.Server;
   schemaAwareRouteRegistrationPatched = false;
+  uploadParser: MulterParser;
+  pendingEndpointRegistrations: Array<() => void> = [];
 
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
+    this.uploadParser = multer({
+      storage: multer.memoryStorage(),
+    }).any();
   }
 
   setupSpaServer() {
@@ -254,6 +277,7 @@ class ExpressServer implements IExpressHttpServer {
         this.adminforth.websocket.registerWsClient(
           new WebSocketClient({
             id: randomUUID(),
+            clientId: typeof req.url === 'string' ? new URL(req.url, 'http://localhost').searchParams.get('clientId') || undefined : undefined,
             adminUser,
             send: (data) => ws.send(data),
             close: () => ws.close(),
@@ -270,7 +294,13 @@ class ExpressServer implements IExpressHttpServer {
 
   serve(app) {
     this.expressApp = app;
+    this.expressApp.use((req, res, next) => {
+      runWithRequestContext({
+        websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
+      }, next);
+    });
     this.patchSchemaAwareRouteRegistration();
+    this.flushPendingEndpointRegistrations();
     const stack = (this.expressApp as any)?._router?.stack;
     if (Array.isArray(stack)) {
       this.registerSchemaAwareStack(stack, '');
@@ -281,8 +311,24 @@ class ExpressServer implements IExpressHttpServer {
     this.setupSpaServer();
   }
 
+  flushPendingEndpointRegistrations() {
+    this.pendingEndpointRegistrations.splice(0).forEach((registerEndpoint) => {
+      registerEndpoint();
+    });
+  }
+
   listen(...args) {
     this.server.listen(...args);
+  }
+
+  getInternalApiOrigin(): string | undefined {
+    const address = this.server?.address();
+
+    if (!address || typeof address === 'string') {
+      return undefined;
+    }
+
+    return `http://127.0.0.1:${(address as AddressInfo).port}`;
   }
 
   async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: HttpExtra) {
@@ -303,55 +349,63 @@ class ExpressServer implements IExpressHttpServer {
       }
     }
   }
+
+  runInRequestContext(req, callback) {
+    return runWithRequestContext({
+      websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
+    }, callback);
+  }
   
 
   authorize(handler) {
     return async (req, res, next) => {
-      const cookies = await parseExpressCookie(req);
-      const brandSlug = this.adminforth.config.customization.brandNameSlug;
-      // check if multiple adminforth_jwt providerd and show warning
-      const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
-      if (jwts.length > 1) {
-        afLogger.error('Multiple adminforth_jwt cookies provided');
-      }
+      return this.runInRequestContext(req, async () => {
+        const cookies = await parseExpressCookie(req);
+        const brandSlug = this.adminforth.config.customization.brandNameSlug;
+        // check if multiple adminforth_jwt providerd and show warning
+        const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
+        if (jwts.length > 1) {
+          afLogger.error('Multiple adminforth_jwt cookies provided');
+        }
 
-      const jwt = jwts[0]?.value;
+        const jwt = jwts[0]?.value;
 
-      if (!jwt) {
-        res.status(401).send('Unauthorized by AdminForth');
-        return
-      }
-      let adminforthUser;
-      try {
-        adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
-      } catch (e) {
-        // this might happen if e.g. database intialization in progress.
-        // so we can't answer with 401 (would logout user)
-        // reproduced during usage of listRowsAutoRefreshSeconds
-        afLogger.error(e.stack);
-        res.status(500).send('Failed to verify JWT token - something went wrong');
-        return;
-      }
-      if (!adminforthUser) {
-        res.status(401).send('Unauthorized by AdminForth');
-      } else {
-        req.adminUser = adminforthUser;
-        const toReturn: { error?: string, allowed: boolean } = { allowed: true };
-        await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
-          body: req.body,
-          query: req.query,
-          headers: req.headers,
-          cookies: cookies as any,
-          requestUrl: req.url,
-          meta: {},
-          response: res
-        });
-        if (!toReturn.allowed) {
+        if (!jwt) {
+          res.status(401).send('Unauthorized by AdminForth');
+          return
+        }
+        let adminforthUser;
+        try {
+          adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+        } catch (e) {
+          // this might happen if e.g. database intialization in progress.
+          // so we can't answer with 401 (would logout user)
+          // reproduced during usage of listRowsAutoRefreshSeconds
+          afLogger.error(e.stack);
+          res.status(500).send('Failed to verify JWT token - something went wrong');
+          return;
+        }
+        if (!adminforthUser) {
           res.status(401).send('Unauthorized by AdminForth');
         } else {
-          handler(req, res, next);
+          req.adminUser = adminforthUser;
+          const toReturn: { error?: string, allowed: boolean } = { allowed: true };
+          await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
+            body: req.body,
+            query: req.query,
+            headers: req.headers,
+            cookies: cookies as any,
+            requestUrl: req.url,
+            meta: {},
+            response: res
+          });
+          if (!toReturn.allowed) {
+            res.status(401).send('Unauthorized by AdminForth');
+          } else {
+            handler(req, res, next);
+          }
         }
-      }
+      });
     };
   }
 
@@ -445,9 +499,11 @@ class ExpressServer implements IExpressHttpServer {
           method: method.toUpperCase(),
           path: routePath,
           description: schema.description,
+          agent: schema.agent,
           request_schema: schema.request,
           response_schema: schema.response,
-          handler: async () => null,
+          meta: schema.meta,
+          handler: undefined as never,
         });
       });
     });
@@ -521,7 +577,9 @@ class ExpressServer implements IExpressHttpServer {
     }));
   }
 
-  endpoint(options) {
+  endpoint(options: IAdminForthAuthenticatedEndpointOptions): void;
+  endpoint(options: IAdminForthNoAuthEndpointOptions): void;
+  endpoint(options: IAdminForthEndpointOptions) {
     const {
       method='GET',
       path,
@@ -531,6 +589,8 @@ class ExpressServer implements IExpressHttpServer {
       request_schema,
       response_schema,
       responce_schema,
+      agent,
+      target='json'
     } = options;
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
@@ -545,11 +605,12 @@ class ExpressServer implements IExpressHttpServer {
         description,
         request_schema,
         response_schema: normalizedResponseSchema,
+        agent,
         handler,
       })
       : null;
 
-    const expressHandler = async (req, res) => {
+    const expressHandler = async (req, res) => this.runInRequestContext(req, async () => {
       const abortController = new AbortController();
       res.on('close', () => {
         if(req.destroyed) {
@@ -560,17 +621,39 @@ class ExpressServer implements IExpressHttpServer {
       // AdminForth API endpoints accept only application/json for POST, PUT, PATCH, DELETE
       // If you need other content types, use a custom server endpoint.
       const method = (req.method || '').toUpperCase();
+      const contentTypeHeader = (req.headers?.['content-type'] || '').toString();
       if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        const contentTypeHeader = (req.headers?.['content-type'] || '').toString();
-        const isJson = contentTypeHeader.toLowerCase().startsWith('application/json');
-        if (!isJson) {
+        const expectedContentType = target === 'upload' ? 'multipart/form-data' : 'application/json';
+        const hasExpectedContentType = contentTypeHeader.toLowerCase().startsWith(expectedContentType);
+        if (!hasExpectedContentType) {
           const passed = contentTypeHeader || 'undefined';
-          res.status(415).send(`AdminForth API endpoints support only requests with Content/Type: application/json, when you passed: ${passed}. Please use custom server endpoint if you really need this content type`);
+          res.status(415).send(`AdminForth API endpoint supports only requests with Content-Type: ${expectedContentType}, when you passed: ${passed}. Please use custom server endpoint if you really need this content type`);
+          return;
+        }
+      }
+      if (target === 'upload') {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            this.uploadParser(req, res, (error?: unknown) => {
+              if (error) {
+                reject(error);
+                return;
+              }
+
+              resolve();
+            });
+          });
+          if (!(req as any).file && Array.isArray((req as any).files) && (req as any).files.length) {
+            (req as any).file = (req as any).files[0];
+          }
+        } catch (error) {
+          afLogger.error(`Failed to parse multipart form-data body, ${error}`);
+          res.status(400).send('Invalid multipart/form-data body');
           return;
         }
       }
       let body = req.body || {};
-      if (typeof body === 'string') {
+      if (typeof body === 'string' && target === 'json') {
         try {
           body = JSON.parse(body);
         } catch (e) {
@@ -655,10 +738,19 @@ class ExpressServer implements IExpressHttpServer {
       }
 
       res.json(output);
+    });
+
+    const registerEndpoint = () => {
+      afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);
+      this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
+    };
+
+    if (this.expressApp) {
+      registerEndpoint();
+      return;
     }
 
-    afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);
-    this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
+    this.pendingEndpointRegistrations.push(registerEndpoint);
   }
 
 }

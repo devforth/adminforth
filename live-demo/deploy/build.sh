@@ -23,7 +23,7 @@ export DOCKER_CERT_PATH=~/.docker/$HOST_DOMAIN
 
 
 
-docker compose -p stack-af-live -f compose.yml  up -d --pull always --remove-orphans --wait
+docker compose -p stack-af-live -f compose.yml  up -d --pull always --remove-orphans --wait --no-build
 
 docker builder prune -a -f
 docker container prune -f

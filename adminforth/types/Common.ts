@@ -66,7 +66,7 @@ export enum ActionCheckSource {
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
-  BulkActionRequest = 'bulkActionRequest',
+  BulkActionRequest = 'bulkActionRequest',  // @deprecated beacuse whole bulk action is deprecated in favor of custom actions, never use this value in new code
   CustomActionRequest = 'customActionRequest',
 }
 
@@ -139,8 +139,23 @@ export interface AdminForthBulkActionCommon {
 
   /**
    * Confirmation message which will be displayed to user before action is executed.
+   * String value is shown as the dialog title without any message under it.
+   * Use object form to explicitly set a message (e.g. "This process is irreversible.")
+   * and/or button labels. `{count}` placeholder in message will be replaced with the
+   * number of selected records, pluralization is supported via `|` separator.
    */
-  confirm?: string,
+  confirm?: string | {
+    title?: string,
+    message?: string,
+    yes?: string,
+    no?: string,
+  },
+
+  /**
+   * When true, the confirmation dialog renders in red/danger style.
+   * Use for destructive bulk actions like delete.
+   */
+  dangerous?: boolean,
 
   /**
    * Success message which will be displayed to user after action is executed.
@@ -329,6 +344,7 @@ type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
 export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
   actions?: AdminForthActionFront[],
   bulkActions?: AdminForthBulkActionFront[],
+  showNextButton?: boolean,
 }
 
 export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
@@ -472,7 +488,13 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
-      
+
+      /**
+        * Available page size options for list view, provided as an array of page sizes
+        * or a function returning them. When set together with `listPageSize`, the page
+        * size should be one of the values returned here.
+        */
+      listPageSizeOptions?: number[] | ((args: { adminUser: any, adminforth: any }) => number[] | Promise<number[]>);      
       /**
        * Whether to use virtual scroll in list view.
        */
@@ -514,7 +536,14 @@ export interface AdminForthResourceInputCommon {
       /**
        * Whether to refresh existing list rows automatically every N seconds.
        */
-      listRowsAutoRefreshSeconds?: number, 
+      listRowsAutoRefreshSeconds?: number,
+
+      /**
+       * Whether to show the "Next" navigation button on the show page.
+       * Allows cycling through records respecting current list filters and sorting.
+       * Defaults to `true`.
+       */
+      showNextButton?: boolean,
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.
@@ -984,6 +1013,11 @@ export interface AdminForthResourceColumnInputCommon {
   listSticky?: boolean;
 
   /**
+   * Custom CSS class applied to the column in list view header and cells.
+   */
+  listCssClass?: string;
+
+  /**
    * Show field only if certain conditions are met.
    */
   showIf?: Predicate;
@@ -1083,8 +1117,16 @@ export interface AdminForthConfigMenuItem {
 
   /**
    * Label for menu item which will be displayed in the admin panel.
+   * Can be a static string or a callback which receives the current admin user
+   * and returns the label dynamically.
+   *
+   * Example:
+   *
+   * ```ts
+   * label: (adminUser) => adminUser.dbUser.role === 'superadmin' ? 'Dashboard (CRS)' : 'Dashboard',
+   * ```
    */
-  label?: string,
+  label?: string | ((user: AdminUser, adminForth: IAdminForth) => Promise<string> | string),
 
   /**
    * Icon for menu item which will be displayed in the admin panel.
@@ -1203,6 +1245,26 @@ export interface AdminForthConfigMenuItem {
    */
   isOpenInNewTab?: boolean
 }
+
+export type AdminForthMenuTarget =
+  | string
+  | {
+    itemId?: string,
+    resourceId?: string,
+    path?: string,
+  };
+
+export type AdminForthMenuContribution = {
+  item: AdminForthConfigMenuItem,
+  placement?:
+    | { position: 'first' | 'last' }
+    | { before: AdminForthMenuTarget }
+    | { after: AdminForthMenuTarget },
+  order?: number,
+};
+
+export type MenuTarget = AdminForthMenuTarget;
+export type MenuContribution = AdminForthMenuContribution;
 
 
 export interface ResourceVeryShort {

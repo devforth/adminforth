@@ -1,3 +1,7 @@
+---
+description: "Guide to replacing default field rendering with custom Vue components for list, show, create, edit, and filter views, including props and third-party packages."
+---
+
 # Custom record field rendering
 
 ## Customizing how AdminForth renders the cells with record values
@@ -577,6 +581,29 @@ list: '@/renderers/ZeroStylesRichText.vue',
 ```
 
 `ZeroStyleRichText` fits well for tasks like email templates preview fields.
+
+
+### Sensitive data blur
+
+For fields containing sensitive data (like passwords, API keys, tokens, or other confidential values), use the `SensitiveBlurCell` renderer. It blurs the value by default and reveals it on click.
+
+```ts title='./resources/anyResource.ts'
+  columns: [
+    ...
+    {
+      name: 'api_key',
+  //diff-add
+      components: {
+  //diff-add
+        show: '@/renderers/SensitiveBlurCell.vue',
+  //diff-add
+        list: '@/renderers/SensitiveBlurCell.vue',
+  //diff-add
+      },
+    ...
+```
+
+The renderer wraps the standard value output and adds a click-to-reveal blur effect. Clicking again hides the value.
 
 
 ### Custom filter component for square meters

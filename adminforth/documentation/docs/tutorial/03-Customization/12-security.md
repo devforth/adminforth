@@ -1,3 +1,7 @@
+---
+description: "Guide to AdminForth security settings, including session lifetime, password policies, trusted proxy configuration, HTTPS, CSRF scope, and hardening recommendations."
+---
+
 # Security
 
 Security and privacy if adminforth users is one of the most important aspects of AdminForth.
@@ -24,6 +28,31 @@ new AdminForth({
 ```
 
 In this case users who will check "Remember me" checkbox will be logged in for 7 days instead of 24 hours.
+
+
+## Login rate limits
+
+AdminForth rate-limits login attempts by client IP using `auth.rateLimit`. Password login, OAuth login, and passkey login use the same configured limits, but each login method has its own independent rate-limit bucket.
+
+By default AdminForth uses:
+
+```ts
+['500/5m', '5000/1h', '10000/1d']
+```
+
+You can override it in the app config:
+
+```ts ./index.ts
+new AdminForth({
+  ...
+  auth: {
+    rateLimit: ['10/5m', '100/1h', '500/1d']
+  }
+})
+```
+
+The format is `requests/period`, where period can use `s`, `m`, `h`, or `d`.
+Because rate limits are keyed by client IP, configure `auth.clientIpHeader` when AdminForth runs behind a trusted CDN or reverse proxy. See [Trusting client IP addresses](#trusting-client-ip-addresses).
 
 
 ## Password strength
@@ -66,7 +95,7 @@ Also you can add custom rules. For example to prevent popular words:
   ],
 ```
 
-All rules defined in password column will be also delivered to [password reset plugin](../08-Plugins/07-email-password-reset.md) if you are using it to ensure that password reset will also respect same rules.
+All rules defined in password column will be also delivered to [password reset plugin](../09-Plugins/07-email-password-reset.md) if you are using it to ensure that password reset will also respect same rules.
 
 
 ## Trusting client IP addresses
@@ -238,3 +267,46 @@ export const admin = new AdminForth({
 ```
 
 Now, if a user’s field `status` is changed to "banned", they won’t be able to perform any actions and moreover  will be automatically logged out upon accessing the page.
+
+## RateLimiter for API
+
+### Import
+```ts 
+import { RateLimiter } from "adminforth";
+```
+
+### Usage
+```ts 
+import { RateLimiter } from "adminforth";
+
+const UserRateLimiter = new RateLimiter("20/1d");
+
+app.post(
+  `${ADMIN_BASE_URL}/api/some-api/`,
+  admin.express.authorize(async (req: any, res: any) => {
+
+    const allowed = await UserRateLimiter.consume(req.user.id);
+
+    if (!allowed) {
+      res.status(429).json({
+        error: "Rate limit exceeded"
+      });
+      return;
+    }
+
+    // your API logic here
+  })
+);
+```
+
+### Limit format
+"20/1d"
+This means that a user is allowed to make up to 20 requests within one day, and once this limit is reached, any further requests will be blocked until the 24-hour period resets.
+
+### Supported time units
+- s → seconds (10s)
+- m → minutes (5m)
+- h → hours (1h)
+- d → days (1d)
+
+> ☝ Сonsume(key) is used to check whether a specific key such as a userId, IP address, or any other identifier has exceeded its allowed request limit. If the limit has not been reached, it returns true, meaning the request is allowed to proceed.

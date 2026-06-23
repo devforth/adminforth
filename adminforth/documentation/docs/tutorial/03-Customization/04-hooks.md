@@ -1,5 +1,5 @@
 ---
-description: "Hooks are powerful tools to modify the data before it is saved to the database, execute something after data were saved or deleted, change the query before fetching items from the database, modify the fetched data before it is displayed in the list and show, and prevent the request to db depending on some condition."
+description: "Guide to AdminForth lifecycle hooks for list, show, create, edit, and delete flows, including request interception, response shaping, and save-time side effects."
 image: "/ogs/hooks.png"  # Path to the OG image
 ---
 
@@ -52,9 +52,9 @@ When user clicks the "Save" button on edit page, AdminForth makes a request to t
 
 ![Saving data on edit page](image-27.png)
 
-Practically you can use `edit.beforeSave` hook to modify the data or populate new fields before it is saved to the database.
+Practically you can use `hooks.edit.beforeSave` hook to modify the data or populate new fields before it is saved to the database.
 
-> 👆 Note: according to diagram you should understand that interrupting flow from `edit.afterSave` does not prevent data modification in DB
+> 👆 Note: according to diagram you should understand that interrupting flow from `hooks.edit.afterSave` does not prevent data modification in DB
 
 ## Saving data on create page
 

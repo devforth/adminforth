@@ -22,6 +22,12 @@ export const useCoreStore = defineStore('core', () => {
   const isResourceFetching = ref(false);
   const isInternetError = ref(false);
   const screenWidth = ref(window.innerWidth);
+  const listRecordIds: Ref<any[]> = ref([]);
+  const listResourceId: Ref<string | null> = ref(null);
+  const listFilters: Ref<any[]> = ref([]);
+  const listSort: Ref<any[]> = ref([]);
+  const listPage: Ref<number> = ref(0);
+  const listPageSize: Ref<number> = ref(0);
 
   onMounted(() => {
     window.addEventListener('resize', updateWidth);
@@ -87,6 +93,20 @@ export const useCoreStore = defineStore('core', () => {
     adminUser.value = resp.adminUser;
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
+    subscribeToMenuRefresh();
+  }
+
+  async function refreshMenu() {
+    await fetchMenuAndResource();
+    await fetchMenuBadges();
+  }
+
+  function subscribeToMenuRefresh() {
+    if (!userData.value?.pk) {
+      return;
+    }
+    websocket.unsubscribeByPrefix('/opentopic/refresh-menu/');
+    websocket.subscribe(`/opentopic/refresh-menu/${userData.value.pk}`, refreshMenu);
   }
 
   function findItemWithId(items: AdminForthConfigMenuItem[], itemId: string): AdminForthConfigMenuItem | undefined {
@@ -200,6 +220,10 @@ export const useCoreStore = defineStore('core', () => {
         resourceId,
       }
     });
+    if (!res) {
+      isResourceFetching.value = false;
+      return;
+    }
     if (res.error) {
       resourceColumnsError.value = res.error;
     } else {
@@ -257,6 +281,7 @@ export const useCoreStore = defineStore('core', () => {
     userAvatarUrl,
     getPublicConfig,
     fetchMenuAndResource, 
+    refreshMenu,
     getLoginFormConfig,
     fetchRecord, 
     record, 
@@ -275,5 +300,11 @@ export const useCoreStore = defineStore('core', () => {
     isIos,
     isInternetError,
     isMobile,
+    listRecordIds,
+    listResourceId,
+    listFilters,
+    listSort,
+    listPage,
+    listPageSize,
   }
 })
