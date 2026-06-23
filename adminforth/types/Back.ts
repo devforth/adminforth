@@ -2,6 +2,7 @@ import type { Express, Request, Response } from 'express';
 import type { AnySchemaObject } from 'ajv';
 import type { Writable } from 'stream';
 import type { ZodType } from 'zod';
+import type { AdminForthLoggerConfig } from '../modules/logger.js';
 
 import { ActionCheckSource, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum, AdminForthResourcePages,
   type AdminForthComponentDeclaration, 
@@ -1830,7 +1831,21 @@ export interface AdminForthInputConfig {
      * 
      */
     componentsToExplicitRegister?: AdminForthComponentDeclarationFull[]
- 
+
+    /**
+     * Programmatic configuration for the AdminForth loggers (single-line output, per-logger levels,
+     * custom log levels). Overrides the corresponding environment variables when provided.
+     *
+     * ```ts
+     * logger: {
+     *   singleLine: true,
+     *   levels: { db: 'trace' },
+     *   customLevels: { audit: 35 },
+     *   customColors: { audit: 'magenta' },
+     * }
+     * ```
+     */
+    logger?: AdminForthLoggerConfig,
 }
 
 
