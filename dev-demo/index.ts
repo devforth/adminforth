@@ -34,6 +34,8 @@ import adminExternalIdentitiesResource from './resources/adminUserExternalIdenti
 
 import { logger } from '../adminforth/modules/logger.js';
 
+import { globalPlugins } from './globalPlugins.js';
+
 const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
@@ -241,6 +243,7 @@ export const admin = new AdminForth({
       resourceId: 'turns',
     }
   ],
+  globalPlugins: globalPlugins,
 });
 
 let lastJobId: string | null = null;
