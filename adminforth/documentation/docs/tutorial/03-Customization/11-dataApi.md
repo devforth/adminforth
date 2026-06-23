@@ -300,13 +300,27 @@ This lets you answer questions like:
 
 ### Available aggregates
 - Aggregates.count()
--  Aggregates.avg(field)
+- Aggregates.countDistinct(field)
+- Aggregates.avg(field)
 - Aggregates.sum(field)
+- Aggregates.min(field)
+- Aggregates.max(field)
 - Aggregates.median(field)
 
 ### Available grouping
-- GroupBy.Field(field)
-- GroupBy.DateTrunc(field, unit, timezone)
+- GroupBy.Field(field, as?)
+- GroupBy.DateTrunc(field, unit, timezone?, as?)
+
+You can pass either one grouping rule or an array of grouping rules.
+When you use a single grouping rule, the grouping value is returned in `group`.
+When you use several grouping rules, the values are returned in `group1`, `group2`, etc.
+
+To use explicit response keys, pass the optional `as` argument:
+
+```ts
+GroupBy.Field('country', 'country')
+GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month')
+```
 
 Example:
 ```ts
@@ -314,6 +328,21 @@ GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv')
 ```
 
 ### Response format
+Without grouping, each row contains only requested aggregate aliases:
+
+```ts
+[
+  {
+    count: number | string,
+    avgPrice?: number | null,
+    sum?: number | null,
+    medianPrice?: number | null,
+  }
+]
+```
+
+With one grouping rule:
+
 ```ts
 [
   {
@@ -322,6 +351,35 @@ GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv')
     avgPrice?: number | null,
     sum?: number | null,
     medianPrice?: number | null,
+  }
+]
+```
+
+With several grouping rules:
+
+```ts
+[
+  {
+    group1: string,
+    group2: string,
+    count: number | string,
+    avgPrice?: number | null,
+  }
+]
+```
+
+With explicit grouping aliases:
+
+```ts
+[
+  {
+    country: string,
+    month: string,
+    count: number | string,
+    uniqueOwners?: number | string,
+    minPrice?: number | null,
+    maxPrice?: number | null,
+    avgPrice?: number | null,
   }
 ]
 ```
@@ -370,3 +428,31 @@ What is happening here:
 - GroupBy.Field('country')
 → grouping by country
 - same aggregates (count, avg, sum, median)
+
+### Get apartment stats grouped by country and month
+```ts
+const rows = await admin.resource('apartments').aggregate(
+  [],
+  {
+    count: Aggregates.count(),
+    uniqueOwners: Aggregates.countDistinct('owner_id'),
+    minPrice: Aggregates.min('price'),
+    maxPrice: Aggregates.max('price'),
+    avgPrice: Aggregates.avg('price'),
+  },
+  [
+    GroupBy.Field('country', 'country'),
+    GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month'),
+  ],
+);
+```
+
+What is happening here:
+- [] → no filters (all records)
+- GroupBy.Field('country', 'country')
+→ groups by country and returns the value in the `country` key
+- GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month')
+→ groups by month and returns the value in the `month` key
+- countDistinct('owner_id') → number of unique owners in each group
+- min('price') and max('price') → price range in each group
+- the result has one row per country and month combination
