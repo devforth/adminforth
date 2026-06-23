@@ -3,7 +3,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -35,7 +35,7 @@ import {
 
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
+import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './modules/restApi.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -50,7 +50,7 @@ export * from './types/adapters/index.js';
 export * from './modules/filtersTools.js';
 export * from './modules/requestContext.js';
 export * from './modules/utils.js';
-export { interpretResource };
+export { interpretResource, rejectApiRawFilters };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
 export { default as AdminForthBaseConnector } from './dataConnectors/baseConnector.js';
@@ -69,33 +69,7 @@ class AdminForth implements IAdminForth {
     },
 
     applyRegexValidation(value, validation) {
-      if (validation?.length) {
-        const validationArray = validation;
-        for (let i = 0; i < validationArray.length; i++) {
-          if (validationArray[i].regExp) {
-            let flags = '';
-            if (validationArray[i].caseSensitive) {
-              flags += 'i';
-            }
-            if (validationArray[i].multiline) {
-              flags += 'm';
-            }
-            if (validationArray[i].global) {
-              flags += 'g';
-            }
-
-            const regExp = new RegExp(validationArray[i].regExp, flags);
-            if (value === undefined || value === null) {
-              value = '';
-            }
-            let valueS = `${value}`;
-
-            if (!regExp.test(valueS)) {
-              return validationArray[i].message;
-            }
-          }
-        }
-      }
+      return applyRegexValidation(value, validation);
     },
 
     PASSWORD_VALIDATORS: {

@@ -8,7 +8,7 @@
     }: {}"
   >
     
-    <img v-if="coreStore.config?.loginBackgroundImage && backgroundPosition !== 'over'"
+    <img v-if="!oauthRedirecting && coreStore.config?.loginBackgroundImage && backgroundPosition !== 'over'"
       :src="loadFile(coreStore.config?.loginBackgroundImage)"
       class="position-absolute top-0 left-0 h-screen object-cover w-0"
       :class="{
@@ -21,8 +21,13 @@
       }[backgroundPosition]"
     />
 
+    <div v-if="oauthRedirecting">
+      <Spinner class="w-10 h-10" />
+    </div>
+
     <!-- Main modal -->
     <div id="authentication-modal" tabindex="-1" 
+      v-show="!oauthRedirecting"
       class="af-login-modal overflow-y-auto flex flex-grow
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
@@ -112,6 +117,7 @@
                           :is="getCustomComponent(formatComponent(c))"
                           :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
+                          @update:oauthRedirecting="oauthRedirecting = $event"
                         />
                     </form>
                 </div>
@@ -132,8 +138,8 @@ import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
-import { useRouter } from 'vue-router';
-import { Button, Checkbox, Input } from '@/afcl';
+import { useRouter, useRoute } from 'vue-router';
+import { Button, Checkbox, Input, Spinner } from '@/afcl';
 import ErrorMessage from '@/components/ErrorMessage.vue';
 
 const passwordInput = ref<InstanceType<typeof Input> | null>(null);
@@ -143,6 +149,8 @@ const username = ref('');
 const password = ref('');
 
 const router = useRouter();
+const route = useRoute();
+const oauthRedirecting = ref<boolean>('start_oauth' in route.query && route.query.start_oauth !== '');
 const inProgress = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
 const coreStore = useCoreStore();

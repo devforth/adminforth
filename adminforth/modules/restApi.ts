@@ -259,7 +259,7 @@ function hasApiRawFilter(filters: any): boolean {
   return Array.isArray(filters.subFilters) && filters.subFilters.some(hasApiRawFilter);
 }
 
-function rejectApiRawFilters(filters: any): { error: string } | undefined {
+export function rejectApiRawFilters(filters: any): { error: string } | undefined {
   if (hasApiRawFilter(filters)) {
     return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
   }
@@ -341,6 +341,7 @@ const getResourceDataResponseSchema: AnySchemaObject = createErrorOrSuccessSchem
       items: genericObjectSchema,
     },
     total: { type: 'number' },
+    recordIds: { type: 'array', items: {} },
     options: genericObjectSchema,
   },
   additionalProperties: true,
@@ -1634,6 +1635,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
           }
+        }
+
+        if (source === 'list') {
+          const pkField = resource.columns.find((col) => col.primaryKey).name;
+          (data as any).recordIds = data.data.map((item) => item[pkField]);
         }
 
         return data;
