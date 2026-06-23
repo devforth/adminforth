@@ -22,10 +22,34 @@ pnpm add @adminforth/storage-adapter-s3-compatible
 ```
 
 Provides S3 compatible interface for object storage services such as MinIO, Wasabi, Cloudflare R2 or other third-party S3 providers.
+### How the adapter works:
 
->‼️Since levelDb is used for storing keys of objects that should/shouldn't be deleted, so this is important to use docker volume on deployed application, so you will not loose this data after re-deploy 
+The Amazon S3 adapter uses tagging to mark objects with the special tag `adminforth-candidate-for-cleanup`, and then creates a lifecycle rule that automatically expires objects with that tag.
+But not all S3-compatible adapters support tagging, so this adapter has a built-in cleanup mechanism and you have two options:
 
->‼️It is not recomended to use the same Key/value adapter for the adapter multiple instances, because it can cause unpredictable behavior of cleanup scheduler
+**1) Pass an optional key/value adapter, where all object keys scheduled for deletion will be stored**
+
+Why use it?
+
+There are a few reasons to do so:
+
+- When somebody uploads a file in a record and doesn't press the "Save" button, the file will be marked for deletion and you don't have to pay for storing it
+- If you accidentally delete a file, you'll have a time window to restore it
+
+>If you are using a key/value adapter, it is important to retain the object keys, because if the key-value storage is cleared, all objects marked for deletion will not be cleaned up and you'll have to pay for storing files you no longer use
+
+>We recommend using `@adminforth/key-value-adapter-resource`, because chance, that database will be cleaed is low
+
+>‼️If you are using LevelDB to store keys of objects that should/shouldn't be deleted, it is important to use a Docker volume on the deployed application so you will not lose this data after a redeployment
+
+>‼️It is not recommended to use the same Key/value adapter for multiple adapter instances, because it can cause unpredictable behavior of the cleanup scheduler
+
+**2) Don't use key/value adapter**
+
+If you don't want to use a key/value adapter and you don't need to clean up files, you can simply not pass an adapter
+> Note: if you don't pass an adapter, all connected files will be deleted immediately when you delete a record.
+
+> If somebody uploaded a file and didn't save the record, you will pay for the storage until the file is removed manually
 
 ### Cloudflare R2 setup example
 
