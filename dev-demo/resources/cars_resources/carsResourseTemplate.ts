@@ -191,9 +191,6 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
 
 
     *********************************************************************************/
-      new JsonEditorPlugin({
-        fieldName: 'color',
-      }),
       new UploadPlugin({
         storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
           fileSystemFolder: "./db/uploads",
@@ -369,48 +366,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
             price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
           },
           rateLimits: { // bulk generation limits
-            fillFieldsFromImages: "100000/1m", // 1 request per minute
-            fillPlainFields: "100000/1m",      // 1 request per minute
-            generateImages: "100000/1m",       // 1 request per minute
+            fillFieldsFromImages: "1/1m", // 1 request per minute
+            fillPlainFields: "1/1m",      // 1 request per minute
+            generateImages: "1/1m",       // 1 request per minute
           }
         }),
-        new BulkAiFlowPlugin({
-      actionName: 'Process with AI',
-      attachFiles: async ({ record }: { record: any }) => {
-        if (!record.promo_picture) {
-          return [];
-        }
-        return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
-      },
-      visionAdapter: new AdminForthImageVisionAdapterOpenAi(
-        {
-          openAiApiKey:  process.env.OPENAI_API_KEY as string,
-          model: 'gpt-4.1-mini',
-        }
-      ),
-      imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
-        openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-image-1',
-      }),
-      fillFieldsFromImages: {
-        'description': 'Describe the car shown in the image. Take into account that the price is {{price}} and the model is {{model}}. Description should be HTML formatted.',
-        'body_type': 'What is the body type of the car shown in the image?',
-        'mileage': 'Estimate the mileage of the car shown in the image in kilometers. If you do not know, just guess.',
-      },
-      generateImages: {
-        generated_promo_picture: {
-          prompt: "Turn this car image into a ghibli cartoon style",
-          outputSize: "1536x1024",
-          countToGenerate: 1,
-          rateLimit: '100000/1m'
-        }
-      },
-      rateLimits:{
-        fillFieldsFromImages: "100000/1m",
-        generateImages: "100000/1m",
-        fillPlainFields: "3/2m",
-      },
-    }),
         new BulkAiFlowPlugin({
           actionName: 'Analyze image',
           askConfirmationBeforeGenerating: true,
