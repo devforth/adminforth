@@ -3,7 +3,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -69,33 +69,7 @@ class AdminForth implements IAdminForth {
     },
 
     applyRegexValidation(value, validation) {
-      if (validation?.length) {
-        const validationArray = validation;
-        for (let i = 0; i < validationArray.length; i++) {
-          if (validationArray[i].regExp) {
-            let flags = '';
-            if (validationArray[i].caseSensitive) {
-              flags += 'i';
-            }
-            if (validationArray[i].multiline) {
-              flags += 'm';
-            }
-            if (validationArray[i].global) {
-              flags += 'g';
-            }
-
-            const regExp = new RegExp(validationArray[i].regExp, flags);
-            if (value === undefined || value === null) {
-              value = '';
-            }
-            let valueS = `${value}`;
-
-            if (!regExp.test(valueS)) {
-              return validationArray[i].message;
-            }
-          }
-        }
-      }
+      return applyRegexValidation(value, validation);
     },
 
     PASSWORD_VALIDATORS: {
