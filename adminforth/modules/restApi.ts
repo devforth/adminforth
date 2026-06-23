@@ -1823,6 +1823,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (rawFilterError) {
           return rawFilterError;
         }
+        const meta = { requestBody: body, pk: undefined };
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          ActionCheckSource.ListRequest,
+          this.adminforth
+        );
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        if (!allowed) {
+          return { error };
+        }
+
 
         const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
         const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));
