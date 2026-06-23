@@ -593,3 +593,33 @@ export function checkIfFieldIsInsideResourceColumns(fieldName: string, resource:
   }
   return false;
 }
+
+export function applyRegexValidation(value, validation) {
+  if (validation?.length) {
+    const validationArray = validation;
+    for (let i = 0; i < validationArray.length; i++) {
+      if (validationArray[i].regExp) {
+        let flags = '';
+        if (validationArray[i].caseSensitive) {
+          flags += 'i';
+        }
+        if (validationArray[i].multiline) {
+          flags += 'm';
+        }
+        if (validationArray[i].global) {
+          flags += 'g';
+        }
+
+        const regExp = new RegExp(validationArray[i].regExp, flags);
+        if (value === undefined || value === null) {
+          value = '';
+        }
+        let valueS = `${value}`;
+
+        if (!regExp.test(valueS)) {
+          return validationArray[i].message;
+        }
+      }
+    }
+  }
+}
