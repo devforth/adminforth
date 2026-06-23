@@ -13,7 +13,7 @@ import checkpointsResource from './resources/agent_resources/checkpoints';
 import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
-
+import { adminForthAgent } from './globalPlugins';
 
 let db;
 
@@ -129,6 +129,9 @@ new AdminForth({
       url: 'https://github.com/devforth/adminforth/tree/main/live-demo/app',
     },
   ],
+  globalPlugins: [
+    adminForthAgent
+  ]
 });
 
 async function seedDatabase() {

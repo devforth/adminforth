@@ -45,6 +45,7 @@ vars:
     - "adminforth-oauth-adapter-microsoft"
     - "adminforth-oauth-adapter-twitch"
     - "adminforth-oauth-adapter-telegram"
+    - "adminforth-oauth-adapter-clerk"
     - "adminforth-chat-surface-adapter-telegram"
     - "adminforth-image-generation-adapter-openai"
     - "adminforth-storage-adapter-amazon-s3"
