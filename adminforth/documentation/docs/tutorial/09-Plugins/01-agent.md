@@ -17,8 +17,8 @@ It stores session history in your own resources and generates responses using on
 ## Installation
 
 ```bash
-pnpm i @adminforth/agent --save
-pnpm i @adminforth/completion-adapter-openai-responses --save
+pnpm add @adminforth/agent --save
+pnpm add @adminforth/completion-adapter-openai-responses --save
 ```
 
 Add your LLM credentials to `.env`:
@@ -197,17 +197,17 @@ export const admin = new AdminForth({
 });
 ```
 
-Then attach the plugin once, usually to your `adminuser` resource:
+Then attach the plugin once in `index.ts` as global plugin:
 
 Configure the plugin with `modes`. The legacy top-level `completionAdapter` setup is no longer used.
 
-```ts title="./resources/adminuser.ts"
+```ts title="./index.ts"
 import AdminForthAgent from '@adminforth/agent';
 import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 
 ...
 
-plugins: [
+globalPlugins: [
   ...
   new AdminForthAgent({
     // optional, can be used to suggest example prompts in the UI
@@ -462,7 +462,7 @@ pnpm makemigration --name add-adminforth-agent-turn-debug ; pnpm migrate:local
 
 Tell the plugin where to store debug data:
 
-```ts title="./resources/adminuser.ts"
+```ts title="index.ts"
 new AdminForthAgent({
   modes: [
     ...
@@ -604,7 +604,7 @@ pnpm add @adminforth/audio-adapter-openai
 
 2) Import it in your users resource and add to the plugin config
 
-```ts title="./resources/adminuser.ts"
+```ts title="index.ts"
   //diff-add
   import OpenAIAudioAdapter from '@adminforth/audio-adapter-openai'
 
@@ -1010,7 +1010,7 @@ export const admin = new AdminForth({
 
 Then connect it to the plugin:
 
-```ts title="./resources/adminuser.ts"
+```ts title="index.ts"
 new AdminForthAgent({
   modes: [
     ...

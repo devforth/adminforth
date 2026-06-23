@@ -53,6 +53,7 @@ new AdminForth({
 
 The format is `requests/period`, where period can use `s`, `m`, `h`, or `d`.
 Because rate limits are keyed by client IP, configure `auth.clientIpHeader` when AdminForth runs behind a trusted CDN or reverse proxy. See [Trusting client IP addresses](#trusting-client-ip-addresses).
+> It is important to provide '`auth.clientIpHeader`, because otherwise adminforth will automatically detect client IP in headers and if you don't use proxy, hacker can change IP like `x-forwarded-for: 1.1.1.1` in request headers and skip rate limit 
 
 
 ## Password strength

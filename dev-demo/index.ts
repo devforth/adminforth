@@ -2,7 +2,6 @@ import express from 'express';
 import AdminForth, {  AdminUser, Filters, IAdminForth } from '../adminforth/index.js';
 import * as z from 'zod';
 import usersResource from "./resources/adminuser.js";
-import externalIdentitiesResource from "./resources/external_identities.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { Decimal } from 'decimal.js';
@@ -34,6 +33,8 @@ import translations from "./resources/translations.js";
 import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
 
 import { logger } from '../adminforth/modules/logger.js';
+
+import { globalPlugins } from './globalPlugins.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -128,7 +129,6 @@ export const admin = new AdminForth({
   ],
   resources: [
     usersResource,
-    externalIdentitiesResource,
     auditLogsResource,
     cars_SQLITE_resource,
     cars_MyS_resource,
@@ -243,6 +243,7 @@ export const admin = new AdminForth({
       resourceId: 'turns',
     }
   ],
+  globalPlugins: globalPlugins,
 });
 
 let lastJobId: string | null = null;
@@ -416,6 +417,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -432,6 +434,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -449,6 +452,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -466,6 +470,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }
@@ -483,6 +488,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
           listed: i % 2 == 0,
           mileage: Math.floor(Math.random() * 200000),
           body_type: BODY_TYPES[Math.floor(Math.random() * BODY_TYPES.length)].value,
+          secret_field: `secret_${i}`,
         });
       };
     }

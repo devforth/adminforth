@@ -183,7 +183,7 @@ For impossible states, prefer failing loudly in development rather than hiding t
 
 ---
 
-## Code review rules for agents
+## Code rules for agents
 
 Before writing extra guards, ask:
 
