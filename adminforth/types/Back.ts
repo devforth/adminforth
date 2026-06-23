@@ -23,19 +23,6 @@ export type PeriodUnit = typeof PERIOD_UNITS[number];
 export type PeriodString = `${bigint}${PeriodUnit}`;
 export type RateLimitString = `${bigint}/${PeriodString}`;
 
-export interface AdminForthLoggerConfig {
-  singleLine?: boolean;
-
-  levels?: {
-    user?: string;
-    af?: string;
-    db?: string;
-  };
-
-  customLevels?: Record<string, number>;
-  customColors?: Record<string, string>;
-}
-
 export interface ICodeInjector {
   srcFoldersToSync: Object;
   allComponentNames: Object;
@@ -1853,20 +1840,6 @@ export interface AdminForthInputConfig {
      */
     componentsToExplicitRegister?: AdminForthComponentDeclarationFull[]
 
-    /**
-     * Programmatic configuration for the AdminForth loggers (single-line output, per-logger levels,
-     * custom log levels). Overrides the corresponding environment variables when provided.
-     *
-     * ```ts
-     * logger: {
-     *   singleLine: true,
-     *   levels: { db: 'trace' },
-     *   customLevels: { audit: 35 },
-     *   customColors: { audit: 'magenta' },
-     * }
-     * ```
-     */
-    logger?: AdminForthLoggerConfig,
  
     /**
      * List of plugins that should be applied in global scope.
