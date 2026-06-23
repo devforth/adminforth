@@ -1,0 +1,781 @@
+---
+title: OAuth Authentication
+description: "Guide to the OAuth Authentication plugin, including provider setup, plugin configuration, email confirmation, and login flows for external identity providers."
+slug: /tutorial/Plugins/oauth
+---
+
+# OAuth Authentication
+
+The OAuth plugin enables OAuth2 sign-in and connected external accounts in AdminForth. Users can sign in with Google, GitHub, Facebook, Telegram, or another OAuth2 provider. Logged-in users can also connect additional provider accounts from **Settings -> Connected Accounts**.
+
+OAuth should be configured with an external identities resource. That resource stores stable provider identity data (`provider`, `subject`) and optional profile fields. Agent chat surfaces use the same connected accounts to resolve Telegram, Slack, Teams, or other external chat users.
+
+:::warning
+Using OAuth without `externalIdentityResource` is deprecated. Configure an external identities resource for new projects.
+:::
+
+## Installation
+
+Install the plugin and at least one OAuth adapter:
+
+```bash
+pnpm install @adminforth/oauth --save
+pnpm install @adminforth/oauth-adapter-google --save
+```
+
+If you want Agent chat surfaces, install the OAuth adapter for the same provider as the chat surface. For example, Telegram chat surface support requires both:
+
+```bash
+pnpm install @adminforth/chat-surface-adapter-telegram --save
+pnpm install @adminforth/oauth-adapter-telegram --save
+```
+
+## External Identities Resource
+
+Create a resource that stores connected OAuth accounts. The default field names are:
+
+- `adminUserId` — links the external identity to the AdminForth user
+- `provider` — adapter class name, for example `AdminForthAdapterGoogleOauth2`
+- `subject` — stable provider account id
+- `externalUserId` — chat-specific user id, such as Telegram ID, Slack ID, or Teams ID
+
+The defaults can be overridden in plugin options when your schema uses different field names.
+
+### Migration example (Prisma)
+
+If you're using Prisma, add the model to your `schema.prisma`:
+
+```prisma title="./schema.prisma"
+model AdminUserExternalIdentity {
+  id             String   @id @default(uuid())
+  adminUserId    String
+  provider       String
+  subject        String
+  externalUserId String?
+  email          String?
+  phone          String?
+  fullName       String?
+  avatarUrl      String?
+  meta           Json?
+  createdAt      DateTime @default(now())
+
+  @@unique([provider, subject])
+  @@index([adminUserId])
+}
+```
+
+Then create and apply the migration (example commands from `dev-demo`):
+
+```bash
+pnpm makemigration --name add-admin-user-external-identities ; pnpm migrate:local
+```
+
+```ts title="./resources/adminUserExternalIdentities.ts"
+import { AdminForthDataTypes, type AdminForthResourceInput } from 'adminforth';
+import { randomUUID } from 'crypto';
+
+export default {
+  dataSource: 'maindb',
+  table: 'AdminUserExternalIdentity',
+  resourceId: 'admin_user_external_identities',
+  label: 'Admin User External Identities',
+  columns: [
+    {
+      name: 'id',
+      type: AdminForthDataTypes.STRING,
+      primaryKey: true,
+      fillOnCreate: () => randomUUID(),
+      showIn: { create: false, edit: false },
+    },
+    { name: 'adminUserId', type: AdminForthDataTypes.STRING, required: true },
+    { name: 'provider', type: AdminForthDataTypes.STRING, required: true },
+    { name: 'subject', type: AdminForthDataTypes.STRING, required: true },
+    { name: 'externalUserId', type: AdminForthDataTypes.STRING },
+    { name: 'email', type: AdminForthDataTypes.STRING },
+    { name: 'phone', type: AdminForthDataTypes.STRING },
+    { name: 'fullName', type: AdminForthDataTypes.STRING },
+    { name: 'avatarUrl', type: AdminForthDataTypes.STRING },
+    { name: 'meta', type: AdminForthDataTypes.JSON },
+    {
+      name: 'createdAt',
+      type: AdminForthDataTypes.DATETIME,
+      fillOnCreate: () => new Date().toISOString(),
+      showIn: { create: false, edit: false },
+    },
+  ],
+} satisfies AdminForthResourceInput;
+```
+
+## Configuration
+
+This example configures Google OAuth. See [OAuth2 Providers](#oauth2-providers) for provider setup details.
+
+```typescript title="./resources/adminuser.ts"
+import OAuthPlugin from '@adminforth/oauth';
+import AdminForthAdapterGoogleOauth2 from '@adminforth/oauth-adapter-google';
+
+plugins: [
+  new OAuthPlugin({
+    emailField: 'email',
+    externalIdentityResource: {
+      resourceId: 'admin_user_external_identities',
+      emailField: 'email',
+      phoneField: 'phone',
+      fullNameField: 'fullName',
+      avatarUrlField: 'avatarUrl',
+      metaField: 'meta',
+    },
+    adapters: [
+      new AdminForthAdapterGoogleOauth2({
+        clientID: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      }),
+    ],
+  }),
+]
+```
+
+`adminUserIdField`, `providerField`, `subjectField`, and `externalUserIdField` default to `adminUserId`, `provider`, `subject`, and `externalUserId`. Configure them only when your resource uses different field names.
+
+### Google Provider Setup
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com) and log in.
+2. Create a new project or select an existing one.
+3. Go to `APIs & Services` -> `Credentials`.
+4. Create credentials for OAuth 2.0 client IDs.
+5. Select application type: "Web application".
+6. Add your application's name and redirect URI.
+7. In "Authorized redirect URIs", add `https://your-domain/oauth/callback` and `http://localhost:3500/oauth/callback`. Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
+8. Add the credentials to your `.env` file:
+
+```bash
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+```
+
+## Connected Accounts
+
+When `externalIdentityResource` is configured, AdminForth adds **Connected Accounts** to the user settings menu. A logged-in user can connect additional external accounts there. This is also how Agent chat surfaces identify external users: for example, a Telegram bot message is matched to the AdminForth user through the Telegram OAuth identity stored in the external identities resource.
+
+## Email Confirmation
+
+The plugin supports automatic email confirmation for OAuth users. To enable this:
+
+1. Add the `email_confirmed` field to your database schema:
+
+```prisma title='./schema.prisma'
+model adminuser {
+  // ... existing fields ...
+  email_confirmed Boolean @default(false)
+}
+```
+
+2. Run the migration:
+
+```bash
+pnpm makemigration --name add-email-confirmed-to-adminuser ; pnpm migrate:local
+```
+
+3. Configure the plugin with `emailConfirmedField`:
+
+```typescript title="./resources/adminuser.ts"
+new OAuthPlugin({
+  // ... adapters configuration ...
+  emailField: 'email',
+  emailConfirmedField: 'email_confirmed'  // Enable email confirmation tracking
+}),
+```
+
+When using OAuth:
+- New users will have their email automatically confirmed (`email_confirmed = true`)
+- Existing users will have their email marked as confirmed upon successful OAuth login
+- The `email_confirmed` field must be a boolean type
+
+## Open Signup
+
+By default, users must exist in the system before they can log in with OAuth. You can enable automatic user creation for new OAuth users with the `openSignup` option:
+
+```typescript title="./resources/adminuser.ts"
+new OAuthPlugin({
+  // ... adapters configuration ...
+  openSignup: {
+    enabled: true,
+    defaultFieldValues: { // Set default values for new users
+      role: 'user',
+    },
+  },
+}),
+```
+
+## UI Customization
+
+You can customize the UI of the OAuth login buttons by using the `iconOnly` and `pill` options.
+
+```typescript title="./resources/adminuser.ts"
+new OAuthPlugin({
+  // ... adapters configuration ...
+  iconOnly: true, // Show only provider icons without text
+  pill: true, // Use pill-shaped buttons instead of rectangular
+}),
+```
+
+
+## OAuth2 Providers
+
+
+### Facebook Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/oauth-adapter-facebook --save
+```
+
+
+1. Go to the [Facebook Developers](https://developers.facebook.com/)
+2. Go to `My apps`
+3. Create a new project or select an existing one (choose Authenticate and request data from users with Facebook Login)
+4. Go to `Use Cases` - `Authenticate and request data from users with Facebook Login` -> `Customize` and add email permissions 
+5. Go to `App Settings` -> `Basic`
+6. Get App ID and App secret
+7. Add the credentials to your `.env` file:
+
+```bash
+FACEBOOK_CLIENT_ID=your_facebook_client_id
+FACEBOOK_CLIENT_SECRET=your_facebook_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterFacebookOauth2 from '@adminforth/oauth-adapter-facebook';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapte# OAuth AuthenticationrFacebookOauth2({
+        clientID: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+### GitHub Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/oauth-adapter-github --save
+```
+
+
+1. Go to the [GitHub Apps](https://github.com/settings/apps)
+2. Create a new app or select an existing one
+3. Go to the `Permisiions & events` -> `Account permissions` -> `Email addresses` and change to `Read-only`
+3. Go to the `General` and click to `Generate a new client secret` button and copy secret
+4. Add the credentials to your `.env` file:
+
+```bash
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterGithubOauth2 from '@adminforth/oauth-adapter-github';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterGithubOauth2({
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+### Telegram Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/oauth-adapter-telegram --save
+```
+
+Create Telegram OpenID Connect credentials in BotFather:
+
+1. Open [BotFather](https://t.me/BotFather).
+2. Click **Open** and open it in the Telegram app.
+3. Select or Create your bot.
+4. Open **Login Widget**.
+5. Click **Switch to OpenID Connect Login**.
+6. Copy the client ID and client secret shown at the top.
+7. Set **Redirect URI** to `https://example.com/oauth/callback`.
+
+Add the credentials to your `.env` file:
+
+```bash
+TELEGRAM_CLIENT_ID=your_telegram_client_id
+TELEGRAM_CLIENT_SECRET=your_telegram_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterTelegramOauth2 from '@adminforth/oauth-adapter-telegram';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new TelegramOauthAdapter({
+        clientID: process.env.TELEGRAM_CLIENT_ID as string,
+        clientSecret: process.env.TELEGRAM_CLIENT_SECRET as string,
+        redirectUri: 'https://example.com/oauth/callback',
+        scopes: ['openid', 'profile', 'phone'],
+      }),
+    ],
+  }),
+]
+```
+
+Register the same `redirectUri` in BotFather under **Login Widget → Redirect URI**.
+
+If you use `@adminforth/chat-surface-adapter-telegram`, users must connect Telegram from **Settings → Connected Accounts** before the Telegram bot can identify them.
+
+### Kaycloack Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/oauth-adapter-keycloak --save
+```
+
+If you need a basic Keycloak setup which tested with AdminForth, you can follow [this minimal KeyClock setup example](/blog/keycloak-setup-example).
+
+1. Update your `.env` file with the following Keycloak configuration:
+
+```bash
+KEYCLOAK_CLIENT_ID=your_keycloak_client_id
+KEYCLOAK_CLIENT_SECRET=your_keycloak_client_secret
+KEYCLOAK_URL=http://localhost:8080
+KEYCLOAK_REALM=your_keycloak_realm
+```
+
+2. Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterKeycloakOauth2 from '@adminforth/oauth-adapter-keycloak';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterKeycloakOauth2({
+          name: "Keycloak",
+          clientID: process.env.KEYCLOAK_CLIENT_ID,
+          clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
+          keycloakUrl: process.env.KEYCLOAK_URL,
+          realm: process.env.KEYCLOAK_REALM,
+          useOpenIdConnect: true,
+      }),
+    ],
+  }),
+]
+```
+
+### Microsoft Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/oauth-adapter-microsoft --save
+```
+
+
+1. In the Microsoft [Azure Portal](https://portal.azure.com/), search for and click [App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade), then `New registration`.
+2. Give your application a name. This name will be visible to your users.
+3. Set the audience for the app to `Accounts in my organizational directory and personal Microsoft accounts`. This allows your user to log in using any Microsoft account.
+5. Set the Redirect URI platform to Web and enter your project's redirect URI.
+6. Go to your app and search `API permissions`, click `Add a permission`, select `Microsoft Graph`, select `Delegated permissions`, enable permissions: `offline_access`, `openid`, `profile`, `User.Read`, click `Add permissions`.
+7. Serch `Certificates & secrets`, click `New client secret` and create client secret.
+6. Get Application ID and Client Secret.
+7. Add the credentials to your `.env` file:
+
+```bash
+MICROSOFT_CLIENT_ID=your_application_id
+MICROSOFT_CLIENT_SECRET=your_microsoft_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterMicrosoftOauth2 from '@adminforth/oauth-adapter-microsoft';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterMicrosoftOauth2({
+        clientID: process.env.MICROSOFT_CLIENT_ID,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+        useOpenIdConnect: true,
+      }),
+    ],
+  }),
+]
+```
+
+### Twitch Adapter
+
+Install Adapter:
+
+```
+pnpm install @adminforth/oauth-adapter-twitch --save
+```
+
+1. Go to the [Twitch dashboard](https://dev.twitch.tv/console/)
+2. Create a new app or select an existing one
+3. In `OAuth Redirect URLs` add `https://your-domain/oauth/callback` (`http://localhost:3500/oauth/callback`)
+4. Go to the app and copy `Client ID`, click to `Generate a new client secret`(in Twitch this button can be used only once for some time, becouse of this dont lose it) button and copy secret .
+5. Add the credentials to your `.env` file:
+
+```bash
+TWITCH_CLIENT_ID=your_twitch_client_id
+TWITCH_CLIENT_SECRET=your_twitch_client_secret
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterTwitchOauth2 from '@adminforth/oauth-adapter-twitch';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterTwitchOauth2({
+        clientID: process.env.TWITCH_CLIENT_ID,
+        clientSecret: process.env.TWITCH_CLIENT_SECRET,
+      }),
+    ],
+  }),
+]
+```
+
+### Clerk Adapter
+
+Install Adapter:
+
+```bash
+pnpm install @adminforth/oauth-adapter-clerk --save
+```
+
+1. Go to the [Clerk Dashboard](https://dashboard.clerk.com) and open your application.
+2. In the left sidebar, go to **Configure** → **Developers** → **OAuth Applications**.
+3. Click **Add OAuth Application** and give it a name.
+4. Copy the **Client Secret** from the OAuth application creation modal.
+5. After copying, Clerk redirects you to the application page, where you can copy the **Client ID** and **Domain**.
+6. Add the credentials to your `.env` file:
+7. In **Redirect URLs**, add `https://your-domain/oauth/callback` and `http://localhost:3500/oauth/callback`. Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
+8. In **Scopes**, check the **openid** checkbox.
+
+```bash
+CLERK_CLIENT_ID=your_clerk_client_id
+CLERK_CLIENT_SECRET=your_clerk_client_secret
+CLERK_DOMAIN=https://your-app.clerk.accounts.dev
+```
+
+Add the adapter to your plugin configuration:
+
+```typescript title="./resources/adminuser.ts"
+import AdminForthAdapterClerkOauth2 from '@adminforth/oauth-adapter-clerk';
+
+// ... existing resource configuration ...
+plugins: [
+  new OAuthPlugin({
+    adapters: [
+      ...
+      new AdminForthAdapterClerkOauth2({
+        clientID: process.env.CLERK_CLIENT_ID as string,
+        clientSecret: process.env.CLERK_CLIENT_SECRET as string,
+        domain: process.env.CLERK_DOMAIN as string,
+      }),
+    ],
+  }),
+]
+```
+
+### Need custom provider?
+
+Just fork any existing adapter e.g. [Google](https://github.com/devforth/adminforth-oauth-adapter-google) and adjust it to your needs. 
+
+This is really easy, you have to change less then 10 lines of code in this [file](https://github.com/devforth/adminforth-oauth-adapter-google/blob/main/index.ts)
+
+Then just publish it to npm and install it in your project.
+
+
+Links to adapters:
+[Google](https://github.com/devforth/adminforth-oauth-adapter-google)
+[GitHub](https://github.com/devforth/adminforth-oauth-adapter-github)
+[Facebook](https://github.com/devforth/adminforth-oauth-adapter-facebook)
+[Keycloak](https://github.com/devforth/adminforth-oauth-adapter-keycloak)
+
+
+## Starting OAuth flow from an external page
+
+If you have an external website with a "Sign in" button that should open the AdminForth OAuth flow directly — without showing the login form first — use the `start_oauth` query parameter:
+
+```
+https://your-admin.example.com/login?start_oauth=google
+https://your-admin.example.com/login?start_oauth=clerk
+```
+
+The value must match the provider name (case-insensitive). AdminForth will immediately redirect the user to the OAuth provider, skipping the login page entirely.
+
+The provider name is derived from the adapter class name — for example `AdminForthAdapterOauth2Google` → `google`, `AdminForthAdapterOauth2Clerk` → `clerk`.
+
+If the specified provider is not found, an error toast is shown on the login page. If `start_oauth` is provided without a value (`?start_oauth`), nothing happens and the regular login form is displayed.
+
+## Fill user full name
+
+If you have a fullName field in your users resource, you can add it to the plugin setup:
+
+```ts
+
+plugins: [
+  ...
+
+  new OAuthPlugin({
+
+    ...
+
+    userFullNameField: 'fullName'
+
+    ...
+
+  }),
+]
+
+```
+
+This field will be automatically filled with the name that the provider returns, if this field was empty.
+
+> ☝️Not all providers return full name or even if they do, there is no guarantee that they will be correct
+
+> Google Adapter: returns fullName, but if there is no last name - it will return only first name
+
+>Facebook: returns fullName
+
+>Github: returns name or fullName (depends of what user added in name field)
+
+>Keycloak: returns fullName
+
+>Microsoft: returns fullName
+
+>Twitch: return only users display name
+
+
+## Automatically save users avatar
+
+If you want to automatically upload users avatar from the provider, you can use userAvatarField prop.
+
+Example:
+
+First of all you'll need to create avatar field in your database:
+
+Update schema prisma file:
+
+``` title="./schema.prisma"
+
+model adminuser {
+  id            String     @id
+  email         String     @unique
+  password_hash String
+  role          String
+  created_at    DateTime
+  //diff-add
+  avatar        String 
+}
+
+```
+
+And make migration:
+
+```bash
+pnpm makemigration --name add-avatar-field ; pnpm migrate:local
+```
+
+Then add this field to users resource and install upload plugin:
+
+```ts title="./resources/adminuser"
+//diff-add
+import UploadPlugin from '@adminforth/upload';
+
+...
+
+columns: [
+
+  ...
+    //diff-add
+    {
+      //diff-add
+      name: "avatar",
+      //diff-add
+      type: AdminForthDataTypes.STRING,
+      //diff-add
+      showIn: {
+        //diff-add
+        list: true,
+        //diff-add
+        show: true
+        //diff-add
+      },
+      //diff-add
+    },
+
+  ...
+
+],
+
+  ...
+
+plugins: [
+
+  ...
+
+  //diff-add
+  new UploadPlugin({
+      //diff-add
+    pathColumnName: "avatar",
+      //diff-add
+    storageAdapter: new AdminForthAdapterS3Storage({
+      //diff-add
+      bucket: process.env.AWS_BUCKET_NAME,
+      //diff-add
+      region: process.env.AWS_REGION,
+      //diff-add
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+      //diff-add
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      //diff-add
+    }),
+    //diff-add
+    allowedFileExtensions: [
+      //diff-add
+      "jpg",
+      //diff-add
+      "jpeg",
+      //diff-add
+      "png",
+      //diff-add
+      "gif",
+      //diff-add
+      "webm",
+      //diff-add
+      "exe",
+      //diff-add
+      "webp",
+      //diff-add
+    ],
+    //diff-add
+    maxFileSize: 1024 * 1024 * 20, // 20MB
+    //diff-add
+    filePath: ({ originalFilename, originalExtension, contentType, record }) => {
+      //diff-add
+      return `aparts/${new Date().getFullYear()}/${originalFilename}.${originalExtension}`
+      //diff-add
+    },
+    //diff-add
+    preview: {
+      //diff-add
+      maxWidth: "200px",
+      //diff-add
+    },
+    //diff-add
+  }),
+
+  ...
+
+]
+
+...
+
+```
+
+Then update your plugin setup:
+
+```ts title="./resources/adminuser.ts"
+
+...
+
+
+plugins: [
+
+  ...
+
+  new OAuthPlugin({
+    //diff-add
+    userAvatarField: "avatar",
+
+    ...
+
+  })
+
+  ...
+
+]
+
+...
+
+```
+
+And finally add this callback:
+
+```ts title="./index.ts"
+
+  auth: {
+
+    ...
+    //diff-add
+    avatarUrl: async (adminUser)=>{
+      //diff-add
+      const plugin = admin.getPluginsByClassName('UploadPlugin').find(p => p.pluginOptions.pathColumnName === 'avatar') as any; 
+      //diff-add
+      if (!plugin) {
+        //diff-add
+        throw new Error('Upload plugin for avatar not found');
+        //diff-add
+      }
+      //diff-add
+      if (adminUser.dbUser.avatar === null || adminUser.dbUser.avatar === undefined || adminUser.dbUser.avatar === '') {
+        //diff-add
+        return undefined;
+        //diff-add
+      }
+      //diff-add
+      const imageUrl = await plugin.getFileDownloadUrl(adminUser.dbUser.avatar || '', 3600);
+      //diff-add
+      return imageUrl;
+      //diff-add
+    },
+
+
+    ...
+
+  }
+
+```

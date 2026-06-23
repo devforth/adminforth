@@ -20,6 +20,7 @@ import cars_sl_dont_allow_delete_by_hook from './resources/cars_sl_dont_allow_de
 
 import carsDescriptionImage from '../../dev-demo/resources/cars_description_image.js';
 import passkeysResource from '../../dev-demo/resources/passkeys.js';
+import polymorphicCarRefs from './resources/polymorphic_car_refs.js';
 
 const ADMIN_BASE_URL = '';
 const appFilePath = fileURLToPath(import.meta.url);
@@ -95,6 +96,7 @@ export const admin = new AdminForth({
     cars_sl_dont_allow_delete_by_hook,
 
     carsDescriptionImage,
+    polymorphicCarRefs,
     passkeysResource
   ],
   menu: [

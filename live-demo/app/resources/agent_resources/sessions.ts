@@ -6,7 +6,7 @@ async function allowedForSuperAdmins({ adminUser }: { adminUser: AdminUser }): P
   return adminUser.dbUser.role === 'superadmin';
 }
 
-export default {
+const sessionsResource: AdminForthResourceInput = {
   dataSource: 'maindb',
   table: 'sessions',
   resourceId: 'sessions',
@@ -53,4 +53,6 @@ export default {
       delete: false,
     },
   },
-} as AdminForthResourceInput;
+};
+
+export default sessionsResource;

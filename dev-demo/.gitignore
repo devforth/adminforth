@@ -4,3 +4,4 @@ node_modules
 .env
 db
 images/*
+testdb/*

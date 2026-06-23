@@ -10,15 +10,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { JsonViewer } from 'vue3-json-viewer'
+import { computed, defineAsyncComponent } from 'vue'
 import { useCoreStore } from '@/stores/core'
+import "vue3-json-viewer/dist/vue3-json-viewer.css";
 
 defineProps<{
   value: any
   expandDepth?: number
 }>()
 
+const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => module.JsonViewer))
 const coreStore = useCoreStore()
 
 const currentTheme = computed(() => (coreStore.theme === 'dark' ? 'dark' : 'light'))

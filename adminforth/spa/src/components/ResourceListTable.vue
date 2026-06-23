@@ -31,7 +31,13 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            ref="headerRefs"
+            scope="col"
+            class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}]"
+          >
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
                 class="flex items-center font-semibold" :class="{'cursor-pointer':c.sortable}">
@@ -122,7 +128,11 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            class="px-2 md:px-3 lg:px-6 py-4"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}]"
+          >
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
@@ -216,7 +226,7 @@
                         <component
                           v-if="action.icon && !actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
                           :is="getIcon(action.icon)"
-                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary"
+                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150"
                         />
                         <Spinner
                           v-if="actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
@@ -259,7 +269,7 @@
   -->
   <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded "
+    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded-default" 
       v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
     >
       <!-- Buttons -->
@@ -340,6 +350,28 @@
         </span> 
       </template>
     </span>
+    <div v-if="totalRows > 0 && resource?.options?.listPageSizeOptions?.length" 
+      class="flex items-center gap-2 ml-auto" > 
+      <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText whitespace-nowrap"> 
+        {{ $t('Rows per page') }} 
+      </span> 
+      <Select 
+        v-model="pageSizeInternal" 
+        :options="pageSizeOptionsComputed" 
+        :searchDisabled="true" 
+        :disableTogleOfSelectedItem="true"  
+        :style="{ width: selectDynamicWidth }"
+        :placeholder="pageSizeInternal?.toString()"        
+        class="text-sm min-w-20 af-page-size-button" 
+        classesForInput="
+        af-page-size-btn h-[34px] min-h-0 py-1 pl-2 pr-6 text-left text-sm font-medium transition-all 
+        outline-none cursor-pointer af-button-shadow rounded-default bg-lightListViewButtonBackground 
+        text-lightListViewButtonText border-lightListViewButtonBorder 
+        dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+        hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
+        dark:hover:bg-darkListViewButtonBackgroundHover dark:hover:text-darkListViewButtonTextHover"
+      /> 
+    </div>
   </div>
 </template>
 
@@ -368,16 +400,18 @@ import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import { Select } from '@/afcl';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
 const { alert, confirm } = useAdminforth();
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   page: number,
   resource: AdminForthResourceFrontend | null,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
+  pageSizeOptions: number[],
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
@@ -388,8 +422,11 @@ const props = defineProps<{
   bufferSize?: number,
   customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration[]
   tableRowReplaceInjection?: AdminForthComponentDeclaration,
-  isVirtualScrollEnabled: boolean
-}>();
+  isVirtualScrollEnabled: boolean,
+  filters?: any[]
+}>(), {
+  sort: () => []
+});
 
 //select between all rows or rows, that should be rendered in virtual scroll
 const rowsToRender = computed(() => {
@@ -405,9 +442,44 @@ const emits = defineEmits([
   'update:page',
   'update:sort',
   'update:checkboxes',
-  'update:records'
+  'update:records',
+  'update:pageSize'
 
 ]);
+
+const pageSizeOptionsComputed = computed(() => {
+  let combinedOptions = [...props.pageSizeOptions]; 
+
+  if (props.resource?.options?.listPageSize && !combinedOptions.includes(props.resource?.options?.listPageSize)) {
+    combinedOptions.push(props.resource?.options?.listPageSize);
+    combinedOptions.sort((a, b) => a - b);
+  }
+
+  return combinedOptions.map(size => ({
+    value: size,
+    label: size.toString()
+  }));
+});
+
+const pageSizeInternal = ref<number | null>(null);
+
+const selectDynamicWidth = computed(() => {
+  const length = pageSizeInternal.value?.toString().length || 2;
+  return `${length + 5}ch`;
+})
+
+watch(() => props.pageSize, (newVal) => {
+  pageSizeInternal.value = newVal;
+});
+
+watch(() => pageSizeInternal.value, (newSize) => {
+  if (newSize) {
+    localStorage.setItem(`pageSize_${props.resource?.resourceId}`, newSize.toString());
+    emits('update:pageSize', newSize);
+    page.value = 1;
+  }
+});
+
 
 const checkboxesInternal: Ref<any[]> = ref([]);
 const pageInput = ref('1');
@@ -544,6 +616,12 @@ async function onClick(e: any, row: any) {
       // user asked to nothing on click
       return;
     }
+    coreStore.listRecordIds = props.rows?.map(r => r._primaryKeyValue) ?? [];
+    coreStore.listResourceId = props.resource?.resourceId ?? null;
+    coreStore.listSort = props.sort;
+    coreStore.listPage = page.value;
+    coreStore.listPageSize = props.pageSize;
+    coreStore.listFilters = props.filters ?? [];
     if (e.ctrlKey || e.metaKey || row._clickUrl?.includes('target=_blank')) {
       
       if (row._clickUrl) {
@@ -582,9 +660,11 @@ async function onClick(e: any, row: any) {
 
 async function deleteRecord(row: any) {
   const data = await confirm({
-    message: t('Are you sure you want to delete this item?'),
+    title: t('Are you sure you want to delete this item?'),
+    message: t(`This process is irreversible.`),
     yes: t('Delete'),
     no: t('Cancel'),
+    dangerous: true,
   });
   if (data) {
     try {

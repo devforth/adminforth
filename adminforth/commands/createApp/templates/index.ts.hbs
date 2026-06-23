@@ -17,10 +17,11 @@ export const admin = new AdminForth({
     usernameField: 'email',
     passwordHashField: 'password_hash',
     rememberMeDuration: '30d', 
+    rateLimit: ['500/5m', '5000/1h', '10000/1d'],
     loginBackgroundImage: 'https://images.unsplash.com/photo-1534239697798-120952b76f2b?q=80&w=3389&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     loginBackgroundPosition: '1/2',
     loginPromptHTML: async () => { 
-      const adminforthUserExists = await admin.resource("adminuser").count(Filters.EQ('email', 'adminforth')) > 0;
+      const adminforthUserExists = (await admin.resource("adminuser").count(Filters.EQ('email', 'adminforth'))) > 0;
       if (adminforthUserExists) {
         return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
       }
@@ -56,7 +57,7 @@ export const admin = new AdminForth({
     },
   ],
   resources: [
-    usersResource
+    usersResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -64,7 +65,7 @@ export const admin = new AdminForth({
       label: 'Users',
       icon: 'flowbite:user-solid',
       resourceId: 'adminuser'
-    }
+    },
   ],
   globalPlugins: globalPlugins,
 });
@@ -84,7 +85,7 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   admin.express.serve(app);
 
   admin.discoverDatabases().then(async () => {
-    if (await admin.resource('adminuser').count() === 0) {
+    if ((await admin.resource('adminuser').count()) === 0) {
       await admin.resource('adminuser').create({
         email: 'adminforth',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),

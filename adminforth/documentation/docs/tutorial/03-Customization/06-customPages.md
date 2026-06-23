@@ -1,5 +1,5 @@
 ---
-description: "Learn how to create custom pages in AdminForth."
+description: "Guide to adding custom AdminForth pages, custom APIs, public or protected routes, menu entries, and page metadata for custom Vue pages."
 image: "/ogs/customPages.png" 
 ---
 

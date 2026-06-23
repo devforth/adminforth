@@ -6,13 +6,14 @@ import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
 import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
-import sanitizeHtml  from 'sanitize-html'
+import DOMPurify  from 'dompurify'
 import debounce from 'debounce';
 import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
 import { reconnect } from '@/websocket';
+import { ADMINFORTH_CLIENT_ID_HEADER, getAdminForthClientId } from './clientId';
 
 
 
@@ -20,6 +21,7 @@ const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
 const AUTOLOGIN_QUERY_PARAM = 'autologin';
+const START_OAUTH_QUERY_PARAM = 'start_oauth';
 
 export function getAutologinCredentials(autologin: unknown): { username: string, password: string } | null {
   if (typeof autologin !== 'string') {
@@ -116,6 +118,12 @@ export async function redirectToLogin() {
   if (currentPath !== '/login' && currentPath !== homePagePath) {
     query.next = next;
   }
+  
+  const currentQuery = router.currentRoute.value.query;
+
+  if (START_OAUTH_QUERY_PARAM in currentQuery) {
+    query[START_OAUTH_QUERY_PARAM] = (currentQuery[START_OAUTH_QUERY_PARAM] as string) ?? '';
+  }
 
   await router.push({ name: 'login', query });
 }
@@ -133,6 +141,7 @@ export async function callApi({path, method, body, headers, silentError = false,
     headers: {
       'Content-Type': 'application/json',
       'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+      [ADMINFORTH_CLIENT_ID_HEADER]: getAdminForthClientId(),
       ...headers
     },
     body: JSON.stringify(body),
@@ -141,7 +150,7 @@ export async function callApi({path, method, body, headers, silentError = false,
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   try {
     const r = await fetch(fullPath, options);
-    if (r.status == 401 ) {
+    if (r.status == 401 && !path.includes('/login')) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
       await redirectToLogin();
@@ -149,6 +158,10 @@ export async function callApi({path, method, body, headers, silentError = false,
     } 
     return await r.json();
   } catch(e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      return null;
+    }
+
     // if it is internal error, say to user
     if (e instanceof TypeError && e.message === 'Failed to fetch') {
       // this is a network error
@@ -158,7 +171,7 @@ export async function callApi({path, method, body, headers, silentError = false,
       return null;
     }
 
-    if (!silentError && !(e instanceof DOMException && e.name === 'AbortError')) {
+    if (!silentError) {
       adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
     }
     console.error(`error in callApi ${path}`, e);
@@ -337,26 +350,25 @@ export function humanifySize(size: number) {
 }
 
 export function protectAgainstXSS(value: string) {
-  return sanitizeHtml(value, {
-    allowedTags: [
-      "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
-      "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
-      "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
-      "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
-      "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
-      "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
-      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", 'img', 'video', 'source'
+  return DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: [
+      "address","article","aside","footer","header","h1","h2","h3","h4",
+      "h5","h6","hgroup","main","nav","section","blockquote","dd","div",
+      "dl","dt","figcaption","figure","hr","li","ol","p","pre",
+      "ul","a","abbr","b","bdi","bdo","br","cite","code","data","dfn",
+      "em","i","kbd","mark","q","rb","rp","rt","rtc","ruby","s","samp",
+      "small","span","strong","sub","sup","time","u","var","wbr","caption",
+      "col","colgroup","table","tbody","td","tfoot","th","thead","tr",
+      "img","video","source"
     ],
-    allowedAttributes: {
-      'li': [ 'data-list' ],
-      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
-      'video': [ 'src', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'width', 'height', 'autoplay', 'playsinline' ],
-      'source': [ 'src', 'type' ],
-      // Allow  markup on spans (classes & styles), and
-      // generic data/aria/style attributes on any element. (e.g. for KaTeX-related previews)
-      'span': [ 'class', 'style' ],
-      '*': [ 'data-*', 'aria-*', 'style' ]
-    },
+    ALLOWED_ATTR: [
+      "data-list",
+      "src","srcset","alt","title","width","height","loading",
+      "controls","autoplay","loop","muted","poster","playsinline","type",
+      "class","style"
+    ],
+    ALLOW_DATA_ATTR: true,
+    ALLOW_ARIA_ATTR: true
   });
 }
 
@@ -629,11 +641,21 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
 }
 
 export function btoa_function(source: string): string {
-  return btoa(source);
+  // UTF-8 safe base64 encode: plain btoa() throws on characters outside the
+  const bytes = new TextEncoder().encode(source);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 
 export function atob_function(source: string): string {
-  return atob(source);
+  // UTF-8 safe base64 decode, the counterpart of btoa_function above.
+  const binary = atob(source);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord: Record<string, any>): {ok: boolean, changedFields: Record<string, {oldValue: any, newValue: any}>} {
@@ -701,6 +723,9 @@ export function generateMessageHtmlForRecordChange(changedFields: Record<string,
   const items = Object.keys(changedFields || {}).map(key => {
     const column = coreStore.resource?.columns?.find((c: any) => c.name === key);
     const label = column?.label || key;
+    if (column?.masked) {
+      return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <em>${escapeHtml(t('changed'))}</em></li>`;
+    }
     const oldV = escapeHtml(changedFields[key].oldValue);
     const newV = escapeHtml(changedFields[key].newValue);
     return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <span class="af-old-value text-muted">${oldV}</span> &#8594; <span class="af-new-value">${newV}</span></li>`;
@@ -781,9 +806,12 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
         generateMessageHtmlForRecordChange(changedFields, t);
 
       const answer = await confirm({
+        title: t('There are unsaved changes'),
+        guardMessage: t('Your changes will not be saved'),
         messageHtml,
-        yes: t('Yes'),
-        no: t('No'),
+        yes: t('Leave without saving'),
+        no: t('Stay and continue'),
+        dangerous: true,
       });
 
       return answer;
@@ -867,6 +895,7 @@ export async function executeCustomBulkAction({
   onError,
   setLoadingState,
   confirmMessage,
+  confirmDangerous,
   resource,
 }: {
   actionId: string | number | undefined,
@@ -877,6 +906,7 @@ export async function executeCustomBulkAction({
   onError?: (error: string) => void,
   setLoadingState?: (loading: boolean) => void,
   confirmMessage?: string,
+  confirmDangerous?: boolean,
   resource?: AdminForthResourceFrontend,
 }): Promise<any> {
   if (!recordIds || recordIds.length === 0) {
@@ -890,6 +920,7 @@ export async function executeCustomBulkAction({
     const { confirm } = useAdminforth();
     const confirmed = await confirm({
       message: confirmMessage,
+      dangerous: confirmDangerous ?? false,
     });
     if (!confirmed) {
       return { cancelled: true };

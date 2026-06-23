@@ -29,6 +29,9 @@ export async function getList(resource: AdminForthResourceFrontend, isPageLoaded
     },
     abortSignal: abortController.signal
   });
+  if (abortController.signal.aborted) {
+    return;
+  }
   if (data.error) {
     showErrorTost(data.error);
     rows = [];
@@ -44,24 +47,34 @@ export async function getList(resource: AdminForthResourceFrontend, isPageLoaded
     return row;
   });
   totalRows = data.total;
-  
+  const recordIds = data.recordIds || [];
+
   // if checkboxes have items which are not in current data, remove them
   checkboxes.value = checkboxes.value.filter((pk: any) => rows.some((r: any) => r._primaryKeyValue === pk));
   await nextTick();
-  return { rows, totalRows };
+  return { rows, totalRows, recordIds };
 }
 
 
 
 export async function startBulkAction(actionId: string, resource: AdminForthResourceFrontend, checkboxes: { value: any[] }, 
-  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>) {
+  bulkActionLoadingStates: {value: Record<string, boolean>}, getListInner: () => Promise<any>, t: (key: string, vars?: Record<string, any>) => string) {
   const action = resource?.options?.bulkActions?.find(a => a.id === actionId);
   const { confirm, alert } = useAdminforth();
 
   if (action?.confirm) {
-    const confirmed = await confirm({
-      message: action.confirm,
-    });
+    const confirmed = await confirm(
+      typeof action.confirm === 'string'
+        ? {
+            title: action.confirm,
+            dangerous: action.dangerous ?? false,
+          }
+        : {
+            ...action.confirm,
+            message: action.confirm.message && t(action.confirm.message, { count: checkboxes.value.length }),
+            dangerous: action.dangerous ?? false,
+          }
+    );
     if (!confirmed) {
       return;
     }

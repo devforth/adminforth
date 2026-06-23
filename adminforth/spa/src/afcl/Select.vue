@@ -32,7 +32,7 @@
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
+        <IconCaretDownSolid class="h-4 w-4 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
           :class="{ 'transform rotate-180': showDropdown }"
         />
       </div>
@@ -63,7 +63,7 @@
     </teleport>
 
     <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
-      class="absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
+      class="afcl-select-content absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
         dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
       <div
@@ -119,7 +119,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, t
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
-type ISingleSelectModelValue = string | number | boolean;
+type ISingleSelectModelValue = string | number | boolean | null;
 
 const props = defineProps({
   options: Array,

@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex gap-10">
+  <div class="flex flex-wrap gap-10 max-w-screen">
     <div class="flex flex-col max-w-[200px] m-10 mt-20 gap-10">
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 
@@ -12,7 +12,7 @@
         :loader="false" class="w-full" mode="secondary">
         Secondary button
       </Button>
-
+ 
       <Button @click="doSmth" 
           :loader="true" class="w-full mt-4">
         Your button text
@@ -376,27 +376,8 @@
       ]" 
       :expandDepth="2" 
     />
-
-    <Button @click="createJob">
-      Create Job
-    </Button>
-
-    <Button @click="callHelloWorldApi">
-      Call API
-    </Button>
-
-    <Button @click="callHelloWorldApi">
-      Refresh badge
-    </Button>
-
-    <Button @click="doTest2faCall">
-      Test 2FA API Call
-    </Button>
   </div>
-
-
   </div>
-
 </template>
 
 <script setup lang="ts">
@@ -508,15 +489,6 @@ function doSmth(){
   adminforth.alert({message: 'You clicked the button!', variant: 'success' })
 }
 
-async function createJob() {
-  try {
-    const res = await callApi({path: '/api/create-job/', method: 'POST'});
-    console.log('Job created successfully:', res);
-  } catch (error) {
-    console.error('Error creating job:', error);
-  }
-}
-
 async function loadPageData(data) {  
   const { offset, limit } = data;
   // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
@@ -538,20 +510,4 @@ watch(textInput, (newVal) => {
   console.log('Text input changed:', newVal, typeof newVal);
 });
 
-async function callHelloWorldApi() {
-  try {
-    const response = await callApi({ path: '/api/hello/', method: 'GET' });
-    console.log('API response:', response);
-  } catch (error) {
-    console.error('API error:', error);
-  }
-}
-
-async function doTest2faCall() {
-  try {
-    const response = await callApi({ path: '/api/test2faCall/', method: 'GET' });
-  } catch (error) {
-    console.error('2FA API error:', error);
-  }
-}
 </script>

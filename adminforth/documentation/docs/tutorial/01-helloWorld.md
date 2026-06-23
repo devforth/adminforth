@@ -1,6 +1,7 @@
 ---
 id: hello-world
 title: Hello world app without CLI
+description: "Manual code way walkthrough (alternative to CLI) for building a minimal AdminForth app without the CLI, including project setup, resources, authentication, and server configuration."
 sidebar_class_name: hidden-sidebar
 ---
 

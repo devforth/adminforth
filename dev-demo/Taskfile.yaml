@@ -3,6 +3,7 @@ version: '3'
 vars:
   PLUGINS_DIR: "../plugins"
   ADAPTERS_DIR: "../adapters"
+  CONNECTORS_DIR: "../connectors"
   PULL_JOBS: 30
   PNPM_JOBS: 10
   PLUGINS:
@@ -32,6 +33,7 @@ vars:
     - "adminforth-background-jobs"
     - "adminforth-auto-remove"
     - "adminforth-agent"
+    - "adminforth-dashboard"
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"
@@ -42,8 +44,12 @@ vars:
     - "adminforth-oauth-adapter-keycloak"
     - "adminforth-oauth-adapter-microsoft"
     - "adminforth-oauth-adapter-twitch"
+    - "adminforth-oauth-adapter-telegram"
+    - "adminforth-oauth-adapter-clerk"
+    - "adminforth-chat-surface-adapter-telegram"
     - "adminforth-image-generation-adapter-openai"
     - "adminforth-storage-adapter-amazon-s3"
+    - "adminforth-storage-adapter-s3-compatible"
     - "adminforth-storage-adapter-local"
     - "adminforth-image-vision-adapter-openai"
     - "adminforth-key-value-adapter-ram"
@@ -53,9 +59,17 @@ vars:
     - "adminforth-key-value-adapter-leveldb"
     - "adminforth-image-generation-adapter-nano-banana"
     - "adminforth-completion-adapter-openai-responses"
-    - "adminforth-completion-adapter-antropic-messages"
+    - "adminforth-completion-adapter-anthropic-messages"
     - "adminforth-completion-adapter-google-gemini"
+    - "adminforth-audio-adapter-openai"
 
+  CONNECTORS:
+    - "adminforth-connector-clickhouse"
+    - "adminforth-connector-mongo"
+    - "adminforth-connector-mysql"
+    - "adminforth-connector-postgres"
+    - "adminforth-connector-sqlite"
+    - "adminforth-connector-qdrant"
 
 tasks:
 
@@ -99,7 +113,7 @@ tasks:
 
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
-            (cd "${name}" && pnpm install)
+            (cd "${name}" && CI=true pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
@@ -141,7 +155,7 @@ tasks:
             exit 0
           fi
 
-          pnpm add adminforth@latest --save-peer
+          CI=true PNPM_CONFIG_MINIMUM_RELEASE_AGE=0 PNPM_CONFIG_DANGEROUSLY_ALLOW_ALL_BUILDS=true pnpm add adminforth@latest --save-prefix='^' --save-peer
 
           git add package.json
           if [ -e pnpm-lock.yaml ]; then
@@ -153,7 +167,7 @@ tasks:
             exit 0
           fi
 
-          git commit -m "fix: update adminforth verion"
+          git commit -m "fix: update adminforth version"
           git push
         ' _ {}
 
@@ -175,6 +189,15 @@ tasks:
           REPOS:
             ref: .ADAPTERS
 
+  pull_connectors:
+    desc: Pull connector repositories
+    cmds:
+      - task: pull_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS          
+
   pnpm_plugins:
     desc: Install plugin dependencies
     cmds:
@@ -192,6 +215,15 @@ tasks:
           DIR: "{{.ADAPTERS_DIR}}"
           REPOS:
             ref: .ADAPTERS
+  
+  pnpm_connectors:
+    desc: Install connector dependencies
+    cmds:
+      - task: pnpm_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS
 
   update_adminforth_plugins:
     desc: Update adminforth to latest in plugin repositories, commit, and push
@@ -201,3 +233,21 @@ tasks:
           DIR: "{{.PLUGINS_DIR}}"
           REPOS:
             ref: .PLUGINS
+
+  update_adminforth_adapters:
+    desc: Update adminforth to latest in adapter repositories, commit, and push
+    cmds:
+      - task: update_adminforth_repos
+        vars:
+          DIR: "{{.ADAPTERS_DIR}}"
+          REPOS:
+            ref: .ADAPTERS
+
+  update_adminforth_connectors:
+    desc: Update adminforth to latest in connector repositories, commit, and push
+    cmds:
+      - task: update_adminforth_repos
+        vars:
+          DIR: "{{.CONNECTORS_DIR}}"
+          REPOS:
+            ref: .CONNECTORS
