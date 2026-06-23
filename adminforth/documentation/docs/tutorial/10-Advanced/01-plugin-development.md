@@ -512,7 +512,11 @@ To ensure that plugin activates before some other plugins set `activationOrder` 
 
 ## Making plugin global
 
-If you want to make your plugin to be global and add it to the main `index.ts` in `globalPlugins` section, you need to use `pluginsScope: 'global'` and `modifyGlobalConfig` instead of `modifyResourceConfig`:
+Each plugin should define a scope: resource-level or global level. 
+* Resource-level plugins should be used when plugin instance works only with one resource config or it's fields. Instances of resource-scope plugins should be installed into "plugins' field of resource config. 
+* All other plugins should be global-scoped. Such plugins are installed to `globalPlugins` of root adminforth config. They might modify configs of many resources like default AuditLog plugin or use several database resources to store data like default Agent plugin.
+
+To make your plugin global, you need to use `pluginsScope: 'global'` and `modifyGlobalConfig` instead of `modifyResourceConfig`
 
 
 ```ts title="./your-global-plugin/index.ts"

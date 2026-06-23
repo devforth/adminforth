@@ -296,7 +296,10 @@ class AdminForth implements IAdminForth {
       for (let pluginInstance of resource.plugins || []) {
         afLogger.trace(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
         if (pluginInstance.pluginsScope === 'global') {
-          throw new Error(formatHugePluginError(`Move plugin ${pluginInstance.constructor.name} to index.ts config.globalPlugins array`));
+          throw new Error(formatHugePluginError(`Please move plugin ${pluginInstance.constructor.name} instance to index.ts config.globalPlugins array.
+            Details: Previously adminforth had only resource-level plugins. To keep project structure clean, in recent version of adminforth we introduced globalPlugins. 
+            Global plugins are installed on whole application and not only one resource (like agent, audit logs etc)
+          `));
         }
         allPluginInstances.push({pi: pluginInstance, resource});
       }
