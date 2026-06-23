@@ -35,7 +35,7 @@ import {
 
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
+import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './modules/restApi.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -50,7 +50,7 @@ export * from './types/adapters/index.js';
 export * from './modules/filtersTools.js';
 export * from './modules/requestContext.js';
 export * from './modules/utils.js';
-export { interpretResource };
+export { interpretResource, rejectApiRawFilters };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
 export { default as AdminForthBaseConnector } from './dataConnectors/baseConnector.js';
