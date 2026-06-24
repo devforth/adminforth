@@ -2,7 +2,7 @@ import { Express, Response } from "express";
 import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
-import { levelDbAdapter, resourceAdapter } from './utils.js';
+import { levelDbAdapter, resourceAdapter, ramAdapter } from './utils.js';
 
 const CURRENT_KV_ADAPTER = resourceAdapter;
 
