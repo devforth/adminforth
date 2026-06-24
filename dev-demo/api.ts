@@ -2,7 +2,7 @@ import { Express, Response } from "express";
 import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
-import { levelDbAdapter } from './utils.js';
+import { levelDbAdapter, resourceAdapter } from './utils.js';
 
 const DASHBOARD_CAR_SOURCES = [
   { resourceId: 'cars_sl', label: 'SQLite' },
@@ -194,7 +194,7 @@ export function initApi(app: Express, admin: IAdminForth) {
       async (_req: IAdminUserExpressRequest, res: Response) => {
         console.log('Received getLevelDbKeys');
         const { prefix } = _req.body;
-        const keys = await levelDbAdapter.listByPrefix(prefix, 100);
+        const keys = await resourceAdapter.listByPrefix(prefix, 100);
         res.json({ keys });
       }
     )
@@ -204,7 +204,7 @@ export function initApi(app: Express, admin: IAdminForth) {
       async (_req: IAdminUserExpressRequest, res: Response) => {
         console.log('Received addLevelDbKey');
         const {key, value} = _req.body;
-        await levelDbAdapter.set(key, value);
+        await resourceAdapter.set(key, value);
         // for (let i = 0; i < 100; i++) {
         //   await levelDbAdapter.set(`clean=true||${new Date().toISOString()}||record_${i}`, `true`);
         //   console.log(`Added record ${i}`);

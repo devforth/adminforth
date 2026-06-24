@@ -62,6 +62,7 @@ vars:
     - "adminforth-completion-adapter-anthropic-messages"
     - "adminforth-completion-adapter-google-gemini"
     - "adminforth-audio-adapter-openai"
+    - "adminforth-key-value-adapter-resource"
 
   CONNECTORS:
     - "adminforth-connector-clickhouse"
