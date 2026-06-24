@@ -58,7 +58,15 @@ DB_DEBUG_LEVEL=trace pnpm start
 
 And the logs will be visible as well.
 
+## Single-line logs
 
+By default, log records that contain additional data objects are printed across multiple lines (pretty-printed).
+If you prefer each log record to be printed on a single line (for example, to make logs easier to grep or to fit
+log collectors), set the `AF_LOG_SINGLE_LINE` environment variable:
 
+```bash
+AF_LOG_SINGLE_LINE=true pnpm start
+```
 
+Accepted truthy values are `true` and `1`. When unset, logs use the default multi-line pretty format.
 
