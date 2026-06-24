@@ -78,6 +78,9 @@ model key_values {
   key String @id
   value String
   collection String?
+
+  @@index([key])
+  @@index([collection])
 }
 ```
 

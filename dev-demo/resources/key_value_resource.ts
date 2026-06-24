@@ -29,9 +29,9 @@ export default {
     allowedActions: {
       list: allowedForSuperAdmins,
       show: allowedForSuperAdmins,
-      create: false,
-      edit: false,
-      delete: false,
+      create: allowedForSuperAdmins,
+      edit: allowedForSuperAdmins,
+      delete: allowedForSuperAdmins,
     },
   },
 } as AdminForthResourceInput;
