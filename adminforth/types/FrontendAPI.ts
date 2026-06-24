@@ -96,7 +96,7 @@ export interface FrontendAPIInterface {
         setFilter(filter: FilterParams): void;
 
         /**
-         * @deprecated does the same as setFilter, kept for backward compatibility, will be removed in 2.0.0
+         * @deprecated does the same as setFilter, kept for backward compatibility, will be removed in 4.0.0
          * 
          * Update a filter in the list
          * 
