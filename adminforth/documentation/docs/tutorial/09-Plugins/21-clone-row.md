@@ -36,3 +36,14 @@ plugins: [
 ]
 ```
 
+## Options
+
+### `makeCloneButtonAsQuickAction`
+
+By default, the Clone action appears in the **three-dots dropdown menu** of each row. Set `makeCloneButtonAsQuickAction: true` to display it as a standalone icon button directly in the row actions area, next to other quick-action buttons like Approve:
+
+```ts
+new CloneRow({
+  makeCloneButtonAsQuickAction: true,
+}),
+```
