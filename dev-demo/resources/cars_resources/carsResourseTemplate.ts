@@ -20,6 +20,8 @@ import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completi
 import ImageGenerationAdapterOpenAI from '../../../adapters/adminforth-image-generation-adapter-openai/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthAdapterS3Storage from '../../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
+import { levelDbAdapter } from '../../utils.js';
+import AdminForthAdapterS3CompatibleStorage from '../../../adapters/adminforth-storage-adapter-s3-compatible/index.js';
 import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-image-vision-adapter-openai/index.js';
 import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
@@ -190,38 +192,40 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
 
 
     *********************************************************************************/
+      // new UploadPlugin({
+      //   storageAdapter: new AdminForthAdapterS3CompatibleStorage({
+      //     accessKeyId: 'minioadmin',
+      //     secretAccessKey: 'minioadmin',
+      //     endpoint: 'http://localhost:9000',
+      //     bucket: 'adminforth-dev-demo',
+      //     region: 'us-east-1',
+      //     s3ACL: 'private',
+      //     cleanupKeyValueAdapter: levelDbAdapter,
+      //     forcePathStyle: true,
+      //     cleanupCheckInterval: '30m',
+      //     cleanupGracePeriod: '5d'
+      //   }),
+      //   pathColumnName: 'photos',
+      //   allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+      //   maxFileSize: 1024 * 1024 * 20, // 20 MB
+      //   filePath: ({originalFilename, originalExtension, contentType}) => 
+      //         `${dataSource}/car_images/cars/${originalFilename}_${Date.now()}.${originalExtension}`,
+      //   preview: {
+      //     maxShowWidth: "300px",
+      //   },
+      // }),
       new UploadPlugin({
-        storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
-          fileSystemFolder: "./db/uploads",
-          mode: "public", // or "private"
-          signingSecret: '1241245',
-        }) : new AdminForthAdapterS3Storage({
-          bucket: process.env.AWS_BUCKET_NAME as string,
-          region: process.env.AWS_REGION as string,
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          s3ACL: "public-read"
-        }),
-        pathColumnName: 'photos',
-        allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
-        maxFileSize: 1024 * 1024 * 20, // 20 MB
-        filePath: ({originalFilename, originalExtension, contentType}) => 
-              `${dataSource}/car_images/cars/${originalFilename}_${Date.now()}.${originalExtension}`,
-        preview: {
-          maxShowWidth: "300px",
-        },
-      }),
-      new UploadPlugin({
-        storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
-          fileSystemFolder: "./db/uploads_promo",
-          mode: "public", // or "private"
-          signingSecret: '1241245',
-        }) : new AdminForthAdapterS3Storage({
-          bucket: process.env.AWS_BUCKET_NAME as string,
-          region: process.env.AWS_REGION as string,
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-          s3ACL: "public-read"
+        storageAdapter: new AdminForthAdapterS3CompatibleStorage({
+          accessKeyId: 'minioadmin',
+          secretAccessKey: 'minioadmin',
+          endpoint: 'http://localhost:9000',
+          bucket: 'adminforth-dev-demo',
+          region: 'us-east-1',
+          s3ACL: 'private',
+          // cleanupKeyValueAdapter: levelDbAdapter,
+          forcePathStyle: true,
+          // cleanupCheckInterval: '30m',
+          // cleanupGracePeriod: '5d'
         }),
         pathColumnName: 'promo_picture',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
@@ -306,40 +310,40 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
     *********************************************************************************/
       ...(process.env.OPENAI_API_KEY ? 
         [
-          new UploadPlugin({
-            storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
-              fileSystemFolder: "./db/uploads_promo_generated",
-              mode: "public", // or "private"
-              signingSecret: '1241245',
-            }) : new AdminForthAdapterS3Storage({
-              bucket: process.env.AWS_BUCKET_NAME as string,
-              region: process.env.AWS_REGION as string,
-              accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-              s3ACL: "public-read"
-            }),
+        //   new UploadPlugin({
+        //     storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
+        //       fileSystemFolder: "./db/uploads_promo_generated",
+        //       mode: "public", // or "private"
+        //       signingSecret: '1241245',
+        //     }) : new AdminForthAdapterS3Storage({
+        //       bucket: process.env.AWS_BUCKET_NAME as string,
+        //       region: process.env.AWS_REGION as string,
+        //       accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        //       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+        //       s3ACL: "public-read"
+        //     }),
             
-            pathColumnName: 'generated_promo_picture',
-            allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
-            maxFileSize: 1024 * 1024 * 20, // 20 MB
-            filePath: ({originalFilename, originalExtension, contentType}) => 
-                  `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
-            preview: {
-              maxShowWidth: "300px",
-            },
-            generation: {
-              countToGenerate: 2,
-              adapter: new ImageGenerationAdapterOpenAI({
-                openAiApiKey: process.env.OPENAI_API_KEY as string,
-                model: 'gpt-image-1', 
-              }),
-              attachFiles: async ({ record }) => {
-                return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
-              },
-              generationPrompt: "Generate a high-quality promotional image for a car with model {{model}} and color {{color}}. The car is a {{body_type}} type. The image should be vibrant and eye-catching, suitable for advertising purposes.",
-              outputSize: '1536x1024'
-            }   
-        }),
+        //     pathColumnName: 'generated_promo_picture',
+        //     allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
+        //     maxFileSize: 1024 * 1024 * 20, // 20 MB
+        //     filePath: ({originalFilename, originalExtension, contentType}) => 
+        //           `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
+        //     preview: {
+        //       maxShowWidth: "300px",
+        //     },
+        //     generation: {
+        //       countToGenerate: 2,
+        //       adapter: new ImageGenerationAdapterOpenAI({
+        //         openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //         model: 'gpt-image-1', 
+        //       }),
+        //       attachFiles: async ({ record }) => {
+        //         return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+        //       },
+        //       generationPrompt: "Generate a high-quality promotional image for a car with model {{model}} and color {{color}}. The car is a {{body_type}} type. The image should be vibrant and eye-catching, suitable for advertising purposes.",
+        //       outputSize: '1536x1024'
+        //     }   
+        // }),
         new TextCompletePlugin({
           fieldName: 'model',
           adapter: new CompletionAdapterOpenAIResponses({
@@ -350,76 +354,76 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
             }
           }),
         }),
-        new BulkAiFlowPlugin({
-          actionName: 'Generate description and Price',
-          askConfirmationBeforeGenerating: true,
-          textCompleteAdapter: new CompletionAdapterOpenAIResponses({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: "gpt-5-mini",
-            extraRequestBodyParameters: {
-              temperature: 1,
-            },
-          }),
-          fillPlainFields: {
-            description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
-            price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
-          },
-          rateLimits: { // bulk generation limits
-            fillFieldsFromImages: "1/1m", // 1 request per minute
-            fillPlainFields: "1/1m",      // 1 request per minute
-            generateImages: "1/1m",       // 1 request per minute
-          }
-        }),
-        new BulkAiFlowPlugin({
-          actionName: 'Analyze image',
-          askConfirmationBeforeGenerating: true,
-          visionAdapter: new AdminForthImageVisionAdapterOpenAi({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5-mini',
-          }),
-          fillFieldsFromImages: {
-            body_type: "What is the body type of the car shown in the image?",
-            color: "What is the color of the car shown in the image?",
-            mileage: "Estimate the mileage of the car shown in the image in kilometers.",
-          },
-          attachFiles: async ({ record }) => {
-            if (!record.promo_picture) {
-              return [];
-            }
-            return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
-          },
-          rateLimits: { // bulk generation limits
-            fillFieldsFromImages: "1/1m", // 1 request per minute
-            fillPlainFields: "1/1m",      // 1 request per minute
-            generateImages: "1/1m",       // 1 request per two minutes
-          }
-        }),
-        new BulkAiFlowPlugin({
-          actionName: 'Generate promo image',
-          askConfirmationBeforeGenerating: true,
-          imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-image-1',
-          }),
-          generateImages: {
-            generated_promo_picture: {
-              countToGenerate: 1,
-              outputSize: '1536x1024',
-              prompt: "Create a high-quality promotional image for a {{color}} car shown on attached image. Generated image should be in anime style",
-            }
-          },
-          rateLimits: { // bulk generation limits
-            fillFieldsFromImages: "1/1m", // 1 request per minute
-            fillPlainFields: "1/1m",      // 1 request per minute
-            generateImages: "1/1m",       // 1 request per minute
-          },
-          attachFiles: async ({ record }) => {
-            if (!record.promo_picture) {
-              return [];
-            }
-            return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
-          },
-        }),
+        // new BulkAiFlowPlugin({
+        //   actionName: 'Generate description and Price',
+        //   askConfirmationBeforeGenerating: true,
+        //   textCompleteAdapter: new CompletionAdapterOpenAIResponses({
+        //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //     model: "gpt-5-mini",
+        //     extraRequestBodyParameters: {
+        //       temperature: 1,
+        //     },
+        //   }),
+        //   fillPlainFields: {
+        //     description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
+        //     price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
+        //   },
+        //   rateLimits: { // bulk generation limits
+        //     fillFieldsFromImages: "1/1m", // 1 request per minute
+        //     fillPlainFields: "1/1m",      // 1 request per minute
+        //     generateImages: "1/1m",       // 1 request per minute
+        //   }
+        // }),
+        // new BulkAiFlowPlugin({
+        //   actionName: 'Analyze image',
+        //   askConfirmationBeforeGenerating: true,
+        //   visionAdapter: new AdminForthImageVisionAdapterOpenAi({
+        //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //     model: 'gpt-5-mini',
+        //   }),
+        //   fillFieldsFromImages: {
+        //     body_type: "What is the body type of the car shown in the image?",
+        //     color: "What is the color of the car shown in the image?",
+        //     mileage: "Estimate the mileage of the car shown in the image in kilometers.",
+        //   },
+        //   attachFiles: async ({ record }) => {
+        //     if (!record.promo_picture) {
+        //       return [];
+        //     }
+        //     return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+        //   },
+        //   rateLimits: { // bulk generation limits
+        //     fillFieldsFromImages: "1/1m", // 1 request per minute
+        //     fillPlainFields: "1/1m",      // 1 request per minute
+        //     generateImages: "1/1m",       // 1 request per two minutes
+        //   }
+        // }),
+        // new BulkAiFlowPlugin({
+        //   actionName: 'Generate promo image',
+        //   askConfirmationBeforeGenerating: true,
+        //   imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
+        //     openAiApiKey: process.env.OPENAI_API_KEY as string,
+        //     model: 'gpt-image-1',
+        //   }),
+        //   generateImages: {
+        //     generated_promo_picture: {
+        //       countToGenerate: 1,
+        //       outputSize: '1536x1024',
+        //       prompt: "Create a high-quality promotional image for a {{color}} car shown on attached image. Generated image should be in anime style",
+        //     }
+        //   },
+        //   rateLimits: { // bulk generation limits
+        //     fillFieldsFromImages: "1/1m", // 1 request per minute
+        //     fillPlainFields: "1/1m",      // 1 request per minute
+        //     generateImages: "1/1m",       // 1 request per minute
+        //   },
+        //   attachFiles: async ({ record }) => {
+        //     if (!record.promo_picture) {
+        //       return [];
+        //     }
+        //     return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
+        //   },
+        // }),
       ] : []),
     ],
 
