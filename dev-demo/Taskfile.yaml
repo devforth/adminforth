@@ -7,14 +7,14 @@ vars:
   PULL_JOBS: 30
   PNPM_JOBS: 10
   PLUGINS:
-    # - "adminforth-audit-log"
-    # - "adminforth-email-password-reset"
-    # - "adminforth-foreign-inline-list"
-    # - "adminforth-i18n"
-    # - "adminforth-import-export"
-    # - "adminforth-text-complete"
-    # - "adminforth-open-signup"
-    # - "adminforth-rich-editor"
+    - "adminforth-audit-log"
+    - "adminforth-email-password-reset"
+    - "adminforth-foreign-inline-list"
+    - "adminforth-i18n"
+    - "adminforth-import-export"
+    - "adminforth-text-complete"
+    - "adminforth-open-signup"
+    - "adminforth-rich-editor"
     - "adminforth-two-factors-auth"
     - "adminforth-upload"
     - "adminforth-oauth"
