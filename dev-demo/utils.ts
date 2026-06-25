@@ -18,5 +18,5 @@ export const ramAdapter = new RAMKeyValueAdapter();
 
 // Uncomment if you have running Redis instance
 // export const redisAdapter = new RedisKeyValueAdapter({
-//   redisUrl: 'redis://localhost:6379',
+//   redisUrl: 'redis://localhost:6379/0',
 // })
