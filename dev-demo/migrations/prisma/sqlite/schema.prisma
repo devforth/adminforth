@@ -34,6 +34,7 @@ model cars {
   body_type      String?
 
   photos         String?
+  specifications String?
 
   seller_id      String?
   seller         String?

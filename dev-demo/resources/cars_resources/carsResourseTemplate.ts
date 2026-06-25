@@ -26,6 +26,7 @@ import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-ima
 import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
+import JsonEditorPlugin from '../../../plugins/adminforth-json-editor/index.js';
 
 const CAR_RESOURCE_DB_LABELS = {
   sqlite: 'SQLite',
@@ -167,6 +168,15 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         },
       },
       {
+        name: 'specifications',
+        type: AdminForthDataTypes.JSON,
+        label: 'Specifications',
+        sortable: false,
+        showIn: {
+          list: false,
+        },
+      },
+      {
         name: 'seller_id',
         type: AdminForthDataTypes.STRING,
         foreignResource: {
@@ -256,6 +266,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
             }
           }
         } : {}),
+      }),
+      new JsonEditorPlugin({
+        fieldName: 'specifications',
       }),
       new importExport({}),
       // new InlineCreatePlugin({}),
