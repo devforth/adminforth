@@ -5,7 +5,7 @@
     @dragleave.prevent="dragging = false"
     @drop.prevent="dragging = false; doEmit(($event.dataTransfer as DataTransfer).files)"
   >
-      <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-lg cursor-pointer
+      <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-default cursor-pointer
         hover:bg-lightDropzoneBackgroundHover hover:border-lightDropzoneBorderHover  dark:hover:border-darkDropzoneBorderHover dark:hover:bg-darkDropzoneBackgroundHover"
         :class="{
           'border-lightDropzoneBorderDragging dark:border-darkDropzoneBorderDragging': dragging,
@@ -50,7 +50,7 @@
           >
             <template v-for="(file, index) in selectedFiles" :key="index">
               <div
-                class="text-sm text-lightDropzoneIcon dark:text-darkDropzoneIcon  bg-lightDropzoneBackgroundHover dark:bg-darkDropzoneBackgroundHover rounded-md 
+                class="text-sm text-lightDropzoneIcon dark:text-darkDropzoneIcon  bg-lightDropzoneBackgroundHover dark:bg-darkDropzoneBackgroundHover rounded-default 
                       flex items-center gap-1 px-2 py-1 group"
               >
                 <IconFileSolid class="w-4 h-4 flex-shrink-0" />
