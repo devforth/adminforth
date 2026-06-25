@@ -277,7 +277,7 @@ function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaOb
 const getResourceDataRequestSchema: AnySchemaObject = {
   type: 'object',
   $defs: commonFilterSchemaDefs,
-  required: ['resourceId', 'source', 'limit', 'offset', 'filters', 'sort'],
+  required: ['resourceId', 'source', 'limit', 'offset'],
   properties: {
     resourceId: { type: 'string' },
     source: {
@@ -1330,7 +1330,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const meta = { requestBody: body, pk: undefined };
-        if (source === 'edit' || source === 'show') {
+        if ((source === 'edit' || source === 'show') && body.filters) {
           meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
         }
 
@@ -1420,7 +1420,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           : undefined;
 
         // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
-        const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
+        const sortFiltered = (sort || []).filter((sortItem: IAdminForthSort) => {
           return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
         });
 
