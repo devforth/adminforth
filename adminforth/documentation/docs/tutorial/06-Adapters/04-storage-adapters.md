@@ -22,7 +22,7 @@ pnpm add @adminforth/storage-adapter-s3-compatible
 ```
 
 Provides S3 compatible interface for object storage services such as MinIO, Wasabi, Cloudflare R2 or other third-party S3 providers.
-### How the adapter works:
+### How the adapter works
 
 The Amazon S3 adapter uses tagging to mark objects with the special tag `adminforth-candidate-for-cleanup`, and then creates a lifecycle rule that automatically expires objects with that tag.
 But not all S3-compatible adapters support tagging, so this adapter has a built-in cleanup mechanism and you have two options:
@@ -50,6 +50,16 @@ If you don't want to use a key/value adapter and you don't need to clean up file
 > Note: if you don't pass an adapter, all connected files will be deleted immediately when you delete a record.
 
 > If somebody uploaded a file and didn't save the record, you will pay for the storage until the file is removed manually
+
+### Choosing Key/value adapter
+
+Since the adapter uses a key/value adapter to store keys for deletion, it is important to use persistent storage, so the data will be safe:
+
+- (⛔️) [RAM adapter](07-key-value-adapters.md#ram-adapter) - not recommended, because after a server restart all data will be lost
+- (✅) [Redis adapter](07-key-value-adapters.md#redis-adapter) - Redis itself stores data in-memory, but you can set it up to write data to an `.rdb` file so the database is restored on server restart. However, it requires regular database snapshots and persistent Docker storage setup
+- (✅✅) [LevelDB adapter](07-key-value-adapters.md#leveldb-adapter) - can be used, but you need to set up persistent storage in your Docker container, so data won't be lost between restarts
+- (✅✅✅) [Resource adapter](07-key-value-adapters.md#resource-based-adapter) - uses a database to store key/value pairs, so data will be safe between restarts, but you need to create an extra table for this storage
+
 
 ### Cloudflare R2 setup example
 

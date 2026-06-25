@@ -154,3 +154,9 @@ model AdminUserExternalIdentity {
   @@unique([provider, subject])
   @@index([adminUserId])
 }
+
+model key_values {
+  key String @id
+  value String
+  collection String?
+}

@@ -719,7 +719,7 @@ export type BeforeDataSourceRequestFunction = (params: {
   ok: boolean, 
   error?: string | null, 
   /**
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use redirectToRecordId instead.
    */
   newRecordId?: string, 
   redirectToRecordId?: string
@@ -767,7 +767,7 @@ export type CreateResourceRecordResult = {
   /**
    * Optional id of an existing record to redirect to
    * (used when a beforeSave hook aborts creation and supplies newRecordId, allows to implement programmatic creation via API).
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use redirectToRecordId instead.
    */
   newRecordId?: any;
 
@@ -800,7 +800,7 @@ export type CreateResourceRecordParams = {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response?: IAdminForthHttpResponse;
 
@@ -828,7 +828,7 @@ export type UpdateResourceRecordParams =
       /**
        * Full record data with applied changes.
        *
-       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use updates instead.
+       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use updates instead.
        */
       record: any;
 
@@ -845,7 +845,7 @@ export type UpdateResourceRecordParams =
       /**
        * HTTP response object.
        *
-       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
        */
       response?: IAdminForthHttpResponse;
 
@@ -873,7 +873,7 @@ export type UpdateResourceRecordParams =
       /**
        * Full record data with applied changes.
        *
-       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use updates instead.
+       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use updates instead.
        */
       record?: never;
 
@@ -890,7 +890,7 @@ export type UpdateResourceRecordParams =
       /**
        * HTTP response object.
        *
-       * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
        */
       response?: IAdminForthHttpResponse;
 
@@ -932,7 +932,7 @@ export type DeleteResourceRecordParams = {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response?: IAdminForthHttpResponse;
 
@@ -985,7 +985,7 @@ export type BeforeDeleteSaveFunction = (params: {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response?: IAdminForthHttpResponse,
   /**
@@ -1015,7 +1015,7 @@ export type BeforeEditSaveFunction = (params: {
   /** 
   * Record with updates
   *
-  *  @deprecated. Will be removed in 2.0.0. Use updates instead.
+  *  @deprecated. Will be removed in 4.0.0. Use updates instead.
   */
   record: any, // legacy, 'updates' should be used instead
   /**
@@ -1029,7 +1029,7 @@ export type BeforeEditSaveFunction = (params: {
     /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response: IAdminForthHttpResponse,
     /**
@@ -1058,7 +1058,7 @@ export type BeforeCreateSaveFunction = (params: {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response: IAdminForthHttpResponse,
 
@@ -1067,7 +1067,7 @@ export type BeforeCreateSaveFunction = (params: {
   ok: boolean, 
   error?: string | null, 
   /**
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use redirectToRecordId instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use redirectToRecordId instead.
    */
   newRecordId?: string, 
   redirectToRecordId?: string
@@ -1101,7 +1101,7 @@ export type AfterCreateSaveFunction = (params: {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response: IAdminForthHttpResponse,
     /**
@@ -1138,7 +1138,7 @@ export type AfterDeleteSaveFunction = (params: {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response: IAdminForthHttpResponse,
     /**
@@ -1168,7 +1168,7 @@ export type AfterEditSaveFunction = (params: {
   /** 
   * Record after update.
   *
-  *  @deprecated. Will be removed in 2.0.0. Use updates instead.
+  *  @deprecated. Will be removed in 4.0.0. Use updates instead.
   */
   record: any, // legacy, 'updates' should be used instead 
   /**
@@ -1182,7 +1182,7 @@ export type AfterEditSaveFunction = (params: {
   /**
    * HTTP response object.
    *
-   * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
    */
   response: IAdminForthHttpResponse,
     /**
@@ -1202,7 +1202,7 @@ export type BeforeLoginConfirmationFunction = (params?: {
     /**
      * HTTP response object.
      *
-     * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+     * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
      */
     response: IAdminForthHttpResponse,
     /**
@@ -1236,7 +1236,7 @@ export type AdminUserAuthorizeFunction = ((params?: {
       /**
      * HTTP response object.
      *
-     * @deprecated Since 1.2.9. Will be removed in 2.0.0. Use extra.response instead.
+     * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
      */
     response: IAdminForthHttpResponse,
     /**
@@ -2123,7 +2123,7 @@ export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourc
   /** 
    * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
    * using checkboxes.
-   * @deprecated Since 2.26.5. Will be removed in 3.0.0. Use `actions` instead.
+   * @deprecated Since 2.26.5. Will be removed in 4.0.0. Use `actions` instead.
 
    */
   bulkActions?: Array<AdminForthBulkAction>,

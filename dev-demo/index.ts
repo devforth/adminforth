@@ -31,6 +31,7 @@ import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
 import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
+import key_value_resource from './resources/key_value_resource.js';
 
 import { logger } from '../adminforth/modules/logger.js';
 
@@ -148,6 +149,7 @@ export const admin = new AdminForth({
     turnsResource,
     dashboardConfigsResource,
     adminExternalIdentitiesResource,
+    key_value_resource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -241,6 +243,11 @@ export const admin = new AdminForth({
       label: 'Agent Turns',
       icon: 'heroicons:sparkles-solid',
       resourceId: 'turns',
+    },
+    {
+      label: 'Key-Value Store',
+      icon: 'material-symbols:key',
+      resourceId: 'key_values',
     }
   ],
   globalPlugins: globalPlugins,

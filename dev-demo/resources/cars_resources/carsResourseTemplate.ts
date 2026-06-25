@@ -20,6 +20,8 @@ import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completi
 import ImageGenerationAdapterOpenAI from '../../../adapters/adminforth-image-generation-adapter-openai/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../../adapters/adminforth-storage-adapter-local/index.js";
 import AdminForthAdapterS3Storage from '../../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
+import { levelDbAdapter } from '../../utils.js';
+import AdminForthAdapterS3CompatibleStorage from '../../../adapters/adminforth-storage-adapter-s3-compatible/index.js';
 import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-image-vision-adapter-openai/index.js';
 import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
@@ -213,7 +215,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       }),
       new UploadPlugin({
         storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
-          fileSystemFolder: "./db/uploads_promo",
+          fileSystemFolder: "./db/uploads",
           mode: "public", // or "private"
           signingSecret: '1241245',
         }) : new AdminForthAdapterS3Storage({
