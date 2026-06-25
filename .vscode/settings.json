@@ -1,0 +1,34 @@
+{
+  "files.watcherExclude": {
+    "**/.cache": true,
+    "**/.cache/**": true,
+    "**/.git": true,
+    "**/.git/**": true,
+    "**/.pnpm-store": true,
+    "**/.pnpm-store/**": true,
+    "**/.turbo": true,
+    "**/.turbo/**": true,
+    "**/.vite": true,
+    "**/.vite/**": true,
+    "**/build": true,
+    "**/build/**": true,
+    "**/coverage": true,
+    "**/coverage/**": true,
+    "**/dist": true,
+    "**/dist/**": true,
+    "**/node_modules": true,
+    "**/node_modules/**": true
+  },
+  "search.exclude": {
+    "**/.cache": true,
+    "**/.git": true,
+    "**/.pnpm-store": true,
+    "**/.turbo": true,
+    "**/.vite": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/node_modules": true
+  },
+  "git.autoRepositoryDetection": "openEditors"
+}
