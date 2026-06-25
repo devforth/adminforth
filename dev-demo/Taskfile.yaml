@@ -7,14 +7,14 @@ vars:
   PULL_JOBS: 30
   PNPM_JOBS: 10
   PLUGINS:
-    - "adminforth-audit-log"
-    - "adminforth-email-password-reset"
-    - "adminforth-foreign-inline-list"
-    - "adminforth-i18n"
-    - "adminforth-import-export"
-    - "adminforth-text-complete"
-    - "adminforth-open-signup"
-    - "adminforth-rich-editor"
+    # - "adminforth-audit-log"
+    # - "adminforth-email-password-reset"
+    # - "adminforth-foreign-inline-list"
+    # - "adminforth-i18n"
+    # - "adminforth-import-export"
+    # - "adminforth-text-complete"
+    # - "adminforth-open-signup"
+    # - "adminforth-rich-editor"
     - "adminforth-two-factors-auth"
     - "adminforth-upload"
     - "adminforth-oauth"
@@ -114,7 +114,7 @@ tasks:
 
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
-            (cd "${name}" && CI=true pnpm install)
+            (cd "${name}" && CI=true PNPM_CONFIG_DANGEROUSLY_ALLOW_ALL_BUILDS=true pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
@@ -169,7 +169,13 @@ tasks:
           fi
 
           git commit -m "fix: update adminforth version"
-          git push
+
+          # Push over SSH to avoid GitHub HTTPS password prompts (unsupported)
+          # and the GUI credential popup racing under parallel jobs.
+          remote_url="$(git remote get-url origin)"
+          ssh_url="$(printf "%s" "${remote_url}" | sed -E "s#https?://github\.com/#git@github.com:#")"
+          branch="$(git rev-parse --abbrev-ref HEAD)"
+          git push "${ssh_url}" "${branch}"
         ' _ {}
 
   pull_plugins:
