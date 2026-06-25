@@ -193,17 +193,16 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
 
     *********************************************************************************/
       new UploadPlugin({
-        storageAdapter: new AdminForthAdapterS3CompatibleStorage({
-          accessKeyId: 'minioadmin',
-          secretAccessKey: 'minioadmin',
-          endpoint: 'http://localhost:9000',
-          bucket: 'adminforth-dev-demo',
-          region: 'us-east-1',
-          s3ACL: 'private',
-          cleanupKeyValueAdapter: levelDbAdapter,
-          forcePathStyle: true,
-          cleanupCheckInterval: '30m',
-          cleanupGracePeriod: '5d'
+        storageAdapter: process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
+          fileSystemFolder: "./db/uploads",
+          mode: "public", // or "private"
+          signingSecret: '1241245',
+        }) : new AdminForthAdapterS3Storage({
+          bucket: process.env.AWS_BUCKET_NAME as string,
+          region: process.env.AWS_REGION as string,
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          s3ACL: "public-read"
         }),
         pathColumnName: 'photos',
         allowedFileExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webm', 'webp'],
