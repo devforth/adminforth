@@ -10,6 +10,17 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
+      <RouterLink
+        v-if="hasListNavContext && coreStore.resourceOptions?.showNextButton !== false"
+        :to="nextRecordRoute ?? $route"
+        @click="handleNextClick()"
+        :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
+        class="af-button-shadow h-[34px] inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+      >
+        <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />
+        {{ $t('Next') }}
+      </RouterLink>
+
       <template v-if="coreStore.resource?.options?.actions">
 
         <div class="flex gap-1" v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
@@ -60,10 +71,11 @@
         {{ $t('Delete') }}
       </button>
 
-      <ThreeDotsMenu 
+      <ThreeDotsMenu
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems as [])"
         :customActions="customActions"
       ></ThreeDotsMenu>
+
     </BreadcrumbsWithButtons>
 
     <component 
@@ -181,7 +193,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
@@ -297,6 +309,87 @@ const groups = computed(() => {
 const allColumns = computed(() => {
   return coreStore.resource?.columns?.filter(col => col.showIn?.show);
 });
+
+const isFetchingNextPage = ref(false);
+const nextPageRecords = ref<string[]>([]);
+
+const hasListNavContext = computed(() =>
+  coreStore.listResourceId === route.params.resourceId && coreStore.listRecordIds.length > 0
+);
+
+const currentRecordIndex = computed(() => {
+  const pk = String(route.params.primaryKey);
+  return coreStore.listRecordIds.findIndex((id: any) => String(id) === pk);
+});
+
+const isLastOnCurrentPage = computed(() =>
+  currentRecordIndex.value === coreStore.listRecordIds.length - 1
+);
+
+const hasNextRecord = computed(() => {
+  if (currentRecordIndex.value < 0) return false;
+  if (!isLastOnCurrentPage.value) return true;
+  return coreStore.listRecordIds.length === coreStore.listPageSize;
+});
+
+const nextRecordRoute = computed(() => {
+  if (!hasNextRecord.value) return null;
+  if (!isLastOnCurrentPage.value) {
+    return {
+      name: 'resource-show',
+      params: { resourceId: route.params.resourceId, primaryKey: coreStore.listRecordIds[currentRecordIndex.value + 1] },
+    };
+  }
+  if (nextPageRecords.value.length > 0) {
+    return {
+      name: 'resource-show',
+      params: { resourceId: route.params.resourceId, primaryKey: nextPageRecords.value[0] },
+    };
+  }
+  return null;
+});
+
+async function prefetchNextPage() {
+  if (!hasListNavContext.value || isFetchingNextPage.value) return;
+  if (coreStore.listRecordIds.length !== coreStore.listPageSize) return;
+
+  isFetchingNextPage.value = true;
+  try {
+    const response = await callAdminForthApi({
+      path: '/get_resource_data',
+      method: 'POST',
+      body: {
+        source: 'list',
+        resourceId: coreStore.listResourceId,
+        limit: coreStore.listPageSize,
+        offset: coreStore.listPage * coreStore.listPageSize,
+        filters: coreStore.listFilters,
+        sort: coreStore.listSort,
+      },
+    });
+    if (response?.recordIds?.length) {
+      nextPageRecords.value = response.recordIds;
+    }
+  } finally {
+    isFetchingNextPage.value = false;
+  }
+}
+
+watch(isLastOnCurrentPage, (isLast) => {
+  if (isLast) {
+    prefetchNextPage();
+  } else {
+    nextPageRecords.value = [];
+  }
+}, { immediate: true });
+
+function handleNextClick() {
+  if (isLastOnCurrentPage.value && nextPageRecords.value.length > 0) {
+    coreStore.listRecordIds = nextPageRecords.value;
+    coreStore.listPage += 1;
+    nextPageRecords.value = [];
+  }
+}
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(

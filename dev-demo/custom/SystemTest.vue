@@ -3,19 +3,25 @@
     <div class="grid gap-4 md:grid-cols-2">
       <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
         <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-          LevelDB
+          Key/Value
         </div>
         <div class="flex flex-col gap-3">
           <div class="flex w-full gap-3">
-            <Input class="w-full" v-model="levelDbKey" placeholder="LevelDB key" />
-            <Input class="w-full" v-model="levelDbValue" placeholder="LevelDB value" />
+            <Input class="w-full" v-model="kvKey" placeholder="Key" />
+            <Input class="w-full" v-model="kvValue" placeholder="Value" />
           </div>
-          <Button class="w-full" @click="addLevelDbKeyValue">
-            Add level DB key/value
+          <Button class="w-full" @click="setKeyValue">
+            Set key/value
           </Button>
-          <Input class="w-full" v-model="levelDbPrefix" placeholder="LevelDB prefix" />
-          <Button class="w-full" @click="getLevelDbKeys">
-            Get level db keys
+          <Button class="w-full" @click="getKey">
+            Get key
+          </Button>
+          <Button class="w-full" @click="deleteKey">
+            Delete key
+          </Button>
+          <Input class="w-full" v-model="kvPrefix" placeholder="Prefix" />
+          <Button class="w-full" @click="listKeys">
+            List keys by prefix
           </Button>
         </div>
       </section>
@@ -95,9 +101,9 @@ import { useTwoFactorsAuth } from '@/custom/plugins/TwoFactorsAuthPlugin/use2faA
 
   const { get2FaConfirmationResult } = useTwoFactorsAuth();
 const valueStart = ref()
-const levelDbKey = ref('');
-const levelDbValue = ref('');
-const levelDbPrefix = ref('');
+const kvKey = ref('');
+const kvValue = ref('');
+const kvPrefix = ref('');
 const lastApiOutput = ref('No output yet. Click a button to run an action.');
 
 function setLastApiOutput(actionName: string, data: unknown, isError = false) {
@@ -113,32 +119,54 @@ watch(valueStart, (newVal) => {
   console.log('New start value:', newVal);
 });
 
-async function addLevelDbKeyValue() {
+async function setKeyValue() {
   try {
     const response = await callApi({
-      path: '/api/addLevelDbKey/',
+      path: '/api/keyValue/set/',
       method: 'POST',
       body: {
-        key: levelDbKey.value,
-        value: levelDbValue.value,
+        key: kvKey.value,
+        value: kvValue.value,
       },
     });
-    console.log('LevelDB key/value added:', response);
-    setLastApiOutput('Add level DB key/value', response);
+    console.log('Key/value set:', response);
+    setLastApiOutput('Set key/value', response);
   } catch (error) {
-    console.error('Error adding LevelDB key/value:', error);
-    setLastApiOutput('Add level DB key/value', String(error), true);
+    console.error('Error setting key/value:', error);
+    setLastApiOutput('Set key/value', String(error), true);
   }
 }
 
-async function getLevelDbKeys() {
+async function getKey() {
   try {
-    const response = await callApi({ path: '/api/getLevelDbKeys/', method: 'POST', body: { prefix: levelDbPrefix.value } });
-    console.log('LevelDB keys:', response);
-    setLastApiOutput('Get level db keys', response);
+    const response = await callApi({ path: '/api/keyValue/get/', method: 'POST', body: { key: kvKey.value } });
+    console.log('Key value:', response);
+    setLastApiOutput('Get key', response);
   } catch (error) {
-    console.error('Error getting LevelDB keys:', error);
-    setLastApiOutput('Get level db keys', String(error), true);
+    console.error('Error getting key:', error);
+    setLastApiOutput('Get key', String(error), true);
+  }
+}
+
+async function deleteKey() {
+  try {
+    const response = await callApi({ path: '/api/keyValue/delete/', method: 'POST', body: { key: kvKey.value } });
+    console.log('Key deleted:', response);
+    setLastApiOutput('Delete key', response);
+  } catch (error) {
+    console.error('Error deleting key:', error);
+    setLastApiOutput('Delete key', String(error), true);
+  }
+}
+
+async function listKeys() {
+  try {
+    const response = await callApi({ path: '/api/keyValue/list/', method: 'POST', body: { prefix: kvPrefix.value } });
+    console.log('Keys:', response);
+    setLastApiOutput('List keys by prefix', response);
+  } catch (error) {
+    console.error('Error listing keys:', error);
+    setLastApiOutput('List keys by prefix', String(error), true);
   }
 }
 

@@ -641,11 +641,21 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
 }
 
 export function btoa_function(source: string): string {
-  return btoa(source);
+  // UTF-8 safe base64 encode: plain btoa() throws on characters outside the
+  const bytes = new TextEncoder().encode(source);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 
 export function atob_function(source: string): string {
-  return atob(source);
+  // UTF-8 safe base64 decode, the counterpart of btoa_function above.
+  const binary = atob(source);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord: Record<string, any>): {ok: boolean, changedFields: Record<string, {oldValue: any, newValue: any}>} {

@@ -34,6 +34,7 @@ model cars {
   body_type      String?
 
   photos         String?
+  specifications String?
 
   seller_id      String?
   seller         String?
@@ -153,4 +154,10 @@ model AdminUserExternalIdentity {
 
   @@unique([provider, subject])
   @@index([adminUserId])
+}
+
+model key_values {
+  key String @id
+  value String
+  collection String?
 }

@@ -145,7 +145,7 @@ plugins: [
 4. Create credentials for OAuth 2.0 client IDs.
 5. Select application type: "Web application".
 6. Add your application's name and redirect URI.
-7. In "Authorized redirect URIs", add `https://your-domain/oauth/callback` and `http://localhost:3500/oauth/callback`. Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
+7. In "Authorized redirect URIs", add `https://your-domain/oauth/callback` (for production) and `http://localhost:3500/oauth/callback`(for local, where 3500 - is your app port). Include `baseUrl` when your AdminForth app uses it, for example `https://your-domain/base/oauth/callback`.
 8. Add the credentials to your `.env` file:
 
 ```bash
@@ -481,7 +481,7 @@ plugins: [
 Install Adapter:
 
 ```bash
-pnpm install @adminforth/clerk-oauth-adapter --save
+pnpm install @adminforth/oauth-adapter-clerk --save
 ```
 
 1. Go to the [Clerk Dashboard](https://dashboard.clerk.com) and open your application.
@@ -502,7 +502,7 @@ CLERK_DOMAIN=https://your-app.clerk.accounts.dev
 Add the adapter to your plugin configuration:
 
 ```typescript title="./resources/adminuser.ts"
-import AdminForthAdapterClerkOauth2 from '@adminforth/clerk-oauth-adapter';
+import AdminForthAdapterClerkOauth2 from '@adminforth/oauth-adapter-clerk';
 
 // ... existing resource configuration ...
 plugins: [
