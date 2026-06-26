@@ -26,6 +26,7 @@ import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-ima
 import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
+import JsonEditorPlugin from '../../../plugins/adminforth-json-editor/index.js';
 
 const CAR_RESOURCE_DB_LABELS = {
   sqlite: 'SQLite',
@@ -167,6 +168,15 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         },
       },
       {
+        name: 'specifications',
+        type: AdminForthDataTypes.JSON,
+        label: 'Specifications',
+        sortable: false,
+        showIn: {
+          list: false,
+        },
+      },
+      {
         name: 'seller_id',
         type: AdminForthDataTypes.STRING,
         foreignResource: {
@@ -257,6 +267,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           }
         } : {}),
       }),
+      new JsonEditorPlugin({
+        fieldName: 'specifications',
+      }),
       new importExport({}),
       // new InlineCreatePlugin({}),
       new ListInPlaceEditPlugin({
@@ -328,6 +341,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
                   `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
+              previewUrl: ({filePath}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`,
             },
             generation: {
               countToGenerate: 2,
@@ -336,6 +350,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
                 model: 'gpt-image-1', 
               }),
               attachFiles: async ({ record }) => {
+                if (!record.promo_picture) {
+                  return [];
+                }
                 return [`https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${record.promo_picture}`];
               },
               generationPrompt: "Generate a high-quality promotional image for a car with model {{model}} and color {{color}}. The car is a {{body_type}} type. The image should be vibrant and eye-catching, suitable for advertising purposes.",
