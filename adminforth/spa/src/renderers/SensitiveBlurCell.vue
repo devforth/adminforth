@@ -22,11 +22,13 @@
       </template>
     </Tooltip>
 
-    <IconFileCopyAltSolid
-      v-if="showCopy && rawValue"
-      @click.stop="copyToCB"
-      class="shrink-0 min-w-5 min-h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
-    />
+    <span v-if="showCopy && rawValue" class="shrink-0 w-5 h-5">
+      <IconFileCopyAltSolid
+        v-if="show"
+        @click.stop="copyToCB"
+        class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
+      />
+    </span>
   </div>
 </template>
 
