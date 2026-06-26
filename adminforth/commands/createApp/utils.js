@@ -487,8 +487,27 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
   }
 }
 
+async function resolvePackageManagerCommand(packageManager) {
+  if (packageManager !== 'pnpm') {
+    return packageManager;
+  }
+
+  try {
+    await execAsync('pnpm --version', { env: process.env });
+    return 'pnpm';
+  } catch {
+    try {
+      await execAsync('corepack pnpm --version', { env: process.env });
+      return 'corepack pnpm';
+    } catch {
+      throw new Error('pnpm is not available. Install pnpm globally or enable Corepack before creating a pnpm project.');
+    }
+  }
+}
+
 async function installDependencies(ctx, cwd, packageManager) {
-  const command = `${packageManager} install`;
+  const packageManagerCommand = await resolvePackageManagerCommand(packageManager);
+  const command = `${packageManagerCommand} install`;
 
   await Promise.all([
     execAsync(command, { cwd, env: process.env }),
