@@ -7,6 +7,7 @@
   "scripts": {
     "_env:dev": "dotenvx run -f .env.local -f .env --overload --",
     "start": "pnpm _env:dev tsx watch index.ts",
+    "dev": "pnpm _env:dev tsx watch index.ts",
     "makemigration:sqlite": "pnpm _env:dev pnpm exec prisma migrate dev --create-only --config=./migrations/prisma/sqlite/prisma.config.ts --schema=./migrations/prisma/sqlite/schema.prisma",
     "migrate:sqlite": "pnpm _env:dev pnpm exec prisma migrate deploy --config=./migrations/prisma/sqlite/prisma.config.ts --schema=./migrations/prisma/sqlite/schema.prisma",
     "makemigration:mysql": "pnpm _env:dev pnpm exec prisma migrate dev --create-only --config=./migrations/prisma/mysql/prisma.config.ts --schema=./migrations/prisma/mysql/schema.mysql.prisma",

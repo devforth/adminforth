@@ -41,6 +41,31 @@ import { Button } from '@/afcl'
 
 loader prop would show loader when it's true.
 
+### Variant
+
+The `variant` prop controls the button style. Possible values are `primary` (default), `secondary` and `danger`.
+
+<div class="split-screen" >
+  <div >
+
+```html
+<Button @click="doSmth">
+  Primary button
+</Button>
+
+<Button @click="doSmth" variant="secondary" class="mt-4">
+  Secondary button
+</Button>
+
+<Button @click="doSmth" variant="danger" class="mt-4">
+  Danger button
+</Button>
+```
+  </div>
+</div>
+
+> ☝️ The `mode` prop is deprecated, use `variant` instead.
+
 ## Button Group
 ### With active button
 <div class="split-screen" >
