@@ -209,7 +209,7 @@ const apartmentsResource: AdminForthResourceInput = {
         countToGenerate: 2,
         adapter: new ImageGenerationAdapterOpenAI({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
-          model: "dall-e-3",
+          model: "gpt-image-2",
         }),
         outputSize: "1792x1024",
         generationPrompt: "Generate an image for apartment with title {{title}}. Make it look like a photo from a real estate listing.",
@@ -259,7 +259,7 @@ const apartmentsResource: AdminForthResourceInput = {
       ),
       imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-image-1',
+        model: 'gpt-image-2',
       }),
       fillFieldsFromImages: { 
         'description': 'Describe what is in the image, also take into account that price is {{price}} and title is {{title}}', 

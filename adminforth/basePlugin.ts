@@ -20,6 +20,7 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   resourceConfig: AdminForthResource;
   className: string;
   activationOrder: number = 0;
+  pluginsScope: 'resource' | 'global' = 'resource';
   shouldHaveSingleInstancePerWholeApp?: () => boolean;
 
   constructor(pluginOptions: any, metaUrl: string) {
@@ -41,14 +42,27 @@ export default class AdminForthPlugin implements IAdminForthPlugin {
   }
 
 
+  initializePluginInstanceId = (resourceConfig?: AdminForthResource) => {
+    const uniqueness = this.instanceUniqueRepresentation(this.pluginOptions);
+    let seed = '';
+    if (resourceConfig) {
+      seed = `af_pl_${this.constructor.name}_${resourceConfig?.resourceId || '_'}_${uniqueness}`;
+    } else {
+      seed = `af_pl_${this.constructor.name}_global_${uniqueness}`;
+    }
+    this.pluginInstanceId = md5hash(seed);
+    afLogger.trace({seed, pluginInstanceId: this.pluginInstanceId}, `🪲 AdminForthPlugin.initializePluginInstanceId`);
+  }
+
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource, allPluginInstances?: {pi: AdminForthPlugin, resource: AdminForthResource}[]) {
     this.resourceConfig = resourceConfig;
-    const uniqueness = this.instanceUniqueRepresentation(this.pluginOptions);
-
-    const seed = `af_pl_${this.constructor.name}_${resourceConfig.resourceId}_${uniqueness}`;
-    this.pluginInstanceId = md5hash(seed);
-    afLogger.trace({seed, pluginInstanceId: this.pluginInstanceId}, `🪲 AdminForthPlugin.modifyResourceConfig`);
+    this.initializePluginInstanceId(resourceConfig);
     this.adminforth = adminforth;
+  }
+
+  modifyGlobalConfig(adminforth: IAdminForth) {
+    this.adminforth = adminforth;
+    this.initializePluginInstanceId();
   }
 
   /** 

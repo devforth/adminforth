@@ -34,6 +34,7 @@ vars:
     - "adminforth-auto-remove"
     - "adminforth-agent"
     - "adminforth-dashboard"
+    - "adminforth-json-editor"
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"
@@ -45,6 +46,7 @@ vars:
     - "adminforth-oauth-adapter-microsoft"
     - "adminforth-oauth-adapter-twitch"
     - "adminforth-oauth-adapter-telegram"
+    - "adminforth-oauth-adapter-clerk"
     - "adminforth-chat-surface-adapter-telegram"
     - "adminforth-image-generation-adapter-openai"
     - "adminforth-storage-adapter-amazon-s3"
@@ -61,6 +63,7 @@ vars:
     - "adminforth-completion-adapter-anthropic-messages"
     - "adminforth-completion-adapter-google-gemini"
     - "adminforth-audio-adapter-openai"
+    - "adminforth-key-value-adapter-resource"
 
   CONNECTORS:
     - "adminforth-connector-clickhouse"
@@ -112,7 +115,7 @@ tasks:
 
           if [ -d "${name}" ]; then
             echo "Installing dependencies for ${name}"
-            (cd "${name}" && CI=true pnpm install)
+            (cd "${name}" && CI=true PNPM_CONFIG_DANGEROUSLY_ALLOW_ALL_BUILDS=true pnpm install)
           else
             echo "Directory ${name} does not exist, skipping"
           fi
@@ -167,7 +170,13 @@ tasks:
           fi
 
           git commit -m "fix: update adminforth version"
-          git push
+
+          # Push over SSH to avoid GitHub HTTPS password prompts (unsupported)
+          # and the GUI credential popup racing under parallel jobs.
+          remote_url="$(git remote get-url origin)"
+          ssh_url="$(printf "%s" "${remote_url}" | sed -E "s#https?://github\.com/#git@github.com:#")"
+          branch="$(git rev-parse --abbrev-ref HEAD)"
+          git push "${ssh_url}" "${branch}"
         ' _ {}
 
   pull_plugins:

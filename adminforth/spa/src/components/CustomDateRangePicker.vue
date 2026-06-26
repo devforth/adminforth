@@ -208,6 +208,10 @@ async function initDatepickers() {
     'flowbite-datepicker/Datepicker'
   );
 
+  if (!datepickerStartEl.value || !datepickerEndEl.value) {
+    return;
+  }
+
   const LS_LANG_KEY = `afLanguage`;
   datepickerStartObject.value = new Datepicker(datepickerStartEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
   datepickerEndObject.value = new Datepicker(datepickerEndEl.value, {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)});
@@ -225,8 +229,8 @@ function removeChangeDateListener() {
 }
 
 function destroyDatepickerElement() {
-  datepickerStartObject.value.destroy();
-  datepickerEndObject.value.destroy();
+  datepickerStartObject.value?.destroy?.();
+  datepickerEndObject.value?.destroy?.();
 }
 
 function setStartDate(event) {

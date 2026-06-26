@@ -259,7 +259,7 @@ function hasApiRawFilter(filters: any): boolean {
   return Array.isArray(filters.subFilters) && filters.subFilters.some(hasApiRawFilter);
 }
 
-function rejectApiRawFilters(filters: any): { error: string } | undefined {
+export function rejectApiRawFilters(filters: any): { error: string } | undefined {
   if (hasApiRawFilter(filters)) {
     return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
   }
@@ -277,7 +277,7 @@ function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaOb
 const getResourceDataRequestSchema: AnySchemaObject = {
   type: 'object',
   $defs: commonFilterSchemaDefs,
-  required: ['resourceId', 'source', 'limit', 'offset', 'filters', 'sort'],
+  required: ['resourceId', 'source', 'limit', 'offset'],
   properties: {
     resourceId: { type: 'string' },
     source: {
@@ -341,6 +341,7 @@ const getResourceDataResponseSchema: AnySchemaObject = createErrorOrSuccessSchem
       items: genericObjectSchema,
     },
     total: { type: 'number' },
+    recordIds: { type: 'array', items: {} },
     options: genericObjectSchema,
   },
   additionalProperties: true,
@@ -1329,7 +1330,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const meta = { requestBody: body, pk: undefined };
-        if (source === 'edit' || source === 'show') {
+        if ((source === 'edit' || source === 'show') && body.filters) {
           meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
         }
 
@@ -1419,7 +1420,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           : undefined;
 
         // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
-        const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
+        const sortFiltered = (sort || []).filter((sortItem: IAdminForthSort) => {
           return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
         });
 
@@ -1636,6 +1637,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
+        if (source === 'list') {
+          const pkField = resource.columns.find((col) => col.primaryKey).name;
+          (data as any).recordIds = data.data.map((item) => item[pkField]);
+        }
+
         return data;
       },
     });
@@ -1817,6 +1823,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (rawFilterError) {
           return rawFilterError;
         }
+        const meta = { requestBody: body, pk: undefined };
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          ActionCheckSource.ListRequest,
+          this.adminforth
+        );
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        if (!allowed) {
+          return { error };
+        }
+
 
         const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
         const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));

@@ -2,7 +2,10 @@ import { Express, Response } from "express";
 import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
-import { levelDbAdapter } from './utils.js';
+import { levelDbAdapter, resourceAdapter, ramAdapter } from './utils.js';
+
+const CURRENT_KV_ADAPTER = resourceAdapter;
+const CURRENT_COLLECTION = 'dev-demo';
 
 const DASHBOARD_CAR_SOURCES = [
   { resourceId: 'cars_sl', label: 'SQLite' },
@@ -189,27 +192,42 @@ export function initApi(app: Express, admin: IAdminForth) {
       }
     )
   );
-  app.post(`${admin.config.baseUrl}/api/getLevelDbKeys/`,
+  app.post(`${admin.config.baseUrl}/api/keyValue/list/`,
     admin.express.authorize(
       async (_req: IAdminUserExpressRequest, res: Response) => {
-        console.log('Received getLevelDbKeys');
+        console.log('Received keyValue/list');
         const { prefix } = _req.body;
-        const keys = await levelDbAdapter.listByPrefix(prefix, 100);
+        const keys = await CURRENT_KV_ADAPTER.listByPrefix(prefix, 100, CURRENT_COLLECTION);
         res.json({ keys });
       }
     )
   );
-  app.post(`${admin.config.baseUrl}/api/addLevelDbKey/`,
+  app.post(`${admin.config.baseUrl}/api/keyValue/set/`,
     admin.express.authorize(
       async (_req: IAdminUserExpressRequest, res: Response) => {
-        console.log('Received addLevelDbKey');
+        console.log('Received keyValue/set');
         const {key, value} = _req.body;
-        await levelDbAdapter.set(key, value);
-        // for (let i = 0; i < 100; i++) {
-        //   await levelDbAdapter.set(`clean=true||${new Date().toISOString()}||record_${i}`, `true`);
-        //   console.log(`Added record ${i}`);
-        //   await new Promise((resolve) => setTimeout(resolve, 100));
-        // }
+        await CURRENT_KV_ADAPTER.set(key, value, undefined, CURRENT_COLLECTION);
+        res.json({ ok: true });
+      }
+    )
+  );
+  app.post(`${admin.config.baseUrl}/api/keyValue/get/`,
+    admin.express.authorize(
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        console.log('Received keyValue/get');
+        const { key } = _req.body;
+        const value = await CURRENT_KV_ADAPTER.get(key, CURRENT_COLLECTION);
+        res.json({ key, value });
+      }
+    )
+  );
+  app.post(`${admin.config.baseUrl}/api/keyValue/delete/`,
+    admin.express.authorize(
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        console.log('Received keyValue/delete');
+        const { key } = _req.body;
+        await CURRENT_KV_ADAPTER.delete(key, CURRENT_COLLECTION);
         res.json({ ok: true });
       }
     )
