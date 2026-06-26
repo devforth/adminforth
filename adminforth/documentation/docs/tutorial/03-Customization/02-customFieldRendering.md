@@ -605,6 +605,30 @@ For fields containing sensitive data (like passwords, API keys, tokens, or other
 
 The renderer wraps the standard value output and adds a click-to-reveal blur effect. Clicking again hides the value.
 
+For long values (like API keys) you can enable compact mode by passing `compact: true` via `meta`. When set, the value is shortened the same way as the `CompactUUID` renderer (first 4 + `...` + last 4 characters). In compact mode you can additionally pass `copy: true` to render a copy-to-clipboard button next to the value:
+
+```ts title='./resources/anyResource.ts'
+  columns: [
+    ...
+    {
+      name: 'api_key',
+      components: {
+        show: {
+  //diff-add
+          file: '@/renderers/SensitiveBlurCell.vue',
+  //diff-add
+          meta: { compact: true, copy: true },
+        },
+        list: {
+  //diff-add
+          file: '@/renderers/SensitiveBlurCell.vue',
+  //diff-add
+          meta: { compact: true, copy: true },
+        },
+      },
+    ...
+```
+
 
 ### Custom filter component for square meters
 
