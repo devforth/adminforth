@@ -487,32 +487,42 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
   }
 }
 
-async function resolvePackageManagerCommand(packageManager) {
-  if (packageManager !== 'pnpm') {
-    return packageManager;
-  }
+async function installDependenciesPnpm(ctx, cwd) {
+  const isWindows = process.platform === 'win32';
 
-  try {
-    await execAsync('pnpm --version', { env: process.env });
-    return 'pnpm';
-  } catch {
-    try {
-      await execAsync('corepack pnpm --version', { env: process.env });
-      return 'corepack pnpm';
-    } catch {
-      throw new Error('pnpm is not available. Install pnpm globally or enable Corepack before creating a pnpm project.');
-    }
+  const nodeBinary = process.execPath; 
+  const pnpmPath = path.join(path.dirname(nodeBinary), isWindows ? 'pnpm.cmd' : 'pnpm');
+  const customDir = ctx.customDir;
+  if (isWindows) {
+    const res = await Promise.all([
+      execAsync(`pnpm install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  } else {
+    const res = await Promise.all([
+      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
   }
 }
 
-async function installDependencies(ctx, cwd, packageManager) {
-  const packageManagerCommand = await resolvePackageManagerCommand(packageManager);
-  const command = `${packageManagerCommand} install`;
+async function installDependenciesNpm(ctx, cwd) {
+  const isWindows = process.platform === 'win32';
 
-  await Promise.all([
-    execAsync(command, { cwd, env: process.env }),
-    execAsync(command, { cwd: ctx.customDir, env: process.env }),
-  ]);
+  const nodeBinary = process.execPath; 
+  const npmPath = path.join(path.dirname(nodeBinary), isWindows ? 'npm.cmd' : 'npm');
+  const customDir = ctx.customDir;
+  if (isWindows) {
+    const res = await Promise.all([
+      execAsync(`npm install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  } else {
+    const res = await Promise.all([
+      execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+    ]);
+  }
 }
 
 function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
@@ -586,7 +596,11 @@ export function prepareWorkflow(options) {
     {
       title: '📦 Installing dependencies...',
       task: async (ctx) => {
-        await installDependencies(ctx, ctx.projectDir, options.useNpm ? 'npm' : 'pnpm');
+        if (options.useNpm) {
+          await installDependenciesNpm(ctx, ctx.projectDir);
+        } else {
+          await installDependenciesPnpm(ctx, ctx.projectDir);
+        }
       }
     },
     {
