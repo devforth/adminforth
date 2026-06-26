@@ -341,6 +341,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
                   `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
+              previewUrl: ({filePath}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`,
             },
             generation: {
               countToGenerate: 2,
