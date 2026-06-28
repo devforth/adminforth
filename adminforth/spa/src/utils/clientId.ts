@@ -1,3 +1,5 @@
+import { randomBrowserUUID } from './browserUuid';
+
 const ADMINFORTH_CLIENT_ID_STORAGE_KEY = 'adminforthClientId';
 
 export const ADMINFORTH_CLIENT_ID_HEADER = 'x-adminforth-client-id';
@@ -8,7 +10,7 @@ export function getAdminForthClientId(): string {
     return existingClientId;
   }
 
-  const clientId = crypto.randomUUID();
+  const clientId = randomBrowserUUID();
   sessionStorage.setItem(ADMINFORTH_CLIENT_ID_STORAGE_KEY, clientId);
   return clientId;
 }
