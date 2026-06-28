@@ -42,9 +42,9 @@ When user opens edit page, AdminForth makes a request to the backend to get the 
 
 ![Initial data for edit page flow](get_resource_data.png)
 
-Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. 
+Practically you can use `show.afterDatasourceResponse` to modify or add some data before it is displayed on the edit page. In other words, at this stage you can enrich the data with some additional metadata which might be handy on edit page for custom Vue fields.
 
-For example [upload plugin](/docs/tutorial/Plugins/upload/) uses this hook to generate signed preview URL so user can see existing uploaded file preview  in form, and at the same time database stores only original file path which might be not accessible without presigned URL.
+For example [upload plugin](/docs/tutorial/Plugins/upload/) uses this hook to generate signed preview URL so user can see existing uploaded file preview in form, and at the same time database stores only original file path which might be not accessible without presigned URL.
 
 ## Saving data on edit page
 
@@ -171,6 +171,28 @@ For example, you can change the way columns value is displayed by changing the v
 //diff-add
         return { ok: true, error: "" };
 //diff-add
+      },
+    },
+  },
+}
+```
+
+Also you can use this hook to enrich the returned records list with some additional data fields which might be handy for custom Vue components defined in `components.list` or `components.show` for this resource. For example you can use [key-value adapter](/docs/tutorial/06-Adapters/07-key-value-adapters/) to get some global configuration values and add them to each record in the list:
+
+```ts title='./resources/apartments.ts'
+
+{
+  ...
+  hooks: {
+    list: {
+//diff-add
+      afterDatasourceResponse: async ({ response }: { response: any }) => {
+//diff-add
+        response.forEach((r: any) => {  
+          const taxRate = await kvAdapter.getValue('taxRate');
+          r.priceWithTax = r.price * (1 + taxRate);
+        });
+        return { ok: true, error: "" };
       },
     },
   },
