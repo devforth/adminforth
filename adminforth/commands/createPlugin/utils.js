@@ -8,6 +8,7 @@ import { Listr } from 'listr2';
 import { fileURLToPath } from 'url';
 import { execa } from 'execa';
 import Handlebars from 'handlebars';
+import { resolveAdminforthVersionRange } from '../cli.js';
 
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
@@ -102,6 +103,7 @@ async function scaffoldProject(ctx, options, cwd) {
 
 async function writeTemplateFiles(dirname, cwd, options) {
   const { pluginName } = options;
+  const adminforthVersion = await resolveAdminforthVersionRange();
 
   // Build a list of files to generate
   const templateTasks = [
@@ -113,7 +115,7 @@ async function writeTemplateFiles(dirname, cwd, options) {
     {
       src: "package.json.hbs",
       dest: "package.json",
-      data: { pluginName },
+      data: { pluginName, adminforthVersion },
     },
     {
       src: "index.ts.hbs",
