@@ -177,7 +177,7 @@ For example, you can change the way columns value is displayed by changing the v
 }
 ```
 
-Also you can use this hook to enrich the returned records list with some additional data fields which might be handy for custom Vue components defined in `components.list` or `components.show` for this resource. For example you can use [key-value adapter](/docs/tutorial/06-Adapters/07-key-value-adapters/) to get some global configuration values and add them to each record in the list:
+Also you can use this hook to enrich the returned records list with some additional data fields which might be handy for custom Vue components defined in `components.list` or `components.show` for this resource. For example you can use [key-value adapter](/docs/tutorial/Adapters/key-value-adapters/) to get some global configuration values and add them to each record in the list:
 
 ```ts title='./resources/apartments.ts'
 
