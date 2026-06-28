@@ -11,33 +11,14 @@ import { exec } from 'child_process';
 
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
-import { getVersion } from '../cli.js';
+import { resolveAdminforthVersionRange } from '../cli.js';
 
 import { URL } from 'url'
 import net from 'net'
 
 const execAsync = promisify(exec);
 
-function detectAdminforthVersion() {
-  try {
-    const version =  getVersion();
-
-    if (typeof version !== 'string') {
-      throw new Error('Invalid version format');
-    }
-
-    if (version.includes('next')) {
-      return 'next';
-    }
-    return 'latest';
-  } catch (err) {
-    console.warn('⚠️ Could not detect AdminForth version, defaulting to "latest".');
-    return 'latest';
-  }
-}
-
-const adminforthVersion = detectAdminforthVersion();
-const SUPPORTED_DB_URL_SCHEMES = ['sqlite://', 'postgresql://', 'mongodb://', 'mysql://', 'clickhouse://'];
+const SUPPORTED_DB_URL_SCHEMES =['sqlite://', 'postgresql://', 'mongodb://', 'mysql://', 'clickhouse://'];
 const PRISMA_MIGRATION_DB_PROTOCOLS = ['sqlite', 'postgres', 'postgresql', 'mysql'];
 
 
@@ -314,6 +295,7 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
   const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
+  const adminforthVersion = await resolveAdminforthVersionRange();
   const resolvedPrismaDbUrl = includePrismaMigrations ? prismaDbUrl : null;
   const resolvedPrismaDbUrlProd = includePrismaMigrations ? prismaDbUrlProd : null;
   const connectorProvider = provider === 'postgresql' ? 'postgres' : 
