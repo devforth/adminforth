@@ -89,7 +89,6 @@
     "@inquirer/prompts": "^7.4.1",
     "@scalar/express-api-reference": "^0.9.7",
     "@types/express": "^4.17.21",
-    "adminforth": "link:.",
     "ajv": "^8.18.0",
     "arg": "^5.0.2",
     "ast-types": "^0.14.2",

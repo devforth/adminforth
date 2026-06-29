@@ -106,6 +106,26 @@ export default {
 } satisfies AdminForthResourceInput;
 ```
 
+Then register the resource in `index.ts`:
+
+```ts title="./index.ts"
+//diff-add
+import adminUserExternalIdentitiesResource from "./resources/adminUserExternalIdentities";
+
+
+... new AdminForth({
+  dataSources: [...],
+    ...
+  resources: [
+    apartmentsResource,
+    usersResource,
+//diff-add
+    adminUserExternalIdentitiesResource,
+  ],
+    ...
+})
+```
+
 ## Configuration
 
 This example configures Google OAuth. See [OAuth2 Providers](#oauth2-providers) for provider setup details.
