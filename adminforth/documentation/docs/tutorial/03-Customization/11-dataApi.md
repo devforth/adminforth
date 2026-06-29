@@ -315,11 +315,13 @@ You can pass either one grouping rule or an array of grouping rules.
 When you use a single grouping rule, the grouping value is returned in `group`.
 When you use several grouping rules, the values are returned in `group1`, `group2`, etc.
 
-To use explicit response keys, pass the optional `as` argument:
+To use explicit response keys that differ from source field names, pass the optional `as` argument to the grouping constructor.
+For example, if you want the country group to be returned as `country_name` instead of `country`, pass it as the second `Field` argument.
+For `DateTrunc`, pass the explicit response key as the fourth argument:
 
 ```ts
-GroupBy.Field('country', 'country')
-GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month')
+GroupBy.Field('country', 'country_name')
+GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month_name')
 ```
 
 Example:
@@ -373,8 +375,8 @@ With explicit grouping aliases:
 ```ts
 [
   {
-    country: string,
-    month: string,
+    country_name: string,
+    month_name: string,
     count: number | string,
     uniqueOwners?: number | string,
     minPrice?: number | null,
@@ -441,18 +443,18 @@ const rows = await admin.resource('apartments').aggregate(
     avgPrice: Aggregates.avg('price'),
   },
   [
-    GroupBy.Field('country', 'country'),
-    GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month'),
+    GroupBy.Field('country', 'country_name'),
+    GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month_name'),
   ],
 );
 ```
 
 What is happening here:
 - [] → no filters (all records)
-- GroupBy.Field('country', 'country')
-→ groups by country and returns the value in the `country` key
-- GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month')
-→ groups by month and returns the value in the `month` key
+- GroupBy.Field('country', 'country_name')
+→ groups by the `country` field and returns the value in the `country_name` key
+- GroupBy.DateTrunc('created_at', 'month', 'Europe/Kyiv', 'month_name')
+→ groups by month and returns the value in the `month_name` key
 - countDistinct('owner_id') → number of unique owners in each group
 - min('price') and max('price') → price range in each group
 - the result has one row per country and month combination
