@@ -11,7 +11,7 @@ async function bundle() {
       import { admin } from './${instance.file}.js';
 
       export async function exec() {
-        return await admin.bundleNow({ hotReload: false });
+        return await admin.bundleNow({ hotReload: false, buildTime: true });
       }
     `);
 
