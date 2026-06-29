@@ -578,7 +578,7 @@ export interface IAdminForth {
    * This method will be automatically called from AdminForth HTTP adapter to serve AdminForth SPA.
    */
   setupEndpoints(server: IHttpServer): void;
-
+ 
   /**
    * This method can be used when you want to get some plugin instances by class name.
    * Should be used for plugins which might have multiple instances with the same class name.
