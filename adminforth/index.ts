@@ -678,8 +678,8 @@ class AdminForth implements IAdminForth {
   }
   
 
-  async bundleNow({ hotReload=false }) {
-    await this.codeInjector.bundleNow({ hotReload });
+  async bundleNow({ hotReload=false, buildTime=true }) {
+    await this.codeInjector.bundleNow({ hotReload, buildTime });
   }
 
   async getUserByPk(pk: string) {
