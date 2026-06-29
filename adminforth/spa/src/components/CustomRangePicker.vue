@@ -18,9 +18,8 @@
       v-model="end"
     >
 
-    <div v-if="min && max" class="w-full px-2.5">
-      <vue-slider
-        class="custom-slider"
+    <div v-if="min !== undefined && max !== undefined" class="w-full px-2.5">
+      <RangePicker
         :dot-size="20"
         height="7.99px"
         :min="minFormatted"
@@ -32,144 +31,70 @@
   </div>
 </template>
 <script setup lang="ts">
-import VueSlider from 'vue-slider-component';
-import 'vue-slider-component/theme/antd.css'
-import {computed, onMounted, ref, watch} from "vue";
+import { computed, ref, watch } from "vue";
 import debounce from 'debounce'
+import RangePicker from './RangePicker.vue';
 
-const props = defineProps({
-  valueStart: {
-    default: '',
-  },
-  valueEnd: {
-    default: '',
-  },
-  min: {},
-  max: {},
-});
+const props = defineProps<{
+  valueStart: number | null | string,
+  valueEnd: number | null | string,
+  min: number | string | undefined,
+  max: number | string | undefined,
+}>()
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
-const minFormatted = computed(() => Math.floor(<number>props.min));
-const maxFormatted = computed(() => Math.ceil(<number>props.max));
+const minFormatted = computed(() => {
+  const v = Number(props.min);
+  return isNaN(v) ? 0 : Math.floor(v);
+});
 
+const maxFormatted = computed(() => {
+  const v = Number(props.max);
+  return isNaN(v) ? 100 : Math.ceil(v);
+});
 
-const start = ref<string | number>(props.valueStart);
-const end = ref<string | number>(props.valueEnd);
+const normalize = (val: any) => {
+  if (val === "" || val === null || val === undefined) return null;
+  const numericValue = Number(val);
+  return isNaN(numericValue) ? null : numericValue;
+};
 
-const sliderValue = ref([minFormatted.value, maxFormatted.value]);
+const start = ref<number | null>(normalize(props.valueStart));
+const end = ref<number | null>(normalize(props.valueEnd));
 
-const updateFromSlider =
-    debounce((value: [number, number]) => {
-      start.value = value[0] === minFormatted.value ? '': value[0];
-      end.value = value[1] === maxFormatted.value ? '': value[1];
-    }, 500);
+const sliderValue = ref<[number, number]>([
+  start.value ?? minFormatted.value, 
+  end.value ?? maxFormatted.value
+]);
 
-onMounted(() => {
-  updateStartFromProps();
-  updateEndFromProps();
-
-  watch(() => props.valueStart, (value) => {
-    updateStartFromProps();
-  });
-
-  watch(() => props.valueEnd, (value) => {
-    updateEndFromProps();
-  });
-})
-
-function updateStartFromProps() {
-  start.value = props.valueStart;
-  setSliderValues(start.value, end.value)
+function setSliderValues(s: number | null, e: number | null) {
+  sliderValue.value = [s ?? minFormatted.value, e ?? maxFormatted.value];
 }
 
-function updateEndFromProps() {
-  end.value = props.valueEnd;
-  setSliderValues(start.value, end.value)
-}
+watch([start, end], () => {
+  setSliderValues(start.value, end.value);
+}, { immediate: true });
 
-watch(start, () => {
-  emit('update:valueStart', start.value)
+const updateFromSlider = debounce((value: [number, number]) => {
+  start.value = value[0] === minFormatted.value ? null : value[0];
+  end.value = value[1] === maxFormatted.value ? null : value[1];
+}, 500);
+
+watch(() => props.valueStart, (newVal) => {
+  const v = normalize(newVal);
+  if (v !== start.value) start.value = v;
+});
+
+watch(() => props.valueEnd, (newVal) => {
+  const v = normalize(newVal);
+  if (v !== end.value) end.value = v;
+});
+
+watch(start, (newVal) => emit('update:valueStart', newVal));
+watch(end, (newVal) => emit('update:valueEnd', newVal));
+
+watch([minFormatted, maxFormatted], () => {
+  setSliderValues(start.value, end.value);
 })
-
-watch(end, () => {
-  emit('update:valueEnd', end.value);
-})
-
-watch([minFormatted,maxFormatted], () => {
-  if ( !start.value && end.value ) {
-    setSliderValues(minFormatted.value, end.value);
-  } else if ( start.value && !end.value ) {
-    setSliderValues(start.value, maxFormatted.value);
-  } else if ( !start.value && !end.value ) {
-    setSliderValues(minFormatted.value, maxFormatted.value);
-  } else {
-    setSliderValues(start.value, end.value);
-  }
-})
-
-function setSliderValues(start: any, end: any) {
-  sliderValue.value = [start || minFormatted.value, end || maxFormatted.value];
-}
 </script>
-
-<style lang="scss" scoped>
-.custom-slider {
-    &:deep(.vue-slider-rail) {
-        background-color: rgb(229 231 235);
-    }
-
-    &:deep(.vue-slider-dot-handle) {
-        // apply bg-blue-500 to the handle when active
-        @apply bg-lightPrimary;
-        border: none;
-        box-shadow: none;
-    }
-
-    &:deep(.vue-slider-dot-handle:hover) {
-        @apply bg-lightPrimary;
-        filter: brightness(1.1);
-        border: none;
-        box-shadow: none;
-    }
-
-    &:deep(.vue-slider-process) {
-      @apply bg-lightPrimaryOpacity;
-
-    }
-
-    &:deep(.vue-slider-process:hover) {
-      filter: brightness(1.1);
-      @apply bg-lightPrimaryOpacity;
-    }
-}
-
-.dark .custom-slider {
-  &:deep(.vue-slider-rail) {
-    background-color: rgb(55 65 81); // gray-700
-  }
-
-  &:deep(.vue-slider-dot-handle) {
-    @apply bg-darkPrimary;
-    border: none;
-    box-shadow: none;
-  }
-
-  &:deep(.vue-slider-dot-handle:hover) {
-    @apply bg-darkPrimary;
-    filter: brightness(1.1);
-    border: none;
-    box-shadow: none;
-  }
-
-  &:deep(.vue-slider-process) {
-    @apply bg-darkPrimaryOpacity;
-  }
-
-  &:deep(.vue-slider-process:hover) {
-    filter: brightness(1.1);
-    @apply bg-darkPrimaryOpacity;
-  }
-}
-
-</style>

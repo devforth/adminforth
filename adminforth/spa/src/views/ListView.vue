@@ -2,17 +2,19 @@
   <div class="relative flex flex-col max-w-full w-full">
     <Teleport to="body">
       <Filters
-        :columns="coreStore.resource?.columns"
+        :columns="coreStore.resource?.columns as AdminForthResourceColumnCommon[] || []"
         :columnsMinMax="columnsMinMax" 
         :show="filtersShow"
         @hide="filtersShow = false"
+        :filtersStore="filtersStore"
+        :resourceId="coreStore.resource?.resourceId"
       />
     </Teleport>
 
     <component 
       v-if="!coreStore.isResourceFetching && !initInProcess"
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -21,8 +23,8 @@
     <BreadcrumbsWithButtons>
       <component 
         v-if="!coreStore.isResourceFetching && !initInProcess"
-        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons || []"
-        :is="getCustomComponent(c)"
+        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons as AdminForthComponentDeclaration[] || []"
+        :is="getCustomComponent(formatComponent(c))"
         :meta="(c as AdminForthComponentDeclarationFull).meta"
         :resource="coreStore.resource"
         :adminUser="coreStore.adminUser"
@@ -33,7 +35,12 @@
         @click="()=>{checkboxes = []}"
         v-if="checkboxes.length"
         data-tooltip-target="tooltip-remove-all"
-        class="flex gap-1  items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
+        class="flex gap-1  items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText af-button-shadow 
+          focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder h-[2.125rem]
+          hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 
+          focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+          dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
       >
           <Tooltip>
             <IconBanOutline class="w-5 h-5 "/>
@@ -43,7 +50,7 @@
           </Tooltip>
       </button>
 
-           <div 
+      <div 
         v-if="checkboxes.length"
         v-for="(action,i) in coreStore.resource?.options?.bulkActions" 
       >
@@ -51,54 +58,96 @@
           v-if="!action.showInThreeDotsDropdown"
           :key="action.id"
           @click="startBulkActionInner(action.id!)"
-          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded-default border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText
+            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[2.125rem]
+            border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover 
+            hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 af-button-shadow
+            focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+            dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+            dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
           :class="action.buttonCustomCssClass || ''"
         >
           <component
             v-if="action.icon && !bulkActionLoadingStates[action.id!]"
             :is="getIcon(action.icon)"
             class="w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:group-hover:text-white"></component>
-          <div v-if="bulkActionLoadingStates[action.id!]">
-            <svg 
-              aria-hidden="true" 
-              class="w-5 h-5 animate-spin text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" 
-              viewBox="0 0 100 101" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-            </svg>
-            <span class="sr-only">Loading...</span>
-          </div>
+            <Spinner
+              v-if="bulkActionLoadingStates[action.id!]"
+              class="w-5 h-5 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
+            />
           {{ `${action.label} (${checkboxes.length})` }}
-          <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 
-            font-medium rounded-sm text-xs px-1 ml-1 text-center ">
+          <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 
+          via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none
+           focus:ring-purple-300 dark:focus:ring-purple-800 
+            font-medium rounded-default text-xs px-1 ml-1 text-center ">
             {{ action.badge }}            
           </div>
+        </button>
+      </div>
+      <div
+        v-if="checkboxes.length"
+        v-for="(action,i) in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)" 
+      >
+        <button
+          :key="action.id"
+          @click="startCustomBulkActionInner(action.id!)"
+          class="flex gap-1 items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText
+            focus:outline-none bg-lightListViewButtonBackground rounded-default border h-[2.125rem]
+            border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover 
+            hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 af-button-shadow
+            focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+            dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+            dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+        >
+          <component
+            v-if="action.icon && !customActionLoadingStates[action.id!]"
+            :is="getIcon(action.icon)"
+            class="w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:group-hover:text-white"></component>
+            <Spinner
+              v-if="customActionLoadingStates[action.id!]"
+              class="w-5 h-5 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
+            />
+            {{ `${action.name} (${checkboxes.length})` }}
         </button>
       </div>
 
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-create-button flex items-center py-1 px-3 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
+        class="af-create-button flex items-center py-1 h-[2.125rem] px-3 text-sm af-button-shadow
+          font-medium text-lightPrimaryContrast transition-all focus:outline-none 
+          bg-lightPrimary hover:bg-lightPrimary/80 dark:bg-darkPrimary dark:hover:bg-darkPrimary/80 
+          rounded border border-lightPrimary/90 focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing 
+          dark:focus:ring-darkListViewButtonFocusRing  dark:text-darkPrimaryContrast dark:border-darkPrimary/80 
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
       >
         <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Create') }}
       </RouterLink>
 
       <button
-        class="af-filter-button flex gap-1 items-center py-1 px-3 me-2 text-sm font-medium text-lightListViewButtonText focus:outline-none bg-lightListViewButtonBackground rounded border border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
+        class="af-filter-button flex gap-1 items-center py-1 h-[2.125rem] px-3 af-button-shadow text-sm font-medium 
+          text-lightListViewButtonText transition-all focus:outline-none bg-lightListViewButtonBackground rounded border 
+          border-lightListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
+          focus:z-10 focus:ring-4 focus:ring-lightListViewButtonFocusRing dark:focus:ring-darkListViewButtonFocusRing 
+          dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+          dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default"
         @click="()=>{filtersShow = !filtersShow}"
         v-if="coreStore.resource?.options?.allowedActions?.filter"
       >
         <IconFilterOutline class="w-4 h-4"/>
         {{ $t('Filter') }}
-        <span
-          class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-          v-if="filtersStore.visibleFiltersCount">
-            {{ filtersStore.visibleFiltersCount }}
-        </span>
+        <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
+          <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
+              {{ filtersStore.visibleFiltersCount }}
+          </span>
+          
+          <div 
+            @click.stop="filtersStore.clearFilters()"
+            class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+          >
+            <IconCloseOutline class="w-4 h-4 text-red-500" />
+          </div>
+        </div>
       </button>
 
       <ThreeDotsMenu 
@@ -114,14 +163,14 @@
 
     <component 
       v-if="!coreStore.isResourceFetching && !initInProcess"
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
-    <ResourceListTableVirtual
-      v-if="isVirtualScrollEnabled && !coreStore.isResourceFetching"
+    <ResourceListTable
+      v-if="!coreStore.isResourceFetching"
       :resource="coreStore.resource"
       :rows="rows"
       :page="page"
@@ -129,7 +178,10 @@
       @update:sort="sort = $event"
       @update:checkboxes="checkboxes = $event"
       @update:records="getListInner"
+      @update:pageSize="(newSize) => { pageSize = newSize; page = 1; }"
       :sort="sort"
+      :filters="filtersStore.filters"
+      :pageSizeOptions="Array.isArray(coreStore.resource?.options?.listPageSizeOptions) ? coreStore.resource?.options?.listPageSizeOptions : []"
       :pageSize="pageSize"
       :totalRows="totalRows"
       :checkboxes="checkboxes"
@@ -153,49 +205,16 @@
       :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
         ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
         : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
+
       :container-height="1100"
       :item-height="52.5"
       :buffer-size="listBufferSize"
-    />
-
-    <ResourceListTable
-      v-else-if="!coreStore.isResourceFetching"
-      :resource="coreStore.resource"
-      :rows="rows"
-      :page="page"
-      @update:page="page = $event"
-      @update:sort="sort = $event"
-      @update:checkboxes="checkboxes = $event"
-      @update:records="getListInner"
-      :sort="sort"
-      :pageSize="pageSize"
-      :totalRows="totalRows"
-      :checkboxes="checkboxes"
-      :customActionsInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIcons)
-        ? coreStore.resourceOptions.pageInjections.list.customActionIcons
-        : coreStore.resourceOptions?.pageInjections?.list?.customActionIcons
-          ? [coreStore.resourceOptions.pageInjections.list.customActionIcons]
-          : []
-      "
-      :tableBodyStartInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart)
-        ? coreStore.resourceOptions.pageInjections.list.tableBodyStart
-        : coreStore.resourceOptions?.pageInjections?.list?.tableBodyStart
-          ? [coreStore.resourceOptions.pageInjections.list.tableBodyStart]
-          : []
-      "
-      :customActionIconsThreeDotsMenuItems="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems) 
-        ? coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems 
-        : coreStore.resourceOptions?.pageInjections?.list?.customActionIconsThreeDotsMenuItems
-          ? [coreStore.resourceOptions.pageInjections.list.customActionIconsThreeDotsMenuItems]
-          : []"
-      :tableRowReplaceInjection="Array.isArray(coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace)
-        ? coreStore.resourceOptions.pageInjections.list.tableRowReplace[0]
-        : coreStore.resourceOptions?.pageInjections?.list?.tableRowReplace || undefined"
+      :isVirtualScrollEnabled="isVirtualScrollEnabled"
     />
 
     <component 
-      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom || []"
-      :is="getCustomComponent(c)"
+      v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom as AdminForthComponentDeclaration[] || []"
+      :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -206,32 +225,33 @@
 
 <script setup lang="ts">
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
-import ResourceListTableVirtual from '@/components/ResourceListTableVirtual.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
 import { useFiltersStore } from '@/stores/filters';
-import { callAdminForthApi, currentQuery, getIcon, setQuery } from '@/utils';
+import { callAdminForthApi, currentQuery, getIcon, setQuery, formatComponent, executeCustomBulkAction } from '@/utils';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-import { Tooltip } from '@/afcl'
-import type { AdminForthComponentDeclarationFull } from '@/types/Common';
-
+import { Tooltip, Spinner } from '@/afcl'
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
+import { useI18n } from 'vue-i18n';
 
 import {
   IconBanOutline,
   IconFilterOutline,
-  IconPlusOutline
+  IconPlusOutline,
+  IconCloseOutline
 } from '@iconify-prerendered/vue-flowbite';
 
 import Filters from '@/components/Filters.vue';
 import { useAdminforth } from '@/adminforth';
 
 const filtersShow = ref(false);
-const { list } = useAdminforth();
+const { list, alert } = useAdminforth();
 const coreStore = useCoreStore();
 const filtersStore = useFiltersStore();
+const { t } = useI18n();
 
 const route = useRoute();
 
@@ -248,11 +268,28 @@ const rows: Ref<any[]|null> = ref(null);
 const totalRows = ref(0);
 const checkboxes = ref([]);
 const bulkActionLoadingStates = ref<{[key: string]: boolean}>({});
+const customActionLoadingStates = ref<{[key: string]: boolean}>({});
 
 const DEFAULT_PAGE_SIZE = 10;
 
 
-const pageSize = computed(() => coreStore.resource?.options?.listPageSize || DEFAULT_PAGE_SIZE);
+const pageSize = ref(DEFAULT_PAGE_SIZE);
+
+const syncPageSize = () => {
+  const resourceId = route.params.resourceId;
+  const savedSize = localStorage.getItem(`pageSize_${resourceId}`);
+
+  if (savedSize) {
+    pageSize.value = parseInt(savedSize);
+  } 
+  else if (coreStore.resource?.options?.listPageSize) {
+    pageSize.value = coreStore.resource.options.listPageSize;
+  } 
+  else {
+    pageSize.value = DEFAULT_PAGE_SIZE;
+  }
+};
+
 const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);
 
@@ -314,7 +351,41 @@ async function refreshExistingList(pk?: any) {
 }
 
 async function startBulkActionInner(actionId: string) {
-  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner);
+  await startBulkAction(actionId, coreStore.resource!, checkboxes, bulkActionLoadingStates, getListInner, t);
+}
+
+async function startCustomBulkActionInner(actionId: string | number) {
+  const action = coreStore.resource?.options?.actions?.find(a => a.id === actionId);
+  
+  await executeCustomBulkAction({
+    actionId,
+    resourceId: route.params.resourceId as string,
+    recordIds: checkboxes.value,
+    confirmMessage: action?.bulkConfirmationMessage,
+    confirmDangerous: action?.bulkDangerous ?? false,
+    resource: coreStore.resource!,
+    setLoadingState: (loading: boolean) => {
+      customActionLoadingStates.value[actionId] = loading;
+    },
+    onSuccess: async (results: any[]) => {
+      checkboxes.value = [];
+      await getListInner();
+
+      const successResults = results.filter(r => r?.successMessage);
+      if (successResults.length > 0) {
+        alert({
+          message: action?.bulkSuccessMessage ? action.bulkSuccessMessage : action?.bulkHandler ? successResults[0].successMessage : `${successResults.length} out of ${results.length} items processed successfully`,
+          variant: 'success'
+        });
+      }
+    },
+    onError: (error: string) => {
+      alert({
+        message: error,
+        variant: 'danger'
+      });
+    }
+  });
 }
 
 async function getListInner() {
@@ -354,6 +425,9 @@ async function init() {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string
   });
+
+  syncPageSize();
+
   isPageLoaded.value = true;
   // !!! clear filters should be in same tick with sort assignment so that watch can catch it as one change
 
@@ -362,7 +436,7 @@ async function init() {
     const [_, field, operator] = k.split('__');
     return {
       field,
-      operator,
+      operator: operator as AdminForthFilterOperators,
       value: JSON.parse((route.query[k] as string))
     }
   });
@@ -404,7 +478,7 @@ async function init() {
   }
 }
 
-watch([page, sort, () => filtersStore.filters], async () => {
+watch([page, sort, pageSize, () => filtersStore.filters], async () => {
   // console.log('🔄️ page/sort/filter change fired, page:', page.value);
   await getListInner();
 }, { deep: true });
@@ -480,3 +554,13 @@ watch([sort], async () => {
 });
 
 </script>
+
+<style lang="scss">
+
+
+  .af-button-shadow {
+    box-shadow: -0px 6px 6px rgb(0, 0, 0, 0.1);
+  }
+  
+
+</style>

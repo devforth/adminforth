@@ -5,11 +5,10 @@ import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/inde
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
-import AdminForthAdapterS3Storage from '../../adapters/adminforth-storage-adapter-amazon-s3/index.js';
-import AdminForthAdapterGoogleOauth2 from '../../adapters/adminforth-google-oauth-adapter/index.js';
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
-import OAuthPlugin from '../../plugins/adminforth-oauth/index.js';
+import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
+import OAuthPlugin from './configs/oauthPluginConfig.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -173,22 +172,9 @@ export default {
         role: 'user',
       },
     }),
-    new OAuthPlugin({
-      userAvatarField: "avatar",
-      adapters: [
-        new AdminForthAdapterGoogleOauth2({
-          clientID: process.env.GOOGLE_CLIENT_ID as string,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-          useOpenIdConnect: false,
-        }),
-      ],
-      emailField: 'email',
-      openSignup: {
-        enabled: true,
-        defaultFieldValues: { // Set default values for new users
-          role: 'user',
-        },
-      },
+    OAuthPlugin,
+    new DashboardPlugin({
+      dashboardConfigsResourceId: 'dashboard_configs',
     }),
   ],
   hooks: {

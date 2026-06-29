@@ -1,41 +1,22 @@
 ## Starting the application
 
 Install dependencies:
-{{#if useNpm}}
+
 ```bash
-npm i
+{{packageManager}} install
 ```
 
 Migrate the database:
 
 ```bash
-npm run migrate:local
+{{packageManagerRun}} migrate:local
 ```
 
 Start the server:
 
 ```bash
-npm run dev
+{{packageManagerRun}} dev
 ```
-{{/if}}
-
-{{#unless useNpm}}
-```bash
-pnpm i
-```
-
-Migrate the database:
-
-```bash
-pnpm migrate:local
-```
-
-Start the server:
-
-```bash
-pnpm dev
-```
-{{/unless}}
 
 {{#if prismaDbUrl}}
 ## Changing schema
@@ -45,10 +26,10 @@ Open `schema.prisma` and change schema as needed: add new tables, columns, etc (
 Run the following command to generate a new migration and apply it instantly in local database:
 
 ```bash
-pnpm makemigration --name <name_of_changes>
+{{packageManagerRun}} makemigration{{packageManagerScriptArgSeparator}}--name <name_of_changes>
 ```
 
-Your colleagues will need to pull the changes and run `pnpm migrate:local` to apply the migration in their local database.
+Your colleagues will need to pull the changes and run `{{packageManagerRun}} migrate:local` to apply the migration in their local database.
 {{/if}}
 
 ## Deployment tips

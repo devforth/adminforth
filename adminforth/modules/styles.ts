@@ -84,7 +84,7 @@ export const styles = () => ({
     lightShowTableUnderHeadingText: "#374151",
     lightShowTablesBodyBackground: "alias:lightForm",
     lightShowTableBodyText: "#6B7280",
-    lightShowTableBodyBorder: "#F3F4F6",
+    lightShowTableBodyBorder: "#E5E7EB",
 
 
     /* Show View buttons*/
@@ -179,7 +179,7 @@ export const styles = () => ({
     lightCheckboxBgUnchecked: "alias:lightPrimaryContrast opacity:0.2",     //checkbox unchecked state bg
     lightCheckboxBgChecked: "alias:lightPrimary",        //cheched state bg
     lightCheckboxIconColor: "alias:lightPrimaryContrast lighten",       //checked icon color
-    lightCheckboxBorderColor: "alias:lightPrimary darken",  //border color
+    lightCheckboxBorderColor: "alias:lightListTableText",  //border color
     lightFocusRing: "alias:lightPrimary lighten", //focus ring color
     lightTextLabel: "black", //text color of checkbox label
 
@@ -532,7 +532,7 @@ export const styles = () => ({
     darkCheckboxBgUnchecked: "#374151",   
     darkCheckboxBgChecked: "alias:darkPrimary",      
     darkCheckboxIconColor: "alias:darkPrimaryContrast lighten",    
-    darkCheckboxBorderColor: "alias:darkPrimary darken",  
+    darkCheckboxBorderColor: "alias:darkListTableText",  
     darkFocusRing: "alias:darkPrimary lighten",
     darkTextLabel: "white",
 

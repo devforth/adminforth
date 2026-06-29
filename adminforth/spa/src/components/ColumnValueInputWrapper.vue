@@ -16,11 +16,11 @@
         :unmasked="unmasked"
         :deletable="!column.editReadonly"
         @update:modelValue="setCurrentValue(column.name, $event, arrayItemIndex)"
-        @update:recordFieldValue="({ fieldName, fieldValue }: { fieldName: string; fieldValue: any }) => setCurrentValue(fieldName, fieldValue)"
+        @update:recordFieldValue="recordFieldValueUpdate"
         @update:unmasked="$emit('update:unmasked', column.name)"
         @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
         @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
-        @delete="setCurrentValue(column.name, currentValues[column.name].filter((_: any, index: any) => index !== arrayItemIndex))"
+        @delete="deleteHandler(arrayItemIndex)"
       />
     </div>
     <div class="flex items-center">
@@ -48,28 +48,51 @@
     :columnOptions="columnOptions"
     :unmasked="unmasked"
     @update:modelValue="setCurrentValue(column.name, $event)"
-    @update:recordFieldValue="({ fieldName, fieldValue }: { fieldName: string; fieldValue: any }) => setCurrentValue(fieldName, fieldValue)"
+    @update:recordFieldValue="recordFieldValueUpdate"
     @update:unmasked="$emit('update:unmasked', column.name)"
     @update:inValidity="$emit('update:inValidity', { name: column.name, value: $event })"
     @update:emptiness="$emit('update:emptiness', { name: column.name, value: $event })"
   />
+  <div v-if="columnsWithErrors && columnsWithErrors[column.name] && validatingMode && !isValidating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
+  <Spinner v-if="shouldWeShowSpinner" class="w-4 mt-1"/>
+  <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
 </template>
   
 <script setup lang="ts">
   import { IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
   import ColumnValueInput from "./ColumnValueInput.vue";
-  import { ref, nextTick } from 'vue';
+  import { ref, watch, nextTick } from 'vue';
+  import { Spinner } from '@/afcl';
   
   const props = defineProps<{
     source: 'create' | 'edit',
     column: any,
     currentValues: any,
-    mode: string,
+    mode: 'create' | 'edit',
     columnOptions: any,
     unmasked: any,
     setCurrentValue: Function,
     readonly?: boolean,
+    columnsWithErrors: Record<string, string>,
+    isValidating: boolean,
+    validatingMode: boolean,
   }>();
+
+  const shouldWeShowSpinner = ref(false);
+
+
+  watch(() => props.currentValues[props.column.name], async (newVal) => {
+    await nextTick();
+    if (props.isValidating) {
+      shouldWeShowSpinner.value = true;
+    }
+  });
+
+  watch(() => [props.isValidating], () => {
+    if (!props.isValidating) {
+      shouldWeShowSpinner.value = false;
+    }
+  });
   
   const emit = defineEmits(['update:unmasked', 'update:inValidity', 'update:emptiness', 'focus-last-input']);
   
@@ -79,5 +102,13 @@
     props.setCurrentValue(props.column.name, props.currentValues[props.column.name], props.currentValues[props.column.name].length);
     await nextTick();
     arrayItemRefs.value[arrayItemRefs.value.length - 1].focus();
+  }
+
+  function recordFieldValueUpdate({ fieldName, fieldValue }: { fieldName: string; fieldValue: any }) {
+    props.setCurrentValue(fieldName, fieldValue);
+  }
+
+  function deleteHandler(arrayItemIndex: number | string) {
+    props.setCurrentValue(props.column.name, props.currentValues[props.column.name].filter((_: any, index: any) => index !== arrayItemIndex));
   }
 </script> 

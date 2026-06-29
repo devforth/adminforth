@@ -1,2 +1,14 @@
-onlyBuiltDependencies:
-  - better-sqlite3
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  adminforth: true
+  better-sqlite3: true
+  classic-level: true
+  esbuild: true
+  prisma: true
+minimumReleaseAgeExclude:
+  - '@adminforth/agent@1.52.6'
+  - '@adminforth/i18n@2.0.24'
+  - '@adminforth/agent@1.53.0'
+  - '@adminforth/agent@2.0.0'
+  - adminforth

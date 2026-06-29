@@ -47,7 +47,7 @@ Add modules:
 
 ```bash
 cd ai-blog
-npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete @adminforth/chat-gpt slugify http-proxy @adminforth/image-generation-adapter-openai @adminforth/completion-adapter-open-ai-chat-gpt
+npm i @adminforth/upload @adminforth/rich-editor @adminforth/text-complete @adminforth/chat-gpt slugify http-proxy @adminforth/image-generation-adapter-openai @adminforth/completion-adapter-openai-responses
 ```
 
 
@@ -475,7 +475,7 @@ import UploadPlugin from '@adminforth/upload';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import ChatGptPlugin from '@adminforth/chat-gpt';
 import slugify from 'slugify';
-import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 
 export default {
@@ -591,7 +591,7 @@ export default {
     new RichEditorPlugin({
       htmlFieldName: 'content',
       completion: {
-        adapter: new CompletionAdapterOpenAIChatGPT({
+        adapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-4o',
           expert: {

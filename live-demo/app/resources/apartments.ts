@@ -1,24 +1,25 @@
 import { AdminForthDataTypes } from 'adminforth';
+import type { AdminForthResourceInput } from 'adminforth';
 import importExport from '@adminforth/import-export';
 import RichEditorPlugin from '@adminforth/rich-editor';
 import TextCompletePlugin from '@adminforth/text-complete';
 import UploadPlugin from '@adminforth/upload';
 import { randomUUID } from 'crypto';
-import CompletionAdapterOpenAIChatGPT from "@adminforth/completion-adapter-open-ai-chat-gpt";
+import CompletionAdapterOpenAIResponses from "@adminforth/completion-adapter-openai-responses";
 import AdminForthAdapterS3Storage from '@adminforth/storage-adapter-amazon-s3'
 import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 import BulkAiFlowPlugin  from '@adminforth/bulk-ai-flow';
 import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter-openai';
 import CloneRow from "@adminforth/clone-row";
 
-const blockDemoUsers = async ({ record, adminUser, resource }) => {
+const blockDemoUsers = async ({ adminUser }: { adminUser: any }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
   return { ok: true };
 }
 
-export default {
+const apartmentsResource: AdminForthResourceInput = {
   dataSource: 'maindb', 
   table: 'apartments',
   resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
@@ -142,7 +143,7 @@ export default {
     },
     { 
       name: 'description',
-      type: AdminForthDataTypes.RICHTEXT,
+      type: AdminForthDataTypes.TEXT,
       sortable: false,
       showIn: ['show', 'edit', 'create', 'filter'],
         components: {
@@ -167,18 +168,13 @@ export default {
     new RichEditorPlugin({
       htmlFieldName: 'description',
       completion: {
-        adapter: new CompletionAdapterOpenAIChatGPT({
+        adapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
           model: 'gpt-4o', // default "gpt-4o-mini"
-          expert: {
-              temperature: 0.7 //Model temperature, default 0.7
+          extraRequestBodyParameters: {
+            temperature: 0.7,
           }
         }),
-        provider: 'openai-chat-gpt',
-        params: {
-          apiKey: process.env.OPENAI_API_KEY as string,
-          // model: 'gpt-4o',  gpt-4o-model is a default (cheapest one)
-        },
         expert: {
           debounceTime: 250,
         }
@@ -186,7 +182,7 @@ export default {
     }),
     new TextCompletePlugin({
       fieldName: 'title',
-      adapter: new CompletionAdapterOpenAIChatGPT({
+      adapter: new CompletionAdapterOpenAIResponses({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
       }),
       // expert: {
@@ -213,7 +209,7 @@ export default {
         countToGenerate: 2,
         adapter: new ImageGenerationAdapterOpenAI({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
-          model: "dall-e-3",
+          model: "gpt-image-2",
         }),
         outputSize: "1792x1024",
         generationPrompt: "Generate an image for apartment with title {{title}}. Make it look like a photo from a real estate listing.",
@@ -263,7 +259,7 @@ export default {
       ),
       imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
-        model: 'gpt-image-1',
+        model: 'gpt-image-2',
       }),
       fillFieldsFromImages: { 
         'description': 'Describe what is in the image, also take into account that price is {{price}} and title is {{title}}', 
@@ -288,6 +284,7 @@ export default {
   ],
   options: {
     listPageSize: 8,
+    listPageSizeOptions: [10, 20],
     allowedActions:{
       edit: true,
       delete: true,
@@ -295,4 +292,6 @@ export default {
       filter: true,
     },
   },
-}
+};
+
+export default apartmentsResource;

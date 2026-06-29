@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex gap-10">
+  <div class="flex flex-wrap gap-10 max-w-screen">
     <div class="flex flex-col max-w-[200px] m-10 mt-20 gap-10">
       <Checkbox :disabled="false"><p>afdsdfsdfsdgsdgsgdsggdg</p> </Checkbox>
       <Button @click="doSmth" 
@@ -12,7 +12,7 @@
         :loader="false" class="w-full" mode="secondary">
         Secondary button
       </Button>
-
+ 
       <Button @click="doSmth" 
           :loader="true" class="w-full mt-4">
         Your button text
@@ -81,14 +81,14 @@
 
       </Select>
 
-
-      <Input type="number" class="w-full">
+ 
+      <Input type="number" class="w-full" v-model="numberInput">
         <template #suffix>
           USD
         </template>
       </Input>
 
-      <Input type="text" class="w-full">
+      <Input type="text" class="w-full" v-model="textInput">
         <template #rightIcon>
           <IconSearchOutline class="w-5 h-5 text-lightPrimary dark:text-darkPrimary "/>
         </template>
@@ -242,6 +242,19 @@
           :pageSize="3"
         >
         </Table>
+        <div>
+          Backend pagination ⬇️
+          <Table
+            :columns="[
+              { label: 'Name', fieldName: 'name' },
+              { label: 'Age', fieldName: 'age' },
+              { label: 'Country', fieldName: 'country' },
+            ]"
+            :data="loadPageData"
+
+            :pageSize="3"> 
+          </Table>
+        </div>
 
         <div class="w-full">
           <p class="text-sm font-semibold text-lightPrimary dark:text-darkPrimary mb-2">TreeMapChart (value + delta)</p>
@@ -333,13 +346,38 @@
 
     <!-- <Button class="mt-48 ml-48" @click="createJob"> Create Job</Button> -->
 
+    <Select
+      class="w-full"
+      :options="[
+        {label: 'Last 7 days', value: '7'}, 
+        {label: 'Last 30 days', value: '30'}, 
+        {label: 'Last 90 days', value: '90'},
+      ]"
+      v-model="selected"
+      classesForInput="py-[4px] text-sm bg-white rounded"
+    >
 
+    </Select>
 
+    <JsonViewer 
+      :value="[
+        {
+          id: 1,
+          name: 'Alice',
+          meta: {
+            age: 30,
+            hobbies: ['reading', 'biking'],
+          }
+        },
+        {
+          id: 2,
+          name: 'Bob',
+        }
+      ]" 
+      :expandDepth="2" 
+    />
   </div>
-
-
   </div>
-
 </template>
 
 <script setup lang="ts">
@@ -369,6 +407,8 @@ import CustomRangePicker from "@/components/CustomRangePicker.vue";
 import Toast from '@/components/Toast.vue';
 import { useAdminforth } from '@/adminforth';
 import { callApi } from '@/utils';
+import { JsonViewer } from '@/afcl'
+
 
 const { alert } = useAdminforth();
 import adminforth  from '@/adminforth';
@@ -387,6 +427,8 @@ const selected = ref(null)
 const selected2 = ref([])
 const valueStart = ref()
 const dialogRef = ref()
+const numberInput = ref()
+const textInput = ref()
 
 const deltaToColor = (delta: number) => {
   if (delta < -10) return '#B91C1C' // bright red
@@ -447,13 +489,25 @@ function doSmth(){
   adminforth.alert({message: 'You clicked the button!', variant: 'success' })
 }
 
-async function createJob() {
-  try {
-    const res = await callApi({path: '/api/create-job/', method: 'POST'});
-    console.log('Job created successfully:', res);
-  } catch (error) {
-    console.error('Error creating job:', error);
+async function loadPageData(data) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  await new Promise(resolve => setTimeout(resolve, 1000)) // simulate network delay
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 30 // should return total amount of records in database
   }
 }
+
+watch(numberInput, (newVal) => {
+  console.log('Number input changed:', newVal, typeof newVal);
+});
+watch(textInput, (newVal) => {
+  console.log('Text input changed:', newVal, typeof newVal);
+});
 
 </script>

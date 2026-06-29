@@ -1,11 +1,13 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
 
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthResourceFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
+
+
 
 export const useCoreStore = defineStore('core', () => {
   const { alert } = useAdminforth();
@@ -15,10 +17,29 @@ export const useCoreStore = defineStore('core', () => {
   const menu: Ref<AdminForthConfigMenuItem[]> = ref([]);
   const config: Ref<AdminForthConfigForFrontend | null> = ref(null);
   const record: Ref<any | null> = ref({});
-  const resource: Ref<AdminForthResourceCommon | null> = ref(null);
+  const resource: Ref<AdminForthResourceFrontend | null> = ref(null);
   const userData: Ref<UserData | null> = ref(null);
   const isResourceFetching = ref(false);
   const isInternetError = ref(false);
+  const screenWidth = ref(window.innerWidth);
+  const listRecordIds: Ref<any[]> = ref([]);
+  const listResourceId: Ref<string | null> = ref(null);
+  const listFilters: Ref<any[]> = ref([]);
+  const listSort: Ref<any[]> = ref([]);
+  const listPage: Ref<number> = ref(0);
+  const listPageSize: Ref<number> = ref(0);
+
+  onMounted(() => {
+    window.addEventListener('resize', updateWidth);
+  });
+  onUnmounted(() => {
+    window.removeEventListener('resize', updateWidth);
+  });
+
+  const isMobile = computed(() => screenWidth.value <= 768);
+  const updateWidth = () => {
+    screenWidth.value = window.innerWidth
+  }
 
   const resourceColumnsWithFilters = computed(() => {
     if (!resource.value) {
@@ -27,7 +48,7 @@ export const useCoreStore = defineStore('core', () => {
     return resource.value.columns.filter((col: AdminForthResourceColumnCommon) => col.showIn?.filter);
   })
 
-  const resourceOptions: Ref<AdminForthResourceCommon['options'] | null> = ref(null);
+  const resourceOptions: Ref<AdminForthResourceFrontend['options'] | null> = ref(null);
   const resourceColumnsError: Ref<string> = ref('');
   const resourceColumnsId: Ref<string | null> = ref(null);
   const adminUser: Ref<null | AdminUser> = ref(null);
@@ -72,6 +93,20 @@ export const useCoreStore = defineStore('core', () => {
     adminUser.value = resp.adminUser;
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
+    subscribeToMenuRefresh();
+  }
+
+  async function refreshMenu() {
+    await fetchMenuAndResource();
+    await fetchMenuBadges();
+  }
+
+  function subscribeToMenuRefresh() {
+    if (!userData.value?.pk) {
+      return;
+    }
+    websocket.unsubscribeByPrefix('/opentopic/refresh-menu/');
+    websocket.subscribe(`/opentopic/refresh-menu/${userData.value.pk}`, refreshMenu);
   }
 
   function findItemWithId(items: AdminForthConfigMenuItem[], itemId: string): AdminForthConfigMenuItem | undefined {
@@ -185,6 +220,10 @@ export const useCoreStore = defineStore('core', () => {
         resourceId,
       }
     });
+    if (!res) {
+      isResourceFetching.value = false;
+      return;
+    }
     if (res.error) {
       resourceColumnsError.value = res.error;
     } else {
@@ -242,6 +281,7 @@ export const useCoreStore = defineStore('core', () => {
     userAvatarUrl,
     getPublicConfig,
     fetchMenuAndResource, 
+    refreshMenu,
     getLoginFormConfig,
     fetchRecord, 
     record, 
@@ -259,5 +299,12 @@ export const useCoreStore = defineStore('core', () => {
     isResourceFetching,
     isIos,
     isInternetError,
+    isMobile,
+    listRecordIds,
+    listResourceId,
+    listFilters,
+    listSort,
+    listPage,
+    listPageSize,
   }
 })

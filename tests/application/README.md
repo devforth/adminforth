@@ -1,0 +1,50 @@
+## Starting the application
+
+Install dependencies:
+
+```bash
+pnpm i
+```
+
+Migrate the database:
+
+```bash
+pnpm migrate:local
+```
+
+Start the server:
+
+```bash
+pnpm dev
+```
+
+## Changing schema
+
+Open `schema.prisma` and change schema as needed: add new tables, columns, etc (See [Prisma schema reference](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema)).
+
+Run the following command to generate a new migration and apply it instantly in local database:
+
+```bash
+pnpm makemigration --name <name_of_changes>
+```
+
+Your colleagues will need to pull the changes and run `pnpm migrate:local` to apply the migration in their local database.
+
+## Deployment tips
+
+You have Dockerfile ready for production deployment. You can test the build with:
+
+```bash
+docker build -t application-image .
+docker run -p 3500:3500 -e ADMINFORTH_SECRET=123 -v $(pwd)/db:/code/db application-image
+```
+
+To set non-sensitive environment variables in production, use `.env.prod` file.
+For sensitive variables, use direct docker environment variables or secrets from your vault.
+
+## Documentation
+
+- [Customizing AdminForth Branding](https://adminforth.dev/docs/tutorial/Customization/branding/)
+- [Custom Field Rendering](https://adminforth.dev/docs/tutorial/Customization/customFieldRendering/)
+- [Hooks](https://adminforth.dev/docs/tutorial/Customization/hooks/)
+- [Custom Pages](https://adminforth.dev/docs/tutorial/Customization/customPages/)

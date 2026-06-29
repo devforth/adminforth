@@ -1,29 +1,139 @@
 import { nextTick, onMounted, ref, resolveComponent } from 'vue';
 import type { CoreConfig } from '../spa_types/core';
-import type { ValidationObject } from '../types/Common.js';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, ValidationObject } from '../types/Common.js';
 import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
 import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
-import sanitizeHtml  from 'sanitize-html'
+import DOMPurify  from 'dompurify'
 import debounce from 'debounce';
-import type { AdminForthResourceColumnInputCommon, Predicate } from '@/types/Common';
+import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
 import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
+import { reconnect } from '@/websocket';
+import { ADMINFORTH_CLIENT_ID_HEADER, getAdminForthClientId } from './clientId';
 
 
 
 const LS_LANG_KEY = `afLanguage`;
 const MAX_CONSECUTIVE_EMPTY_RESULTS = 2;
 const ITEMS_PER_PAGE_LIMIT = 100;
+const AUTOLOGIN_QUERY_PARAM = 'autologin';
+const START_OAUTH_QUERY_PARAM = 'start_oauth';
 
-export async function callApi({path, method, body, headers, silentError = false}: {
+export function getAutologinCredentials(autologin: unknown): { username: string, password: string } | null {
+  if (typeof autologin !== 'string') {
+    return null;
+  }
+
+  const separatorIndex = autologin.indexOf(':');
+  if (separatorIndex === -1) {
+    return null;
+  }
+
+  return {
+    username: autologin.slice(0, separatorIndex),
+    password: autologin.slice(separatorIndex + 1),
+  };
+}
+
+function buildLoginRedirectQuery() {
+  const { path, query } = router.currentRoute.value;
+  const nextQuery = new URLSearchParams();
+
+  for (const [key, rawValue] of Object.entries(query)) {
+    if (key === AUTOLOGIN_QUERY_PARAM || rawValue == null) {
+      continue;
+    }
+
+    if (Array.isArray(rawValue)) {
+      rawValue.forEach((value) => {
+        if (value != null) {
+          nextQuery.append(key, value);
+        }
+      });
+      continue;
+    }
+
+    nextQuery.set(key, rawValue);
+  }
+
+  const next = nextQuery.size > 0 ? `${path}?${nextQuery.toString()}` : path;
+  const autologin = typeof query[AUTOLOGIN_QUERY_PARAM] === 'string'
+    ? query[AUTOLOGIN_QUERY_PARAM]
+    : undefined;
+
+  return {
+    next,
+    autologin,
+  };
+}
+
+async function tryAutologin(autologin: string): Promise<boolean> {
+  const credentials = getAutologinCredentials(autologin);
+  if (!credentials) {
+    return false;
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}/adminapi/v1/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+    },
+    body: JSON.stringify({
+      username: credentials.username,
+      password: credentials.password,
+      rememberMe: false,
+    }),
+  });
+
+  const loginResponse = await response.json();
+  if (loginResponse?.error) {
+    return false;
+  }
+
+  const userStore = useUserStore();
+  const coreStore = useCoreStore();
+  userStore.authorize();
+  reconnect();
+  await coreStore.fetchMenuAndResource();
+  return !!coreStore.adminUser;
+}
+
+export async function redirectToLogin() {
+  const currentPath = router.currentRoute.value.path;
+  const homeRoute = router.getRoutes().find(route => route.name === 'home');
+  const homePagePath = (homeRoute?.redirect as string) || '/';
+  const { next, autologin } = buildLoginRedirectQuery();
+
+  if (autologin && await tryAutologin(autologin)) {
+    return;
+  }
+
+  const query: Record<string, string> = {};
+
+  if (currentPath !== '/login' && currentPath !== homePagePath) {
+    query.next = next;
+  }
+  
+  const currentQuery = router.currentRoute.value.query;
+
+  if (START_OAUTH_QUERY_PARAM in currentQuery) {
+    query[START_OAUTH_QUERY_PARAM] = (currentQuery[START_OAUTH_QUERY_PARAM] as string) ?? '';
+  }
+
+  await router.push({ name: 'login', query });
+}
+
+export async function callApi({path, method, body, headers, silentError = false, abortSignal}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
   headers?: Record<string, string>
   silentError?: boolean
+  abortSignal?: AbortSignal
 }): Promise<any> {
   const t = i18nInstance?.global.t || ((s: string) => s)
   const options = {
@@ -31,34 +141,27 @@ export async function callApi({path, method, body, headers, silentError = false}
     headers: {
       'Content-Type': 'application/json',
       'accept-language': localStorage.getItem(LS_LANG_KEY) || 'en',
+      [ADMINFORTH_CLIENT_ID_HEADER]: getAdminForthClientId(),
       ...headers
     },
     body: JSON.stringify(body),
+    signal: abortSignal
   };
   const fullPath = `${import.meta.env.VITE_ADMINFORTH_PUBLIC_PATH || ''}${path}`;
   try {
     const r = await fetch(fullPath, options);
-    if (r.status == 401 ) {
+    if (r.status == 401 && !path.includes('/login')) {
       useUserStore().unauthorize();
       useCoreStore().resetAdminUser();
-      const currentPath = router.currentRoute.value.path;
-      const homeRoute = router.getRoutes().find(route => route.name === 'home');
-      const homePagePath = (homeRoute?.redirect as string) || '/';
-      let next = '';
-      if (currentPath !== '/login' && currentPath !== homePagePath) {
-        if (Object.keys(router.currentRoute.value.query).length > 0) {
-          next = currentPath + '?' + Object.entries(router.currentRoute.value.query).map(([key, value]) => `${key}=${value}`).join('&');
-        } else {
-          next = currentPath;
-        }
-        await router.push({ name: 'login', query: { next: next } });
-      } else {
-        await router.push({ name: 'login' });
-      }
+      await redirectToLogin();
       return null;
     } 
     return await r.json();
   } catch(e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      return null;
+    }
+
     // if it is internal error, say to user
     if (e instanceof TypeError && e.message === 'Failed to fetch') {
       // this is a network error
@@ -75,18 +178,37 @@ export async function callApi({path, method, body, headers, silentError = false}
   }
 }
 
-export async function callAdminForthApi({ path, method, body=undefined, headers=undefined, silentError = false }: {
-  path: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-  body?: any,
-  headers?: Record<string, string>,
-  silentError?: boolean
+export async function callAdminForthApi(
+  { 
+    path, 
+    method, 
+    body=undefined, 
+    headers=undefined, 
+    silentError = false,
+    abortSignal = undefined
+  }: {
+    path: string,
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    body?: any,
+    headers?: Record<string, string>,
+    silentError?: boolean,
+    abortSignal?: AbortSignal
 }): Promise<any> {
   try {
-    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError} );
+    return callApi({path: `/adminapi/v1${path}`, method, body, headers, silentError, abortSignal} );
   } catch (e) {
     console.error('error', e);
     return { error: `Unexpected error: ${e}` };
+  }
+}
+
+export function formatComponent(component: AdminForthComponentDeclaration | undefined): AdminForthComponentDeclarationFull {
+  if (typeof component === 'string') {
+    return { file: component, meta: {} };
+  } else if (typeof component === 'object') {
+    return { file: component.file, meta: component.meta };
+  } else {
+    return { file: '', meta: {} };
   }
 }
 
@@ -172,7 +294,8 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
   if ( validation?.length ) {
     const validationArray = validation;
     for (let i = 0; i < validationArray.length; i++) {
-      if (validationArray[i].regExp) {
+      const regExpPattern = validationArray[i].regExp;
+      if (regExpPattern) {
         let flags = '';
         if (validationArray[i].caseSensitive) {
           flags += 'i';
@@ -184,7 +307,7 @@ export function applyRegexValidation(value: any, validation: ValidationObject[] 
           flags += 'g';
         }
 
-        const regExp = new RegExp(validationArray[i].regExp, flags);
+        const regExp = new RegExp(regExpPattern, flags);
         if (value === undefined || value === null) {
           value = '';
         }
@@ -227,26 +350,25 @@ export function humanifySize(size: number) {
 }
 
 export function protectAgainstXSS(value: string) {
-  return sanitizeHtml(value, {
-    allowedTags: [
-      "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
-      "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
-      "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
-      "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
-      "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
-      "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
-      "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", 'img', 'video', 'source'
+  return DOMPurify.sanitize(value, {
+    ALLOWED_TAGS: [
+      "address","article","aside","footer","header","h1","h2","h3","h4",
+      "h5","h6","hgroup","main","nav","section","blockquote","dd","div",
+      "dl","dt","figcaption","figure","hr","li","ol","p","pre",
+      "ul","a","abbr","b","bdi","bdo","br","cite","code","data","dfn",
+      "em","i","kbd","mark","q","rb","rp","rt","rtc","ruby","s","samp",
+      "small","span","strong","sub","sup","time","u","var","wbr","caption",
+      "col","colgroup","table","tbody","td","tfoot","th","thead","tr",
+      "img","video","source"
     ],
-    allowedAttributes: {
-      'li': [ 'data-list' ],
-      'img': [ 'src', 'srcset', 'alt', 'title', 'width', 'height', 'loading' ],
-      'video': [ 'src', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'width', 'height', 'autoplay', 'playsinline' ],
-      'source': [ 'src', 'type' ],
-      // Allow  markup on spans (classes & styles), and
-      // generic data/aria/style attributes on any element. (e.g. for KaTeX-related previews)
-      'span': [ 'class', 'style' ],
-      '*': [ 'data-*', 'aria-*', 'style' ]
-    },
+    ALLOWED_ATTR: [
+      "data-list",
+      "src","srcset","alt","title","width","height","loading",
+      "controls","autoplay","loop","muted","poster","playsinline","type",
+      "class","style"
+    ],
+    ALLOW_DATA_ATTR: true,
+    ALLOW_ARIA_ATTR: true
   });
 }
 
@@ -342,7 +464,8 @@ export async function loadMoreForeignOptions({
     if (!columnOptions.value[columnName]) {
       columnOptions.value[columnName] = [];
     }
-    columnOptions.value[columnName].push(...list.items);
+    const existingValues = new Set(columnOptions.value[columnName].map((o: any) => o.value));
+    columnOptions.value[columnName].push(...list.items.filter((o: any) => !existingValues.has(o.value)));
     
     columnOffsets[columnName] += 100;
     
@@ -518,11 +641,21 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
 }
 
 export function btoa_function(source: string): string {
-  return btoa(source);
+  // UTF-8 safe base64 encode: plain btoa() throws on characters outside the
+  const bytes = new TextEncoder().encode(source);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
 }
 
 export function atob_function(source: string): string {
-  return atob(source);
+  // UTF-8 safe base64 decode, the counterpart of btoa_function above.
+  const binary = atob(source);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
 }
 
 export function compareOldAndNewRecord(oldRecord: Record<string, any>, newRecord: Record<string, any>): {ok: boolean, changedFields: Record<string, {oldValue: any, newValue: any}>} {
@@ -590,13 +723,25 @@ export function generateMessageHtmlForRecordChange(changedFields: Record<string,
   const items = Object.keys(changedFields || {}).map(key => {
     const column = coreStore.resource?.columns?.find((c: any) => c.name === key);
     const label = column?.label || key;
+    if (column?.masked) {
+      return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <em>${escapeHtml(t('changed'))}</em></li>`;
+    }
     const oldV = escapeHtml(changedFields[key].oldValue);
     const newV = escapeHtml(changedFields[key].newValue);
     return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <span class="af-old-value text-muted">${oldV}</span> &#8594; <span class="af-new-value">${newV}</span></li>`;
   }).join('');
 
   const listHtml = items ? `<ul class="mt-2 list-disc list-inside">${items}</ul>` : '';
-  const messageHtml = `<div>${escapeHtml(t('There are unsaved changes. Are you sure you want to leave this page?'))}${listHtml}</div>`;
+  const messageHtml = `
+    <div class="flex flex-col gap-y-2 text-center">
+      <div class="text-gray-500 dark:text-gray-400">
+        ${listHtml}
+      </div>
+      <p class="font-medium text-gray-900 dark:text-white mt-4"> 
+        ${escapeHtml(t('Are you sure you want to leave this page?'))}
+      </p>
+    </div>
+  `;
   return messageHtml; 
 }
 
@@ -661,9 +806,12 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
         generateMessageHtmlForRecordChange(changedFields, t);
 
       const answer = await confirm({
+        title: t('There are unsaved changes'),
+        guardMessage: t('Your changes will not be saved'),
         messageHtml,
-        yes: t('Yes'),
-        no: t('No'),
+        yes: t('Leave without saving'),
+        no: t('Stay and continue'),
+        dangerous: true,
       });
 
       return answer;
@@ -671,4 +819,197 @@ export async function onBeforeRouteLeaveCreateEditViewGuard(initialValues: any, 
       leaveGuardActive.setActive(false);
     }
   });
+}
+
+export async function executeCustomAction({
+  actionId,
+  resourceId,
+  recordId,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+}: {
+  actionId: string | number | undefined,
+  resourceId: string,
+  recordId: string | number,
+  extra?: Record<string, any>,
+  onSuccess?: (data: any) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+}): Promise<any> {
+  setLoadingState?.(true);
+
+  try {
+    const data = await callAdminForthApi({
+      path: '/start_custom_action',
+      method: 'POST',
+      body: {
+        resourceId,
+        actionId,
+        recordId,
+        extra: extra || {},
+      }
+    });
+
+    if (data?.redirectUrl) {
+      // Check if the URL should open in a new tab
+      if (data.redirectUrl.includes('target=_blank')) {
+        window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        // Navigate within the app
+        if (data.redirectUrl.startsWith('http')) {
+          window.location.href = data.redirectUrl;
+        } else {
+          router.push(data.redirectUrl);
+        }
+      }
+      return data;
+    }
+
+    if (data?.ok) {
+      if (onSuccess) {
+        await onSuccess(data);
+      }
+      return data;
+    }
+
+    if (data?.error) {
+      if (onError) {
+        onError(data.error);
+      }
+    }
+
+    return data;
+  } finally {
+    setLoadingState?.(false);
+  }
+}
+
+export async function executeCustomBulkAction({
+  actionId,
+  resourceId,
+  recordIds,
+  extra = {},
+  onSuccess,
+  onError,
+  setLoadingState,
+  confirmMessage,
+  confirmDangerous,
+  resource,
+}: {
+  actionId: string | number | undefined,
+  resourceId: string,
+  recordIds: (string | number)[],
+  extra?: Record<string, any>,
+  onSuccess?: (results: any[]) => Promise<void>,
+  onError?: (error: string) => void,
+  setLoadingState?: (loading: boolean) => void,
+  confirmMessage?: string,
+  confirmDangerous?: boolean,
+  resource?: AdminForthResourceFrontend,
+}): Promise<any> {
+  if (!recordIds || recordIds.length === 0) {
+    if (onError) {
+      onError('No records selected');
+    }
+    return { error: 'No records selected' };
+  }
+
+  if (confirmMessage) {
+    const { confirm } = useAdminforth();
+    const confirmed = await confirm({
+      message: confirmMessage,
+      dangerous: confirmDangerous ?? false,
+    });
+    if (!confirmed) {
+      return { cancelled: true };
+    }
+  }
+
+  setLoadingState?.(true);
+
+  try {
+    const action = resource?.options?.actions?.find((a: any) => a.id === actionId) as AdminForthActionFront | undefined;
+
+    if (action?.bulkHandler && action?.showIn?.bulkButton) {
+      const result = await callAdminForthApi({
+        path: '/start_custom_bulk_action',
+        method: 'POST',
+        body: {
+          resourceId,
+          actionId,
+          recordIds,
+          extra: extra || {},
+        }
+      });
+
+      if (result?.ok) {
+        if (onSuccess) {
+          await onSuccess([result]);
+        }
+        return { ok: true, results: [result] };
+      }
+
+      if (result?.error) {
+        if (onError) {
+          onError(result.error);
+        }
+        return { error: result.error };
+      }
+
+      return result;
+    }
+
+    // Per-record parallel calls (legacy path)
+    const results = await Promise.all(
+      recordIds.map(recordId =>
+        callAdminForthApi({
+          path: '/start_custom_action',
+          method: 'POST',
+          body: {
+            resourceId,
+            actionId,
+            recordId,
+            extra: extra || {},
+          }
+        })
+      )
+    );
+    const lastResult = results[results.length - 1];
+    if (lastResult?.redirectUrl) {
+      if (lastResult.redirectUrl.includes('target=_blank')) {
+        window.open(lastResult.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+      } else {
+        if (lastResult.redirectUrl.startsWith('http')) {
+          window.location.href = lastResult.redirectUrl;
+        } else {
+          router.push(lastResult.redirectUrl);
+        }
+      }
+      return lastResult;
+    }
+
+    const allSucceeded = results.every(r => r?.ok);
+    const hasErrors = results.some(r => r?.error);
+
+    if (allSucceeded) {
+      if (onSuccess) {
+        await onSuccess(results);
+      }
+      return { ok: true, results };
+    }
+
+    if (hasErrors) {
+      const errorMessages = results.filter(r => r?.error).map(r => r.error).join(', ');
+      if (onError) {
+        onError(errorMessages);
+      }
+      return { error: errorMessages, results };
+    }
+
+    return { results };
+  } finally {
+    setLoadingState?.(false);
+  }
 }

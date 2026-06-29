@@ -11,7 +11,7 @@
         @click="inputClick"
         @input="inputInput"
         class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
-        placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
+        placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText text-base sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
         dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
         autocomplete="off" data-custom="no-autofill"
@@ -32,7 +32,7 @@
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid class="h-5 w-5 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
+        <IconCaretDownSolid class="h-4 w-4 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
           :class="{ 'transform rotate-180': showDropdown }"
         />
       </div>
@@ -63,7 +63,7 @@
     </teleport>
 
     <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
-      class="absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
+      class="afcl-select-content absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
         dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
       <div
@@ -119,10 +119,12 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, t
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
+type ISingleSelectModelValue = string | number | boolean | null;
+
 const props = defineProps({
   options: Array,
   modelValue: {
-    type: Array as PropType<(string | number)[] | (string | number)>,
+    type: Array as PropType<(ISingleSelectModelValue)[] | ISingleSelectModelValue>,
     default: () => [],
   },
   multiple: {
@@ -157,6 +159,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  disableTogleOfSelectedItem: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
@@ -201,7 +207,7 @@ function updateFromProps() {
         selectedItems.value = [];
       }
     } else {
-      selectedItems.value = props.options?.filter((item: any) => props.modelValue?.includes(item.value)) || [];
+      selectedItems.value = props.options?.filter((item: any) => (props.modelValue as (ISingleSelectModelValue)[])?.includes(item.value)) || [];
     }
   }
 }
@@ -281,6 +287,7 @@ onMounted(() => {
   // Add scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
   }
 });
 
@@ -312,7 +319,7 @@ const removeClickListener = () => {
 };
 
 const toogleItem = (item: any) => {
-  if (selectedItems.value.includes(item)) {
+  if (selectedItems.value.includes(item) && !props.disableTogleOfSelectedItem) {
     selectedItems.value = selectedItems.value.filter(i => i.value !== item.value);
   } else {
     if (!props.multiple) {
@@ -343,6 +350,7 @@ onUnmounted(() => {
   // Remove scroll listeners if teleportToBody is true
   if (props.teleportToBody) {
     window.removeEventListener('scroll', handleScroll, true);
+    window.removeEventListener('resize', handleScroll);
   }
   if (searchDebounceHandle) {
     clearTimeout(searchDebounceHandle);

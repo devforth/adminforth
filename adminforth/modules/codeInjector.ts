@@ -71,9 +71,9 @@ function isFulfilled<T>(result: PromiseSettledResult<T>): result is PromiseFulfi
 }
 
 function notifyWatcherIssue(limit) {
-  afLogger.info('Ran out of file handles after watching %s files.', limit);
-  afLogger.info('Falling back to polling which uses more CPU.');
-  afLogger.info('Run ulimit -n 10000 to increase the limit for open files.');
+  console.log('Ran out of file handles after watching %s files.', limit);
+  console.log('Falling back to polling which uses more CPU.');
+  console.log('Run ulimit -n 10000 to increase the limit for open files.');
 }
 
 class CodeInjector implements ICodeInjector {
@@ -82,6 +82,7 @@ class CodeInjector implements ICodeInjector {
   adminforth: AdminForth;
   allComponentNames: { [key: string]: string } = {};
   srcFoldersToSync: { [key: string]: string } = {};
+  publicFoldersToSync: { [key: string]: string } = {};
   devServerPort: number = null;
 
   spaTmpPath(): string {
@@ -93,25 +94,37 @@ class CodeInjector implements ICodeInjector {
   }
 
   async checkIconNames(icons: string[]) {
+    process.env.HEAVY_DEBUG && console.log(`Checking icon names: ${icons.join(', ')}`);
     const uniqueIcons = Array.from(new Set(icons));
+    process.env.HEAVY_DEBUG && console.log(`Unique icons: ${uniqueIcons.join(', ')}`);
     const collections = new Set(icons.map((icon) => icon.split(':')[0]));
+    process.env.HEAVY_DEBUG && console.log(`Icon collections: ${Array.from(collections).join(', ')}`);
     const iconPackageNames = Array.from(collections).map((collection) => `@iconify-prerendered/vue-${collection}`);
-
+    process.env.HEAVY_DEBUG && console.log(`Icon package names: ${iconPackageNames.join(', ')}`);
     const iconPackages = (
-      await Promise.allSettled(iconPackageNames.map(async (pkg) => ({ pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg)).href), name: pkg})))
+      await Promise.allSettled(
+        iconPackageNames.map(
+          async (pkg) => (
+            { 
+              pkg: await import(pathToFileURL(path.join(this.spaTmpPath(), 'node_modules', pkg, 'index.js')).href), 
+              name: pkg
+            }
+          )
+        )
+      )
     );
-
+    process.env.HEAVY_DEBUG && console.log(`Icon packages load results: ${iconPackages.map(res => res.status === 'fulfilled' ? res.value.name : 'error:' + res.reason).join(', ')}`);
     const loadedIconPackages = iconPackages.filter(isFulfilled).map((res) => res.value).reduce((acc, { pkg, name }) => {
       acc[name.slice(`@iconify-prerendered/vue-`.length)] = pkg;
       return acc;
     }, {});
-
+    process.env.HEAVY_DEBUG && console.log(`Loaded icon packages: ${Object.keys(loadedIconPackages).join(', ')}`);
     uniqueIcons.forEach((icon) => {
       const [ collection, iconName ] = icon.split(':');
       const PascalIconName = 'Icon' + iconName.split('-').map((part, index) => {
         return part[0].toUpperCase() + part.slice(1);
       }).join('');
-
+      process.env.HEAVY_DEBUG && console.log(`Checking icon: ${icon}, collection: ${collection}, iconName: ${iconName}, PascalIconName: ${PascalIconName}`);
       if (!loadedIconPackages[collection]) {
         throw new Error(`Collection ${collection} not found`);
       }
@@ -127,8 +140,27 @@ class CodeInjector implements ICodeInjector {
     this.allComponentNames[filePath] = componentName;
   }
 
+  collectTailwindSafelist(): string[] {
+    const classes = new Set<string>();
+
+    for (const resource of this.adminforth.config.resources) {
+      for (const column of resource.columns || []) {
+        if (!column.listCssClass) {
+          continue;
+        }
+
+        column.listCssClass
+          .split(/\s+/)
+          .filter(Boolean)
+          .forEach((className) => classes.add(className));
+      }
+    }
+
+    return Array.from(classes);
+  }
+
   cleanup() {
-    afLogger.info('Cleaning up...');
+    console.log('Cleaning up...');
     this.allWatchers.forEach((watcher) => {
       watcher.removeAll();
     });
@@ -145,7 +177,11 @@ class CodeInjector implements ICodeInjector {
   }
 
 
-  async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+  public async doesUserHasPnpmLockFile(dir: string): Promise<boolean> {
+    if (!dir) {
+      return false;
+    }
+
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
     try {
@@ -178,10 +214,10 @@ class CodeInjector implements ICodeInjector {
     // On Windows, npm/pnpm is npm/pnpm.cmd, on Unix systems it's npm/pnpm
     let packageExecutable 
     if (doesUserHavePnpmLock) {
-      afLogger.trace(`User has pnpm-lock.yaml, using pnpm for installing custom components`);
+      process.env.HEAVY_DEBUG && console.log(`User has pnpm-lock.yaml, using pnpm for installing custom components`);
       packageExecutable = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
     } else {
-      afLogger.trace(`User does not have pnpm-lock.yaml, falling back to npm for installing custom components`);
+      process.env.HEAVY_DEBUG && console.log(`User does not have pnpm-lock.yaml, falling back to npm for installing custom components`);
       packageExecutable = process.platform === 'win32' ? 'npm.cmd' : 'npm';
     }
     const packagePath = path.join(path.dirname(nodeBinary), packageExecutable); // Path to the package executable
@@ -193,8 +229,8 @@ class CodeInjector implements ICodeInjector {
       ...envOverrides,
     };
 
-    afLogger.trace(`⚙️ exec: ${packageExecutable} ${command}`);
-    afLogger.trace(`🪲 ${packageExecutable} ${command} cwd: ${cwd}`);
+    process.env.HEAVY_DEBUG && console.log(`⚙️ exec: ${packageExecutable} ${command}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲 ${packageExecutable} ${command} cwd: ${cwd}`);
 
     let execCommand: string;
     if (process.platform === 'win32') {
@@ -218,10 +254,10 @@ class CodeInjector implements ICodeInjector {
     }
 
     const { stderr: err } = await execAsync(execCommand, execOptions);
-    afLogger.trace(`${packageExecutable} ${command} done in`);
+    process.env.HEAVY_DEBUG && console.log(`${packageExecutable} ${command} done in`);
 
     if (err) {
-      afLogger.trace(`🪲${packageExecutable} ${command} errors/warnings: ${err}`);
+      process.env.HEAVY_DEBUG && console.log(`🪲${packageExecutable} ${command} errors/warnings: ${err}`);
     }
   }
 
@@ -327,6 +363,17 @@ class CodeInjector implements ICodeInjector {
     return spaDir;
   }
 
+  registerPluginPublicFoldersToSync() {
+    this.publicFoldersToSync = {};
+
+    for (const plugin of this.adminforth.activatedPlugins) {
+      const pluginPublicFolderPath = path.join(plugin.customFolderPath, 'public');
+      if (fs.existsSync(pluginPublicFolderPath)) {
+        this.publicFoldersToSync[pluginPublicFolderPath] = `./plugins/${plugin.className}/`;
+      }
+    }
+  }
+
   async updatePartials({ filesUpdated }: { filesUpdated: string[] }) {
     const spaDir = this.getSpaDir();
 
@@ -340,7 +387,7 @@ class CodeInjector implements ICodeInjector {
         dereference: true, // needed to dereference types
         // preserveTimestamps: true, // needed to not invalidate any caches
       });
-      afLogger.trace(`🪲⚙️ fsExtra.copy copy single file, ${src}, ${dest}`);
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ fsExtra.copy copy single file, ${src}, ${dest}`);
     }));
   }
   async migrateLegacyCustomLayout(oldMeta) {
@@ -441,11 +488,12 @@ class CodeInjector implements ICodeInjector {
     }
 
     registerCustomPages(this.adminforth.config);
-    collectAssetsFromMenu(this.adminforth.config.menu);
+    const menuWithContributions = await this.adminforth.getMenuWithContributions();
+    collectAssetsFromMenu(menuWithContributions);
     registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
-    afLogger.trace(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
 
     // try to rm <spa tmp path>/src/types directory 
     try {
@@ -462,7 +510,7 @@ class CodeInjector implements ICodeInjector {
         const filterPasses = !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}dist`) 
                           && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`);
         if (!filterPasses) {
-          afLogger.trace(`🪲⚙️ fsExtra.copy filtered out, ${src}`);
+          process.env.HEAVY_DEBUG && console.log(`🪲⚙️ fsExtra.copy filtered out, ${src}`);
         }
 
         return filterPasses
@@ -476,6 +524,8 @@ class CodeInjector implements ICodeInjector {
       const customCompAbsPath = path.resolve(this.adminforth.config.customization.customComponentsDir);
       this.srcFoldersToSync[customCompAbsPath] = './'
     }
+
+    this.registerPluginPublicFoldersToSync();
 
     // if this.adminforth.config.customization.favicon is set, copy it to assets
     const customFav = this.adminforth.config.customization?.favicon;
@@ -491,13 +541,23 @@ class CodeInjector implements ICodeInjector {
 
     for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
       const to = path.join(this.spaTmpPath(), 'src', 'custom', dest);
-      afLogger.trace(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);  
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);  
 
       await fsExtra.copy(src, to, {
         recursive: true,
         dereference: true,
         // exclude if node_modules comes after /custom/ in path
         filter: (src) => !src.includes(path.join('custom', 'node_modules')),
+      });
+    }
+
+    for (const [src, dest] of Object.entries(this.publicFoldersToSync)) {
+      const to = path.join(this.spaTmpPath(), 'public', dest);
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ publicFoldersToSync: fsExtra.copy from ${src}, ${to}`);
+
+      await fsExtra.copy(src, to, {
+        recursive: true,
+        dereference: true,
       });
     }
 
@@ -657,9 +717,11 @@ class CodeInjector implements ICodeInjector {
     // generate tailwind extend styles
     const stylesGenerator = new StylesGenerator(this.adminforth.config.customization?.styles); 
     const  stylesText = JSON.stringify(stylesGenerator.mergeStyles(), null, 2).slice(1, -1);
+    const safelistText = JSON.stringify(this.collectTailwindSafelist(), null, 2).slice(1, -1);
     let tailwindConfigPath = path.join(this.spaTmpPath(), 'tailwind.config.js');
     let tailwindConfigContent = await fs.promises.readFile(tailwindConfigPath, 'utf-8');
     tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND STYLES */', stylesText);
+    tailwindConfigContent = tailwindConfigContent.replace('/* IMPORTANT:ADMINFORTH TAILWIND SAFELIST */', safelistText);
     await fs.promises.writeFile(tailwindConfigPath, tailwindConfigContent);
     
 
@@ -699,10 +761,10 @@ class CodeInjector implements ICodeInjector {
     await fs.promises.writeFile(indexHtmlPath, indexHtmlContent);
 
     /* generate custom routes */
-    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(this.adminforth.config.menu);
+    let homepageMenuItem: AdminForthConfigMenuItem = findHomePage(menuWithContributions);
     if (!homepageMenuItem) {
       // find first item with path or resourceId. If we face a menu item with children earlier then path/resourceId, we should search in children
-      homepageMenuItem = await findFirstMenuItemWithResource(this.adminforth.config.menu);
+      homepageMenuItem = await findFirstMenuItemWithResource(menuWithContributions);
     }
     if (!homepageMenuItem) {
       throw new Error('No homepage found in menu and no menu item with path/resourceId found. AdminForth can not generate routes');
@@ -710,7 +772,7 @@ class CodeInjector implements ICodeInjector {
 
     let homePagePath = homepageMenuItem.path || `/resource/${homepageMenuItem.resourceId}`;
     if (!homePagePath) {
-      homePagePath=this.adminforth.config.menu.filter((mi)=>mi.path)[0]?.path || `/resource/${this.adminforth.config.menu.filter((mi)=>mi.children)[0]?.resourceId}` ;
+      homePagePath=menuWithContributions.filter((mi)=>mi.path)[0]?.path || `/resource/${menuWithContributions.filter((mi)=>mi.children)[0]?.resourceId}` ;
     }
 
     routes += `{
@@ -724,11 +786,16 @@ class CodeInjector implements ICodeInjector {
     
 
     /* hash checking */
-    // Here we use pnpm-lock.yaml, because this file will be anywat, even if user doesn't use it
-    const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
-    const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
-    const spaLockHash = hashify(spaPnpmLock);
-
+    let spaLockHash = '';
+    if (await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir)) {
+      const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
+      const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
+      spaLockHash = hashify(spaPnpmLock);
+    } else {
+      const spaNpmLockPath = path.join(this.spaTmpPath(), 'package-lock.json');
+      const spaNpmLock = JSON.parse(await fs.promises.readFile(spaNpmLockPath, 'utf-8'));
+      spaLockHash = hashify(spaNpmLock);
+    }
     /* customPackageLock */
     let usersLockHash: string = '';
     let usersPackages: string[] = [];
@@ -746,7 +813,7 @@ class CodeInjector implements ICodeInjector {
 
     // for every installed plugin generate packages
     for (const plugin of this.adminforth.activatedPlugins) {
-      afLogger.trace(`🔧 Checking packages for plugin, ${plugin.constructor.name}, ${plugin.customFolderPath}`);
+      process.env.HEAVY_DEBUG && console.log(`🔧 Checking packages for plugin, ${plugin.constructor.name}, ${plugin.customFolderPath}`);
       const [lockHash, packages] = await this.packagesFromPnpm(plugin.customFolderPath);
       if (packages.length) {
         pluginPackages.push({
@@ -768,14 +835,14 @@ class CodeInjector implements ICodeInjector {
       const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
       await this.checkIconNames(icons);
       if (existingHash === fullHash) {
-        afLogger.trace(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${fullHash}`);
+        process.env.HEAVY_DEBUG && console.log(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${fullHash}`);
         return;
       } else {
-        afLogger.trace(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with pnpm install`);
+        process.env.HEAVY_DEBUG && console.log(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with pnpm install`);
       }
     } catch (e) {
       // ignore
-      afLogger.trace(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
+      process.env.HEAVY_DEBUG && console.log(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
     }
 
     // install --frozen-lockfile works for npm and pnpm
@@ -829,7 +896,7 @@ class CodeInjector implements ICodeInjector {
     };
     await collectDirectories(spaPath);
 
-    afLogger.trace(`🪲🔎 Watch for: ${directories.join(',')}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for: ${directories.join(',')}`);
 
     const watcher = filewatcher({ debounce: 30 });
     directories.forEach((dir) => {
@@ -838,7 +905,7 @@ class CodeInjector implements ICodeInjector {
       files.forEach((file) => {
         const fullPath = path.join(dir, file);
         if (fs.lstatSync(fullPath).isFile()) {
-          afLogger.trace(`🪲🔎 Watch for file ${fullPath}`);
+          process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${fullPath}`);
           watcher.add(fullPath);
         }
       })
@@ -847,7 +914,7 @@ class CodeInjector implements ICodeInjector {
     watcher.on(
       'change',
       async (file) => {
-        afLogger.trace(`🐛 File ${file} changed (SPA), preparing sources...`);
+        process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
         await this.updatePartials({ filesUpdated: [file.replace(spaPath + path.sep, '')] });
       }
     )
@@ -855,7 +922,11 @@ class CodeInjector implements ICodeInjector {
     this.allWatchers.push(watcher);
   }
 
-  async watchCustomComponentsForCopy({ customComponentsDir, destination }) {
+  async watchCustomComponentsForCopy({ customComponentsDir, destination, targetRoot = path.join('src', 'custom') }: {
+    customComponentsDir: string,
+    destination: string,
+    targetRoot?: string,
+  }) {
     if (!customComponentsDir) {
       return;
     }
@@ -863,7 +934,7 @@ class CodeInjector implements ICodeInjector {
     try {
       await fs.promises.access(customComponentsDir, fs.constants.F_OK);
     } catch (e) {
-      afLogger.trace(`🪲Custom components dir ${customComponentsDir} does not exist, skipping watching`);
+      process.env.HEAVY_DEBUG && console.log(`🪲Custom components dir ${customComponentsDir} does not exist, skipping watching`);
       return;
     }
 
@@ -895,25 +966,25 @@ class CodeInjector implements ICodeInjector {
 
     const watcher = filewatcher({ debounce: 30 });
     files.forEach((file) => {
-      afLogger.trace(`🪲🔎 Watch for file ${file}`);
+      process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${file}`);
       watcher.add(file);
     });
 
-    afLogger.trace(`🪲🔎 Watch for: ${directories.join(',')}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for: ${directories.join(',')}`);
     
     watcher.on(
       'change',
       async (fileOrDir) => {
         // copy one file
         const relativeFilename = fileOrDir.replace(customComponentsDir + path.sep, '');
-        afLogger.trace(`🔎 fileOrDir ${fileOrDir} changed`);
-        afLogger.trace(`🔎 relativeFilename ${relativeFilename}`);
-        afLogger.trace(`🔎 customComponentsDir ${customComponentsDir}`);
-        afLogger.trace(`🔎 destination ${destination}`);
+        process.env.HEAVY_DEBUG && console.log(`🔎 fileOrDir ${fileOrDir} changed`);
+        process.env.HEAVY_DEBUG && console.log(`🔎 relativeFilename ${relativeFilename}`);
+        process.env.HEAVY_DEBUG && console.log(`🔎 customComponentsDir ${customComponentsDir}`);
+        process.env.HEAVY_DEBUG && console.log(`🔎 destination ${destination}`);
         const isFile = fs.lstatSync(fileOrDir).isFile();
         if (isFile) {
-          const destPath = path.join(this.spaTmpPath(), 'src', 'custom', destination, relativeFilename);
-          afLogger.trace(`🔎 Copying file ${fileOrDir} to ${destPath}`);
+          const destPath = path.join(this.spaTmpPath(), targetRoot, destination, relativeFilename);
+          process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
           await fsExtra.copy(fileOrDir, destPath);
           return;
         } else {
@@ -933,7 +1004,7 @@ class CodeInjector implements ICodeInjector {
       return content;
     } catch (e) {
       // file does not exist
-      afLogger.trace(`🪲File ${filePath} does not exist, returning null`);
+      process.env.HEAVY_DEBUG && console.log(`🪲File ${filePath} does not exist, returning null`);
       return null;
     }
   }
@@ -946,7 +1017,9 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big files or files which might be dynamic
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
+            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
           return '';
         }
 
@@ -974,7 +1047,9 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big/dynamic folders or files
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || file.name === 'hashes.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
+            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
           return;
         }
 
@@ -989,7 +1064,7 @@ class CodeInjector implements ICodeInjector {
             map[rel] = hash;
           } catch (e) {
             // If a file can't be read (binary or permission), log and continue
-            afLogger.trace(`🪲File ${filePath} read error: ${e}`);
+            process.env.HEAVY_DEBUG && console.log(`🪲File ${filePath} read error: ${e}`);
             return;
           }
         }
@@ -1004,12 +1079,12 @@ class CodeInjector implements ICodeInjector {
     const root = this.spaTmpPath();
     const outPath = path.join(root, outputFileName);
     await fs.promises.writeFile(outPath, JSON.stringify(hashMap, null, 2), 'utf-8');
-    afLogger.trace(`🪲 Saved sources hashes to ${outPath}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲 Saved sources hashes to ${outPath}`);
     return outPath;
   }
 
   async bundleNow({ hotReload = false }: { hotReload: boolean }) {
-    afLogger.info(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
+    console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
     await this.prepareSources();
@@ -1024,6 +1099,13 @@ class CodeInjector implements ICodeInjector {
             destination: dest,
           });
         }),
+        ...Object.entries(this.publicFoldersToSync).map(async ([src, dest]) => {
+          await this.watchCustomComponentsForCopy({
+            customComponentsDir: src,
+            destination: dest,
+            targetRoot: 'public',
+          });
+        }),
       ]);
     }
 
@@ -1032,18 +1114,16 @@ class CodeInjector implements ICodeInjector {
 
     const allFiles = [];
     const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
-    afLogger.trace(`🪲🪲 allFiles:, ${JSON.stringify(
+    process.env.HEAVY_DEBUG && console.log(`🪲🪲 allFiles:, ${JSON.stringify(
       allFiles.sort((a,b) => a.localeCompare(b)), null, 1)}`);
     
     const buildHash = await this.tryReadFile(path.join(serveDir, '.adminforth_build_hash'));
     const messagesHash = await this.tryReadFile(path.join(serveDir, '.adminforth_messages_hash'));
-    console.log({buildHash, sourcesHash});
+
     const skipBuild = buildHash === sourcesHash;
     const skipExtract = messagesHash === sourcesHash;
 
-    afLogger.trace(`🪲 SPA build hash: ${buildHash}`);
-    afLogger.trace(`🪲 SPA messages hash: ${messagesHash}`);
-    afLogger.trace(`🪲 SPA sources hash: ${sourcesHash}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲 SPA messages hash: ${messagesHash}`);
 
     if (!skipBuild) {
       // remove serveDir if exists
@@ -1067,12 +1147,12 @@ class CodeInjector implements ICodeInjector {
       // save hash
       await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
     } else {
-      afLogger.info(`AdminForth i18n message extraction skipped — build already performed for the current sources.`);
+      console.log(`AdminForth i18n message extraction skipped — build already performed for the current sources.`);
     }
 
     if (!hotReload) {
       if (!skipBuild) {     
-        console.log(`🪲 Build cache miss, building SPA...`);
+        console.log(`🪲 Build cache miss or outdated, building SPA...`);
         let oldHashForFiles = null;
         try {
           oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
@@ -1128,21 +1208,21 @@ class CodeInjector implements ICodeInjector {
         // save sources hashes to file for later debugging if needed
         await this.saveSourcesHashesToFile('hashes.json', hashMap);
       } else {
-        afLogger.info(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
+        console.log(`Skipping AdminForth SPA bundling - already completed for the current sources.`);
       }
     } else {
 
       const command = 'run dev';
       const usersPackageManager = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir) ? 'pnpm' : 'npm';
-      afLogger.info(`⚙️ spawn: ${usersPackageManager} ${command}...`);
+      console.log(`⚙️ spawn: ${usersPackageManager} ${command}...`);
       if (process.env.VITE_ADMINFORTH_PUBLIC_PATH) {
-        afLogger.info(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
+        console.log(`⚠️ Your VITE_ADMINFORTH_PUBLIC_PATH: ${process.env.VITE_ADMINFORTH_PUBLIC_PATH} has no effect`);
       }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
         FORCE_COLOR: '1',
         ...process.env,
-      };
+      }; 
       
       const nodeBinary = process.execPath;
       const packageManagerPath = path.join(path.dirname(nodeBinary), usersPackageManager);
@@ -1160,14 +1240,13 @@ class CodeInjector implements ICodeInjector {
           // parse port from message "  ➜  Local:   http://localhost:xyz/"
           const s = stripAnsiCodes(data.toString());
           
-          afLogger.trace(`🪲 devServer stdout ➜ (port detect): ${s}`);
           const portMatch = s.match(/.+?http:\/\/.+?:(\d+).+?/m);
           if (portMatch) {
             this.devServerPort = parseInt(portMatch[1]);
           }
         } else {
-          afLogger.trace(`[AdminForth SPA]:`);
-          afLogger.trace(data.toString());
+          process.env.HEAVY_DEBUG && console.log(`[AdminForth SPA]:`);
+          process.env.HEAVY_DEBUG && console.log(data.toString());
         }
       });
       devServer.stderr.on('data', (data) => {

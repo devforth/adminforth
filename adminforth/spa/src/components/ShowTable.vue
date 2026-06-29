@@ -1,5 +1,5 @@
 <template>
-      <div class="overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow"
+      <div class="overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border dark:border-gray-700"
         :class="{'rounded-default' : isRounded}"
       >
         <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center text-lightShowTableHeadingText bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground  dark:text-darkShowTableHeadingText rounded-t-lg">
@@ -64,7 +64,7 @@
   import { getCustomComponent, checkShowIf } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
-  import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon } from '@/types/Common';
+  import type { AdminForthResourceFrontend, AdminForthResourceColumnInputCommon } from '@/types/Common';
   const props = withDefaults(defineProps<{ 
     columns: Array<{
         name: string;
@@ -83,7 +83,7 @@
     }>;
     groupName?: string | null;
     noTitle?: boolean;
-    resource: AdminForthResourceCommon | null;
+    resource: AdminForthResourceFrontend | null;
     record: Record<string, any>;
     isRounded?: boolean;
   }>(), {

@@ -8,7 +8,7 @@
     }: {}"
   >
     
-    <img v-if="coreStore.config?.loginBackgroundImage && backgroundPosition !== 'over'"
+    <img v-if="!oauthRedirecting && coreStore.config?.loginBackgroundImage && backgroundPosition !== 'over'"
       :src="loadFile(coreStore.config?.loginBackgroundImage)"
       class="position-absolute top-0 left-0 h-screen object-cover w-0"
       :class="{
@@ -21,22 +21,27 @@
       }[backgroundPosition]"
     />
 
+    <div v-if="oauthRedirecting">
+      <Spinner class="w-10 h-10" />
+    </div>
+
     <!-- Main modal -->
     <div id="authentication-modal" tabindex="-1" 
+      v-show="!oauthRedirecting"
       class="af-login-modal overflow-y-auto flex flex-grow
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
             <!-- Modal content -->
-            <div class="af-login-popup af-login-modal-content relative bg-lightLoginViewBackground rounded-lg shadow dark:bg-darkLoginViewBackground dark:shadow-black" :class=" { 'rounded-b-none  overflow-hidden': error } ">
+            <div class="af-login-popup af-login-modal-content relative bg-lightLoginViewBackground rounded-default shadow dark:bg-darkLoginViewBackground dark:shadow-black" :class=" { 'rounded-b-none  overflow-hidden': error } ">
                 <!-- Modal header -->
                 <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
 
-                    <template v-if="coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
+                    <template v-if="coreStore?.config?.loginPageInjections?.panelHeader.length  && coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
                       <component 
                         v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
                         :key="index"
-                        :is="getCustomComponent(c)"
-                        :meta="c.meta"
+                        :is="getCustomComponent(formatComponent(c))"
+                        :meta="formatComponent(c).meta"
                       />
                     </template>
                     <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
@@ -55,7 +60,7 @@
                               name="username" 
                               id="username" 
                               ref="usernameInput"
-                              @keydown.enter="passwordInput.focus()"
+                              @keydown.enter="passwordInput?.focus()"
                               class="w-full"
                               placeholder="name@company.com" required />
                         </div>
@@ -76,7 +81,7 @@
                             </Input>
                         </div>
 
-                        <div v-if="coreStore.config.rememberMeDuration" 
+                        <div v-if="coreStore?.config?.rememberMeDuration" 
                             class="flex items-start mb-5"
                             :title="$t(`Stay logged in for {days}`, {days: coreStore.config.rememberMeDuration})"
                         >
@@ -87,9 +92,10 @@
                         </div>
                         
                         <component 
-                          v-for="c in coreStore?.config?.loginPageInjections?.underInputs || []"
-                          :is="getCustomComponent(c)"
-                          :meta="c.meta"
+                          v-for="(c, index) in coreStore?.config?.loginPageInjections?.underInputs || []"
+                          :key="`under-inputs-${index}`"
+                          :is="getCustomComponent(formatComponent(c))"
+                          :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                         
@@ -106,10 +112,12 @@
                           {{ $t('Login to your account') }}
                         </Button>
                         <component 
-                          v-for="c in coreStore?.config?.loginPageInjections?.underLoginButton || []"
-                          :is="getCustomComponent(c)"
-                          :meta="c.meta"
+                          v-for="(c, index) in coreStore?.config?.loginPageInjections?.underLoginButton || []"
+                          :key="`under-login-button-${index}`"
+                          :is="getCustomComponent(formatComponent(c))"
+                          :meta="formatComponent(c).meta"
                           @update:disableLoginButton="setDisableLoginButton($event)"
+                          @update:oauthRedirecting="oauthRedirecting = $event"
                         />
                     </form>
                 </div>
@@ -124,27 +132,25 @@
 
 <script setup lang="ts">
 
-import { getCustomComponent } from '@/utils';
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { getCustomComponent, formatComponent } from '@/utils';
+import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
 import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import { callAdminForthApi, loadFile } from '@/utils';
-import { useRoute, useRouter } from 'vue-router';
-import { Button, Checkbox, Input } from '@/afcl';
-import { useI18n } from 'vue-i18n';
+import { useRouter, useRoute } from 'vue-router';
+import { Button, Checkbox, Input, Spinner } from '@/afcl';
 import ErrorMessage from '@/components/ErrorMessage.vue';
 
-const { t } = useI18n();
-
-const passwordInput = ref(null);
-const usernameInput = ref(null);
+const passwordInput = ref<InstanceType<typeof Input> | null>(null);
+const usernameInput = ref<InstanceType<typeof Input> | null>(null);
 const rememberMeValue= ref(false);
 const username = ref('');
 const password = ref('');
 
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
+const oauthRedirecting = ref<boolean>('start_oauth' in route.query && route.query.start_oauth !== '');
 const inProgress = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
 const coreStore = useCoreStore();
@@ -160,18 +166,6 @@ const backgroundPosition = computed(() => {
 });
 
 
-onBeforeMount(() => {
-  if (localStorage.getItem('isAuthorized') === 'true') {
-    // if route has next param, redirect
-    coreStore.fetchMenuAndResource();
-    if (route.query.next) {
-      router.push(route.query.next.toString());
-    } else {
-      router.push({ name: 'home' });
-    }
-  }
-})
-
 onMounted(async () => {
   coreStore.getLoginFormConfig();
     if (coreStore.config?.demoCredentials) {
@@ -179,7 +173,7 @@ onMounted(async () => {
       username.value = demoUsername;
       password.value = demoPassword;
     }
-    usernameInput.value.focus();
+    usernameInput.value?.focus();
 });
 
 
