@@ -157,6 +157,9 @@
     },
     "@adminforth/connector-clickhouse": {
       "optional": true
+    },
+    "@adminforth/connector-qdrant": {
+      "optional": true
     }
   }
 }
