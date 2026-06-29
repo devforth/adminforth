@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^2.0.0
-        version: 2.0.0(adminforth@3.6.13)(openai@6.44.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
+        specifier: ^2.0.5
+        version: 2.0.5(adminforth@3.6.13)(openai@6.44.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.0
         version: 1.3.1(adminforth@3.6.13)(ws@8.21.0)(zod@4.4.3)
@@ -108,10 +108,10 @@ importers:
 
 packages:
 
-  '@adminforth/agent@2.0.0':
-    resolution: {integrity: sha512-IQ+IlBJo8ziRnYIs4rdwLjFvyMATJYPHBhc7GCwQcEDpXkx0X2X7v0zAR2FJVTCDrmzIu92FGqFBDBUg1SZ1HA==}
+  '@adminforth/agent@2.0.5':
+    resolution: {integrity: sha512-HLSaiAcwqzOEw0QfhDdzaHsYNuW364Xwruk13CtwJAwvLntoJr55kmzHUsGhvlG56cGif6B1MJN6vv5XI07lyw==}
     peerDependencies:
-      adminforth: ^3.1.0
+      adminforth: ^3.6.2
 
   '@adminforth/audio-adapter-openai@1.3.1':
     resolution: {integrity: sha512-BMapDvf2m+iqjbLAhn1fNmyhq1OCt2XHSxuO9cAM63fVqs5MDD0U9VnvH1cmzTxX8ql2PNuXAp2i1uDuisPP3g==}
@@ -2991,7 +2991,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@2.0.0(adminforth@3.6.13)(openai@6.44.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)':
+  '@adminforth/agent@2.0.5(adminforth@3.6.13)(openai@6.44.0(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)':
     dependencies:
       '@langchain/core': 1.2.0(openai@6.44.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0)
       '@langchain/langgraph': 1.4.4(@langchain/core@1.2.0(openai@6.44.0(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
