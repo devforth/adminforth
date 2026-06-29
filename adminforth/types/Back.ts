@@ -567,7 +567,7 @@ export interface IAdminForth {
    * We recommend calling this method from dedicated script which will be run by CI/CD pipeline in build time. This ensures lowest downtime for your users.
    * However for simple setup you can call it from your main script, and users will see some "AdminForth is bundling" message in the admin panel while app is bundling.
    */
-  bundleNow({ hotReload, verbose }: { hotReload: boolean, verbose: boolean }): Promise<void>;
+  bundleNow({ hotReload, buildTime }: { hotReload: boolean, buildTime: boolean }): Promise<void>;
 
   /**
    * Resource to get access to operational resources for data api fetching and manipulation.
