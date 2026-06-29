@@ -1083,7 +1083,7 @@ class CodeInjector implements ICodeInjector {
     return outPath;
   }
 
-  async bundleNow({ hotReload = false }: { hotReload: boolean }) {
+  async bundleNow({ hotReload = false, buildTime = true }: { hotReload: boolean, buildTime?: boolean }) {
     console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
@@ -1158,7 +1158,9 @@ class CodeInjector implements ICodeInjector {
           oldHashForFiles = await fs.promises.readFile(path.join(this.spaTmpPath(), 'hashes.json'), 'utf-8');
         } catch (e) {
           // ignore if file doesn't exist, it is only for debugging
-          console.log(`Build cache not found, building now (downtime) please consider running npx adminforth bundle at build time to avoid downtimes at runtime`);
+          if (!buildTime) {
+            console.log(`Build cache not found, building now (downtime) please consider running npx adminforth bundle at build time to avoid downtimes at runtime`);
+          }
         }
         const root = this.spaTmpPath();
         const hashMap = await this.computeSourcesHashMap(root, root, {});
