@@ -161,7 +161,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
   // needed to compile SPA. Call it here or from a build script e.g. in Docker build time to reduce downtime
   if (process.env.NODE_ENV === 'development') {
-    await admin.bundleNow({ hotReload: true});
+    await admin.bundleNow({ hotReload: true, buildTime: false});
     console.log('Bundling AdminForth done');
   }
 
