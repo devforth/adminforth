@@ -1,12 +1,27 @@
 import clsx from 'clsx';
+import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
-import { useState } from 'react';
-import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import styles from './index.module.css';
+
+const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
+const YOUTUBE_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/4tB8uzY__uk';
+const HOME_TITLE = 'Agent-first open-source admin panel framework';
+const HOME_DESCRIPTION = 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. AdminForth is a flexible, modern foundation for developer-owned back-end management systems.';
+const HOME_SUMMARY = 'You can use AdminForth to build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. It is designed for developers who need a flexible, modern foundation for back-end management systems.';
+const SCREENSHOT_PATH = '/img/adminforth_screenshot.png';
+const OG_IMAGE_PATH = '/img/og.jpg';
+const FEATURE_LIST = [
+  'Connect to existing Postgres, MySQL, SQLite, or MongoDB data, provide an OpenAI or Anthropic API key, and start using the internal agent in natural language with npx adminforth create-app.',
+  'Ships assets for coding agents like Claude, Codex, Copilot, and Antigravity, including AGENTS.md, CLAUDE.md, llms.txt, and skills.',
+  'Always open-source and free.',
+  'Built with Tailwind CSS and fully extendable with Vue and TypeScript.',
+  'Premade RFC and OWASP-compatible plugins for TOTP, passkeys, third-party auth providers, and audit logs.',
+  'Rich component library for custom admin controls and pages.',
+];
 
 
 const images = [
@@ -14,13 +29,7 @@ const images = [
     original: require('@site/static/img/previews/login_form.png').default,
     title: 'Authentication and Authorization',
     link: '/docs/tutorial/gettingStarted',
-    description: 'OWASP-Compliant Sign-In already there'
-  },
-  {
-    original: require('@site/static/img/previews/users_management.png').default,
-    title: 'Users management',
-    link: '/docs/tutorial/gettingStarted',
-    description: 'Manage users and roles with ease, extend as you like'
+    description: 'OWASP-Compliant Sign-In done for you'
   },
   {
     original: require('@site/static/img/previews/sso.png').default,
@@ -29,22 +38,46 @@ const images = [
     description: 'RFC 6749 SSO plugin with premade Google, Github, Facebook, Keycloak, Microsoft or any custom OAuth2 adapter'
   },
   {
-    original: require('@site/static/img/previews/ai_complete.png').default,
-    title: 'AI autocomplete Plugin - write with ChatGPT',
-    link: '/docs/tutorial/Plugins/text-complete/',
-    description: 'Provide your OpenAI API key to autocomplete plugin and AI will help you to write your content using record context'
+    original: require('@site/static/img/previews/2fa_plugin.png').default,
+    title: '2FA Plugin - secure your admin panel',
+    link: '/docs/tutorial/Plugins/two-factors-auth/',
+    description: 'RFC 6238-Compliant TOTP-Based & WebAuthn PassKeys 2FA will add additional security layer (login and preferred actions)'
+  },
+  {
+    original: require('@site/static/img/previews/branding.png').default,
+    title: 'Branding and theming',
+    link: '/docs/tutorial/Customization/branding/',
+    description: 'Upload your logo, change colors, update titles, make the look to match your brand'
+  },
+  {
+    original: require('@site/static/img/previews/dashboard.png').default,
+    title: 'Custom Pages and Dashboards',
+    link: '/docs/tutorial/Customization/customPages/',
+    description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
+  },
+  {
+    original: require('@site/static/img/previews/users_management.png').default,
+    title: 'Users management',
+    link: '/docs/tutorial/gettingStarted',
+    description: 'Manage users and roles with ease, extend as you like'
+  },
+  {
+    original: require('@site/static/img/previews/translate.png').default,
+    title: 'LLM-based Translation Plugin - translate your admin and External apps',
+    link: '/docs/tutorial/Plugins/i18n/',
+    description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
   },
   {
     original: require('@site/static/img/previews/auditlog.png').default,
     title: 'Audit log Plugin - know who did what',
     link: '/docs/tutorial/Plugins/AuditLog/',
-    description: 'Attach Audit log plugin with couple of lines, create table for logs and track your users actions'
+    description: 'Attach Audit log plugin with couple of lines, create table for logs and track full history of any data changes'
   },
   {
-    original: require('@site/static/img/previews/2fa_plugin.png').default,
-    title: '2FA Plugin - secure your admin panel',
-    link: '/docs/tutorial/Plugins/TwoFactorsAuth/',
-    description: 'RFC 6238-Compliant TOTP-Based 2FA will add additional security layer to your admin panel. Also supports passkeys'
+    original: require('@site/static/img/previews/ai_complete.png').default,
+    title: 'AI autocomplete Plugin - write with LLMs',
+    link: '/docs/tutorial/Plugins/text-complete/',
+    description: 'Provide your LLM API key to autocomplete plugin and AI will help you to write your content using record context'
   },
   {
     original: require('@site/static/img/previews/dark.png').default,
@@ -55,21 +88,10 @@ const images = [
   {
     original: require('@site/static/img/previews/upload.png').default,
     title: 'Upload Plugin - upload files',
-    link: '/docs/tutorial/Plugins/Upload/',
+    link: '/docs/tutorial/Plugins/upload/',
     description: 'Upload files to Amazon S3 with instantiating plugin and providing your S3 credentials' 
   },
-  {
-    original: require('@site/static/img/previews/dashboard.png').default,
-    title: 'Custom Pages and Dashboards',
-    link: '/docs/tutorial/Customization/customPages/',
-    description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
-  },
-  {
-    original: require('@site/static/img/previews/branding.png').default,
-    title: 'Branding and theming',
-    link: '/docs/tutorial/Customization/branding/',
-    description: 'Upload your logo, change colors, update titles, make the look to match your brand'
-  },
+  
   {
     original: require('@site/static/img/previews/filters.png').default,
     title: 'Filters to query your data',
@@ -79,7 +101,7 @@ const images = [
   {
     original: require('@site/static/img/previews/richeditor.png').default,
     title: 'Rich Editor Plugin - WYSIWYG',
-    link: '/docs/tutorial/Plugins/RichEditor/',
+    link: '/docs/tutorial/Plugins/rich-editor/',
     description: 'Attach Rich Editor plugin to your text fields and get WYSIWYG editor for your content'
   },
   {
@@ -101,41 +123,51 @@ const images = [
     description: 'Export tables to CSV and import from CSV with one click. Move data between environments easily'
   },
   {
-    original: require('@site/static/img/previews/translate.png').default,
-    title: 'AI Translation Plugin - translate your admin and External apps',
-    link: '/docs/tutorial/Plugins/i18n/',
-    description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
-  },
-  {
     original: require('@site/static/img/previews/bulk-ai-flow.png').default,
     title: 'Bulk AI Plugin - generate data for your resources',
     link: '/docs/tutorial/Plugins/bulk-ai-flow/',
     description: 'Use LLMs to fill records with generated data or images. For example, generate product descriptions based on product name and image or generate products images'
+  },
+  {
+    original: require('@site/static/img/previews/quick-filters.png').default,
+    title: 'Quick Filters Plugin - filter your data quickly',
+    link: '/docs/tutorial/Plugins/quick-filters/',
+    description: 'Use quick filters to filter your data efficiently. Create custom filters and apply them with a single click'
+  },
+  {
+    original: require('@site/static/img/previews/background-jobs1.png').default,
+    title: 'Background Jobs Plugin - manage your background tasks',
+    link: '/docs/tutorial/Plugins/background-jobs/',
+    description: 'Use background jobs to handle long-running tasks efficiently. Schedule, monitor, and manage your background processes with ease even after server restarts'
+  },
+  {
+    original: require('@site/static/img/previews/agent.png').default,
+    title: 'Agent Plugin - give AI any task and let it handle it',
+    link: '/docs/tutorial/Plugins/agent/',
+    description: 'Provides an internal agent that can perform various tasks based on natural language instructions. Connect it to your data and let it help you with content generation, data management, or any custom use case you can think of'
+  },
+  {
+    original: require('@site/static/img/previews/dashboards-plugin.png').default,
+    title: 'Dashboard Plugin - creare custom dashboards from web interface',
+    link: '/docs/tutorial/Plugins/dashboard/',
+    description: 'Provides a customizable dashboard plugin that allows you to create and manage dashboards for your data. Connect it to your resources and visualize your data in a meaningful way'
   },
 ];
 
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
-  // read theme from docusarus
-
-  const [theme, setTheme] = useState('light');
-
-  if (ExecutionEnvironment.canUseDOM) {
-
-    
-  } 
 
   return (
     <>
       <header className={clsx('hero', styles.heroBanner)}>
         <div className="container" >
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            The Free, Open-Source Admin Framework for Node, Vue & Tailwind
+            {HOME_TITLE}
           </Heading>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
 
-          <div class="heroRow">
+          <div className="heroRow">
             <div className={styles.buttons}>
               <Link
                 className="button button--secondary button--outline button--lg"
@@ -171,15 +203,11 @@ function HomepageHeader() {
         <div className="laptop_container">
           <div className="laptop">
             <div className="laptop__screen">
-              <img 
-                src={{
-                    light: require('@site/static/img/preview_light.png').default,
-                    dark: require('@site/static/img/preview_dark.png').default,
-                  }[theme]
-                } alt="Screen" />
-              <div className="theme_switcher" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-                
-              </div>
+              <iframe
+                className={styles.demoFrame}
+                src={LIVE_DEMO_IFRAME_URL}
+                title="AdminForth live demo"
+              />
             </div>
             <div className="laptop__bottom">
               <div className="laptop__under"></div>
@@ -194,13 +222,80 @@ function HomepageHeader() {
 
 export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
+  const siteUrl = siteConfig.url.replace(/\/$/, '');
+  const screenshotUrl = `${siteUrl}${SCREENSHOT_PATH}`;
+  const ogImageUrl = `${siteUrl}${OG_IMAGE_PATH}`;
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        name: 'AdminForth',
+        alternateName: HOME_TITLE,
+        url: `${siteUrl}/`,
+        description: HOME_SUMMARY,
+        image: ogImageUrl,
+      },
+      {
+        '@type': 'SoftwareApplication',
+        name: 'AdminForth',
+        alternateName: HOME_TITLE,
+        applicationCategory: 'BusinessApplication',
+        applicationSubCategory: 'Admin panel framework',
+        operatingSystem: 'Web browser',
+        url: `${siteUrl}/`,
+        image: ogImageUrl,
+        screenshot: screenshotUrl,
+        description: HOME_SUMMARY,
+        isAccessibleForFree: true,
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        featureList: FEATURE_LIST,
+        sameAs: [
+          'https://github.com/devforth/adminforth',
+          'https://demo.adminforth.dev/',
+        ],
+      },
+    ],
+    dateModified: new Date().toISOString(),
+  };
 
   return (
     <Layout
-      title={`${siteConfig.title}`}
-      description="OpenSource Tailwind Admin Panel extendable with Vue3 and typescript!">
+      title={HOME_TITLE}
+      description={HOME_DESCRIPTION}>
+      <Head>
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AdminForth" />
+        <meta property="og:image:alt" content="AdminForth social card" />
+        <meta name="twitter:title" content={HOME_TITLE} />
+        <meta name="twitter:description" content={HOME_DESCRIPTION} />
+        <meta name="twitter:image:alt" content="AdminForth social card" />
+        <meta name="twitter:label1" content="License" />
+        <meta name="twitter:data1" content="Open source and free" />
+        <meta name="twitter:label2" content="Stack" />
+        <meta name="twitter:data2" content="Tailwind, Vue, TypeScript" />
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      </Head>
       <HomepageHeader />
       <main>
+
+        <div className={styles.videoSection}>
+          <div className={styles.videoWrapper}>
+            <iframe
+              className={styles.videoFrame}
+              src={YOUTUBE_VIDEO_EMBED_URL}
+              title="AdminForth overview video"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
 
 
       <Heading as="h2" className="hero__title text--center">
@@ -243,6 +338,99 @@ export default function Home(): JSX.Element {
         </div>
         
         <HomepageFeatures />
+
+        <section className={styles.featuredOnSection}>
+          <div className="container">
+            <Heading as="h2" className={styles.featuredOnTitle}>
+              Featured on
+            </Heading>
+            <div className={styles.featuredOnBadges}>
+              <a
+                href="https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://auraplusplus.com/images/badges/featured-on-light.svg"
+                  alt="Featured on Aura++"
+                  width="265"
+                  height="58"
+                />
+              </a>
+              <a
+                href="https://peerpush.net/p/adminforth"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://peerpush.net/p/adminforth/badge.png"
+                  alt="AdminForth on PeerPush"
+                  width="230"
+                />
+              </a>
+              <a
+                href="https://openhunts.com"
+                target="_blank"
+                rel="noopener"
+                title="OpenHunts Club"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://cdn.openhunts.com/badges/club.webp"
+                  alt="OpenHunts Club Member"
+                  width="195"
+                />
+              </a>
+              <a
+                href="https://toolfio.com"
+                target="_blank"
+                rel="dofollow"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://toolfio.com/toolfio-light-badge.png"
+                  alt="Featured on Toolfio"
+                  width="200"
+                  height="54"
+                />
+              </a>
+              <a
+                href="https://earlyhunt.com/project/adminforth"
+                target="_blank"
+                rel="noopener"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://earlyhunt.com/badges/earlyhunt-badge-light.svg"
+                  alt="Featured on EarlyHunt"
+                  width="265"
+                  height="58"
+                />
+              </a>
+              <a
+                href="https://www.producthunt.com/products/adminforth/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-adminforth"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.featuredOnLink}
+              >
+                <img
+                  className={styles.featuredOnBadgeImage}
+                  src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=598095&theme=light"
+                  alt="AdminForth on Product Hunt"
+                  width="250"
+                  height="54"
+                />
+              </a>
+            </div>
+          </div>
+        </section>
 
       </main>
 

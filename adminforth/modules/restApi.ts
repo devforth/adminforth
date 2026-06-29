@@ -14,16 +14,18 @@ import {
   BackendOnlyInput,
   Filters,
 } from "../types/Back.js";
+import type { AnySchemaObject } from 'ajv';
 
 import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
-import { ActionCheckSource, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceCommon, AdminForthResourcePages,
-   AdminUser, AllowedActionsEnum, AllowedActionsResolved, 
+import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
+  AdminForthSortDirections,
+   AdminUser, AllowedActionsEnum, AllowedActionsResolved,
    AnnouncementBadgeResponse,
    GetBaseConfigResponse,
    ShowInResolved} from "../types/Common.js";
@@ -75,6 +77,542 @@ async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): 
   const fillOnCreate = !!col.fillOnCreate;
   return fillOnCreate;
 }
+
+function stripResourceColumnFrontendMeta(column: Record<string, any>) {
+  const { default: _default, _baseTypeDebug, ...sanitizedColumn } = column;
+  return sanitizedColumn;
+}
+
+const SIMPLE_FILTER_OPERATORS = Object.values(AdminForthFilterOperators).filter((operator) => {
+  return operator !== AdminForthFilterOperators.AND && operator !== AdminForthFilterOperators.OR;
+});
+
+const genericObjectSchema: AnySchemaObject = {
+  type: 'object',
+  additionalProperties: true,
+};
+
+const errorResponseSchema: AnySchemaObject = {
+  title: 'AdminForthErrorResponse',
+  description: 'Standard error response returned by AdminForth endpoints.',
+  type: 'object',
+  required: ['error'],
+  properties: {
+    error: { type: 'string' },
+  },
+  additionalProperties: true,
+};
+
+const recordIdentifierSchema: AnySchemaObject = {
+  title: 'AdminForthRecordIdentifier',
+  description: 'Record identifier accepted by AdminForth. Depending on the resource it can be a string or a number.',
+  anyOf: [
+    { type: 'string' },
+    { type: 'number' },
+  ],
+};
+
+const actionIdentifierSchema: AnySchemaObject = {
+  title: 'AdminForthActionIdentifier',
+  description: 'Action identifier accepted by AdminForth. Depending on configuration it can be a string or a number.',
+  anyOf: [
+    { type: 'string' },
+    { type: 'number' },
+  ],
+};
+
+const namedColumnSchema: AnySchemaObject = {
+  title: 'AdminForthNamedColumn',
+  type: 'object',
+  required: ['name'],
+  properties: {
+    name: { type: 'string' },
+  },
+  additionalProperties: true,
+};
+
+const validationResultSchema: AnySchemaObject = {
+  title: 'AdminForthValidationResult',
+  type: 'object',
+  required: ['isValid'],
+  properties: {
+    isValid: { type: 'boolean' },
+    message: { type: 'string' },
+  },
+  additionalProperties: true,
+};
+
+const filterConditionExample = {
+  field: 'status',
+  operator: AdminForthFilterOperators.EQ,
+  value: 'active',
+};
+
+const filterGroupExample = {
+  operator: AdminForthFilterOperators.AND,
+  subFilters: [filterConditionExample],
+};
+
+const sortItemExample = {
+  field: 'createdAt',
+  direction: AdminForthSortDirections.desc,
+};
+
+const filterConditionSchema: AnySchemaObject = {
+  title: 'AdminForthFilterCondition',
+  description: 'Single field comparison used in AdminForth filtering.',
+  type: 'object',
+  properties: {
+    field: { type: 'string' },
+    operator: { type: 'string', enum: SIMPLE_FILTER_OPERATORS },
+    value: {},
+    rightField: { type: 'string' },
+  },
+  additionalProperties: true,
+  examples: [filterConditionExample],
+};
+
+const filterGroupSchema: AnySchemaObject = {
+  title: 'AdminForthFilterGroup',
+  description: 'Nested boolean filter group. Use this for AND or OR combinations of filter nodes.',
+  type: 'object',
+  required: ['operator', 'subFilters'],
+  properties: {
+    operator: {
+      type: 'string',
+      enum: [AdminForthFilterOperators.AND, AdminForthFilterOperators.OR],
+    },
+    subFilters: {
+      type: 'array',
+      items: { $ref: '#/$defs/filterNode' },
+      description: 'Nested filters evaluated with the selected operator.',
+    },
+  },
+  additionalProperties: true,
+  examples: [filterGroupExample],
+};
+
+const sortItemSchema: AnySchemaObject = {
+  title: 'AdminForthSortItem',
+  description: 'Single sort instruction applied in order with the rest of the list.',
+  type: 'object',
+  required: ['field', 'direction'],
+  properties: {
+    field: { type: 'string' },
+    direction: { type: 'string', enum: Object.values(AdminForthSortDirections) },
+  },
+  additionalProperties: true,
+  examples: [sortItemExample],
+};
+
+const commonFilterSchemaDefs: Record<string, AnySchemaObject> = {
+  singleFilter: filterConditionSchema,
+  filterGroup: filterGroupSchema,
+  filterNode: {
+    title: 'AdminForthFilterNode',
+    description: 'Either a single filter condition or a nested filter group.',
+    anyOf: [
+      { $ref: '#/$defs/singleFilter' },
+      { $ref: '#/$defs/filterGroup' },
+    ],
+    examples: [filterConditionExample, filterGroupExample],
+  },
+  sortItem: sortItemSchema,
+};
+
+const commonSortSchema: AnySchemaObject = {
+  title: 'AdminForthSortList',
+  description: 'Ordered list of sort instructions.',
+  type: 'array',
+  items: { $ref: '#/$defs/sortItem' },
+  examples: [[sortItemExample]],
+};
+
+const commonFiltersSchema: AnySchemaObject = {
+  title: 'AdminForthFilterInput',
+  description: 'Runtime accepts either a single filter node or an array of filter nodes. The OpenAPI document normalizes this to the array form for readability.',
+  oneOf: [
+    {
+      type: 'array',
+      items: { $ref: '#/$defs/filterNode' },
+    },
+    { $ref: '#/$defs/filterNode' },
+  ],
+};
+
+function hasApiRawFilter(filters: any): boolean {
+  if (!filters || typeof filters !== 'object') {
+    return false;
+  }
+
+  if (Array.isArray(filters)) {
+    return filters.some(hasApiRawFilter);
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(filters, 'insecureRawSQL') ||
+    Object.prototype.hasOwnProperty.call(filters, 'insecureRawNoSQL')
+  ) {
+    return true;
+  }
+
+  return Array.isArray(filters.subFilters) && filters.subFilters.some(hasApiRawFilter);
+}
+
+export function rejectApiRawFilters(filters: any): { error: string } | undefined {
+  if (hasApiRawFilter(filters)) {
+    return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
+  }
+}
+
+function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
+  return {
+    anyOf: [
+      errorResponseSchema,
+      successSchema,
+    ],
+  };
+}
+
+const getResourceDataRequestSchema: AnySchemaObject = {
+  type: 'object',
+  $defs: commonFilterSchemaDefs,
+  required: ['resourceId', 'source', 'limit', 'offset'],
+  properties: {
+    resourceId: { type: 'string' },
+    source: {
+      type: 'string',
+      enum: ['show', 'list', 'edit'],
+      description: 'Target UI context. Show and edit requests should use direct field filters that identify a single record.',
+    },
+    limit: {
+      type: 'integer',
+      description: 'Maximum number of rows to return for the current page.',
+    },
+    offset: {
+      type: 'integer',
+      description: 'Zero-based row offset used for pagination.',
+    },
+    sort: commonSortSchema,
+    filters: commonFiltersSchema,
+    columns: {
+      type: 'array',
+      description: 'Optional list of resource column names to include in returned rows. For list requests, computed row helper fields such as _label and _clickUrl are still returned when available.',
+      minItems: 1,
+      uniqueItems: true,
+      items: { type: 'string' },
+    },
+  },
+  additionalProperties: true,
+  allOf: [
+    {
+      if: {
+        properties: {
+          source: { enum: ['show', 'edit'] },
+        },
+        required: ['source'],
+      },
+      then: {
+        properties: {
+          filters: {
+            type: 'array',
+            items: {
+              allOf: [
+                { $ref: '#/$defs/singleFilter' },
+                {
+                  type: 'object',
+                  required: ['field'],
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  ],
+};
+
+const getResourceDataResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['data'],
+  properties: {
+    data: {
+      type: 'array',
+      items: genericObjectSchema,
+    },
+    total: { type: 'number' },
+    recordIds: { type: 'array', items: {} },
+    options: genericObjectSchema,
+  },
+  additionalProperties: true,
+});
+
+const getMenuBadgesResponseSchema: AnySchemaObject = {
+  type: 'object',
+  additionalProperties: {
+    anyOf: [
+      { type: 'string' },
+      { type: 'number' },
+    ],
+  },
+};
+
+const getResourceRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId'],
+  properties: {
+    resourceId: { type: 'string' },
+  },
+  additionalProperties: true,
+};
+
+const getResourceResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['resource'],
+  properties: {
+    resource: genericObjectSchema,
+  },
+  additionalProperties: true,
+});
+
+const getResourceForeignDataRequestSchema: AnySchemaObject = {
+  type: 'object',
+  $defs: commonFilterSchemaDefs,
+  required: ['resourceId', 'column', 'limit', 'offset'],
+  properties: {
+    resourceId: { type: 'string' },
+    column: { type: 'string' },
+    limit: {
+      type: 'integer',
+      description: 'Maximum number of dropdown options to return.',
+    },
+    offset: {
+      type: 'integer',
+      description: 'Zero-based offset used to fetch the next option page.',
+    },
+    search: { type: 'string' },
+    filters: commonFiltersSchema,
+    sort: commonSortSchema,
+    currentValue: {
+      description: 'When set, guarantees this PK value appears in the returned items even if it falls outside the requested page.',
+    },
+  },
+  additionalProperties: true,
+};
+
+const getResourceForeignDataResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['items'],
+  properties: {
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['value', 'label'],
+        properties: {
+          value: {},
+          label: { type: 'string' },
+        },
+        additionalProperties: true,
+      },
+    },
+  },
+  additionalProperties: true,
+});
+
+const getMinMaxForColumnsRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId'],
+  properties: {
+    resourceId: { type: 'string' },
+  },
+  additionalProperties: true,
+};
+
+const getMinMaxForColumnsResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  additionalProperties: {
+    type: 'object',
+    required: ['min', 'max'],
+    properties: {
+      min: {},
+      max: {},
+    },
+    additionalProperties: true,
+  },
+});
+
+const createRecordRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId', 'record', 'requiredColumnsToSkip'],
+  properties: {
+    resourceId: { type: 'string' },
+    record: genericObjectSchema,
+    requiredColumnsToSkip: {
+      type: 'array',
+      items: namedColumnSchema,
+    },
+    meta: genericObjectSchema,
+  },
+  additionalProperties: true,
+};
+
+const createRecordResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['ok', 'newRecordId', 'redirectToRecordId'],
+  properties: {
+    ok: { const: true },
+    newRecordId: recordIdentifierSchema,
+    redirectToRecordId: recordIdentifierSchema,
+  },
+  additionalProperties: true,
+});
+
+const updateRecordRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId', 'recordId', 'record'],
+  properties: {
+    resourceId: { type: 'string' },
+    recordId: recordIdentifierSchema,
+    record: genericObjectSchema,
+    meta: genericObjectSchema,
+  },
+  additionalProperties: true,
+};
+
+const updateRecordResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['ok'],
+  properties: {
+    ok: { const: true },
+    recordId: recordIdentifierSchema,
+  },
+  additionalProperties: true,
+});
+
+const deleteRecordRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId', 'primaryKey'],
+  properties: {
+    resourceId: { type: 'string' },
+    primaryKey: recordIdentifierSchema,
+  },
+  additionalProperties: true,
+};
+
+const deleteRecordResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['ok', 'recordId'],
+  properties: {
+    ok: { const: true },
+    recordId: recordIdentifierSchema,
+  },
+  additionalProperties: true,
+});
+
+const startCustomActionRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId', 'actionId', 'recordId'],
+  properties: {
+    resourceId: { type: 'string' },
+    actionId: actionIdentifierSchema,
+    recordId: recordIdentifierSchema,
+    extra: genericObjectSchema,
+  },
+  additionalProperties: true,
+};
+
+const startCustomActionResponseSchema: AnySchemaObject = {
+  anyOf: [
+    errorResponseSchema,
+    {
+      type: 'object',
+      required: ['actionId', 'resourceId', 'recordId', 'redirectUrl'],
+      properties: {
+        actionId: actionIdentifierSchema,
+        resourceId: { type: 'string' },
+        recordId: recordIdentifierSchema,
+        redirectUrl: { type: 'string' },
+      },
+      additionalProperties: true,
+    },
+    {
+      type: 'object',
+      required: ['actionId', 'resourceId', 'recordId', 'ok'],
+      properties: {
+        actionId: actionIdentifierSchema,
+        resourceId: { type: 'string' },
+        recordId: recordIdentifierSchema,
+        ok: { const: true },
+      },
+      additionalProperties: true,
+    },
+  ],
+};
+
+const startCustomBulkActionRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId', 'actionId', 'recordIds'],
+  properties: {
+    resourceId: { type: 'string' },
+    actionId: actionIdentifierSchema,
+    recordIds: {
+      type: 'array',
+      items: recordIdentifierSchema,
+    },
+    extra: genericObjectSchema,
+  },
+  additionalProperties: true,
+};
+
+const startCustomBulkActionResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['actionId', 'resourceId', 'recordIds', 'ok'],
+  properties: {
+    actionId: actionIdentifierSchema,
+    resourceId: { type: 'string' },
+    recordIds: {
+      type: 'array',
+      items: recordIdentifierSchema,
+    },
+    ok: { const: true },
+  },
+  additionalProperties: true,
+});
+
+const validateColumnsRequestSchema: AnySchemaObject = {
+  type: 'object',
+  required: ['resourceId', 'editableColumns', 'record'],
+  properties: {
+    resourceId: { type: 'string' },
+    editableColumns: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: { type: 'string' },
+          value: {},
+        },
+        additionalProperties: true,
+      },
+    },
+    record: genericObjectSchema,
+  },
+  additionalProperties: true,
+};
+
+const validateColumnsResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+  type: 'object',
+  required: ['validationResults'],
+  properties: {
+    validationResults: {
+      type: 'object',
+      additionalProperties: validationResultSchema,
+    },
+  },
+  additionalProperties: true,
+});
 
 export async function interpretResource(
   adminUser: AdminUser, 
@@ -128,9 +666,28 @@ export async function interpretResource(
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
   adminforth: IAdminForth;
+  loginRateLimiters: RateLimiter[] = [];
   
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
+  }
+
+  private normalizeJsonColumns(resource: AdminForthResource, record: any): string | null {
+    for (const column of resource.columns) {
+      if (
+        column.type === AdminForthDataTypes.JSON &&
+        !column.isArray?.enabled &&
+        typeof record[column.name] === 'string' &&
+        record[column.name].trim() !== ''
+      ) {
+        try {
+          record[column.name] = parseLooseJson(record[column.name]);
+        } catch (e) {
+          return `Field "${column.name}" contains invalid JSON: ${e.message}`;
+        }
+      }
+    }
+    return null;
   }
 
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
@@ -155,7 +712,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     }
   }
 
+  checkAbortSignal(abortSignal: AbortSignal): boolean {
+    if (abortSignal.aborted) {
+      return true;
+    }
+    return false;
+  }
+
   registerEndpoints(server: IHttpServer) {
+    this.loginRateLimiters = this.adminforth.config.auth.rateLimit.map((rate) => new RateLimiter(rate));
+
     server.endpoint({
       noAuth: true,
       method: 'POST',
@@ -163,6 +729,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
         const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
+        const loginRateLimitKey = this.adminforth.auth.getClientIp(headers) || 'unknown';
+        const rateLimitResults = await Promise.all(this.loginRateLimiters.map((limiter) => limiter.consume(loginRateLimitKey)));
+        if (!rateLimitResults.every(Boolean)) {
+          response.setStatus(429);
+          return { error: await tr('Too many login attempts, please try again later', 'errors') };
+        }
+
         const { username, password, rememberMe } = body;
         let adminUser: AdminUser;
         let toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string } = { allowedLogin: true };
@@ -197,6 +770,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
 
         if (!userRecord) {
+          response.setStatus(401);
           return { error: INVALID_MESSAGE };
         }
 
@@ -227,6 +801,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             });
           } 
         } else {
+          response.setStatus(401);
           return { error: INVALID_MESSAGE };
         }
           
@@ -260,7 +835,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       handler: async ({ tr }) => {
         const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
         return {
-          loginPromptHTML: await tr(loginPromptHTML, 'system.loginPromptHTML'),
+          loginPromptHTML: loginPromptHTML ? await tr(loginPromptHTML, 'system.loginPromptHTML') : null,
         }
       }
     })
@@ -304,7 +879,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'GET',
       path: '/get_base_config',
-      handler: async ({input, adminUser, cookies, tr, response}): Promise<GetBaseConfigResponse>=> {
+      handler: async ({ adminUser, cookies, tr, response }): Promise<GetBaseConfigResponse>=> {
         let username = ''
         let userFullName = ''
     
@@ -347,7 +922,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         let newMenu = []
-        for (let menuItem of this.adminforth.config.menu) {
+        for (let menuItem of await this.adminforth.getMenuWithContributions(adminUser)) {
           let newMenuItem = {...menuItem,}
           if (menuItem.visible){
             if (!checkIsMenuItemVisible(menuItem)){
@@ -423,7 +998,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           if (menuItem.label) {
             translateRoutines.push(
               (async () => {
-                menuItem.label = await tr(menuItem.label, `menu.${menuItem.itemId}`);
+                const rawLabel = typeof menuItem.label === 'function' ? await menuItem.label(adminUser, this.adminforth) : menuItem.label;
+                menuItem.label = await tr(rawLabel, `menu.${menuItem.itemId}`);
               })()
             );
           }
@@ -492,16 +1068,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'GET', 
       path: '/get_menu_badges',
+      description: 'Computes the current menu badge values for the authenticated admin user. Static badges are returned directly, and dynamic badge callbacks are resolved for all configured menu items, including nested items.',
+      response_schema: getMenuBadgesResponseSchema,
       handler: async ({ adminUser }) => {
         const badges = {};
 
         const badgeFunctions = [];
 
+        const adminforth = this.adminforth;
+
         function processMenuItem(menuItem) {
           if (menuItem.badge) {
             if (typeof menuItem.badge === 'function') {
               badgeFunctions.push(async () => {
-                badges[menuItem.itemId] = await menuItem.badge(adminUser);
+                badges[menuItem.itemId] = await menuItem.badge(adminUser, adminforth);
               });
             } else {
               badges[menuItem.itemId] = menuItem.badge;
@@ -512,7 +1092,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        this.adminforth.config.menu.map((menuItem) => {
+        (await this.adminforth.getMenuWithContributions(adminUser)).map((menuItem) => {
           processMenuItem(menuItem)
         })
 
@@ -532,7 +1112,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource',
-      handler: async ({ body, adminUser, tr }): Promise<{ resource?: AdminForthResourceCommon, error?: string }> => {
+      description: 'Returns the definition of a single resource. The response includes translated labels, column metadata, allowed actions, visible bulk actions, frontend action metadata, and resource options after permission checks and removal of backend-only internals.',
+      request_schema: getResourceRequestSchema,
+      response_schema: getResourceResponseSchema,
+      handler: async ({ body, adminUser, tr }): Promise<{ resource?: AdminForthResourceFrontend, error?: string }> => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -561,6 +1144,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
+        const allowedCustomActions: Array<(typeof resource.options.actions)[number] & { allowed: boolean }> = [];
+        if (resource.options.actions) {
+          await Promise.all(
+            resource.options.actions.map(async (action) => {
+              if (typeof action.allowed === 'function') {
+                const res = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+                allowedCustomActions.push({ ...action, allowed: !!res });
+              } else {
+                allowedCustomActions.push({ ...action, allowed: action.allowed !== false });
+              }
+            })
+          );
+        }
+
         // translate
         const translateRoutines: Record<string, Promise<string>> = {};
         translateRoutines.resLabel = tr(resource.label, `resource.${resource.resourceId}`);
@@ -572,7 +1169,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             translateRoutines[`bulkAction${i}`] = tr(action.label, `resource.${resource.resourceId}`);
           }
           if (action.confirm) {
-            translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+            if (typeof action.confirm === 'string') {
+              translateRoutines[`bulkActionConfirm${i}`] = tr(action.confirm, `resource.${resource.resourceId}`);
+            } else {
+              Object.entries(action.confirm).forEach(([key, value]: [string, string]) => {
+                if (value) {
+                  translateRoutines[`bulkActionConfirm${i}_${key}`] = tr(value, `resource.${resource.resourceId}`);
+                }
+              });
+            }
           }
         });
 
@@ -593,19 +1198,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         
         const toReturn = {
-            ...resource,
+            resourceId: resource.resourceId,
             label: translated.resLabel,
             columns:
               await Promise.all(
                 resource.columns.map(
                   async (inCol, i) => {
-                    const col = JSON.parse(JSON.stringify(inCol));
+                    const col = JSON.parse(JSON.stringify(stripResourceColumnFrontendMeta(inCol)));
                     let validation = null;
                     if (col.validation) {
                       validation = await Promise.all(                  
-                        col.validation.map(async (val) => {
+                        col.validation.map(async (val, index) => {
                           return  {
                             ...val,
+                            validator: inCol.validation[index].validator ? true: false,
                             message: await tr(val.message, `resource.${resource.resourceId}`),
                           }
                         })
@@ -645,7 +1251,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
                     if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
-                      col.suggestOnCreate = await inCol.suggestOnCreate(adminUser);
+                      col.suggestOnCreate = await inCol.suggestOnCreate({ adminUser });
                     }
 
                     return {
@@ -660,6 +1266,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             ),
             options: {
               ...resource.options,
+              listPageSizeOptions: typeof resource.options.listPageSizeOptions === 'function'
+                ? await resource.options.listPageSizeOptions({ adminUser, adminforth: this.adminforth })
+                : resource.options.listPageSizeOptions,
               fieldGroups: resource.options.fieldGroups?.map((group, i) => ({
                 ...group,
                 noTitle: group.noTitle ?? false,
@@ -669,14 +1278,25 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 (action, i) => ({
                   ...action,
                   label: action.label ? translated[`bulkAction${i}`] : action.label,
-                  confirm: action.confirm ? translated[`bulkActionConfirm${i}`] : action.confirm,
+                  confirm: !action.confirm ? action.confirm : (
+                    typeof action.confirm === 'string'
+                      ? translated[`bulkActionConfirm${i}`]
+                      : Object.fromEntries(
+                          Object.entries(action.confirm).map(([key, value]) => [
+                            key,
+                            value ? translated[`bulkActionConfirm${i}_${key}`] : value,
+                          ])
+                        )
+                  ),
                 })
               ),
+              actions: allowedCustomActions.map(({ bulkHandler, action: actionFn, ...rest }) => ({
+                ...rest,
+                ...(bulkHandler && { bulkHandler: true }),
+              })) as AdminForthActionFront[],
               allowedActions,
             } 
         }
-        delete toReturn.hooks;
-        delete toReturn.plugins;
 
         return { 
           resource: toReturn,
@@ -686,7 +1306,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_resource_data',
-      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
+      description: 'Loads resource rows for list, show, or edit views. The endpoint validates access, applies request hooks, filters, sorting, pagination, record labels, and row click URLs, then returns the final dataset with resource options.',
+      request_schema: getResourceDataRequestSchema,
+      response_schema: getResourceDataResponseSchema,
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl, abortSignal }) => {
         const { resourceId, source } = body;
         if (['show', 'list', 'edit'].includes(source) === false) {
           return { error: 'Invalid source, should be list or show' };
@@ -701,9 +1324,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
+        const rawFilterError = rejectApiRawFilters(body.filters);
+        if (rawFilterError) {
+          return rawFilterError;
+        }
 
         const meta = { requestBody: body, pk: undefined };
-        if (source === 'edit' || source === 'show') {
+        if ((source === 'edit' || source === 'show') && body.filters) {
           meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
         }
 
@@ -728,7 +1355,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!allowed) {
           return { error };
         }
-
+        if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
         const hookSource = {
           'show': 'show',
           'list': 'list',
@@ -738,6 +1365,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         for (const hook of listify(resource.hooks?.[hookSource]?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
           const filterTools = filtersTools.get(body);
           body.filtersTools = filterTools;
+          if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
           const resp = await (hook as BeforeDataSourceRequestFunction)({
             resource,
             query: body,
@@ -748,18 +1376,51 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
           }
         }
         const { limit, offset, filters, sort } = body;
+        const selectedColumnNames = body.columns
+          ? [...new Set(body.columns as string[])]
+          : undefined;
+
+        if (selectedColumnNames) {
+          const resourceColumnNames = new Set(resource.columns.map((col) => col.name));
+          const invalidColumnName = selectedColumnNames.find((columnName) => !resourceColumnNames.has(columnName));
+
+          if (invalidColumnName) {
+            return { error: `Column ${invalidColumnName} not found in resource ${resourceId}` };
+          }
+        }
+        const selectedColumnNameSet = selectedColumnNames ? new Set(selectedColumnNames) : undefined;
+        const shouldAddListHelpers = source === 'list';
+        const selectedDataSourceColumnNameSet = selectedColumnNames
+          ? new Set(selectedColumnNames.filter((columnName) => resource.dataSourceColumns.some((col) => col.name === columnName)))
+          : undefined;
+
+        if (selectedDataSourceColumnNameSet) {
+          for (const col of resource.columns) {
+            if (
+              selectedColumnNameSet.has(col.name) &&
+              col.foreignResource?.polymorphicOn
+            ) {
+              selectedDataSourceColumnNameSet.add(col.foreignResource.polymorphicOn);
+            }
+          }
+        }
+
+        const selectedDataSourceColumns = selectedDataSourceColumnNameSet && !shouldAddListHelpers
+          ? (
+              resource.dataSourceColumns.some((col) => selectedDataSourceColumnNameSet.has(col.name))
+                ? resource.dataSourceColumns.filter((col) => selectedDataSourceColumnNameSet.has(col.name))
+                : resource.dataSourceColumns.filter((col) => col.primaryKey || col.name === resource.dataSourceColumns[0]?.name)
+            )
+          : undefined;
 
         // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
-        const sortFiltered = sort.filter((sortItem: IAdminForthSort) => {
+        const sortFiltered = (sort || []).filter((sortItem: IAdminForthSort) => {
           return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
         });
 
@@ -786,6 +1447,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
           }
         }
+        if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
 
         const data = await this.adminforth.connectors[resource.dataSource].getData({
           resource,
@@ -794,11 +1456,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           filters: normalizedFilters as IAdminForthAndOrFilter,
           sort: sortFiltered,
           getTotals: source === 'list',
+          columns: selectedDataSourceColumns,
         });
 
         // for foreign keys, add references
         await Promise.all(
-          resource.columns.filter((col) => col.foreignResource).map(async (col) => {
+          resource.columns.filter((col) => (
+            col.foreignResource && (!selectedColumnNameSet || shouldAddListHelpers || selectedColumnNameSet.has(col.name))
+          )).map(async (col) => {
             let targetDataMap = {};
 
             if (col.foreignResource.resourceId) {
@@ -818,6 +1483,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               if (pksUnique.length === 0) {
                 return;
               }
+              if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
               const targetData = await targetConnector.getData({
                 resource: targetResource,
                 limit: pksUnique.length,
@@ -862,6 +1528,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   return;
                 }
               });
+              if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
 
               const targetData = (await Promise.all(Object.keys(pksUniques).map((polymorphicOnValue) =>
                 targetConnectors[polymorphicOnValue].getData({
@@ -906,7 +1573,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           })
         );
 
-        const pkField = resource.columns.find((col) => col.primaryKey)?.name;
         // remove all columns which are not defined in resources, or defined but backendOnly
         {
           const ctx = {
@@ -929,10 +1595,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 delete item[key];
               }
             }
-            item._label = resource.recordLabel(item);
+            if (!selectedColumnNameSet || shouldAddListHelpers) {
+              item._label = resource.recordLabel(item);
+            }
           }
         }
-        if (source === 'list' && resource.options.listTableClickUrl) {
+        if (shouldAddListHelpers && resource.options.listTableClickUrl) {
           await Promise.all(
             data.data.map(async (item) => {
                 item._clickUrl = await resource.options.listTableClickUrl(item, adminUser, resource);
@@ -942,6 +1610,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // only after adminforth made all post processing, give user ability to edit it
         for (const hook of listify(resource.hooks?.[hookSource]?.afterDatasourceResponse)) {
+          if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
           const resp = await hook({
             resource,
             query: body,
@@ -952,27 +1621,187 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             },
             adminforth: this.adminforth,
           });
-
-          if (!resp || (!resp.ok && !resp.error)) {
-            throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-          }
-
-          if (resp.error) {
-            return { error: resp.error };
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
           }
         }
 
-        return {
-          ...data,
-          options: resource?.options,
-        };
+        if (selectedColumnNameSet) {
+          for (const item of data.data) {
+            for (const key of Object.keys(item)) {
+              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl') {
+                delete item[key];
+              }
+            }
+          }
+        }
+
+        if (source === 'list') {
+          const pkField = resource.columns.find((col) => col.primaryKey).name;
+          (data as any).recordIds = data.data.map((item) => item[pkField]);
+        }
+
+        return data;
       },
     });
+
+    const aggregateRequestSchema: AnySchemaObject = {
+      type: 'object',
+      required: ['resourceId', 'aggregations'],
+      properties: {
+        resourceId: { type: 'string' },
+        aggregations: {
+          type: 'object',
+          description: 'Map of alias → aggregation rule. Each rule has an "operation" (sum, count, count_distinct, avg, min, max, median) and an optional "field".',
+          additionalProperties: {
+            type: 'object',
+            required: ['operation'],
+            properties: {
+              operation: { type: 'string', enum: ['sum', 'count', 'count_distinct', 'avg', 'min', 'max', 'median'] },
+              field: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+        },
+        filters: commonFiltersSchema,
+        groupBy: {
+          description: 'Optional grouping rule or array of grouping rules.',
+          anyOf: [
+            { $ref: '#/$defs/aggregateGroupByRule' },
+            { type: 'array', items: { $ref: '#/$defs/aggregateGroupByRule' } },
+          ],
+        },
+      },
+      $defs: {
+        ...commonFilterSchemaDefs,
+        aggregateGroupByRule: {
+          anyOf: [
+            {
+              type: 'object',
+              required: ['type', 'field'],
+              properties: {
+                type: { type: 'string', enum: ['field'] },
+                field: { type: 'string' },
+                as: { type: 'string' },
+              },
+              additionalProperties: false,
+            },
+            {
+              type: 'object',
+              required: ['type', 'field', 'truncation'],
+              properties: {
+                type: { type: 'string', enum: ['date_trunc'] },
+                field: { type: 'string' },
+                truncation: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+                timezone: { type: 'string' },
+                as: { type: 'string' },
+              },
+              additionalProperties: false,
+            },
+          ],
+        },
+      },
+      additionalProperties: false,
+    };
+
+    const aggregateResponseSchema: AnySchemaObject = createErrorOrSuccessSchema({
+      type: 'object',
+      required: ['data'],
+      properties: {
+        data: {
+          type: 'array',
+          items: genericObjectSchema,
+        },
+      },
+      additionalProperties: true,
+    });
+
+    server.endpoint({
+      method: 'POST',
+      path: '/aggregate',
+      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation.',
+      request_schema: aggregateRequestSchema,
+      response_schema: aggregateResponseSchema,
+      handler: async ({ body, adminUser, headers }) => {
+        const { resourceId, aggregations, filters, groupBy } = body;
+        if (!this.adminforth.statuses.dbDiscover) {
+          return { error: 'Database discovery not started' };
+        }
+        if (this.adminforth.statuses.dbDiscover !== 'done') {
+          return { error: 'Database discovery is still in progress, please try later' };
+        }
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource ${resourceId} not found` };
+        }
+        const rawFilterError = rejectApiRawFilters(filters);
+        if (rawFilterError) {
+          return rawFilterError;
+        }
+
+        const meta = { requestBody: body, pk: undefined };
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          ActionCheckSource.ListRequest,
+          this.adminforth
+        );
+
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        if (!allowed) {
+          return { error };
+        }
+
+        // normalize filters same way as get_resource_data
+        const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+        if (filters) {
+          if (typeof filters !== 'object') {
+            return { error: 'Filter should be an array or an object' };
+          }
+          if (Array.isArray(filters)) {
+            normalizedFilters.subFilters = filters;
+          } else if (filters.field) {
+            normalizedFilters.subFilters = [filters];
+          } else if (filters.subFilters) {
+            normalizedFilters.operator = filters.operator;
+            normalizedFilters.subFilters = filters.subFilters;
+          } else {
+            return { error: `Wrong filter object value: ${JSON.stringify(filters)}` };
+          }
+        }
+
+        try {
+          const userTimeZone = headers['X-TimeZone'];
+          const applyUserTimeZone = (groupByRule: any) => groupByRule?.type === 'date_trunc' && userTimeZone
+            ? { ...groupByRule, timezone: userTimeZone }
+            : groupByRule;
+          const aggregateGroupBy = Array.isArray(groupBy)
+            ? groupBy.map(applyUserTimeZone)
+            : applyUserTimeZone(groupBy);
+
+          const data = await this.adminforth.connectors[resource.dataSource].aggregate({
+            resource,
+            filters: normalizedFilters as IAdminForthAndOrFilter,
+            aggregations,
+            groupBy: aggregateGroupBy,
+          });
+          return { data };
+        } catch (e) {
+          return { error: e.message };
+        }
+      },
+    });
+
     server.endpoint({
       method: 'POST',
       path: '/get_resource_foreign_data',
+      description: 'Loads dropdown options for a foreign-key column. It resolves the referenced resource or polymorphic resources, applies optional search text, hook-injected filters, pagination, and per-record labels, then returns sanitized option items.',
+      request_schema: getResourceForeignDataRequestSchema,
+      response_schema: getResourceForeignDataResponseSchema,
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
-        const { resourceId, column, search } = body;
+        const { resourceId, column, search, currentValue } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -990,6 +1819,23 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!columnConfig.foreignResource) {
           return { error: `Column '${column}' in resource '${resourceId}' is not a foreign key` };
         }
+        const rawFilterError = rejectApiRawFilters(body.filters);
+        if (rawFilterError) {
+          return rawFilterError;
+        }
+        const meta = { requestBody: body, pk: undefined };
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          ActionCheckSource.ListRequest,
+          this.adminforth
+        );
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        if (!allowed) {
+          return { error };
+        }
+
 
         const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
         const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));
@@ -1083,6 +1929,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   normalizedFilters.subFilters.push(searchFilters[0]);
                 }
               }
+              if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
+                const pkField = targetResource.columns.find((col) => col.primaryKey);
+                if (pkField) {
+                  normalizedFilters.subFilters.push({ field: pkField.name, operator: AdminForthFilterOperators.EQ, value: currentValue });
+                }
+              }
               const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
                 resource: targetResource,
                 limit,
@@ -1142,6 +1994,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/get_min_max_for_columns',
+      description: 'Returns min and max values for resource columns that explicitly opt in to min/max queries. This is used to build range-based filter controls without exposing columns that do not allow the query.',
+      request_schema: getMinMaxForColumnsRequestSchema,
+      response_schema: getMinMaxForColumnsResponseSchema,
       handler: async ({ body }) => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
@@ -1171,6 +2026,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/create_record',
+      description: 'Creates a new record in the specified resource. The endpoint validates create permissions, required fields, hidden or backend-only field rules, polymorphic foreign keys, and resource hooks before persisting and returning the created primary key.',
+      agent: {
+        isDangerous: true,
+      },
+      request_schema: createRecordRequestSchema,
+      response_schema: createRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
@@ -1294,6 +2155,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 record[column.foreignResource.polymorphicOn] = Object.keys(targetData).find((tdk) => targetData[tdk].length);
               }
             }
+            const jsonError = this.normalizeJsonColumns(resource, record);
+            if (jsonError) {
+              return { error: jsonError, ok: false };
+            }
 
             const createRecordResponse = await this.adminforth.createResourceRecord({ 
               resource, record, adminUser, response, 
@@ -1317,8 +2182,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     });
     server.endpoint({
-        method: 'POST',
-        path: '/update_record',
+      method: 'POST',
+      path: '/update_record',
+      description: 'Updates an existing record by primary key. The endpoint validates edit permissions, current record existence, hidden, backend-only, and read-only field rules, polymorphic foreign keys, and resource hooks before saving changes.',
+      agent: {
+        isDangerous: true,
+      },
+      request_schema: updateRecordRequestSchema,
+      response_schema: updateRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
             if (!resource) {
@@ -1441,6 +2312,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
             
+            const jsonError = this.normalizeJsonColumns(resource, record);
+            if (jsonError) {
+              return { error: jsonError, ok: false };
+            }
             const { error } = await this.adminforth.updateResourceRecord({ 
               resource, updates: record, adminUser, oldRecord, recordId, response, 
               extra: { body, query, headers, cookies, requestUrl, response } 
@@ -1455,19 +2330,22 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
     });
     server.endpoint({
-        method: 'POST',
-        path: '/delete_record',
+      method: 'POST',
+      path: '/delete_record',
+      description: 'Deletes an existing record by primary key. The endpoint validates delete permissions, loads the current record, executes configured cascade child deletion, and then removes the record.',
+      agent: {
+        isDangerous: true,
+      },
+      request_schema: deleteRecordRequestSchema,
+      response_schema: deleteRecordResponseSchema,
         handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == body['resourceId']);
-            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
+            const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
             if (!record){
                 return { error: `Record with ${body['primaryKey']} not found` };
-            }
-            if (resource.options.allowedActions.delete === false) {
-                return { error: `Resource '${resource.resourceId}' does not allow delete action` };
             }
 
             const { allowedActions } = await interpretResource(
@@ -1543,11 +2421,22 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/start_custom_action',
+      description: 'Executes a custom resource action for a single record. The endpoint validates the resource, action existence, and action permissions, then either returns a redirect URL or executes the action handler and returns its result together with action context.',
+      agent: {
+        isDangerous: true,
+      },
+      request_schema: startCustomActionRequestSchema,
+      response_schema: startCustomActionResponseSchema,
       handler: async ({ body, adminUser, tr, cookies, response, headers }) => {
         const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+
+        const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, recordId);
+        if (!record){
+            return { error: `Record with ${recordId} not found` };
         }
         const { allowedActions } = await interpretResource(
           adminUser, 
@@ -1560,7 +2449,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!action) {
           return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
         }
-        if (action.allowed) {
+        if (typeof action.allowed === 'function') {
           const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
           if (!execAllowed) {
             return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
@@ -1568,16 +2457,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         if (action.url) {
+          const redirectUrl = typeof action.url === 'function'
+            ? await action.url({ record, recordId, adminUser, resource })
+            : action.url;
           return {
             actionId,
             recordId,
+            record,
             resourceId,
-            redirectUrl: action.url
+            redirectUrl,
           }
         }
-
         const actionResponse = await action.action({ recordId, adminUser, resource, tr, adminforth: this.adminforth, response, extra: {...extra, cookies: cookies, headers: headers} });
-        
         return {
           actionId,
           recordId,
@@ -1586,7 +2477,96 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
       }
     });
+    server.endpoint({
+      method: 'POST',
+      path: '/start_custom_bulk_action',
+      description: 'Executes a custom resource action in bulk mode for multiple records. The endpoint validates the resource, action existence, bulk handler availability, and permissions, then runs the bulk handler and returns its result together with action context.',
+      agent: {
+        isDangerous: true,
+      },
+      request_schema: startCustomBulkActionRequestSchema,
+      response_schema: startCustomBulkActionResponseSchema,
+      handler: async ({ body, adminUser, tr, response, cookies, headers }) => {
+        const { resourceId, actionId, recordIds, extra } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          { requestBody: body },
+          ActionCheckSource.CustomActionRequest,
+          this.adminforth
+        );
+        const action = resource.options.actions.find((act) => act.id == actionId);
+        if (!action) {
+          return { error: await tr(`Action {actionId} not found`, 'errors', { actionId }) };
+        }
+        if (!action.bulkHandler) {
+          return { error: await tr(`Action "{actionId}" has no bulkHandler`, 'errors', { actionId }) };
+        }
+        if (typeof action.allowed === 'function') {
+          const execAllowed = await action.allowed({ adminUser, standardAllowedActions: allowedActions });
+          if (!execAllowed) {
+            return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.name }) };
+          }
+        }
+        const result = await action.bulkHandler({
+          recordIds,
+          adminUser,
+          resource,
+          tr,
+          adminforth: this.adminforth,
+          response,
+          extra: { ...extra, cookies, headers },
+        });
+        return { actionId, recordIds, resourceId, ...result };
+      }
+    });
+    server.endpoint({
+      method: 'POST',
+      path: '/validate_columns',
+      description: 'Runs server-side custom validators for editable columns in a resource form. Only validators defined on submitted columns are executed, and the response maps each invalid column to its validation result.',
+      request_schema: validateColumnsRequestSchema,
+      response_schema: validateColumnsResponseSchema,
+      handler: async ({ body, adminUser, query, headers, cookies, requestUrl, response }) => {
+        const { resourceId, editableColumns, record } = body;
+        const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
+        if (!resource) {
+          return { error: `Resource '${resourceId}' not found` };
+        }
+        const validationResults = {};
+        const customColumnValidatorsFunctions = [];
+        for (const col of editableColumns) {
+          const columnConfig = resource.columns.find((c) => c.name === col.name);
+          if (columnConfig && columnConfig.validation)  {
+            customColumnValidatorsFunctions.push(async ()=>{
+              for (const val of columnConfig.validation) {
+                if (val.validator) {
+                  const result = await val.validator(col.value, record, this.adminforth);
+                  if (typeof result === 'object' && result.isValid === false) {
+                    validationResults[col.name] = {
+                      isValid: result.isValid,
+                      message: result.message,
+                    }
+                    break;
+                  }
+                }
+              }
+            })
+          }
+        }
+        
+        if (customColumnValidatorsFunctions.length) {
+          await Promise.all(customColumnValidatorsFunctions.map((fn) => fn()));
+        }
 
+        return {
+          validationResults
+        }
+      }
+    });
     // setup endpoints for all plugins
     this.adminforth.activatedPlugins.forEach((plugin) => {
       plugin.setupEndpoints(server);

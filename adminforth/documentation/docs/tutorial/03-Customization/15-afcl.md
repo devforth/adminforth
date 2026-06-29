@@ -1,5 +1,5 @@
 ---
-description: "AFCL is a set of components which you can use as build blocks in your AdminForth application. AFCL allows to keep the design consistent with minimal efforts and build new pages faster. AFCL components follow styling standard and respect theme colors."
+description: "Reference page for the AdminForth Components Library, covering reusable UI components such as buttons, links, badges, inputs, tables, and other building blocks."
 image: "/ogs/afcl.png"  # Path to the OG image
 ---
 
@@ -40,6 +40,31 @@ import { Button } from '@/afcl'
 
 
 loader prop would show loader when it's true.
+
+### Variant
+
+The `variant` prop controls the button style. Possible values are `primary` (default), `secondary` and `danger`.
+
+<div class="split-screen" >
+  <div >
+
+```html
+<Button @click="doSmth">
+  Primary button
+</Button>
+
+<Button @click="doSmth" variant="secondary" class="mt-4">
+  Secondary button
+</Button>
+
+<Button @click="doSmth" variant="danger" class="mt-4">
+  Danger button
+</Button>
+```
+  </div>
+</div>
+
+> ☝️ The `mode` prop is deprecated, use `variant` instead.
 
 ## Button Group
 ### With active button
@@ -282,6 +307,33 @@ You might need to put some extra item at bottom of list
   </div>
   <div>
    ![AFCL Select extra item](image-45.png)
+  </div>
+</div>
+
+### Add classes to the input directly
+
+You might need to put some extra item at bottom of list
+
+<div class="split-screen" >
+  <div >
+```html
+<Select
+  class="w-full"
+  :options="[
+    {label: 'Last 7 days', value: '7'}, 
+    {label: 'Last 30 days', value: '30'}, 
+    {label: 'Last 90 days', value: '90'},
+  ]"
+  v-model="selected"
+  //diff-add
+  classesForInput="py-[4px] text-sm bg-white rounded"
+>
+
+</Select>
+```
+  </div>
+  <div>
+   ![AFCL Select](image-99.png)
   </div>
 </div>
 
@@ -1210,6 +1262,43 @@ If you want to make table header or pagination, you can add `makeHeaderSticky`, 
   ></Table>
 ```
 
+### Don't block pagination on loading
+
+Sometimes you might want to allow user switch between pages, even if old request wasn't finished. For these porpuses you can use `blockPaginationOnLoading` and `abortSignal` in data callback:
+```ts
+<Table
+  :columns="[
+    { label: 'Name', fieldName: 'name' },
+    { label: 'Age', fieldName: 'age' },
+    { label: 'Country', fieldName: 'country' },
+  ]"
+  :data="loadPageData"
+  //diff-add
+  :blockPaginationOnLoading="false"
+  :pageSize="3"> 
+</Table>
+
+
+...
+
+async function loadPageData(data, abortSignal) {  
+  const { offset, limit } = data;
+  // in real app do await callAdminForthApi or await fetch to get date, use offset and limit value to slice data
+  await new Promise(resolve => setTimeout(resolve, offset === 500)) // simulate network delay
+  if (abortSignal.abort) return; // since result won't be displayed, we stop computing
+  
+  return {
+    data: [
+      { name: 'John', age: offset, country: 'US' },
+      { name: 'Rick', age: offset+1, country: 'CA' },
+      { name: 'Alice', age: offset+2, country: 'BR' },
+    ],
+    total: 30 // should return total amount of records in database
+  }
+}
+
+```
+
 ## ProgressBar
 
 <div class="split-screen" >
@@ -1317,6 +1406,24 @@ Skeleton component is used to display a loading state for a component. You can u
   </div>
   <div>
   ![Skeleton type](image-83.png)
+  </div>
+</div>
+
+### Skeleton input
+<div class="split-screen" >
+  <div>
+  ```html
+    <div class="flex flex-col gap-2">
+      <Skeleton type="input" class="w-full h-4" />
+      <Skeleton type="input" class="w-full h-2" />
+      <Skeleton type="input" class="w-full h-2" />
+      <Skeleton type="input" class="w-full h-2" />
+      <Skeleton type="input" class="w-full h-2" />
+    </div>
+  ```
+  </div>
+  <div>
+  ![Spinner](image-100.png)
   </div>
 </div>
 
@@ -2353,6 +2460,8 @@ import { Modal, Button } from '@/afcl';
   askForCloseConfirmation?: boolean // Show extra popup to confirm close ( to avoid close by accident)
   closeConfirmationText?: string // Text that will be shown on close confirmation popup
   removeFromDomOnClose?: boolean // Remove modal from DOM on close ( default is false )
+  backgroundCustomClasses?: string // allows to add custom classes to the gray background of modal (e.g. you can have bg-pink-500/60)
+  modalCustomClasses?: string // allows to add custom classes to modal popup
 ```
 
 ## Date picker

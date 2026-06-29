@@ -43,8 +43,8 @@ const isIos = coreStore.isIos;
 
 const props = defineProps<{
   type: string,
-  fullWidth: boolean,
-  modelValue: string,
+  fullWidth?: boolean,
+  modelValue: string | number | null,
   suffix?: string,
   prefix?: string,
   readonly?: boolean,

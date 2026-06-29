@@ -66,7 +66,7 @@ export enum ActionCheckSource {
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
-  BulkActionRequest = 'bulkActionRequest',
+  BulkActionRequest = 'bulkActionRequest',  // @deprecated beacuse whole bulk action is deprecated in favor of custom actions, never use this value in new code
   CustomActionRequest = 'customActionRequest',
 }
 
@@ -139,8 +139,23 @@ export interface AdminForthBulkActionCommon {
 
   /**
    * Confirmation message which will be displayed to user before action is executed.
+   * String value is shown as the dialog title without any message under it.
+   * Use object form to explicitly set a message (e.g. "This process is irreversible.")
+   * and/or button labels. `{count}` placeholder in message will be replaced with the
+   * number of selected records, pluralization is supported via `|` separator.
    */
-  confirm?: string,
+  confirm?: string | {
+    title?: string,
+    message?: string,
+    yes?: string,
+    no?: string,
+  },
+
+  /**
+   * When true, the confirmation dialog renders in red/danger style.
+   * Use for destructive bulk actions like delete.
+   */
+  dangerous?: boolean,
 
   /**
    * Success message which will be displayed to user after action is executed.
@@ -303,7 +318,7 @@ export interface AdminForthComponentDeclarationFull {
     [key: string]: any,
   }
 }
-import { type AdminForthActionInput, type AdminForthResource } from './Back.js' 
+import { type IAdminForth, type AdminForthActionInput, type AdminForthResource } from './Back.js' 
 export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
@@ -313,6 +328,28 @@ export type FieldGroup = {
   columns: string[];
   noTitle?: boolean;
 };
+
+export interface AdminForthActionFront extends Omit<AdminForthActionInput, 'id' | 'bulkHandler' | 'action' | 'allowed'> {
+  id: string;
+  bulkHandler?: boolean;
+  allowed: boolean;
+}
+
+export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionCommon, 'id'> {
+  id: string,
+}
+
+type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
+
+export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
+  actions?: AdminForthActionFront[],
+  bulkActions?: AdminForthBulkActionFront[],
+  showNextButton?: boolean,
+}
+
+export interface AdminForthResourceFrontend extends Omit<AdminForthResourceCommon, 'options' | 'table' | 'dataSource'> {
+  options: AdminForthOptionsForFrontend;
+}
 
 /**
  * Resource describes one table or collection in database.
@@ -361,16 +398,24 @@ export interface AdminForthResourceInputCommon {
     recordLabel?: (item: any) => string,
 
 
-    /**
-     * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
-     * default is false
-     */
-    dontShowWarningAboutUnsavedChanges?: boolean,
 
     /**
      * General options for resource.
      */
     options?: {
+      
+      /**
+       * If true, user will not see warning about unsaved changes when tries to leave edit or create page with unsaved changes.
+       * default is false
+       */
+      dontShowWarningAboutUnsavedChanges?: boolean,
+
+      /**
+       * Show quick action icons for base actions (show, edit, delete) in list view. 
+       * By default, they are inside three dots dropdown menu. 
+       */
+      baseActionsAsQuickIcons?: ('show' | 'edit' | 'delete')[],
+
 
       /**
        * Default sort for list view.
@@ -409,6 +454,7 @@ export interface AdminForthResourceInputCommon {
       /** 
        * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
        * using checkboxes.
+       * @deprecated in favor of defining .
        */
       bulkActions?: AdminForthBulkActionCommon[],
 
@@ -442,7 +488,13 @@ export interface AdminForthResourceInputCommon {
        * Page size for list view
        */
       listPageSize?: number,
-      
+
+      /**
+        * Available page size options for list view, provided as an array of page sizes
+        * or a function returning them. When set together with `listPageSize`, the page
+        * size should be one of the values returned here.
+        */
+      listPageSizeOptions?: number[] | ((args: { adminUser: any, adminforth: any }) => number[] | Promise<number[]>);      
       /**
        * Whether to use virtual scroll in list view.
        */
@@ -484,7 +536,14 @@ export interface AdminForthResourceInputCommon {
       /**
        * Whether to refresh existing list rows automatically every N seconds.
        */
-      listRowsAutoRefreshSeconds?: number, 
+      listRowsAutoRefreshSeconds?: number,
+
+      /**
+       * Whether to show the "Next" navigation button on the show page.
+       * Allows cycling through records respecting current list filters and sorting.
+       * Defaults to `true`.
+       */
+      showNextButton?: boolean,
 
       /** 
        * Custom components which can be injected into AdminForth CRUD pages.
@@ -582,14 +641,14 @@ export type ValidationObject = {
      * ```
      * 
      */
-    regExp: string,
+    regExp?: string,
 
     /**
      * Error message shown to user if validation fails
      * 
      * Example: "Invalid email format"
      */
-    message: string,
+    message?: string,
 
     /**
      * Whether to check case sensitivity (i flag)
@@ -605,6 +664,20 @@ export type ValidationObject = {
      * Whether to check global strings (g flag)
      */
     global?: boolean
+
+    /**
+     * Custom validator function.
+     * 
+     * Example:
+     * 
+     * ```ts
+     * validator: async (value) => {
+     *   // custom validation logic
+     *   return { isValid: true, message: 'Validation passed' }; // or { isValid: false, message: 'Validation failed' }
+     * }
+     * ```
+     */
+    validator?: (value: any, record: any, adminForth: IAdminForth) => {isValid: boolean, message?: string} | Promise<{isValid: boolean, message?: string}> | boolean,
 }
 
 
@@ -940,6 +1013,11 @@ export interface AdminForthResourceColumnInputCommon {
   listSticky?: boolean;
 
   /**
+   * Custom CSS class applied to the column in list view header and cells.
+   */
+  listCssClass?: string;
+
+  /**
    * Show field only if certain conditions are met.
    */
   showIf?: Predicate;
@@ -956,6 +1034,18 @@ export interface AdminForthResourceColumnCommon extends AdminForthResourceColumn
 
   editingNote?: { create?: string, edit?: string },
 
+  /*
+  ______________________________________________
+  |                                             |
+  | Min and max values are used                 |
+  | in getMinMaxForColumns from base connector  |
+  |_____________________________________________|
+        |
+        |
+        |
+        |
+        V  
+  */
   /**
    * Minimal value stored in this field.
    */
@@ -1027,8 +1117,16 @@ export interface AdminForthConfigMenuItem {
 
   /**
    * Label for menu item which will be displayed in the admin panel.
+   * Can be a static string or a callback which receives the current admin user
+   * and returns the label dynamically.
+   *
+   * Example:
+   *
+   * ```ts
+   * label: (adminUser) => adminUser.dbUser.role === 'superadmin' ? 'Dashboard (CRS)' : 'Dashboard',
+   * ```
    */
-  label?: string,
+  label?: string | ((user: AdminUser, adminForth: IAdminForth) => Promise<string> | string),
 
   /**
    * Icon for menu item which will be displayed in the admin panel.
@@ -1109,7 +1207,7 @@ export interface AdminForthConfigMenuItem {
    * Optional callback which will be called before rendering the menu for each item.
    * Result of callback if not null will be used as a small badge near the menu item.
    */
-  badge?: string | ((user: AdminUser) => Promise<string>),
+  badge?: string | number | ((user: AdminUser, adminForth: IAdminForth) => Promise<string | number> | string | number),
 
   /**
    * Tooltip shown on hover for badge
@@ -1122,7 +1220,51 @@ export interface AdminForthConfigMenuItem {
    * Item id will be automatically generated from hashed resourceId+Path+label
    */
   itemId?: string,  // todo move to runtime type
+
+
+  /**
+   * If set, menu item will be rendered as external link with this URL. Supported for AdminForthMenuTypes.PAGE and AdminForthMenuTypes.RESOURCE only!
+   * If URL starts with `http://` or `https://`, it will be treated as absolute URL. Otherwise, it will be treated as relative to admin panel base URL.
+   * Example of absolute URL:
+   * 
+   * ```ts
+   * url: 'https://google.com',
+   * ```
+   * 
+   * Example of relative URL:
+   * 
+   * ```ts
+   * url: '/custom-page',
+   * ```
+   */
+  
+  url?: string
+
+  /**
+   * Open menu item link in a new browser tab.
+   */
+  isOpenInNewTab?: boolean
 }
+
+export type AdminForthMenuTarget =
+  | string
+  | {
+    itemId?: string,
+    resourceId?: string,
+    path?: string,
+  };
+
+export type AdminForthMenuContribution = {
+  item: AdminForthConfigMenuItem,
+  placement?:
+    | { position: 'first' | 'last' }
+    | { before: AdminForthMenuTarget }
+    | { after: AdminForthMenuTarget },
+  order?: number,
+};
+
+export type MenuTarget = AdminForthMenuTarget;
+export type MenuContribution = AdminForthMenuContribution;
 
 
 export interface ResourceVeryShort {
@@ -1150,6 +1292,7 @@ export interface AdminForthConfigForFrontend {
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclaration>,
     panelHeader: Array<AdminForthComponentDeclaration>,
+    underLoginButton: Array<AdminForthComponentDeclaration>,
   },
   rememberMeDuration: string,
   showBrandNameInSidebar: boolean,
@@ -1199,4 +1342,8 @@ export interface GetBaseConfigResponse {
   config: AdminForthConfigForFrontend,
   adminUser: AdminUser,
   version: string,
+}
+
+export interface ColumnMinMaxValue { 
+  [key: string]: { min: any, max: any } 
 }

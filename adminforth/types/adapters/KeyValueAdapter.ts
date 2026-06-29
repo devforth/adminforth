@@ -5,11 +5,13 @@
  */
 export interface KeyValueAdapter {
 
-  get(key: string): Promise<string | null>;
-  
-  set(key: string, value: string, expiresInSeconds?: number): Promise<void>;
+  get(key: string, collection?: string): Promise<string | null>;
 
-  delete(key: string): Promise<void>;
+  listByPrefix(prefix: string, limit: number, collection?: string): Promise<Record<string, string>[]>;  
+  
+  set(key: string, value: string, expiresInSeconds?: number, collection?: string): Promise<void>;
+
+  delete(key: string, collection?: string): Promise<void>;
 
 }
 

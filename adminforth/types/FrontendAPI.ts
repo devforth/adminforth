@@ -96,7 +96,7 @@ export interface FrontendAPIInterface {
         setFilter(filter: FilterParams): void;
 
         /**
-         * @deprecated does the same as setFilter, kept for backward compatibility, will be removed in 2.0.0
+         * @deprecated does the same as setFilter, kept for backward compatibility, will be removed in 4.0.0
          * 
          * Update a filter in the list
          * 
@@ -131,6 +131,11 @@ export interface FrontendAPIInterface {
 
     menu: {
         /**
+         * Refreshes the menu tree and frontend configuration by fetching the latest backend config.
+         */
+        refresh(): Promise<void>;
+
+        /**
          * Refreshes the badges in the menu, by recalling the badge function for each menu item
          */
         refreshMenuBadges(): void;
@@ -144,7 +149,7 @@ export interface FrontendAPIInterface {
     /**
      * Run save interceptors for a specific resource or all resources if no resourceId is provided
      */
-    runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: object; }>;
+    runSaveInterceptors(params: { action: 'create'|'edit'; values: any; resource: any; resourceId: string; }): Promise<{ ok: boolean; error?: string | null; extra?: any; }>;
 
     /**
      * Clear save interceptors for a specific resource or all resources if no resourceId is provided
@@ -152,9 +157,24 @@ export interface FrontendAPIInterface {
      * @param resourceId - The resource ID to clear interceptors for
      */
     clearSaveInterceptors(resourceId?: string): void;
+
+    /**
+     * Register a save interceptor for a specific resource
+     */
+    registerSaveInterceptor(handler: (ctx: { action: 'create'|'edit'; values: any; resource: any; }) => Promise<{ ok: boolean; error?: string | null; extra?: any; }>): void;
 }
 
 export type ConfirmParams = {
+    /**
+     * The title to display in the dialog
+     */
+    title?: string;
+
+    /**
+     * The message to display in the dialog as a warning that action is irreversible
+     */
+    guardMessage?: string;
+    
     /**
      * The message to display in the dialog
      */
@@ -171,7 +191,13 @@ export type ConfirmParams = {
      * The text to display in the "cancel" button
      */
     no?: string;
-   
+
+    /**
+     * When true, the dialog renders in red/danger style (destructive actions like delete).
+     * When false or omitted, the dialog renders in primary color (neutral confirmations).
+     */
+    dangerous?: boolean;
+
 }
 
 export type AlertParams = {

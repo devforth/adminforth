@@ -3,6 +3,35 @@ import type { AdminForthResourceInput, AdminUser } from 'adminforth';
 import { randomUUID } from 'crypto';
 import BackgroundJobsPlugin from '../../plugins/adminforth-background-jobs/index.js';
 
+export const EXAMPLE_JOB_HANDLER_NAME = 'example_job_handler';
+
+const EXAMPLE_JOB_INITIAL_STATE = {
+  counter: 0,
+  commited_tasks: 'Commited tasks:',
+};
+
+export function createExampleJobTasks() {
+  return Array.from({ length: 11 }, (_, index) => ({
+    state: {
+      task_number: index + 1,
+      task_counter: 0.1,
+    },
+  }));
+}
+
+export async function startExampleBackgroundJob(
+  backgroundJobsPlugin: BackgroundJobsPlugin,
+  adminUser: AdminUser,
+) {
+  return backgroundJobsPlugin.startNewJob(
+    'Example Job',
+    adminUser,
+    createExampleJobTasks(),
+    EXAMPLE_JOB_HANDLER_NAME,
+    EXAMPLE_JOB_INITIAL_STATE,
+  );
+}
+
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
 }
@@ -16,6 +45,13 @@ export default {
     allowedActions: {
       edit: allowedForSuperAdmin,
       delete: allowedForSuperAdmin,
+    },
+    pageInjections: {
+      list: {
+        threeDotsDropdownItems: [
+          '@@/StartBackgroundJobMenuItem.vue',
+        ],
+      },
     },
   },
   columns: [

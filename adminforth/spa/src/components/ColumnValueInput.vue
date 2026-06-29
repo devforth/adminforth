@@ -20,7 +20,7 @@
       ref="input"
       :key="`select-${column.name}-${source}-${column.foreignResource?.name || column.foreignResource?.table || ''}`"
       class="w-full min-w-24"
-      :options="columnOptions[column.name] || []"
+      :options="formatSelectOptions(columnOptions[column.name] || [], column)"
       :searchDisabled="!column.foreignResource.searchableFields"
       @scroll-near-end="loadMoreOptions && loadMoreOptions(column.name)"
       @search="(searchTerm) => {
@@ -33,6 +33,7 @@
       :modelValue="value"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
+      disableTogleOfSelectedItem
     >
       <template #extra-item v-if="columnLoadingState && columnLoadingState[column.name]?.loading">
         <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
@@ -45,11 +46,12 @@
       v-else-if="column.enum"
       ref="input"
       class="w-full min-w-24"
-      :options="column.enum"
+      :options="formatSelectOptions(column.enum, column)"
       teleportToBody
       :modelValue="value"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
+      disableTogleOfSelectedItem
     />
     <Select
       v-else-if="(type || column.type) === 'boolean'"
@@ -60,6 +62,7 @@
       :modelValue="value"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
       @update:modelValue="$emit('update:modelValue', $event)"
+      disableTogleOfSelectedItem
     />
     <Input
       v-else-if="['integer'].includes(type || column.type)"
@@ -96,8 +99,8 @@
       :fullWidth="true"
       :prefix="column.inputPrefix"
       :suffix="column.inputSuffix"
-      :modelValue="String(value)"
-      @update:modelValue="$emit('update:modelValue', String($event))"
+      :modelValue="value == null ? null : value.toString().replace(/(\.[0-9]*[1-9])0+$|\.0+$/, '$1')"
+      @update:modelValue="(val: string | number | null | undefined) => $emit('update:modelValue', val == null || (typeof val === 'number' && Number.isNaN(val)) ? '' : String(val))"
     />
     <Input
       v-else-if="(type || column.type) === 'float'"
@@ -188,7 +191,7 @@
       type?: string,
       value: any,
       currentValues: any,
-      mode: string,
+      mode: 'create' | 'edit',
       columnOptions: any,
       unmasked: any,
       deletable?: boolean,
@@ -203,10 +206,10 @@
 
   const columnLoadingState = inject('columnLoadingState', {} as any);
   const onSearchInput = inject('onSearchInput', {} as any);
+
   const loadMoreOptions = inject('loadMoreOptions', (() => {}) as any);
 
 const input = ref<HTMLInputElement | null>(null);
-
   const getBooleanOptions = (column: any) => {
     const options: Array<{ label: string; value: boolean | null }> = [
       { label: t('Yes'), value: true },
@@ -216,6 +219,16 @@ const input = ref<HTMLInputElement | null>(null);
       options.push({ label: t('Unset'), value: null });
     }
     return options;
+  };
+
+  const formatSelectOptions = (options: any, column: any) => {
+    const optionsToReturn = options;
+    if (!column.required[props.mode] && !column.isArray?.enabled) {
+      if (!optionsToReturn.some((option: any) => option.value === null)) {
+        optionsToReturn.push({ label: t('Unset'), value: null });
+      }
+    }
+    return optionsToReturn;
   };
 
   function onFocusHandler(event:FocusEvent, column:any, source:string, ) {

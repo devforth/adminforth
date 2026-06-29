@@ -61,54 +61,83 @@ export default class SocketBroker implements IWebSocketBroker {
       this.clients[client.id] = client;
     }
     client.onMessage(async (message) => {
-      if (message.toString() === 'ping') {
+      const messageText = message.toString();
+
+      if (!messageText.trim()) {
+        return;
+      }
+
+      if (messageText === 'ping') {
         client.send('pong');
         client.lastPing = Date.now();
-      } else {
-        const data = JSON.parse(message);
-        if (data.type === 'subscribe') {
-          if (!data.topic.startsWith('/opentopic/')) {
-            if (this.adminforth.config.auth.websocketTopicAuth) {
-              let authResult = false;
-              try {
-                authResult = await this.adminforth.config.auth.websocketTopicAuth(data.topic, client.adminUser);
-              } catch (e) {
-                afLogger.error(`Error in websocketTopicAuth, assuming connection not allowed ${e}`);
-              }
-              if (!authResult) {
-                client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
-                return;
-              }
+        return;
+      }
+
+      let data: unknown;
+
+      try {
+        data = JSON.parse(messageText);
+      } catch (e) {
+        client.send(JSON.stringify({ type: 'error', message: 'Invalid websocket message JSON' }));
+        return;
+      }
+
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        client.send(JSON.stringify({ type: 'error', message: 'Invalid websocket message format' }));
+        return;
+      }
+
+      const payload = data as { type?: unknown; topic?: unknown };
+
+      if (payload.type !== 'subscribe' && payload.type !== 'unsubscribe') {
+        client.send(JSON.stringify({ type: 'error', message: 'Unknown websocket message type' }));
+        return;
+      }
+
+      if (typeof payload.topic !== 'string' || !payload.topic) {
+        client.send(JSON.stringify({ type: 'error', message: 'No topic provided' }));
+        return;
+      }
+
+      const topic = payload.topic;
+
+      if (payload.type === 'subscribe') {
+        if (!topic.startsWith('/opentopic/')) {
+          if (this.adminforth.config.auth.websocketTopicAuth) {
+            let authResult = false;
+            try {
+              authResult = await this.adminforth.config.auth.websocketTopicAuth(topic, client.adminUser);
+            } catch (e) {
+              afLogger.error(`Error in websocketTopicAuth, assuming connection not allowed ${e}`);
+            }
+            if (!authResult) {
+              client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+              return;
             }
           }
-          if (!data.topic) {
-            client.send(JSON.stringify({ type: 'error', message: 'No topic provided' }));
-          }
-          if (!this.topics[data.topic]) {
-            this.topics[data.topic] = [];
-          }
-          this.topics[data.topic].push(client);
-          client.topics.add(data.topic);
-          if (this.adminforth.config.auth.websocketSubscribed) {
-            (async () => {
-              try {
-                await this.adminforth.config.auth.websocketSubscribed(data.topic, client.adminUser);
-              } catch (e) {
-                afLogger.error(`Error in websocketSubscribed for topic ${data.topic}, ${e}`);
-              }
-            })(); // run in background
-          }
-        } else if (data.type === 'unsubscribe') {
-          if (!data.topic) {
-            client.send(JSON.stringify({ type: 'error', message: 'No topic provided' }));
-          }
-         
-          this.deleteClientFromTopic(client, data.topic);
-          this.cleanupTopicIfEmpty(data.topic);
-
-          client.topics.delete(data.topic);
         }
+        if (!this.topics[topic]) {
+          this.topics[topic] = [];
+        }
+        if (!this.topics[topic].includes(client)) {
+          this.topics[topic].push(client);
+        }
+        client.topics.add(topic);
+        if (this.adminforth.config.auth.websocketSubscribed) {
+          (async () => {
+            try {
+              await this.adminforth.config.auth.websocketSubscribed(topic, client.adminUser);
+            } catch (e) {
+              afLogger.error(`Error in websocketSubscribed for topic ${topic}, ${e}`);
+            }
+          })(); // run in background
+        }
+        return;
       }
+
+      this.deleteClientFromTopic(client, topic);
+      this.cleanupTopicIfEmpty(topic);
+      client.topics.delete(topic);
     });
     
     client.onClose(() => {

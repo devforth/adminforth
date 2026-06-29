@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url = env("SQLITE_FILE_URL")
 }
 
 model adminuser {
@@ -35,13 +34,14 @@ model cars {
   body_type      String?
 
   photos         String?
+  specifications String?
 
   seller_id      String?
   seller         String?
 
   promo_picture  String?
   generated_promo_picture  String?
-
+  secret_field   String?
 }
 
 model audit_logs {
@@ -104,4 +104,60 @@ model jobs {
   progress    String
   status      String
   job_handler_name String
+}
+
+model adminuserCars {
+  id            String @id
+  adminuserId   String
+  carId         String
+}
+
+model sessions {
+  id            String @id
+  title         String
+  turns         Int?
+  asker_id      String
+  created_at    DateTime 
+}
+
+model turns {
+  id            String @id
+  session_id    String
+  created_at    DateTime
+  prompt        String?
+  response      String?
+  dubbug        String?
+}
+
+model dashboard_configs {
+  id        String @id
+  slug      String @unique
+  label     String
+  revision  Int
+  config    Json
+
+  @@index([slug])
+}
+
+model AdminUserExternalIdentity {
+  id             String   @id @default(uuid())
+  adminUserId    String
+  provider       String
+  subject        String
+  externalUserId String?
+  email          String?
+  phone          String?
+  fullName       String?
+  avatarUrl      String?
+  meta           Json?
+  createdAt      DateTime @default(now())
+
+  @@unique([provider, subject])
+  @@index([adminUserId])
+}
+
+model key_values {
+  key String @id
+  value String
+  collection String?
 }

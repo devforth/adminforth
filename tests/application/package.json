@@ -1,0 +1,33 @@
+{
+  "name": "application",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "dev": "pnpm _env:dev tsx watch index.ts",
+    "start": "pnpm dev",
+    "migrate:local": "pnpm _env:dev npx --yes prisma migrate deploy --config=prisma.config.ts --schema=../../dev-demo/migrations/prisma/sqlite/schema.prisma",
+    "_env:dev": "dotenvx run -f .env.local --"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.34.0",
+    "adminforth": "link:../../adminforth",
+    "express": "latest-4"
+  },
+  "devDependencies": {
+    "@prisma/client": "latest",
+    "@types/express": "latest",
+    "@types/node": "latest",
+    "prisma": "^7.5.0",
+    "tsx": "4.11.2",
+    "typescript": "5.4.5",
+    "wait-on": "^9.0.4"
+  }
+}

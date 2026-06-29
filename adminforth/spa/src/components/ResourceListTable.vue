@@ -1,20 +1,26 @@
 <template>
   <!-- table -->
-  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto "
+  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto border dark:border-gray-700"
     :class="{'rounded-default': !noRoundings}"
+    :style="isVirtualScrollEnabled ? { maxHeight: `${containerHeight}px` } : {}"
+    @scroll="handleScroll"
+    ref="containerRef"
   >
     <!-- skelet loader -->
-    <div role="status" v-if="!resource || !resource.columns"
-        class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700">
-        <div role="status" class="max-w-sm animate-pulse">
-            <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
-        </div>      
+    <div 
+      role="status" v-if="!resource || !resource.columns"
+      class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
+    >
+      <div role="status" class="max-w-sm animate-pulse">
+        <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
+      </div>      
     </div>
-    <table v-else class=" w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+
+    <table v-else class="w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
 
       <tbody>
         <!-- table header -->
-        <tr class="t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
+        <tr class="border-b dark:border-gray-700 t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
           <td scope="col" class="list-table-header-cell p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
@@ -25,36 +31,46 @@
             </Checkbox>
           </td>
 
-          <td v-for="c in columnsListed" ref="headerRefs" scope="col" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3" :class="{'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}">
+          <td
+            v-for="c in columnsListed"
+            ref="headerRefs"
+            scope="col"
+            class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading': c.listSticky}]"
+          >
           
             <div @click="(evt) => c.sortable && onSortButtonClick(evt, c.name)" 
-                class="flex items-center " :class="{'cursor-pointer':c.sortable}">
+                class="flex items-center font-semibold" :class="{'cursor-pointer':c.sortable}">
               {{ c.label }}
 
               <div v-if="c.sortable">
-                <svg v-if="ascArr.includes(c.name) || descArr.includes(c.name)" class="w-3 h-3 ms-1.5"
-                    fill='currentColor'
-                    :class="{'rotate-180':descArr.includes(c.name)}" viewBox="0 0 24 24">
-                  <path
-                    d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/>
+                <svg 
+                  v-if="ascArr.includes(c.name) || descArr.includes(c.name)" class="w-3 h-3 ms-1.5"
+                  fill='currentColor'
+                  :class="{'rotate-180':descArr.includes(c.name)}" viewBox="0 0 24 24"
+                >
+                  <path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/>
                 </svg>
-                <svg v-else class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                    fill='currentColor'
-                    viewBox="0 0 24 24">
-                  <path
-                    d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/>
+                <svg 
+                  v-else class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                  fill='currentColor'
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/>
                 </svg>
               </div>
+
               <span
                 class="bg-red-100 text-red-800 text-xs font-medium me-1 px-1 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400"
-                v-if="sort.findIndex((s: any) => s.field === c.name) !== -1 && sort?.length > 1">
+                v-if="sort.findIndex((s: any) => s.field === c.name) !== -1 && sort?.length > 1"
+              >
                 {{ sort.findIndex((s: any) => s.field === c.name) + 1 }}
               </span>
 
             </div>
           </td>
 
-          <td scope="col" class="px-6 py-3">
+          <td scope="col" class="px-6 py-3 font-semibold">
             {{ $t('Actions') }}
           </td>
         </tr>
@@ -64,7 +80,7 @@
         <!-- table header end -->
         <SkeleteLoader 
           v-if="!rows" 
-          :columns="resource?.columns.filter((c: AdminForthResourceColumnInputCommon) => c.showIn?.list).length + 2"
+          :columns="resource?.columns.filter((c: AdminForthResourceColumnCommon) => c.showIn?.list).length + 2"
           :rows="rowHeights.length || 3"
           :row-heights="rowHeights"
           :column-widths="columnWidths"
@@ -72,42 +88,51 @@
         
         <tr v-else-if="rows.length === 0" class="bg-lightListTable dark:bg-darkListTable dark:border-darkListTableBorder">
           <td :colspan="resource?.columns.length + 2">
-
-            <div id="toast-simple"
-                class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
-                role="alert">
+            <div 
+              id="toast-simple"
+              class=" mx-auto my-5 flex items-center w-full max-w-xs p-4 space-x-4 rtl:space-x-reverse text-gray-500 divide-x rtl:divide-x-reverse divide-gray-200  dark:text-gray-400 dark:divide-gray-700 space-x dark:bg-gray-800"
+              role="alert"
+            >
               <IconInboxOutline class="w-6 h-6 text-gray-500 dark:text-gray-400"/>
               <div class="ps-4 text-sm font-normal">{{ $t('No items here yet') }}</div>
             </div>
-
           </td>
         </tr>
 
-         <component
-            v-else
-            v-for="(row, rowI) in rows"
-            :is="tableRowReplaceInjection ? getCustomComponent(tableRowReplaceInjection) : 'tr'"
-            :key="`row_${row._primaryKeyValue}`"
-            :record="row"
-            :resource="resource"
-            :adminUser="coreStore.adminUser"
-            :meta="tableRowReplaceInjection ? tableRowReplaceInjection.meta : undefined"
-            @click="onClick($event, row)"
-            ref="rowRefs"
-            class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
-            :class="{'border-b': rowI !== rows.length - 1, 'cursor-pointer': row._clickUrl !== null}"
-         >
-        <td class="w-4 p-4 cursor-default sticky-column bg-lightListTable dark:bg-darkListTable" @click="(e)=>e.stopPropagation()">
-          <Checkbox
-            :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
-            @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
-            @click="(e: any)=>e.stopPropagation()"
-          >
-            <span class="sr-only">{{ $t('checkbox') }}</span>
-          </Checkbox>
-        </td>
+        <!-- Top spacer(virtual scroll) -->
+        <tr v-if="isVirtualScrollEnabled && spacerHeight > 0">
+          <td :colspan="resource?.columns.length + 2" :style="{ height: `${spacerHeight}px` }"></td>
+        </tr>
 
-          <td v-for="c in columnsListed" class="px-2 md:px-3 lg:px-6 py-4" :class="{'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}">
+        <component
+          v-for="(row, rowI) in rowsToRender"
+          :is="tableRowReplaceInjection ? getCustomComponent(formatComponent(tableRowReplaceInjection)) : 'tr'"
+          :key="`row_${row._primaryKeyValue}`"
+          :record="row"
+          :resource="resource"
+          :adminUser="coreStore.adminUser"
+          :meta="tableRowReplaceInjection ? formatComponent(tableRowReplaceInjection).meta : undefined"
+          @click="onClick($event, row)"
+          ref="rowRefs"
+          class="list-table-body-row bg-lightListTable dark:bg-darkListTable border-lightListBorder dark:border-gray-700 hover:bg-lightListTableRowHover dark:hover:bg-darkListTableRowHover"
+          :class="{'border-b': rowI !== rowsToRender.length - 1, 'cursor-pointer': row._clickUrl !== null}"
+          @mounted="(el: any) => updateRowHeight(`row_${row._primaryKeyValue}`, el.offsetHeight)"
+        >
+          <td class="w-4 p-4 cursor-default sticky-column bg-lightListTable dark:bg-darkListTable" @click="(e)=>e.stopPropagation()">
+            <Checkbox
+              :model-value="checkboxesInternal.includes(row._primaryKeyValue)"
+              @change="(e: any)=>{addToCheckedValues(row._primaryKeyValue)}"
+              @click="(e: any)=>e.stopPropagation()"
+            >
+              <span class="sr-only">{{ $t('checkbox') }}</span>
+            </Checkbox>
+          </td>
+
+          <td
+            v-for="c in columnsListed"
+            class="px-2 md:px-3 lg:px-6 py-4"
+            :class="[c.listCssClass, {'sticky-column bg-lightListTable dark:bg-darkListTable': c.listSticky}]"
+          >
             <!-- if c.name in listComponentsPerColumn, render it. If not, render ValueRenderer -->
             <component
               :is="c?.components?.list ? getCustomComponent(typeof c.components.list === 'string' ? { file: c.components.list } : c.components.list) : ValueRenderer"
@@ -130,7 +155,6 @@
                       primaryKey: row._primaryKeyValue,
                     }
                   }"
-
                 >
                   <IconEyeSolid class="af-show-icon w-5 h-5 me-2"/>
                 </RouterLink>
@@ -182,27 +206,33 @@
 
               <template v-if="resource.options?.actions">
                 <Tooltip
-                  v-for="action in resource.options.actions.filter(a => a.showIn?.list || a.showIn?.listQuickIcon)"
+                  v-for="action in resource.options.actions.filter(a => a.showIn?.list)"
                   :key="action.id"
                 >
                     <component
-                      :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
-                      :meta="action.customComponent?.meta"
+                      v-if="action"
+                      :is="action.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
+                      :meta="formatComponent(action.customComponent).meta"
                       :row="row"
                       :resource="resource"
-                      :adminUser="adminUser"
-                      @callAction="(payload? : Object) => startCustomAction(action.id, row, payload)"
+                      :adminUser="coreStore.adminUser"
+                      @callAction="(payload? : Object) => startCustomAction(action.id as string | number, row, payload)"
                     >
                       <button
                         type="button"
                         class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                        :disabled="rowActionLoadingStates?.[action.id]"
+                        :disabled="!!actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
                       >
                         <component
-                          v-if="action.icon"
+                          v-if="action.icon && !actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
                           :is="getIcon(action.icon)"
-                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary"
+                          class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150"
                         />
+                        <Spinner
+                          v-if="actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]"
+                          class="w-5 h-5 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
+                        />
+                        <span v-if="actionLoadingStates[`${action.id}_${row._primaryKeyValue}`]" class="sr-only">Loading...</span>
                       </button>
                     </component>
 
@@ -219,12 +249,18 @@
                 :deleteRecord="deleteRecord"
                 :resourceId="resource.resourceId"
                 :startCustomAction="startCustomAction"
-                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems"
+                :customActionIconsThreeDotsMenuItems="customActionIconsThreeDotsMenuItems ?? []"
               />
             </div>
             
           </td>
-         </component>
+        </component>
+        <!-- Bottom spacer(virtual scroll) -->
+        <tr v-if="isVirtualScrollEnabled && totalHeight > 0">
+          <td :colspan="resource?.columns.length + 2"
+              :style="{ height: `${Math.max(0, totalHeight - (endIndex + 1) * (props.itemHeight || 52.5))}px` }">
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -233,89 +269,109 @@
   -->
   <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
     
-    <div class="af-pagination-buttons-container inline-flex "
+    <div class="af-pagination-buttons-container af-button-shadow inline-flex rounded-default" 
       v-if="(rows || totalRows) && totalRows >= pageSize && totalRows > 0"
     >
-        <!-- Buttons -->
-        <button
-          class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0 rounded-s border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
-          @click="page--; pageInput = page.toString();" :disabled="page <= 1">
-          <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 14 10">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13 5H1m0 0 4 4M1 5l4-4"/>
-          </svg>
-          <span class="hidden sm:inline">
-            {{ $t('Prev') }}
-          </span>
-        </button>
-        <button
-          class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
-          @click="page = 1; pageInput = page.toString();" :disabled="page <= 1">
-          <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
-          1
-        </button>
-        <input
-          type="text"
-          v-model="pageInput"
-          :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
-          class="af-pagination-input min-w-10 outline-none inline-block py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround z-10"
-          @keydown="onPageKeydown($event)"
-          @blur="validatePageInput()"
-        />
+      <!-- Buttons -->
+      <button
+        class="af-pagination-prev-button flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0 rounded-s border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-20 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+        @click="page--; pageInput = page.toString();" 
+        :disabled="page <= 1"
+      >
+        <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4"/>
+        </svg>
+        <span class="hidden sm:inline">
+          {{ $t('Prev') }}
+        </span>
+      </button>
+      <button
+        class="af-pagination-first-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-r-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover z-10 focus:z-20 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-darkListTablePaginationTextHover dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+        @click="page = 1; 
+        pageInput = page.toString();" 
+        :disabled="page <= 1"
+      >
+        1
+      </button>
+      <input
+        type="text"
+        v-model="pageInput"
+        :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
+        class="af-pagination-input z-10 min-w-10 outline-none inline-block py-1.5 px-3 text-sm text-center text-lightListTablePaginationCurrentPageText border border-lightListTablePaginationBorder dark:border-darkListTablePaginationBorder dark:text-darkListTablePaginationCurrentPageText dark:bg-darkListTablePaginationBackgoround"
+        @keydown="onPageKeydown($event)"
+        @blur="validatePageInput()"
+      />
 
-        <button
-          class="af-pagination-last-page-button flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
-          @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
-          {{ totalPages }}
-
-          <!-- <IconChevronDoubleRightOutline class="w-4 h-4" /> -->
-        </button>
-        <button
-          class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0 rounded-e border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
-          @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
-          <span class="hidden sm:inline">{{ $t('Next') }}</span>
-          <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 14 10">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M1 5h12m0 0L9 1m4 4L9 9"/>
-          </svg>
-        </button>
+      <button
+        class="af-pagination-last-page-button z-10 flex items-center py-1 px-3 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0  border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:ring-4 focus:z-20 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+        @click="page = totalPages; pageInput = page.toString();" :disabled="page >= totalPages">
+        {{ totalPages }}
+      </button>
+      <button
+        class="af-pagination-next-button  flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightListTablePaginationText focus:outline-none bg-lightListTablePaginationBackgoround border-l-0 rounded-e border border-lightListTablePaginationBorder hover:bg-lightListTablePaginationBackgoroundHover hover:text-lightListTablePaginationTextHover focus:z-10 focus:ring-4 focus:ring-lightListTablePaginationFocusRing dark:focus:ring-darkListTablePaginationFocusRing dark:bg-darkListTablePaginationBackgoround dark:text-darkListTablePaginationText dark:border-darkListTablePaginationBorder dark:hover:text-white dark:hover:bg-darkListTablePaginationBackgoroundHover disabled:opacity-50"
+        @click="page++; pageInput = page.toString();" :disabled="page >= totalPages">
+        <span class="hidden sm:inline">{{ $t('Next') }}</span>
+        <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+        </svg>
+      </button>
     </div>
 
     <!-- Help text -->
     <span class="ml-4 text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText">
-        <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
-        <template v-else-if="resource && totalRows > 0">
-          
-          <span class="af-pagination-info hidden sm:inline">
-            <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
-              <template v-slot:from>
-                <strong>{{ from }}</strong>
-              </template>
-              <template v-slot:to>
-                <strong>{{ to }}</strong>
-              </template>
-              <template v-slot:total>
-                <strong>{{ totalRows }}</strong>
-              </template>
-            </i18n-t>
-          </span>
-          <span class="sm:hidden">
-            <i18n-t keypath="{from} - {to} of {total}" tag="p"  >
-              <template v-slot:from>
-                <strong>{{ from }}</strong>
-              </template>
-              <template v-slot:to>
-                <strong>{{ to }}</strong>
-              </template>
-              <template v-slot:total>
-                <strong>{{ totalRows }}</strong>
-              </template>
-            </i18n-t>
-          </span> 
-        </template>
+      <span v-if="((((page || 1) - 1) * pageSize + 1 > totalRows) && totalRows > 0)">{{ $t('Wrong Page') }} </span>
+      <template v-else-if="resource && totalRows > 0">
+        
+        <span class="af-pagination-info hidden sm:inline">
+          <i18n-t keypath="Showing {from} to {to} of {total} Entries" tag="p"  >
+            <template v-slot:from>
+              <strong>{{ from }}</strong>
+            </template>
+            <template v-slot:to>
+              <strong>{{ to }}</strong>
+            </template>
+            <template v-slot:total>
+              <strong>{{ totalRows }}</strong>
+            </template>
+          </i18n-t>
+        </span>
+        <span class="sm:hidden">
+          <i18n-t keypath="{from} - {to} of {total}" tag="p"  >
+            <template v-slot:from>
+              <strong>{{ from }}</strong>
+            </template>
+            <template v-slot:to>
+              <strong>{{ to }}</strong>
+            </template>
+            <template v-slot:total>
+              <strong>{{ totalRows }}</strong>
+            </template>
+          </i18n-t>
+        </span> 
+      </template>
     </span>
+    <div v-if="totalRows > 0 && resource?.options?.listPageSizeOptions?.length" 
+      class="flex items-center gap-2 ml-auto" > 
+      <span class="text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText whitespace-nowrap"> 
+        {{ $t('Rows per page') }} 
+      </span> 
+      <Select 
+        v-model="pageSizeInternal" 
+        :options="pageSizeOptionsComputed" 
+        :searchDisabled="true" 
+        :disableTogleOfSelectedItem="true"  
+        :style="{ width: selectDynamicWidth }"
+        :placeholder="pageSizeInternal?.toString()"        
+        class="text-sm min-w-20 af-page-size-button" 
+        classesForInput="
+        af-page-size-btn h-[34px] min-h-0 py-1 pl-2 pr-6 text-left text-sm font-medium transition-all 
+        outline-none cursor-pointer af-button-shadow rounded-default bg-lightListViewButtonBackground 
+        text-lightListViewButtonText border-lightListViewButtonBorder 
+        dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 
+        hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover 
+        dark:hover:bg-darkListViewButtonBackgroundHover dark:hover:text-darkListViewButtonTextHover"
+      /> 
+    </div>
   </div>
 </template>
 
@@ -323,10 +379,10 @@
 
 
 import { computed, onMounted, ref, watch, useTemplateRef, nextTick, type Ref } from 'vue';
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, executeCustomAction } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import ValueRenderer from '@/components/ValueRenderer.vue';
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, formatComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
@@ -338,39 +394,92 @@ import {
   IconInboxOutline
 } from '@iconify-prerendered/vue-flowbite';
 import router from '@/router';
-import { Tooltip } from '@/afcl';
-import type { AdminForthResourceCommon, AdminForthResourceColumnInputCommon, AdminForthResourceColumnCommon, AdminForthComponentDeclaration } from '@/types/Common';
+import { Tooltip, Spinner } from '@/afcl';
+import type { AdminForthResourceFrontend, AdminForthResourceColumnCommon, AdminForthComponentDeclarationFull, AdminForthComponentDeclaration } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import { Select } from '@/afcl';
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
 const { alert, confirm } = useAdminforth();
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   page: number,
-  resource: AdminForthResourceCommon | null,
+  resource: AdminForthResourceFrontend | null,
   rows: any[] | null,
   totalRows: number,
   pageSize: number,
+  pageSizeOptions: number[],
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
-  customActionIconsThreeDotsMenuItems?: any[]
+  containerHeight?: number,
+  itemHeight?: number,
+  bufferSize?: number,
+  customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration[]
   tableRowReplaceInjection?: AdminForthComponentDeclaration,
-}>();
+  isVirtualScrollEnabled: boolean,
+  filters?: any[]
+}>(), {
+  sort: () => []
+});
+
+//select between all rows or rows, that should be rendered in virtual scroll
+const rowsToRender = computed(() => {
+  if (!props.isVirtualScrollEnabled) {
+    return props.rows || [];
+  } else {
+    return visibleRows.value;
+  }
+});
 
 // emits, update page
 const emits = defineEmits([
   'update:page',
   'update:sort',
   'update:checkboxes',
-  'update:records'
+  'update:records',
+  'update:pageSize'
 
 ]);
+
+const pageSizeOptionsComputed = computed(() => {
+  let combinedOptions = [...props.pageSizeOptions]; 
+
+  if (props.resource?.options?.listPageSize && !combinedOptions.includes(props.resource?.options?.listPageSize)) {
+    combinedOptions.push(props.resource?.options?.listPageSize);
+    combinedOptions.sort((a, b) => a - b);
+  }
+
+  return combinedOptions.map(size => ({
+    value: size,
+    label: size.toString()
+  }));
+});
+
+const pageSizeInternal = ref<number | null>(null);
+
+const selectDynamicWidth = computed(() => {
+  const length = pageSizeInternal.value?.toString().length || 2;
+  return `${length + 5}ch`;
+})
+
+watch(() => props.pageSize, (newVal) => {
+  pageSizeInternal.value = newVal;
+});
+
+watch(() => pageSizeInternal.value, (newSize) => {
+  if (newSize) {
+    localStorage.setItem(`pageSize_${props.resource?.resourceId}`, newSize.toString());
+    emits('update:pageSize', newSize);
+    page.value = 1;
+  }
+});
+
 
 const checkboxesInternal: Ref<any[]> = ref([]);
 const pageInput = ref('1');
@@ -380,7 +489,7 @@ const sort: Ref<Array<{field: string, direction: string}>> = ref([]);
 const showListActionsThreeDots = computed(() => {
   return  props.resource?.options?.actions?.some(a => a.showIn?.listThreeDotsMenu) // show if any action is set to show in three dots menu
     || (props.customActionIconsThreeDotsMenuItems && props.customActionIconsThreeDotsMenuItems.length > 0) // or if there are custom action icons for three dots menu
-    || !props.resource?.options.baseActionsAsQuickIcons // or if there is no baseActionsAsQuickIcons
+    || !props.resource?.options?.baseActionsAsQuickIcons // or if there is no baseActionsAsQuickIcons
     || (props.resource?.options.baseActionsAsQuickIcons && props.resource?.options.baseActionsAsQuickIcons.length < 3) // if there all 3 base actions are shown as quick icons - hide three dots icon
 })
 
@@ -436,7 +545,7 @@ watch(() => props.rows, (newRows) => {
   columnWidths.value = newRows || !headerRefs.value ? [] : [48, ...headerRefs.value.map((el: HTMLElement) => el.offsetWidth)];
 });
 
-function addToCheckedValues(id: string) {
+function addToCheckedValues(id: string | number) {
   if (checkboxesInternal.value.includes(id)) {
     checkboxesInternal.value = checkboxesInternal.value.filter((item) => item !== id);
   } else {
@@ -468,7 +577,7 @@ const allFromThisPageChecked = computed(() => {
   if (!props.rows || !props.rows.length) return false;
   return props.rows.every((r) => checkboxesInternal.value.includes(r._primaryKeyValue));
 });
-const ascArr = computed(() => sort.value.filter((s:any) => s.direction === 'asc').map((s: any) => s.field));
+const ascArr = computed(() => sort.value.filter((s: any) => s.direction === 'asc').map((s: any) => s.field));
 const descArr = computed(() => sort.value.filter((s: any) => s.direction === 'desc').map((s: any) => s.field));
 
 
@@ -487,9 +596,9 @@ function onSortButtonClick(event: any, field: string) {
   } else {
     const sortField = sort.value[sortIndex];
     if (sortField.direction === 'asc') {
-      sort.value = sort.value.map((s: any) => s.field === field ? {field, direction: 'desc'} : s);
+      sort.value = sort.value.map((s) => s.field === field ? {field, direction: 'desc'} : s);
     } else {
-      sort.value = sort.value.filter((s: any) => s.field !== field);
+      sort.value = sort.value.filter((s) => s.field !== field);
     }
   }
 }
@@ -507,6 +616,12 @@ async function onClick(e: any, row: any) {
       // user asked to nothing on click
       return;
     }
+    coreStore.listRecordIds = props.rows?.map(r => r._primaryKeyValue) ?? [];
+    coreStore.listResourceId = props.resource?.resourceId ?? null;
+    coreStore.listSort = props.sort;
+    coreStore.listPage = page.value;
+    coreStore.listPageSize = props.pageSize;
+    coreStore.listFilters = props.filters ?? [];
     if (e.ctrlKey || e.metaKey || row._clickUrl?.includes('target=_blank')) {
       
       if (row._clickUrl) {
@@ -545,9 +660,11 @@ async function onClick(e: any, row: any) {
 
 async function deleteRecord(row: any) {
   const data = await confirm({
-    message: t('Are you sure you want to delete this item?'),
+    title: t('Are you sure you want to delete this item?'),
+    message: t(`This process is irreversible.`),
     yes: t('Delete'),
     no: t('Cancel'),
+    dangerous: true,
   });
   if (data) {
     try {
@@ -575,51 +692,29 @@ async function deleteRecord(row: any) {
 
 const actionLoadingStates = ref<Record<string | number, boolean>>({});
 
-async function startCustomAction(actionId: string, row: any, extraData: Record<string, any> = {}) {
-  console.log('Starting custom action', actionId, row);
-  actionLoadingStates.value[actionId] = true;
+async function startCustomAction(actionId: string | number, row: any, extraData: Record<string, any> = {}) {
+  await executeCustomAction({
+    actionId,
+    resourceId: props.resource?.resourceId || '',
+    recordId: row._primaryKeyValue,
+    extra: extraData,
+    setLoadingState: (loading: boolean) => {
+      actionLoadingStates.value[`${actionId}_${row._primaryKeyValue}`] = loading;
+    },
+    onSuccess: async (data: any) => {
+      emits('update:records', true);
 
-  const data = await callAdminForthApi({
-    path: '/start_custom_action',
-    method: 'POST',
-    body: {
-      resourceId: props.resource?.resourceId,
-      actionId: actionId,
-      recordId: row._primaryKeyValue,
-      extra: extraData,
+      if (data.successMessage) {
+        alert({
+          message: data.successMessage,
+          variant: 'success'
+        });
+      }
+    },
+    onError: (error: string) => {
+      showErrorTost(error);
     }
   });
-  
-  actionLoadingStates.value[actionId] = false;
-  
-  if (data?.redirectUrl) {
-    // Check if the URL should open in a new tab
-    if (data.redirectUrl.includes('target=_blank')) {
-      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
-    } else {
-      // Navigate within the app
-      if (data.redirectUrl.startsWith('http')) {
-        window.location.href = data.redirectUrl;
-      } else {
-        router.push(data.redirectUrl);
-      }
-    }
-    return;
-  }
-  if (data?.ok) {
-    emits('update:records', true);
-
-    if (data.successMessage) {
-      alert({
-        message: data.successMessage,
-        variant: 'success'
-      });
-    }
-  }
-  
-  if (data?.error) {
-    showErrorTost(data.error);
-  }
 }
 
 function validatePageInput() {
@@ -628,6 +723,119 @@ function validatePageInput() {
   page.value = validPage;
   pageInput.value = validPage.toString();
 }
+/*
+* ___________________________________________________________________
+*|                                                                   |
+*|                 Virtual Scroll Implementation                     |
+*|___________________________________________________________________|
+*/
+// Add throttle utility
+const throttle = (fn: Function, delay: number) => { 
+  let lastCall = 0;
+  return (...args: any[]) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      fn(...args);
+    }
+  };
+};
+// Virtual scroll state
+const containerRef = ref<HTMLElement | null>(null);
+const scrollTop = ref(0);
+const visibleRows = ref<any[]>([]);
+const startIndex = ref(0);
+const endIndex = ref(0);
+const totalHeight = ref(0);
+const spacerHeight = ref(0);
+const rowHeightsMap = ref<{[key: string]: number}>({});
+const rowPositions = ref<number[]>([]);
+// Calculate row positions based on heights
+const calculateRowPositions = () => {
+  if (!props.rows) return;
+  
+  let currentPosition = 0;
+  rowPositions.value = props.rows.map((row) => {
+    const height = rowHeightsMap.value[`row_${row._primaryKeyValue}`] || props.itemHeight || 52.5;
+    const position = currentPosition;
+    currentPosition += height;
+    return position;
+  });
+  totalHeight.value = currentPosition;
+};
+// Calculate visible rows based on scroll position
+const calculateVisibleRows = () => {
+  if (!props.rows?.length) {
+    visibleRows.value = props.rows || [];
+    return;
+  }
+  const buffer = props.bufferSize || 5;
+  const containerHeight = props.containerHeight || 900;
+  
+  // For single item or small datasets, show all rows
+  if (props.rows.length <= buffer * 2 + 1) {
+    startIndex.value = 0;
+    endIndex.value = props.rows.length - 1;
+    visibleRows.value = props.rows;
+    spacerHeight.value = 0;
+    return;
+  }
+  
+  // Binary search for start index
+  let low = 0;
+  let high = rowPositions.value.length - 1;
+  const targetPosition = scrollTop.value;
+  
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (rowPositions.value[mid] <= targetPosition) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  
+  const newStartIndex = Math.max(0, low - 1 - buffer);
+  const newEndIndex = Math.min(
+    props.rows.length - 1,
+    newStartIndex + Math.ceil(containerHeight / (props.itemHeight || 52.5)) + buffer * 2
+  );
+  // Ensure at least one row is visible
+  if (newEndIndex < newStartIndex) {
+    startIndex.value = 0;
+    endIndex.value = Math.min(props.rows.length - 1, Math.ceil(containerHeight / (props.itemHeight || 52.5)));
+  } else {
+    startIndex.value = newStartIndex;
+    endIndex.value = newEndIndex;
+  }
+  
+  visibleRows.value = props.rows.slice(startIndex.value, endIndex.value + 1);
+  spacerHeight.value = startIndex.value > 0 ? rowPositions.value[startIndex.value - 1] : 0;
+};
+// Throttled scroll handler
+const handleScroll = throttle((e: Event) => {
+  if (!props.isVirtualScrollEnabled) return;
+  const target = e.target as HTMLElement;
+  scrollTop.value = target.scrollTop;
+  calculateVisibleRows();
+}, 16);
+// Update row height when it changes
+const updateRowHeight = (rowId: string, height: number) => {
+  if (!props.isVirtualScrollEnabled) return;
+  if (rowHeightsMap.value[rowId] !== height) {
+    rowHeightsMap.value[rowId] = height;
+    calculateRowPositions();
+    calculateVisibleRows();
+  }
+};
+// Watch for changes in rows
+watch(() => props.rows, () => {
+  if (props.rows) {
+    calculateRowPositions();
+    calculateVisibleRows();
+  }
+}, { immediate: true });
+
 
 </script>
 

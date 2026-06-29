@@ -43,7 +43,7 @@ export default async function createResource(args) {
     import { admin } from './${instance.file}.js';
     export async function exec() {
       await admin.discoverDatabases();
-      const columns = await admin.getAllColumnsInTable("${table.table}");
+      const columns = await admin.getAllColumnsInTable("${table.table}", "${table.db}");
       setTimeout(process.exit);
       return columns;
     }
@@ -55,7 +55,7 @@ export default async function createResource(args) {
     dataSource: table.db,
   });
 
-  injectResourceIntoIndex({
+  await injectResourceIntoIndex({
     table: resourceId,
     resourceId: resourceId,
     label: toTitleCase(table.table),

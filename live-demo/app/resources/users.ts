@@ -1,31 +1,32 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
+import type { AdminForthResource, AdminForthResourceInput } from 'adminforth';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
 import { randomUUID } from 'crypto';
 
-const blockDemoUsers = async ({ record, adminUser, resource }) => {
+const blockDemoUsers = async ({ adminUser }: { adminUser: any }) => {
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
   return { ok: true };
-} 
-export default { 
+}  
+const usersResource: AdminForthResourceInput = { 
   dataSource: 'maindb', 
   table: 'users',
   resourceId: 'users',
   label: 'Users',  
-  recordLabel: (r) => `👤 ${r.email}`,
+  recordLabel: (r: any) => `👤 ${r.email}`,
   plugins: [
     new ForeignInlineListPlugin({
       foreignResourceId: 'aparts',
       modifyTableResourceConfig: (resourceConfig: AdminForthResource) => {
         // hide column 'square_meter' from both 'list' and 'filter'
-        const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [];
+        const column = resourceConfig.columns.find((c: AdminForthResourceColumn) => c.name === 'square_meter')!.showIn = [] as any;
         // feel free to console.log and edit resourceConfig as you need
       },
     }),
     new ForeignInlineListPlugin({
       foreignResourceId: 'audit_logs',
-    }),
+    }), 
   ],
   columns: [
     { 
@@ -51,7 +52,7 @@ export default {
       name: 'created_at', 
       type: AdminForthDataTypes.DATETIME,
       showIn: ['list', 'filter', 'show'],
-      fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
+      fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
     },
     {
       name: 'role',
@@ -76,7 +77,7 @@ export default {
     create: {
       beforeSave: [
         blockDemoUsers,
-        async ({ record, adminUser, resource }) => {
+        async ({ record, adminUser, resource }: any) => {
             record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             return { ok: true };
         }
@@ -85,7 +86,7 @@ export default {
     edit: {
       beforeSave: [
         blockDemoUsers,
-        async ({ record, adminUser, resource}) => {
+        async ({ record, adminUser, resource}: any) => {
             if (record.password) {
                 record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
             }
@@ -97,4 +98,6 @@ export default {
         beforeSave: blockDemoUsers,
     },
   }
-}
+};
+
+export default usersResource;

@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import crypto from 'crypto';
 import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
+import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
 // @ts-ignore-next-line
 
 
@@ -160,14 +161,15 @@ const csscolors = {
 }
 
 
-export async function getLoginPromptHTML(loginPrompt: string | Function) {
-  if(typeof loginPrompt === 'function') {
-    loginPrompt = await loginPrompt();
-    if (!loginPrompt) {
-      return null;
-    }
+export async function getLoginPromptHTML(
+  loginPrompt: string | (() => string | void | undefined | Promise<string | void | undefined>) | undefined,
+): Promise<string | null> {
+  if (typeof loginPrompt === 'function') {
+    const resolvedLoginPrompt = await loginPrompt();
+    return resolvedLoginPrompt || null;
   }
-  return loginPrompt;
+
+  return loginPrompt || null;
 }
 
 export function guessLabelFromName(name) {
@@ -207,6 +209,24 @@ export function getComponentNameFromPath(filePath) {
 
 export function listify(param?: Array<Function>) {
   return param || [];
+}
+export function parseLooseJson(input: string): any {
+  try {
+    return JSON.parse(input);
+  } catch {
+  }
+
+  const keywords = ['true', 'false', 'null'];
+  const normalized = input
+    .replace(/([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g, '$1"$2"$3')
+    .replace(/(:\s*)([A-Za-z_$][\w$]*)(?=\s*[,}\]])/g, (match, before, word) =>
+      keywords.includes(word) ? match : `${before}"${word}"`
+    )
+    .replace(/([\[,]\s*)([A-Za-z_$][\w$]*)(?=\s*[,\]])/g, (match, before, word) =>
+      keywords.includes(word) ? match : `${before}"${word}"`
+    );
+
+  return JSON.parse(normalized);
 }
 
 export function deepMerge(target, source) {
@@ -381,9 +401,26 @@ export function md5hash(str:string) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
 
-export function convertPeriodToSeconds(period: string): number {
+function isPeriodUnit(unit: string): unit is PeriodUnit {
+  return (PERIOD_UNITS as readonly string[]).includes(unit);
+}
+
+function parsePositiveInteger(value: string, fieldName: string, source: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`${fieldName} must be a positive integer, got: "${source}"`);
+  }
+  return parsed;
+}
+
+export function convertPeriodToSeconds(period: PeriodString): number {
+    const value = period.slice(0, -1);
     const periodChar = period.slice(-1);
-    const duration = parseInt(period.slice(0, -1));
+    if (!isPeriodUnit(periodChar)) {
+      throw new Error(`Invalid period: ${period}`);
+    }
+
+    const duration = parsePositiveInteger(value, 'Period', period);
     if (periodChar === 's') {
       return duration;
     } else if (periodChar === 'm') {
@@ -401,23 +438,35 @@ export class RateLimiter {
 
   rateLimiter: RateLimiterAbstract;
 
-
-  durStringToSeconds(rate: string): number {
-    if (!rate) {
-      throw new Error('Rate duration is required');
+  static parseRate(rate: unknown): { points: number, duration: number } {
+    if (typeof rate !== 'string') {
+      throw new Error('Rate limit must be a string in format "500/5m"');
     }
 
+    const parts = rate.split('/');
+    if (parts.length !== 2) {
+      throw new Error(`Rate limit must be in format "500/5m", got: "${rate}"`);
+    }
 
-    return convertPeriodToSeconds(rate);
+    const [pointsPart, period] = parts;
+    const periodValue = period.slice(0, -1);
+    const periodUnit = period.slice(-1);
+    if (!periodValue || !isPeriodUnit(periodUnit)) {
+      throw new Error(`Rate limit must be in format "500/5m", got: "${rate}"`);
+    }
+
+    return {
+      points: parsePositiveInteger(pointsPart, 'Rate limit points', rate),
+      duration: convertPeriodToSeconds(period as PeriodString),
+    };
   }
 
 
   constructor(rate: string) {
-    const [points, duration] = rate.split('/');
-    const durationSeconds = this.durStringToSeconds(duration);
+    const { points, duration } = RateLimiter.parseRate(rate);
     const opts = {
-      points: parseInt(points),
-      duration: durationSeconds, // Per second
+      points,
+      duration, // Per second
     };
     this.rateLimiter = new RateLimiterMemory(opts);
   }
@@ -484,41 +533,115 @@ export function slugifyString(str: string): string {
 }
 
 export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth): Promise<{ error: string | null }> {
-    const { adminUser, response } = context;
+  const { adminUser, response } = context;
 
-    const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
+  const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
-    for (const childRes of childResources) {
-      const foreignColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
+  for (const childRes of childResources) {
+    const foreignColumn = childRes.columns.find(c => c.foreignResource?.resourceId === resource.resourceId);
 
-      if (!foreignColumn?.foreignResource?.onDelete) continue;
+    if (!foreignColumn?.foreignResource?.onDelete) continue;
 
-      const strategy = foreignColumn.foreignResource.onDelete;
+    const strategy = foreignColumn.foreignResource.onDelete;
 
-      const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
+    const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
 
-      const childPk = childRes.columns.find(c => c.primaryKey)?.name;
+    const childPk = childRes.columns.find(c => c.primaryKey)?.name;
 
-      if (strategy === 'cascade') {
-        for (const childRecord of childRecords) {
-          const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
-          if (childResult?.error) {
-            return childResult;
-          }
-          const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
-          if (deleteChild.error) return { error: deleteChild.error };
-          if (childResult?.error) {
-            return childResult;
-          }
+    if (strategy === 'cascade') {
+      for (const childRecord of childRecords) {
+        const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
+        if (childResult?.error) {
+          return childResult;
         }
-      }
-
-      if (strategy === 'setNull') {
-        for (const childRecord of childRecords) {
-          await adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
+        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
+        if (deleteChild.error) return { error: deleteChild.error };
+        if (childResult?.error) {
+          return childResult;
         }
       }
     }
 
-    return { error: null };
+    if (strategy === 'setNull') {
+      for (const childRecord of childRecords) {
+        await adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
+      }
+    }
+  }
+
+  return { error: null };
+}
+
+  export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
+    if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
+      throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+    }
+    if (hookResponse.ok === false && !hookResponse.error) {
+      return { error: hookResponse.error ?? 'Operation aborted by hook' };
+    }
+    if (hookResponse.error) {
+      return { error: hookResponse.error };
+    }
+    return null;
+  }
+
+export function checkIfFieldIsInsideResourceColumns(fieldName: string, resource: AdminForthResource): boolean {
+  for (const column of resource.columns) {
+    if (column.name === fieldName) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function applyRegexValidation(value, validation) {
+  if (validation?.length) {
+    const validationArray = validation;
+    for (let i = 0; i < validationArray.length; i++) {
+      if (validationArray[i].regExp) {
+        let flags = '';
+        if (validationArray[i].caseSensitive) {
+          flags += 'i';
+        }
+        if (validationArray[i].multiline) {
+          flags += 'm';
+        }
+        if (validationArray[i].global) {
+          flags += 'g';
+        }
+
+        const regExp = new RegExp(validationArray[i].regExp, flags);
+        if (value === undefined || value === null) {
+          value = '';
+        }
+        let valueS = `${value}`;
+
+        if (!regExp.test(valueS)) {
+          return validationArray[i].message;
+        }
+      }
+    }
+  }
+}
+
+ export function formatHugePluginError(message: string) {
+    const RED = '\x1b[31m';
+    const BG = '\x1b[41m';
+    const WHITE = '\x1b[97m';
+    const BOLD = '\x1b[1m';
+    const RESET = '\x1b[0m';
+
+    const horizontal = '═'.repeat(100);
+
+    return `
+  ${BG}${WHITE}${BOLD}
+  ╔${horizontal}╗
+  ║${' '.repeat(100)}║
+  ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
+  ║${' '.repeat(100)}║
+  ║  ${message.padEnd(98)}║
+  ║${' '.repeat(100)}║
+  ╚${horizontal}╝
+  ${RESET}
+`;
   }

@@ -1,3 +1,6 @@
+---
+description: "Guide to tuning standard AdminForth list, show, edit, and create pages with field groups, sorting, sticky columns, conditional display, defaults, and layout options."
+---
 
 # Standard pages tuning
 
@@ -138,6 +141,25 @@ export default {
 ```
 
 >⚠️ Please note that sticky columns can only be applied to one column per resource.
+
+### Custom list column class
+
+You can add a custom CSS class to any list column with `listCssClass`. AdminForth applies it to both the header cell and the data cells for that column.
+Static Tailwind utility classes used here are collected into the generated Tailwind safelist during bundling, so you can use normal utility strings in the resource config.
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  ...
+  columns: [
+    {
+      name: "price",
+      listCssClass: "text-right font-semibold min-w-10",
+    },
+    ...
+  ]
+}
+```
 
 ### Conditional display
 You can conditionally display columns in forms and views based on the values of other fields in the current record using the `showIf` property. This enables dynamic layouts that automatically adapt to user input, creating more intuitive and context-aware interfaces.
@@ -316,6 +338,48 @@ export default {
   ]
 ```
 
+### List Page Size Options
+You can define available pagination sizes using options.listPageSizeOptions. This allows users to choose how many records they want to see per page in the list view.
+```typescript title="./resources/apartments.ts"
+export default {
+      resourceId: 'aparts',
+      options: {
+        ...
+        listPageSize: 10,
+        // listPageSizeOptions can be a static array
+        //diff-add
+        listPageSizeOptions: [10, 20, 50],
+        // OR a function for dynamic options based on user role
+        //diff-add
+        listPageSizeOptions: ({ adminUser }) => {
+          //diff-add
+          if (adminUser?.dbUser?.role === 'superadmin') {
+            //diff-add
+            return [50, 100, 500];
+            //diff-add
+          }
+          //diff-add
+          return [10, 20, 50];
+          //diff-add
+        },
+      }
+    }
+  ]
+```
+#### How it works
+- listPageSize defines the default number of records per page when the list is opened.
+- listPageSizeOptions defines the available page size options shown to the user.
+
+For example: listPageSizeOptions: [10, 20, 50] will allow switching between 10 / 20 / 50 records per page.
+
+#### UI behavior
+Page size switching is implemented via a select dropdown (select input) in the table pagination controls.
+- User opens the select
+- Chooses a value (e.g. 20)
+- Table reloads with the new page size
+> ☝️Notes 
+If `listPageSizeOptions` is not provided (or resolves to an empty array), the page size select is not shown. The selected value updates the table immediately and triggers a data refetch. Use `listPageSize` to define the initial number of records per page, and `listPageSizeOptions` to define which page sizes the user can switch between.
+
 ### Virtual scroll
 
 Set `options.listVirtualScrollEnabled` to true to enable virtual scrolling in the table. The default value is false. Enable this option if you need to display a large number of records on a single page.
@@ -477,6 +541,26 @@ And `edit` action will be available as quick action:
 
      
 
+
+## Show
+
+### Next record button
+
+By default, when a user opens a record from the list view, a **Next** button appears on the show page. It allows navigating through records one by one, respecting the current filters and sorting applied in the list. When the user reaches the last record on the current page, AdminForth automatically fetches the next page and continues navigation seamlessly.
+
+To disable the Next button for a resource, set `showNextButton` to `false`:
+
+```typescript title="./resources/apartments.ts"
+export default {
+  resourceId: 'aparts',
+  options: {
+//diff-add
+    showNextButton: false,
+  }
+}
+```
+
+> ☝️ The Next button is only shown when the user navigates to the show page from the list view. Opening a record directly via URL will not display the button.
 
 ## Creating
 
@@ -677,34 +761,6 @@ export default {
 > `minValue` and `maxValue` checks are enforced both on frontend and backend.
 
 
-### Validation
-
-In cases when column values must follow certain format, you can add `validation` to it.
-`validation` is an array of rules, each containing `regExp` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
-
-```typescript title="./resources/adminuser.ts"
-export default {
-      name: 'adminuser',
-      columns: [
-        ...
-        {
-          name: 'email',
-          required: true,
-          isUnique: true,
-          validation: [
-            {
-              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
-              message: 'Email is not valid, must be in format example@test.com',
-            },
-          ],
-        },
-      ],
-    },
-    ...
-  ],
-```
-
-> `validation` checks are enforced both on frontend and backend.
 
 ### Input prefix and suffix
 
@@ -966,6 +1022,81 @@ export default {
 When defined like this, adminforth will use value in `property_type` to figure out to what table does id in `property_id` refers to and properly link them. When creating or editing a record, adminforth will figure out to what table new `property_id` links to and fill `property_type` on its own using corresponding `whenValue`. Note, that `whenValue` does not have to be the same as `resourceId`, it can be any string as long as they do not repeat withing `polymorphicResources` array. Also, since `whenValue` is a string, column designated as `polymorphicOn` must also be string. Another thing to note is that, `polymorphicOn` column (`property_type` in our case) must not be editable by user, so it must include both `create` and `edit` as `false` in `showIn` value. Even though, `polymorphicOn` column is no editable, it can be beneficial to set is as an enumerator. This will have two benefits: first, columns value displayed in table and show page can be changed to a desired one and second, when filtering on this column, user will only able to choose values provided for him.
 
 If `beforeDatasourceRequest` or `afterDatasourceResponse` hooks are set for polymorphic foreign resource, they will be called for each resource in `polymorphicResources` array.
+
+## Validation (create/edit view)
+In cases when column values must follow certain format, you can add `validation` to it.
+`validation` is an array of rules, each containing `regExp` or `validator function` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
+
+### Frontend validation
+We recommend to use this validation with regExp, because it validates fields in real time
+
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: 'email',
+          required: true,
+          isUnique: true,
+          //diff-add
+          validation: [
+            //diff-add
+            {
+              //diff-add
+              regExp: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+              //diff-add
+              message: 'Email is not valid, must be in format example@test.com',
+              //diff-add
+            },
+            //diff-add
+          ],
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+### Backend validation
+There might be rare cases, when you want to have your own validation function. For this you can use `validator` callback:
+```typescript title="./resources/adminuser.ts"
+export default {
+      name: 'adminuser',
+      columns: [
+        ...
+        {
+          name: 'email',
+          required: true,
+          isUnique: true,
+          //diff-add
+          validation: [
+            //diff-add
+            {
+              //diff-add
+              async validator(value: any, record: any) {
+                //diff-add
+                if (value.endsWith("@example.com")) {
+                  //diff-add
+                  return { isValid: false, message: 'Your email can`t end with `@example.com`' };
+                  //diff-add
+                }
+                //diff-add
+                return { isValid: true }
+                //diff-add
+              }
+              //diff-add
+            }
+            //diff-add
+          ],
+        },
+      ],
+    },
+    ...
+  ],
+```
+
+>Avoid using a custom validator because every time you change a field (after a failed first save attempt), it will make an API call.
 
 ## Filtering
 

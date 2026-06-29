@@ -42,22 +42,17 @@ export default {
   plugins: [
     new UploadPlugin({
       pathColumnName: "image_path",
-      storageAdapter: new AdminForthStorageAdapterLocalFilesystem({
+      storageAdapter:process.env.USE_S3 !== 'true' ? new AdminForthStorageAdapterLocalFilesystem({
         fileSystemFolder: "./db/uploads_promo_generated",
         mode: "public", // or "private"
         signingSecret: '1241245',
+      }) : new AdminForthAdapterS3Storage({
+        bucket: process.env.AWS_BUCKET_NAME as string,
+        region: process.env.AWS_REGION as string,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
       }),
 
-      // to test s3:
-      //  storageAdapter: new AdminForthAdapterS3Storage({
-      //   bucket: 'static.devforth.io',
-      //   region: process.env.AWS_REGION || "eu-central-1",
-      //   accessKeyId: process.env.AWS_ACCESS_KEY_ID || "your-access-key-id",
-      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "your-secret-access-key",
-      //   s3ACL: 'public-read',
-      // }),
-  
-  
       allowedFileExtensions: [
         "jpg",
         "jpeg",

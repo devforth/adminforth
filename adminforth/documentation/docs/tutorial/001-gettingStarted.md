@@ -1,3 +1,7 @@
+---
+description: "Step-by-step guide to creating an AdminForth app with the CLI (bootstrapping), understanding the generated project structure, running migrations, and starting the server."
+---
+
 # Getting Started
 
 This page provides a step-by-step guide to quickly get started with AdminForth using the `adminforth` CLI.
@@ -14,6 +18,7 @@ nvm install 20
 nvm alias default 20
 nvm use 20
 ```
+
 
 ## Creating an AdminForth Project
 
@@ -40,17 +45,18 @@ cd myadmin # or any other name you provided
 CLI options:
 
 * **`--app-name`** - name for your project. Used in `package.json`, `index.ts` branding, etc. Default value: **`adminforth-app`**.
-* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, MySQL, Clickhouse are supported. Default value: **`sqlite://.db.sqlite`**
+* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, MySQL, Clickhouse and Qdrant (read only) are supported. Default value: **`sqlite://.db.sqlite`**
 
 > ☝️ Database Connection String format:
 >
 > Format is `<scheme>://<username>:<password>@<host>:<port>/<database>`. Examples:
 >
 > - SQLite — `sqlite://.db.sqlite`. If database not yet exists it will be created
-> - PostgreSQL — `postgres://user:password@localhost:5432/dbname`
+> - PostgreSQL — `postgresql://user:password@localhost:5432/dbname`
 > - MongoDB — `mongodb://localhost:27017/dbname`
 > - Clickhouse — `clickhouse://localhost:8123/dbname`
 > - MySQL — `mysql://user:password@localhost:3306/dbname`
+> - Qdrant - `qdrant://localhost:6333`
 
 ### Understand the generated Project Structure
 
@@ -179,131 +185,257 @@ pnpm makemigration --name add-apartments ; pnpm migrate:local
 
 ### Step3. Create the `apartments` resource
 
-Create a new file `apartments.ts` in the `resources/` folder:
+Use command to create a new file `apartments.ts` in the `resources/` folder
+
+```bash
+npx adminforth resource
+```
+
+After the resource file is generated, extend it with display and validation settings.
+
+- Use recordLabel to control how each record is represented in lists and relations.
+- Apply fillOnCreate to automatically populate fields during creation (e.g., generated IDs or timestamps).
+- Add minLength and maxLength to string fields to enforce input constraints.
+- Use enum to limit fields to predefined values and render them as dropdowns in the UI.
+- Configure allowedActions to control which operations are available for the resource (editing, deleting, viewing, and filtering).
+
+To properly apply these changes, refer to the example below and adjust the configuration according to your settings
 
 ```ts title="./resources/apartments.ts"
-import { AdminForthDataTypes, AdminForthResourceInput } from 'adminforth';
+import { AdminForthResourceInput, AdminForthDataTypes } from 'adminforth';
 
 export default {
   dataSource: 'maindb',
   table: 'apartments',
+  //diff-remove
+  resourceId: 'apartments'
+  //diff-add
   resourceId: 'aparts', // resourceId is defaulted to table name but you can redefine it like this e.g. 
+  //diff-add
   // in case of same table names from different data sources
   label: 'Apartments',   // label is defaulted to table name but you can change it
+  //diff-add
   recordLabel: (r) => `🏡 ${r.title}`,
   columns: [
     {
       name: 'id',
+      //diff-add
       type: AdminForthDataTypes.STRING,
+      //diff-add
       label: 'Identifier',  // if you wish you can redefine label, defaulted to uppercased name
       showIn: { // show column in filter and in show page
+        //diff-remove
+        all:true,
+        //diff-add
         list: false,
+        //diff-add
         edit: false,
+        //diff-add
         create: false,
       },
+      //diff-add
       primaryKey: true,
+      //diff-add
       fillOnCreate: ({ initialRecord, adminUser }) => Math.random().toString(36).substring(7),  // called during creation to generate content of field, initialRecord is values user entered, adminUser object of user who creates record
     },
     {
-      name: 'title',
+      name: "title",
+      //diff-add
       required: true,
-      showIn: { all: true },  // all available options
+      showIn: {
+        all:true, // all available options
+      },
+      //diff-add
       type: AdminForthDataTypes.STRING,
+      //diff-add
       maxLength: 255,  // you can set max length for string fields
+      //diff-add
       minLength: 3,  // you can set min length for string fields
     },
     {
       name: 'created_at',
+      //diff-add
       type: AdminForthDataTypes.DATETIME,
+      //diff-add
       allowMinMaxQuery: true,
-      showIn: { create: false },
+      showIn: {
+        //diff-remove
+        all:true,
+        //diff-add
+        create: false,
+      },
+      //diff-add
       fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
     },
     {
       name: 'price',
+      showIn: {
+        all:true,
+      },
+      //diff-add
       inputSuffix: 'USD', // you can add a suffix to an input field that will be displayed when creating or editing records
+      //diff-add
       allowMinMaxQuery: true,  // use better experience for filtering e.g. date range, set it only if you have index on this column or if you sure there will be low number of rows
+      //diff-add
       editingNote: 'Price is in USD',  // you can put a note near field on editing or creating page
     },
     {
       name: 'square_meter',
+      //diff-add
       label: 'Square',
+      //diff-add
       allowMinMaxQuery: true,
+      showIn: {
+        all:true,
+      },
+      //diff-add
       minValue: 1,  // you can set min /max value for number columns so users will not be able to enter more/less
+      //diff-add
       maxValue: 1000,
     },
     {
       name: 'number_of_rooms',
+      //diff-add
       allowMinMaxQuery: true,
+      showIn: {
+        all:true,
+      },
+      //diff-add
       enum: [
+        //diff-add
         { value: 1, label: '1 room' },
+        //diff-add
         { value: 2, label: '2 rooms' },
+        //diff-add
         { value: 3, label: '3 rooms' },
+        //diff-add
         { value: 4, label: '4 rooms' },
+        //diff-add
         { value: 5, label: '5 rooms' },
+        //diff-add
       ],
     },
     {
       name: 'description',
+      //diff-add
       sortable: false,
-      showIn: { list: false },
+      showIn: {
+        //diff-remove
+        all:true,
+        //diff-add
+        list: false,
+      }
     },
     {
       name: 'country',
+      showIn: {
+        all:true,
+      },
+      //diff-add
       enum: [{
+        //diff-add
         value: 'US',
+        //diff-add
         label: 'United States'
+        //diff-add
       }, {
+        //diff-add
         value: 'DE',
+        //diff-add
         label: 'Germany'
+        //diff-add
       }, {
+        //diff-add
         value: 'FR',
+        //diff-add
         label: 'France'
+        //diff-add
       }, {
+        //diff-add
         value: 'GB',
+        //diff-add
         label: 'United Kingdom'
+        //diff-add
       }, {
+        //diff-add
         value: 'NL',
+        //diff-add
         label: 'Netherlands'
+        //diff-add
       }, {
+        //diff-add
         value: 'IT',
+        //diff-add
         label: 'Italy'
+        //diff-add
       }, {
+        //diff-add
         value: 'ES',
+        //diff-add
         label: 'Spain'
+        //diff-add
       }, {
+        //diff-add
         value: 'DK',
+        //diff-add
         label: 'Denmark'
+        //diff-add
       }, {
+        //diff-add
         value: 'PL',
+        //diff-add
         label: 'Poland'
+        //diff-add
       }, {
+        //diff-add
         value: 'UA',
+        //diff-add
         label: 'Ukraine'
+        //diff-add
       }, {
+        //diff-add
         value: null,
+        //diff-add
         label: 'Not defined'
+        //diff-add
       }],
     },
     {
       name: 'listed',
+      //diff-add
       required: true,  // will be required on create/edit
+      showIn: {
+        all:true,
+      }
     },
     {
       name: 'realtor_id',
+      //diff-add
       foreignResource: {
+        //diff-add
         resourceId: 'adminuser',
+        //diff-add
         searchableFields: ["id", "email"], // fields available for search in filter
+        //diff-add
+      },
+      showIn: {
+        all:true,
       }
     }
   ],
   options: {
-    listPageSize: 12,
+    listPageSize: 10,
+    //diff-add
     allowedActions: {
+      //diff-add
       edit: true,
+      //diff-add
       delete: true,
+      //diff-add
       show: true,
+      //diff-add
       filter: true,
+      //diff-add
     },
   },
 } as AdminForthResourceInput;
@@ -321,11 +453,6 @@ import apartmentsResource from "./resources/apartments.js";
 ...
 export const admin = new AdminForth({
   ...
-  resources: [
-    usersResource,
-    //diff-add
-    apartmentsResource,
-  ],
   menu: [
 //diff-add
     {
@@ -363,8 +490,17 @@ export const admin = new AdminForth({
     },
     {
       label: 'Users',
-      ...
-    }
+      icon: 'flowbite:user-solid',
+      resourceId: 'adminuser'
+    },
+    {
+      label: "Apartments",
+      icon: "flowbite:user-solid",
+      //diff-remove
+      resourceId: "apartments",
+      //diff-add
+      resourceId: "aparts",
+    },
   ],
   ...
 });
@@ -391,7 +527,7 @@ async function seedDatabase() {
 //diff-add
       title: `Apartment ${i}`,
 //diff-add
-      square_meter: (Math.random() * 100).toFixed(1),
+      square_meter: Number((Math.random() * 100).toFixed(1)),
 //diff-add
       price: (Math.random() * 10000).toFixed(2),
 //diff-add

@@ -3,83 +3,137 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.beforeBreadcrumbs || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
+      <RouterLink
+        v-if="hasListNavContext && coreStore.resourceOptions?.showNextButton !== false"
+        :to="nextRecordRoute ?? $route"
+        @click="handleNextClick()"
+        :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
+        class="af-button-shadow h-[34px] inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+      >
+        <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />
+        {{ $t('Next') }}
+      </RouterLink>
+
       <template v-if="coreStore.resource?.options?.actions">
 
-        <template  v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
+        <div class="flex gap-1" v-for="action in coreStore.resource.options.actions.filter(a => a.showIn?.showButton)" :key="action.id">
           <component
-            :is="action?.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
-            :meta="action.customComponent?.meta"
-            @callAction="(payload?) => startCustomAction(action.id, payload)"
+            :is="action?.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
+            :meta="action.customComponent ? formatComponent(action.customComponent).meta : undefined"
+            @callAction="(payload?: any) => startCustomAction(action.id, payload)"
             :disabled="actionLoadingStates[action.id]"
           >
             <button 
               :key="action.id"
               :disabled="actionLoadingStates[action.id!]"
-              class="flex items-center py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+              class="flex items-center af-button-shadow h-[2.125rem] py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
             >
               <component 
-                v-if="action.icon" 
+                v-if="action.icon && !actionLoadingStates[action.id!]" 
                 :is="getIcon(action.icon)" 
-                class="w-4 h-4 me-2 text-lightPrimary dark:text-darkPrimary"
+                class="w-4 h-4 me-2 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
+              />
+              <Spinner
+                v-if="actionLoadingStates[action.id!]"
+                class="w-5 h-5 me-2 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
               />
               {{ action.name }}
             </button>
           </component>
-        </template>
+        </div>
       </template>
       <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-add-new-button flex items-center py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover rounded-default gap-1"
+        class="af-add-new-button af-button-shadow h-[2.125rem] flex items-center py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover rounded-default gap-1"
       >
         <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Add new') }}
       </RouterLink>
 
       <RouterLink v-if="coreStore?.resourceOptions?.allowedActions?.edit" :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: $route.params.primaryKey } }" 
-        class="flex items-center af-edit-button py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded-default border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
+        class="flex items-center h-[2.125rem] af-button-shadow af-edit-button py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded-default border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
       >
         <IconPenSolid class="w-4 h-4" />
         {{ $t('Edit') }}
       </RouterLink>
 
       <button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
-        class="flex items-center af-delete-button py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-lightShowViewButtonBackground  border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-red-500 dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
+        class="flex items-center h-[2.125rem] af-button-shadow af-delete-button py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-lightShowViewButtonBackground  border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-red-500 dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
       >
         <IconTrashBinSolid class="w-4 h-4" />
         {{ $t('Delete') }}
       </button>
 
-      <ThreeDotsMenu 
+      <ThreeDotsMenu
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems as [])"
         :customActions="customActions"
       ></ThreeDotsMenu>
+
     </BreadcrumbsWithButtons>
 
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.afterBreadcrumbs || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
     />
 
-    <div v-if="loading" role="status" class="max-w-sm animate-pulse">
-        <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px] mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[330px] mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[300px] mb-2.5"></div>
-        <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
-        <span class="sr-only">{{ $t('Loading...') }}</span>
+    <div 
+      v-if="loading" 
+      role="status" 
+      class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow rounded-lg overflow-hidden border border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
+    >
+      <div 
+        v-if="groups && groups.length > 0" 
+        class="text-md font-semibold px-6 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
+      >
+        <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded-full w-32"></div>
+      </div>
+
+      <table class="w-full text-sm text-left table-fixed border-collapse">
+        <thead class="bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground block md:table-row-group">
+          <tr class="block md:table-row">
+            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
+              {{ $t('Field') }}
+            </th>
+            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
+              {{ $t('Value') }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr 
+            v-for="i in skeletonRowsCount" 
+            :key="i"
+            class="bg-lightShowTablesBodyBackground border-t border-lightShowTableBodyBorder dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
+          >
+            <td class="px-6 py-[15.5px] relative block md:table-cell pb-0 md:pb-[15.5px]">
+              <div class="md:absolute md:inset-0 flex items-center px-6 py-[15.5px]">
+                <div class="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full w-24"></div>
+              </div>
+            </td>
+
+            <td class="px-6 py-[15.5px] whitespace-pre-wrap block md:table-cell">
+              <div class="flex items-center h-full min-h-[21px]">
+                <div class="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full w-full max-w-[280px]"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <span class="sr-only">{{ $t('Loading...') }}</span>
     </div>
     <div 
       v-else-if="coreStore.record"
@@ -95,7 +149,7 @@
     <template v-else> 
       <template v-for="group in groups" :key="group.groupName">
         <ShowTable
-          :columns="group.columns"
+          :columns="group.columns as any"
           :groupName="group.groupName"
           :noTitle="group.noTitle"
           :resource="coreStore.resource"
@@ -120,8 +174,8 @@
     <component 
       v-if="!loading"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.show?.bottom || []"
-      :is="getCustomComponent(c)"
-      :meta="(c as AdminForthComponentDeclarationFull).meta"
+      :is="getCustomComponent(formatComponent(c as AdminForthComponentDeclarationFull))"
+      :meta="formatComponent(c as AdminForthComponentDeclarationFull).meta"
       :record="coreStore.record"
       :resource="coreStore.resource"
       :adminUser="coreStore.adminUser"
@@ -137,9 +191,9 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
 import { useCoreStore } from '@/stores/core';
-import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown } from '@/utils';
+import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
 import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
@@ -150,6 +204,8 @@ import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
 import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
+import { Spinner } from '@/afcl';
+import websocket from '@/websocket';
 
 const route = useRoute();
 const router = useRouter();
@@ -157,14 +213,55 @@ const loading = ref(true);
 const { t } = useI18n();
 const { confirm, alert, show } = useAdminforth();
 const coreStore = useCoreStore();
+const SHOW_PAGE_TOPIC_PREFIX = '/showPage/';
 
 const actionLoadingStates = ref<Record<string, boolean>>({});
+const subscribedShowPageTopic = ref<string | null>(null);
 
 const customActions = computed(() => {
   return coreStore.resource?.options?.actions?.filter((a: any) => a.showIn?.showThreeDotsMenu) || [];
 });
 
+const skeletonRowsCount = computed(() => {
+  const allCols = coreStore.resource?.columns || [];
+
+  const isEnabledInConfig = (col: any) => {
+    return col.showIn?.list !== false;
+  };
+  
+  const finalCount = allCols.filter(isEnabledInConfig).length;
+
+  return finalCount > 0 ? finalCount : 10;
+});
+
+const showPageTopic = computed(() => {
+  return `${SHOW_PAGE_TOPIC_PREFIX}${String(route.params.resourceId)}/${String(route.params.primaryKey)}`;
+});
+
+function applyShowPageUpdates(data: { resourceId: string; recordId: string; updates: Record<string, any> }) {
+  if (String(data.resourceId) !== String(route.params.resourceId)) {
+    return;
+  }
+  if (String(data.recordId) !== String(route.params.primaryKey)) {
+    return;
+  }
+  if (!coreStore.record) {
+    return;
+  }
+
+  Object.entries(data.updates).forEach(([attribute, value]) => {
+    coreStore.record[attribute] = value;
+  });
+}
+
+function subscribeToShowPageUpdates() {
+  websocket.unsubscribeByPrefix(SHOW_PAGE_TOPIC_PREFIX);
+  subscribedShowPageTopic.value = showPageTopic.value;
+  websocket.subscribe(subscribedShowPageTopic.value, applyShowPageUpdates);
+}
+
 onMounted(async () => {
+  subscribeToShowPageUpdates();
   loading.value = true;
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string,
@@ -179,6 +276,13 @@ onMounted(async () => {
     checkAcessByAllowedActions(coreStore.resourceOptions.allowedActions,'show');
   }
   loading.value = false;
+});
+
+onUnmounted(() => {
+  if (!subscribedShowPageTopic.value) {
+    return;
+  }
+  websocket.unsubscribe(subscribedShowPageTopic.value);
 });
 
 const groups = computed(() => {
@@ -203,8 +307,89 @@ const groups = computed(() => {
 });
 
 const allColumns = computed(() => {
-  return coreStore.resource?.columns.filter(col => col.showIn?.show);
+  return coreStore.resource?.columns?.filter(col => col.showIn?.show);
 });
+
+const isFetchingNextPage = ref(false);
+const nextPageRecords = ref<string[]>([]);
+
+const hasListNavContext = computed(() =>
+  coreStore.listResourceId === route.params.resourceId && coreStore.listRecordIds.length > 0
+);
+
+const currentRecordIndex = computed(() => {
+  const pk = String(route.params.primaryKey);
+  return coreStore.listRecordIds.findIndex((id: any) => String(id) === pk);
+});
+
+const isLastOnCurrentPage = computed(() =>
+  currentRecordIndex.value === coreStore.listRecordIds.length - 1
+);
+
+const hasNextRecord = computed(() => {
+  if (currentRecordIndex.value < 0) return false;
+  if (!isLastOnCurrentPage.value) return true;
+  return coreStore.listRecordIds.length === coreStore.listPageSize;
+});
+
+const nextRecordRoute = computed(() => {
+  if (!hasNextRecord.value) return null;
+  if (!isLastOnCurrentPage.value) {
+    return {
+      name: 'resource-show',
+      params: { resourceId: route.params.resourceId, primaryKey: coreStore.listRecordIds[currentRecordIndex.value + 1] },
+    };
+  }
+  if (nextPageRecords.value.length > 0) {
+    return {
+      name: 'resource-show',
+      params: { resourceId: route.params.resourceId, primaryKey: nextPageRecords.value[0] },
+    };
+  }
+  return null;
+});
+
+async function prefetchNextPage() {
+  if (!hasListNavContext.value || isFetchingNextPage.value) return;
+  if (coreStore.listRecordIds.length !== coreStore.listPageSize) return;
+
+  isFetchingNextPage.value = true;
+  try {
+    const response = await callAdminForthApi({
+      path: '/get_resource_data',
+      method: 'POST',
+      body: {
+        source: 'list',
+        resourceId: coreStore.listResourceId,
+        limit: coreStore.listPageSize,
+        offset: coreStore.listPage * coreStore.listPageSize,
+        filters: coreStore.listFilters,
+        sort: coreStore.listSort,
+      },
+    });
+    if (response?.recordIds?.length) {
+      nextPageRecords.value = response.recordIds;
+    }
+  } finally {
+    isFetchingNextPage.value = false;
+  }
+}
+
+watch(isLastOnCurrentPage, (isLast) => {
+  if (isLast) {
+    prefetchNextPage();
+  } else {
+    nextPageRecords.value = [];
+  }
+}, { immediate: true });
+
+function handleNextClick() {
+  if (isLastOnCurrentPage.value && nextPageRecords.value.length > 0) {
+    coreStore.listRecordIds = nextPageRecords.value;
+    coreStore.listPage += 1;
+    nextPageRecords.value = [];
+  }
+}
 
 const otherColumns = computed(() => {
   const groupedColumnNames = new Set(
@@ -218,9 +403,11 @@ const otherColumns = computed(() => {
 
 async function deleteRecord() {
   const data = await confirm({
-    message: t('Are you sure you want to delete this item?'),
+    title: t('Are you sure you want to delete this item?'),
+    message: t(`This process is irreversible.`),
     yes: t('Delete'),
     no: t('Cancel'),
+    dangerous: true,
   });
   if (data) {
     try {
@@ -245,55 +432,48 @@ async function deleteRecord() {
     
 }
 
-async function startCustomAction(actionId: string, extra: any) {  
-  actionLoadingStates.value[actionId] = true;
+async function startCustomAction(actionId: string, extra?: any) {  
+  await executeCustomAction({
+    actionId,
+    resourceId: route.params.resourceId as string,
+    recordId: route.params.primaryKey as string,
+    extra,
+    setLoadingState: (loading: boolean) => {
+      actionLoadingStates.value[actionId] = loading;
+    },
+    onSuccess: async (data: any) => {
+      if (data?.redirectUrl) {
+        // Check if the URL should open in a new tab
+        if (data.redirectUrl.includes('target=_blank')) {
+          window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
+        } else {
+          // Navigate within the app
+          if (data.redirectUrl.startsWith('http')) {
+            window.location.href = data.redirectUrl;
+          } else {
+            router.push(data.redirectUrl);
+          }
+        }
+        return;
+      }
 
-  const data = await callAdminForthApi({
-    path: '/start_custom_action',
-    method: 'POST',
-    body: {
-      resourceId: route.params.resourceId,
-      actionId: actionId,
-      recordId: route.params.primaryKey,
-      extra: extra,
+      await coreStore.fetchRecord({
+        resourceId: route.params.resourceId as string,
+        primaryKey: route.params.primaryKey as string,
+        source: 'show',
+      });
+
+      if (data.successMessage) {
+        alert({
+          message: data.successMessage,
+          variant: 'success'
+        });
+      }
+    },
+    onError: (error: string) => {
+      showErrorTost(error);
     }
   });
-  
-  actionLoadingStates.value[actionId] = false;
-  
-  if (data?.redirectUrl) {
-    // Check if the URL should open in a new tab
-    if (data.redirectUrl.includes('target=_blank')) {
-      window.open(data.redirectUrl.replace('&target=_blank', '').replace('?target=_blank', ''), '_blank');
-    } else {
-      // Navigate within the app
-      if (data.redirectUrl.startsWith('http')) {
-        window.location.href = data.redirectUrl;
-      } else {
-        router.push(data.redirectUrl);
-      }
-    }
-    return;
-  }
-  
-  if (data?.ok) {
-    await coreStore.fetchRecord({
-      resourceId: route.params.resourceId as string, 
-      primaryKey: route.params.primaryKey as string,
-      source: 'show',
-    });
-
-    if (data.successMessage) {
-      alert({
-        message: data.successMessage,
-        variant: 'success'
-      });
-    }
-  }
-  
-  if (data?.error) {
-    showErrorTost(data.error);
-  }
 }
 
 show.refresh = () => {

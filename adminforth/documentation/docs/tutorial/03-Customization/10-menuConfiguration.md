@@ -1,3 +1,7 @@
+---
+description: "Guide to configuring the AdminForth sidebar and header, including icons, grouping, visibility rules, gaps, dividers, and custom links."
+---
+
 # Menu & Header
 
 
@@ -52,6 +56,131 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
 ```
 
 If it is rare Group you can make it `open: false` so it would not take extra space in menu, but admin users will be able to open it by clicking on the group name.
+
+## Adding menu items from plugins
+
+Plugins can add top-level menu items without mutating the user-defined `config.menu`. This keeps the application menu owned by the app configuration, while plugins can contribute their own entries.
+
+Use `registerMenuContribution` from a plugin's `modifyResourceConfig`:
+
+```ts title='./plugins/adminforth-dashboard/index.ts'
+async modifyResourceConfig(adminforth, resourceConfig) {
+  super.modifyResourceConfig(adminforth, resourceConfig);
+
+  adminforth.registerMenuContribution({
+    item: {
+      itemId: 'dashboard',
+      type: 'page',
+      label: 'Dashboard',
+      icon: 'flowbite:chart-pie-solid',
+      path: '/dashboard',
+      component: this.componentPath('Dashboard.vue'),
+    },
+    placement: { before: { resourceId: 'adminuser' } },
+  });
+}
+```
+
+Supported placements:
+
+```ts
+adminforth.registerMenuContribution({
+  item: {
+    itemId: 'dashboard',
+    type: 'page',
+    label: 'Dashboard',
+    path: '/dashboard',
+    component: this.componentPath('Dashboard.vue'),
+  },
+  placement: { position: 'first' },
+});
+
+adminforth.registerMenuContribution({
+  item: {
+    itemId: 'reports',
+    type: 'page',
+    label: 'Reports',
+    path: '/reports',
+    component: this.componentPath('Reports.vue'),
+  },
+  placement: { after: { resourceId: 'orders' } },
+});
+```
+
+`placement` can be:
+
+- `{ position: 'first' }`
+- `{ position: 'last' }`
+- `{ before: 'usersMenuItemId' }`
+- `{ after: 'usersMenuItemId' }`
+- `{ before: { itemId: 'usersMenuItemId' } }`
+- `{ after: { resourceId: 'adminuser' } }`
+- `{ before: { path: '/reports' } }`
+
+If placement is omitted, or if the target item is not found, AdminForth appends the contributed item to the end of the top-level menu.
+
+Plugin menu contributions are additive only:
+
+- user-defined `config.menu` is not changed
+- plugins cannot remove or edit existing menu items through this API
+- contributed `itemId` must not duplicate an existing top-level menu item
+- this first version inserts only top-level menu items
+
+### Dynamic menu items from plugin state
+
+If a plugin needs to add menu items at runtime, for example after a user clicks a button and creates a new dashboard, register a menu contribution provider. AdminForth calls providers every time it fetches the menu.
+
+```ts title='./plugins/adminforth-dashboard/index.ts'
+async modifyResourceConfig(adminforth, resourceConfig) {
+  super.modifyResourceConfig(adminforth, resourceConfig);
+
+  adminforth.registerMenuContributionProvider(async ({ adminUser, adminforth }) => {
+    const dashboards = await adminforth.resource('dashboards').list();
+
+    return [
+      {
+        item: {
+          itemId: 'dashboardsMenu',
+          type: 'group',
+          label: 'Dashboards',
+          icon: 'flowbite:chart-pie-solid',
+          children: dashboards.map((dashboard) => ({
+            itemId: `dashboard-${dashboard.id}`,
+            type: 'page',
+            label: dashboard.name,
+            path: `/dashboards/${dashboard.id}`,
+          })),
+        },
+        placement: { position: 'first' },
+      },
+    ];
+  });
+}
+```
+
+After the plugin changes the state used by the provider, call `refreshMenu` on the backend:
+
+```ts
+await adminforth.resource('dashboards').create({
+  name: 'Sales',
+});
+
+await adminforth.refreshMenu(adminUser);
+```
+
+AdminForth sends a websocket event to the current user, and the frontend refetches the menu without a page reload.
+
+Frontend components can also refresh the menu directly:
+
+```ts
+import { useAdminforth } from '@/adminforth';
+
+const { menu } = useAdminforth();
+
+await menu.refresh();
+```
+
+Dynamic menu items should point to routes that are already available in the SPA. If a provider returns a brand-new custom `component` path that was not known during AdminForth build, the menu item can appear, but the route will not be registered until the app is rebuilt.
 
 ## Visibility of menu items
 
@@ -207,8 +336,12 @@ Most times you need to refresh the badge from some backend API or hook. To do th
       resourceId: 'posts',
 //diff-add
       itemId: 'postsMenuItem',
-      badge: async (adminUser: AdminUser) => {
-        return 10
+      //diff-add
+      badge: async (adminUser: AdminUser, adminForth: IAdminForth) => {
+        //diff-add
+        const newCount = await adminforth.resource('posts').count(Filters.EQ('verified', false));
+        //diff-add
+        return newCount;
       },
       badgeTooltip: 'Unverified posts',  // explain user what this badge means
       ...
@@ -226,15 +359,13 @@ Most times you need to refresh the badge from some backend API or hook. To do th
   table: 'posts',
   hooks: {
     edit: {
-//diff-add
+      //diff-add
       afterSave: async ({ record, adminUser, resource, adminforth }) => {
-//diff-add
-        const newCount = await adminforth.resource('posts').count(Filters.EQ('verified', false));
-//diff-add
-        adminforth.websocket.publish(`/opentopic/update-menu-badge/postsMenuItem`, { badge: newCount });
-//diff-add
+        //diff-add
+        adminforth.refreshMenuBadge('postsMenuItem', adminUser);
+        //diff-add
         return { ok: true }
-//diff-add
+        //diff-add
       }
     }
   }
@@ -278,3 +409,149 @@ auth: {
 This syntax can be use to get unique avatar for each user of hardcode avatar, but it makes more sense to use it with [upload plugin](https://adminforth.dev/docs/tutorial/Plugins/upload/#using-plugin-for-uploading-avatar)
 
 
+## Custom URL
+You can use the url property to override default navigation. This is useful for linking to pre-filtered lists or external sites.
+
+
+```ts title='./index.ts'
+
+menu: [
+    {
+      label: 'Posts',
+      icon: 'flowbite:book-open-outline',
+      resourceId: 'posts',
+      //diff-add
+      url: '/resource/aparts?filter__country__in=["DE"]',  
+      //diff-add
+      isOpenInNewTab: true // You can also add isOpenInNewTab: true to open the link in a new browser tab
+    },
+  ],
+
+```
+> 👆 Please note start internal URLs with a leading / to ensure correct routing.
+
+
+## Adding menu items from plugins
+
+Plugins can add top-level menu items without mutating the user-defined `config.menu`. This keeps the application menu owned by the app configuration, while plugins can contribute their own entries.
+
+Use `registerMenuContribution` from a plugin's `modifyResourceConfig`:
+
+```ts title='./plugins/adminforth-dashboard/index.ts'
+async modifyResourceConfig(adminforth, resourceConfig) {
+  super.modifyResourceConfig(adminforth, resourceConfig);
+
+  adminforth.registerMenuContribution({
+    item: {
+      itemId: 'dashboard',
+      type: 'page',
+      label: 'Dashboard',
+      icon: 'flowbite:chart-pie-solid',
+      path: '/dashboard',
+      component: this.componentPath('Dashboard.vue'),
+    },
+    placement: { before: { resourceId: 'adminuser' } },
+  });
+}
+```
+
+Supported placements:
+
+```ts
+adminforth.registerMenuContribution({
+  item: {
+    itemId: 'dashboard',
+    type: 'page',
+    label: 'Dashboard',
+    path: '/dashboard',
+    component: this.componentPath('Dashboard.vue'),
+  },
+  placement: { position: 'first' },
+});
+
+adminforth.registerMenuContribution({
+  item: {
+    itemId: 'reports',
+    type: 'page',
+    label: 'Reports',
+    path: '/reports',
+    component: this.componentPath('Reports.vue'),
+  },
+  placement: { after: { resourceId: 'orders' } },
+});
+```
+
+`placement` can be:
+
+- `{ position: 'first' }`
+- `{ position: 'last' }`
+- `{ before: 'usersMenuItemId' }`
+- `{ after: 'usersMenuItemId' }`
+- `{ before: { itemId: 'usersMenuItemId' } }`
+- `{ after: { resourceId: 'adminuser' } }`
+- `{ before: { path: '/reports' } }`
+
+If placement is omitted, or if the target item is not found, AdminForth appends the contributed item to the end of the top-level menu.
+
+Plugin menu contributions are additive only:
+
+- user-defined `config.menu` is not changed
+- plugins cannot remove or edit existing menu items through this API
+- contributed `itemId` must not duplicate an existing top-level menu item
+- this first version inserts only top-level menu items
+
+### Dynamic menu items from plugin state
+
+If a plugin needs to add menu items at runtime, for example after a user clicks a button and creates a new dashboard, register a menu contribution provider. AdminForth calls providers every time it fetches the menu.
+
+```ts title='./plugins/adminforth-dashboard/index.ts'
+async modifyResourceConfig(adminforth, resourceConfig) {
+  super.modifyResourceConfig(adminforth, resourceConfig);
+
+  adminforth.registerMenuContributionProvider(async ({ adminUser, adminforth }) => {
+    const dashboards = await adminforth.resource('dashboards').list();
+
+    return [
+      {
+        item: {
+          itemId: 'dashboardsMenu',
+          type: 'group',
+          label: 'Dashboards',
+          icon: 'flowbite:chart-pie-solid',
+          children: dashboards.map((dashboard) => ({
+            itemId: `dashboard-${dashboard.id}`,
+            type: 'page',
+            label: dashboard.name,
+            path: `/dashboards/${dashboard.id}`,
+          })),
+        },
+        placement: { position: 'first' },
+      },
+    ];
+  });
+}
+```
+
+After the plugin changes the state used by the provider, call `refreshMenu` on the backend:
+
+```ts
+await adminforth.resource('dashboards').create({
+  name: 'Sales',
+});
+
+await adminforth.refreshMenu(adminUser);
+```
+
+AdminForth sends a websocket event to the current user, and the frontend refetches the menu without a page reload.
+
+Frontend components can also refresh the menu directly:
+
+```ts
+import { useAdminforth } from '@/adminforth';
+
+const { menu } = useAdminforth();
+
+await menu.refresh();
+```
+
+Dynamic menu items should point to routes that are already available in the SPA. If a provider returns a brand-new custom `component` path that was not known during AdminForth build, the menu item can appear, but the route will not be registered until the app is rebuilt.

@@ -1,12 +1,9 @@
 import AdminForthAuth from './auth.js';
-import MongoConnector from './dataConnectors/mongo.js';
-import PostgresConnector from './dataConnectors/postgres.js';
-import MysqlConnector from './dataConnectors/mysql.js';
-import SQLiteConnector from './dataConnectors/sqlite.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
+import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -24,21 +21,26 @@ import {
   CreateResourceRecordResult,
   UpdateResourceRecordResult,
   DeleteResourceRecordResult,
+  AdminForthMenuContributionProvider,
 } from './types/Back.js';
 import {
   AdminForthFilterOperators,
   AdminForthDataTypes,
-  AdminUser,
+  AdminUser, 
+  ActionCheckSource,
+  type AdminForthConfigMenuItem,
+  type AdminForthMenuContribution,
+  type AdminForthMenuTarget,
 } from './types/Common.js';
 
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI, { interpretResource } from './modules/restApi.js';
-import ClickhouseConnector from './dataConnectors/clickhouse.js';
+import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './modules/restApi.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 export { afLogger } from './modules/logger.js';
+export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
 
 // exports
@@ -46,9 +48,12 @@ export * from './types/Back.js';
 export * from './types/Common.js';
 export * from './types/adapters/index.js';
 export * from './modules/filtersTools.js';
-export { interpretResource };
+export * from './modules/requestContext.js';
+export * from './modules/utils.js';
+export { interpretResource, rejectApiRawFilters };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
+export { default as AdminForthBaseConnector } from './dataConnectors/baseConnector.js';
 
 
 class AdminForth implements IAdminForth {
@@ -64,43 +69,17 @@ class AdminForth implements IAdminForth {
     },
 
     applyRegexValidation(value, validation) {
-      if (validation?.length) {
-        const validationArray = validation;
-        for (let i = 0; i < validationArray.length; i++) {
-          if (validationArray[i].regExp) {
-            let flags = '';
-            if (validationArray[i].caseSensitive) {
-              flags += 'i';
-            }
-            if (validationArray[i].multiline) {
-              flags += 'm';
-            }
-            if (validationArray[i].global) {
-              flags += 'g';
-            }
-
-            const regExp = new RegExp(validationArray[i].regExp, flags);
-            if (value === undefined || value === null) {
-              value = '';
-            }
-            let valueS = `${value}`;
-
-            if (!regExp.test(valueS)) {
-              return validationArray[i].message;
-            }
-          }
-        }
-      }
+      return applyRegexValidation(value, validation);
     },
 
     PASSWORD_VALIDATORS: {
       UP_LOW_NUM_SPECIAL: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*\\(\\)\\-_=\\+\\[\\]\\{\\}\\|;:\',\\.<>\\/\\?]).+$',
-        message: 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character'
+        message: 'Password must include at latin least one uppercase letter, one latin lowercase letter, one number, and one special character'
       },
       UP_LOW_NUM: {
         regExp: '^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$',
-        message: 'Password must include at least one uppercase letter, one lowercase letter, and one number'
+        message: 'Password must include at latin least one uppercase letter, one latin lowercase letter, and one number'
       },
     },
     EMAIL_VALIDATOR: {
@@ -115,6 +94,7 @@ class AdminForth implements IAdminForth {
   // fastify: FastifyServer;
   auth: AdminForthAuth;
   codeInjector: CodeInjector;
+  openApi: OpenApiRegistry;
   connectors: {
     [dataSourceId: string]: IAdminForthDataSourceConnectorBase,
   };
@@ -122,10 +102,100 @@ class AdminForth implements IAdminForth {
   runningHotReload: boolean;
   activatedPlugins: Array<AdminForthPlugin>;
   pluginsById: Record<string, AdminForthPlugin> = {};
+  private menuContributions: AdminForthMenuContribution[] = [];
+  private menuContributionProviders: AdminForthMenuContributionProvider[] = [];
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
 
   websocket: IWebSocketBroker;
+
+  registerMenuContribution(contribution: AdminForthMenuContribution): void {
+    this.menuContributions.push(contribution);
+  }
+
+  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider): void {
+    this.menuContributionProviders.push(provider);
+  }
+
+  getMenuContributions(): AdminForthMenuContribution[] {
+    return [...this.menuContributions];
+  }
+
+  async getMenuWithContributions(adminUser?: AdminUser, menu: AdminForthConfigMenuItem[] = this.config.menu): Promise<AdminForthConfigMenuItem[]> {
+    const generateItemId = (item: AdminForthConfigMenuItem) =>
+      md5hash(`menu-item-${item.label}-${item.resourceId || ''}-${item.path || ''}`);
+    const matchesTarget = (item: AdminForthConfigMenuItem, target: AdminForthMenuTarget) =>
+      typeof target === 'string'
+        ? item.itemId === target
+        : (target.itemId !== undefined && item.itemId === target.itemId)
+          || (target.resourceId !== undefined && item.resourceId === target.resourceId)
+          || (target.path !== undefined && item.path === target.path);
+
+    const resolvedMenu: AdminForthConfigMenuItem[] = menu.map((item) => ({
+      ...item,
+      itemId: item.itemId || generateItemId(item),
+      children: item.children?.map((child) => ({
+        ...child,
+        itemId: child.itemId || generateItemId(child),
+      })),
+    }));
+    const usedItemIds = new Set(resolvedMenu.map((item) => item.itemId));
+
+    const providerContributions = await Promise.all(
+      this.menuContributionProviders.map((provider) => provider({ adminUser, adminforth: this }))
+    );
+    const contributions = [
+      ...this.getMenuContributions(),
+      ...providerContributions.flat(),
+    ]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+    for (const contribution of contributions) {
+      const item = {
+        ...contribution.item,
+        itemId: contribution.item.itemId || generateItemId(contribution.item),
+      };
+      if (usedItemIds.has(item.itemId)) {
+        throw new Error(`Menu contribution itemId "${item.itemId}" already exists in menu`);
+      }
+      usedItemIds.add(item.itemId);
+
+      const placement = contribution.placement;
+      if (placement && 'position' in placement && placement.position === 'first') {
+        resolvedMenu.unshift(item);
+      } else if (placement && 'before' in placement) {
+        const targetIndex = resolvedMenu.findIndex((menuItem) => matchesTarget(menuItem, placement.before));
+        resolvedMenu.splice(targetIndex === -1 ? resolvedMenu.length : targetIndex, 0, item);
+      } else if (placement && 'after' in placement) {
+        const targetIndex = resolvedMenu.findIndex((menuItem) => matchesTarget(menuItem, placement.after));
+        resolvedMenu.splice(targetIndex === -1 ? resolvedMenu.length : targetIndex + 1, 0, item);
+      } else {
+        resolvedMenu.push(item);
+      }
+    }
+
+    return resolvedMenu;
+  }
+
+  async refreshMenu(adminUser: AdminUser) {
+    this.websocket.publish(`/opentopic/refresh-menu/${adminUser.pk}`, {});
+  }
+
+  async refreshMenuBadge(menuItemId: string, adminUser: AdminUser) {
+    const menu = await this.getMenuWithContributions(adminUser);
+    const menuItem = menu.find((item) => item.itemId === menuItemId)
+      || menu.flatMap((item) => item.children || []).find((item) => item.itemId === menuItemId);
+    if (!menuItem) {
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it was not found in menu`);
+      return;
+    }
+    if (!menuItem.badge) {
+      afLogger.error(`Cannot refresh badge for menu item with id "${menuItemId}" because it does not have badge function in menu`);
+      return;
+    }
+    const badgeValue = typeof menuItem.badge === 'function' ? await menuItem.badge(adminUser, this) : menuItem.badge;
+    this.websocket.publish(`/opentopic/update-menu-badge/${menuItemId}`, { badge: badgeValue });
+  }
 
   operationalResources: {
     [resourceId: string]: IOperationalResource,
@@ -154,6 +224,10 @@ class AdminForth implements IAdminForth {
     afLogger.trace('🔧 Creating AdminForthRestAPI...');
     this.restApi = new AdminForthRestAPI(this);
     afLogger.trace('🔧 AdminForthRestAPI created');
+
+    afLogger.trace('🔧 Creating OpenApiRegistry...');
+    this.openApi = new OpenApiRegistry(this);
+    afLogger.trace('🔧 OpenApiRegistry created');
     
     afLogger.trace('🔧 Creating SocketBroker...');
     this.websocket = new SocketBroker(this);
@@ -216,13 +290,21 @@ class AdminForth implements IAdminForth {
   activatePlugins() {
     afLogger.trace('🔌🔌🔌 Activating plugins');
     const allPluginInstances = [];
+    const globalPlugins = this.config.globalPlugins || [];
     for (let resource of this.config.resources) {
       afLogger.trace(`🔌 Checking plugins for resource: ${resource.resourceId}`);
       for (let pluginInstance of resource.plugins || []) {
         afLogger.trace(`🔌 Found plugin: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
+        if (pluginInstance.pluginsScope === 'global') {
+          throw new Error(formatHugePluginError(`Please move plugin ${pluginInstance.constructor.name} instance to index.ts config.globalPlugins array.
+            Details: Previously adminforth had only resource-level plugins. To keep project structure clean, in recent version of adminforth we introduced globalPlugins. 
+            Global plugins are installed on whole application and not only one resource (like agent, audit logs etc)
+          `));
+        }
         allPluginInstances.push({pi: pluginInstance, resource});
       }
     }
+    allPluginInstances.push(...globalPlugins.map((pluginInstance) => ({pi: pluginInstance, resource: null})));
     afLogger.trace(`🔌 Total plugins to activate: ${allPluginInstances.length}`);
     
     let activationLoopCounter = 0;
@@ -251,8 +333,12 @@ class AdminForth implements IAdminForth {
       unactivatedPlugins.forEach(
         ({pi: pluginInstance, resource}, index) => {
           afLogger.trace(`Activating plugin: ${pluginInstance.constructor.name}`);
-          afLogger.trace(`🔌 Activating plugin ${index + 1}/${unactivatedPlugins.length}: ${pluginInstance.constructor.name} for resource ${resource.resourceId}`);
-          pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
+          afLogger.trace(`🔌 Activating plugin ${index + 1}/${unactivatedPlugins.length}: ${pluginInstance.constructor.name} for resource ${resource ? resource.resourceId : 'global'}`);
+          if (pluginInstance.pluginsScope === 'global'){
+            pluginInstance.modifyGlobalConfig(this);
+          } else {
+            pluginInstance.modifyResourceConfig(this, resource, allPluginInstances);
+          }
           afLogger.trace(`🔌 Plugin ${pluginInstance.constructor.name} modifyResourceConfig completed`);
           
           const plugin = this.activatedPlugins.find((p) => p.pluginInstanceId === pluginInstance.pluginInstanceId);
@@ -384,9 +470,58 @@ class AdminForth implements IAdminForth {
     return null;
   }
 
+  async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
+    try {
+      const connectorModule = await import(`@adminforth/connector-${connectorName}`);
+      return connectorModule.default;
+    } catch (e) {
+      throw new Error(`
+╔════════════════════════════════════════════════════════════════════════════
+║                                                                            
+║  ❌ CONNECTOR IMPORT ERROR                                                 
+║  ──────────────────────────────────────────────────────────────────────────
+║                                                                            
+║  Error while importing ${connectorName} connector                                   
+║                                                                            
+║  💡 SOLUTION                                                               
+║  Install the required package:                                             
+║                                                                            
+║    ${doesUserHavePnpmLock ? `pnpm add @adminforth/connector-${connectorName}` : `npm install @adminforth/connector-${connectorName}`}
+║                                                                            
+╚════════════════════════════════════════════════════════════════════════════
+      `);
+    } 
+  }
 
   async discoverDatabases() {
     this.statuses.dbDiscover = 'running';
+    const doesUserHavePnpmLock = await this.codeInjector.doesUserHasPnpmLockFile('./');
+    const dataSourcesDatabasesTypes = [];
+    this.config.dataSources.forEach((ds) => {
+      const dbType = ds.url.split(':')[0];
+      dataSourcesDatabasesTypes.push(dbType)
+    });
+    const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
+    if (uniqueDbTypes.includes('sqlite')) {
+      SQLiteConnector = await this.tryToImportConnector('sqlite', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('postgres') || uniqueDbTypes.includes('postgresql')) {
+      PostgresConnector = await this.tryToImportConnector('postgres', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('mongodb')) {
+      MongoConnector = await this.tryToImportConnector('mongo', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('clickhouse')) {
+      ClickhouseConnector = await this.tryToImportConnector('clickhouse', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('mysql')) {
+      MysqlConnector = await this.tryToImportConnector('mysql', doesUserHavePnpmLock);
+    }
+    if (uniqueDbTypes.includes('qdrant')) {
+      QdrantConnector = await this.tryToImportConnector('qdrant', doesUserHavePnpmLock);
+    }
+
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
       'postgres': PostgresConnector,
@@ -394,10 +529,12 @@ class AdminForth implements IAdminForth {
       'mongodb': MongoConnector,
       'clickhouse': ClickhouseConnector,
       'mysql': MysqlConnector,
+      'qdrant': QdrantConnector,
     };
-    if (!this.config.databaseConnectors) {
-      this.config.databaseConnectors = {...this.connectorClasses};
-    }
+    this.config.databaseConnectors = {
+      ...this.connectorClasses,
+      ...this.config.databaseConnectors,
+    };
     this.config.dataSources.forEach((ds) => {
       const dbType = ds.url.split(':')[0];
       if (!this.config.databaseConnectors[dbType]) {
@@ -408,7 +545,10 @@ class AdminForth implements IAdminForth {
 
     await Promise.all(Object.keys(this.connectors).map(async (dataSourceId) => {
       try {
-        await this.connectors[dataSourceId].setupClient(this.config.dataSources.find((ds) => ds.id === dataSourceId).url);
+        await this.connectors[dataSourceId].setupClient(
+          this.config.dataSources.find((ds) => ds.id === dataSourceId).url,
+          { recovery: this.config.dataSources.find((ds) => ds.id === dataSourceId).connectionRecovery !== false }
+        );
       } catch (e) {
         afLogger.error(`Error while connecting to datasource '${dataSourceId}': ${e}`);
       }
@@ -467,7 +607,14 @@ class AdminForth implements IAdminForth {
     this.config.resources.forEach((resource) => {
       this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
     });
-
+    
+    const adminforthSecret = process.env.ADMINFORTH_SECRET;
+    if (!adminforthSecret) {
+      throw new Error(`ADMINFORTH_SECRET environment not set
+        Please set ADMINFORTH_SECRET environment variable to a random string to secure your admin panel.
+        ADMINFORTH_SECRET variable is used to sign JWT tokens
+      `);
+    }
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
@@ -497,7 +644,8 @@ class AdminForth implements IAdminForth {
   }
 
   async getAllColumnsInTable(
-    tableName: string
+    tableName: string,
+    requestedDataSourceId?: string
   ): Promise<{ [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean; isUUID?: boolean; }> }> {
     const results: { [dataSourceId: string]: Array<{ name: string; type?: string; isPrimaryKey?: boolean;  isUUID?: boolean; }> } = {};
   
@@ -506,7 +654,9 @@ class AdminForth implements IAdminForth {
     }
   
     await Promise.all(
-      Object.entries(this.connectors).map(async ([dataSourceId, connector]) => {
+      Object.entries(this.connectors)
+        .filter(([dataSourceId]) => !requestedDataSourceId || dataSourceId === requestedDataSourceId)
+        .map(async ([dataSourceId, connector]) => {
         if (typeof connector.getAllColumnsInTable === 'function') {
           try {
             const columns = await connector.getAllColumnsInTable(tableName);
@@ -641,12 +791,9 @@ class AdminForth implements IAdminForth {
         extra,
       });
 
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -693,14 +840,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || typeof resp.ok !== 'boolean') {
-        throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
-      }
-      if (resp.ok === false && !resp.error) {
-        return { error: resp.error ?? 'Operation aborted by hook' };
-      }
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -738,11 +880,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
     
@@ -769,12 +909,9 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook beforeSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
@@ -792,16 +929,92 @@ class AdminForth implements IAdminForth {
         response,
         extra,
       });
-      if (!resp || (!resp.ok && !resp.error)) {
-        throw new Error(`Hook afterSave must return object with {ok: true} or { error: 'Error' } `);
-      }
-
-      if (resp.error) {
-        return { error: resp.error };
+      const hookRespError = hookResponseError(resp);
+      if (hookRespError) {
+        return hookRespError;
       }
     }
 
     return { error: null };
+  }
+
+  async runAction({
+    resourceId,
+    actionId,
+    recordId,
+    adminUser,
+    extra = {},
+    response,
+    tr,
+  }: {
+    resourceId: string,
+    actionId: string,
+    recordId: string | number,
+    adminUser: AdminUser,
+    extra,
+    response?: any,
+    tr?: any,
+  }) {
+    const resource = this.config.resources.find(
+      (res) => res.resourceId === resourceId
+    );
+
+    if (!resource) {
+      return {
+        ok: false,
+        error: `Resource '${resourceId}' not found`,
+      };
+    }
+
+    const action = resource.options.actions?.find(
+      (act) => act.id === actionId
+    );
+
+    if (!action) {
+      return {
+        ok: false,
+        error: `Action '${actionId}' not found`,
+      };
+    }
+
+    if (!action.action) {
+      return {
+        ok: false,
+        error: `Action '${actionId}' has no action handler`,
+      };
+    }
+
+    if (typeof action.allowed === 'function') {
+      const { allowedActions } = await interpretResource(
+        adminUser,
+        resource,
+        {},
+        ActionCheckSource.CustomActionRequest,
+        this
+      );
+
+      const execAllowed = await action.allowed({
+        adminUser,
+        standardAllowedActions: allowedActions,
+      });
+
+      if (!execAllowed) {
+        return {
+          ok: false,
+          error: `Action '${actionId}' not allowed`,
+        };
+      }
+    }
+
+      return await action.action({
+        recordId: String(recordId),
+        adminUser,
+        resource,
+        adminforth: this,
+        response: response as any,
+        tr: tr as any,
+        extra,
+      });
   }
 
   resource(resourceId: string): IOperationalResource {
