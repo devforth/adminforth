@@ -7,6 +7,7 @@ import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
+import UserSoftDelete from '../../plugins/adminforth-user-soft-delete/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import OAuthPlugin from './configs/oauthPluginConfig.js';
 
@@ -98,6 +99,22 @@ export default {
       type: AdminForthDataTypes.STRING,
       showIn: ["show", "edit", "create" ],
     },
+    {
+      name: "is_active",
+      type: AdminForthDataTypes.BOOLEAN,
+      label: "Is Active",
+      fillOnCreate: () => true,
+      filterOptions: {
+          multiselect: false,
+      },
+      showIn: {
+          list: true,
+          filter: true,
+          show: true,
+          create: false,
+          edit: true,
+      },
+    },
   ],
   plugins: [
     new TwoFactorsAuthPlugin (
@@ -175,6 +192,16 @@ export default {
     OAuthPlugin,
     new DashboardPlugin({
       dashboardConfigsResourceId: 'dashboard_configs',
+    }),
+    new UserSoftDelete({
+      activeFieldName: "is_active",
+      //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
+      canDeactivate: async (adminUser: AdminUser) => {
+      if (adminUser.dbUser.role === "superadmin") {
+          return true;
+      }
+      return false;
+      }
     }),
   ],
   hooks: {
