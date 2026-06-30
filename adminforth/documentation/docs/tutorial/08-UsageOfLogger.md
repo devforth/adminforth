@@ -70,3 +70,27 @@ AF_LOG_SINGLE_LINE=true pnpm start
 
 Accepted truthy values are `true` and `1`. When unset, logs use the default multi-line pretty format.
 
+## Catching unhandled API handler errors
+
+When an unhandled error is thrown inside an AdminForth API endpoint handler (built-in or custom), AdminForth logs the
+error and responds with `500 Internal server error`. If you also want to forward these errors somewhere — for example
+to report them to an external error-tracking service like [Sentry](https://sentry.io/), or to do your own custom
+logging — set the `expressErrorCallback` option in your AdminForth config:
+
+```ts
+import AdminForth from 'adminforth';
+import * as Sentry from '@sentry/node';
+
+export const admin = new AdminForth({
+  // ...rest of your config
+  expressErrorCallback: ({ error, extra, adminforth }) => {
+    Sentry.captureException(error, {
+      extra: {
+        requestUrl: extra.requestUrl,
+        query: extra.query,
+      },
+    });
+  },
+});
+```
+

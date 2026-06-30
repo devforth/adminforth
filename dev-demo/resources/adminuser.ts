@@ -1,18 +1,32 @@
 import AdminForth, { AdminForthDataTypes, logger } from '../../adminforth/index.js';
 import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForthResourceColumn } from '../../adminforth/index.js';
 import { randomUUID } from 'crypto';
-import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
 import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
+import UserSoftDelete from '../../plugins/adminforth-user-soft-delete/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import OAuthPlugin from './configs/oauthPluginConfig.js';
+import TwoFactorsAuthPlugin from './configs/twoFactorAuthPluginConfig.js';
+import EmailInvitePlugin from '../../plugins/adminforth-email-invite/index.js';
+import EmailPasswordResetPlugin from '../../plugins/adminforth-email-password-reset/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
 }
+
+const fakeEmailAdapter = {
+  validate: async () => {
+    // Implement validation logic if needed
+  },
+  sendEmail: async (from: string, to: string, text: string, html: string, subject: string) => {
+    console.log('Sending email with html:', html);
+    console.log('Sending email with text:', text);
+    return { ok: true };
+  }
+};
 
 export default {
   dataSource: 'sqlite',
@@ -67,9 +81,7 @@ export default {
       editingNote: { edit: 'Leave empty to keep password unchanged' },
       type: AdminForthDataTypes.STRING,
       showIn: { // to show field only on create and edit pages
-        show: false,
-        list: false,
-        filter: false,
+        all: false,
       },
       masked: true, // to show stars in input field
 
@@ -98,41 +110,29 @@ export default {
       type: AdminForthDataTypes.STRING,
       showIn: ["show", "edit", "create" ],
     },
+    {
+      name: "is_active",
+      type: AdminForthDataTypes.BOOLEAN,
+      label: "Is Active",
+      fillOnCreate: () => true,
+      filterOptions: {
+          multiselect: false,
+      },
+      showIn: {
+          list: true,
+          filter: true,
+          show: true,
+          create: false,
+          edit: true,
+      },
+    },
+    { 
+      name: 'email_confirmed', 
+      type: AdminForthDataTypes.BOOLEAN 
+    },
   ],
   plugins: [
-    new TwoFactorsAuthPlugin (
-      { 
-        twoFaSecretFieldName: 'secret2fa', 
-        timeStepWindow: 1,
-        stepUpMfaGracePeriodSeconds: 300,
-        usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-          // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
-          return (true);
-        },
-        passkeys: {
-          keyValueAdapter: new KeyValueAdapterRam(),
-          credentialResourceID: "passkeys",
-          credentialIdFieldName: "credential_id",
-          credentialMetaFieldName: "meta",
-          credentialUserIdFieldName: "user_id",
-          settings: {
-            expectedOrigin: "http://localhost:3123",
-            rp: {
-                name: "New Reality",
-              },
-            user: {
-              nameField: "email",
-              displayNameField: "email",
-            },
-            authenticatorSelection: {
-              authenticatorAttachment: "both",
-              requireResidentKey: true,
-              userVerification: "required",
-            },
-          },
-        } 
-      }
-    ),
+    TwoFactorsAuthPlugin,
     new ForeignInlineListPlugin({
       foreignResourceId: 'cars_sl'
     }),
@@ -176,11 +176,37 @@ export default {
     new DashboardPlugin({
       dashboardConfigsResourceId: 'dashboard_configs',
     }),
+    new UserSoftDelete({
+      activeFieldName: "is_active",
+      //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
+      canDeactivate: async (adminUser: AdminUser) => {
+      if (adminUser.dbUser.role === "superadmin") {
+          return true;
+      }
+      return false;
+      }
+    }),
+    new EmailInvitePlugin({
+      emailField: 'email',
+      sendFrom: 'noreply@yourapp.com',
+      passwordField: 'password',
+      adapter: fakeEmailAdapter,
+      emailConfirmedField: 'email_confirmed', // Enable email confirmation
+    }),
+    new EmailPasswordResetPlugin({
+      emailField: 'email',
+      passwordField: 'password',
+      sendFrom: 'no-reply@devforth.io',
+      adapter: fakeEmailAdapter,
+      userResetTokensKeyValueAdapter: new KeyValueAdapterRam(),
+    }),
   ],
   hooks: {
     create: {
       beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        if (record.password) {
+          record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        }
         return { ok: true };
       }
     },

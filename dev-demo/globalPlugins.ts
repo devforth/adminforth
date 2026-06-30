@@ -11,14 +11,22 @@ function createAgentCompletionAdapter(
   model: string,
   effort: 'low' | 'medium' | 'xhigh',
 ) {
+  // OVH's gpt-oss only supports the standard effort tiers (no OpenAI-only
+  // `xhigh`), so clamp it down when targeting OVH.
+  const ovhEffort = effort === 'xhigh' ? 'high' : effort;
+
   return new CompletionAdapterOpenAIResponses({
     openAiApiKey: openAiResponsesApiKey as string,
     baseUrl: usesOvhAiEndpoints ? OVH_AI_ENDPOINTS_BASE_URL : undefined,
     model: usesOvhAiEndpoints ? 'gpt-oss-120b' : model,
+    // OVH implements the standard Chat Completions API fully but only a strict
+    // partial subset of the OpenAI-proprietary Responses API. Use Completions
+    // for OVH and keep Responses for real OpenAI.
+    useCompletionApi: usesOvhAiEndpoints,
     extraRequestBodyParameters: {
       ...(usesOvhAiEndpoints ? { store: false } : {}),
       reasoning: {
-        effort,
+        effort: usesOvhAiEndpoints ? ovhEffort : effort,
       },
     },
   });
