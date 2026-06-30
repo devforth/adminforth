@@ -1258,7 +1258,28 @@ export type AdminUserAuthorizeFunction = ((params?: {
   allowed?: boolean,
 }>);
 
-  
+
+/**
+ * Callback called when an unhandled error is thrown inside an AdminForth API endpoint handler.
+ * Useful to report errors to external services (e.g. Sentry) or to do custom logging.
+ * Thrown errors / rejections from this callback are caught and logged, they do not affect the response.
+ */
+export type ExpressErrorCallbackFunction = ((params: {
+  /**
+   * The error thrown by the endpoint handler.
+   */
+  error: any,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information about the request which caused the error.
+   */
+  extra: HttpExtra,
+}) => void | Promise<void>);
+
+
 /**
  * Data source describes database connection which will be used to fetch data for resources.
  * Each resource should use one data source.
@@ -1850,6 +1871,19 @@ export interface AdminForthInputConfig {
      * List of plugins that should be applied in global scope.
      */
     globalPlugins?: Array<IAdminForthPlugin>,
+
+    /**
+     * Callback executed when an unhandled error is thrown inside an AdminForth API endpoint handler.
+     * Receives the thrown error and extra HTTP information about the request.
+     * Useful to report errors to external services (e.g. Sentry) or to do custom logging.
+     *
+     * ```ts
+     * expressErrorCallback: ({ error, extra }) => {
+     *   Sentry.captureException(error, { extra: { url: extra.requestUrl } });
+     * },
+     * ```
+     */
+    expressErrorCallback?: ExpressErrorCallbackFunction,
 }
 
 

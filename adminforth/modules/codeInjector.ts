@@ -1252,8 +1252,18 @@ class CodeInjector implements ICodeInjector {
         }
       });
       devServer.stderr.on('data', (data) => {
+        const text = data.toString();
+        // pnpm/npm echo the script command they are about to run (e.g. "$ vite") to stderr,
+        // and emit empty lines. These are not errors, so don't log them as such.
+        const meaningful = stripAnsiCodes(text)
+          .split('\n')
+          .filter((line: string) => line.trim() && !line.trim().startsWith('$ '));
+        if (meaningful.length === 0) {
+          process.env.HEAVY_DEBUG && console.log(`[AdminForth SPA]:`, text);
+          return;
+        }
         afLogger.error(`[AdminForth SPA ERROR]:`);
-        afLogger.error(data.toString());
+        afLogger.error(text);
       });
 
     }
