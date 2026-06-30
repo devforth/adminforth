@@ -10,6 +10,7 @@ import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import UserSoftDelete from '../../plugins/adminforth-user-soft-delete/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import OAuthPlugin from './configs/oauthPluginConfig.js';
+import EmailInvitePlugin from '../../plugins/adminforth-email-invite/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -68,9 +69,7 @@ export default {
       editingNote: { edit: 'Leave empty to keep password unchanged' },
       type: AdminForthDataTypes.STRING,
       showIn: { // to show field only on create and edit pages
-        show: false,
-        list: false,
-        filter: false,
+        all: false,
       },
       masked: true, // to show stars in input field
 
@@ -114,6 +113,10 @@ export default {
           create: false,
           edit: true,
       },
+    },
+    { 
+      name: 'email_confirmed', 
+      type: AdminForthDataTypes.BOOLEAN 
     },
   ],
   plugins: [
@@ -203,11 +206,28 @@ export default {
       return false;
       }
     }),
+    new EmailInvitePlugin({
+      emailField: 'email',
+      sendFrom: 'noreply@yourapp.com',
+      passwordField: 'password',
+      adapter: {
+        validate: async () => {
+
+        },
+        sendEmail: async (from, to, text, html, subject) => {
+          console.log('Sending email with html:', html);
+          return { ok: true };
+        }
+      },
+      emailConfirmedField: 'email_confirmed', // Enable email confirmation
+    }),
   ],
   hooks: {
     create: {
       beforeSave: async ({ record, adminUser, resource }: { record: any, adminUser: AdminUser, resource: AdminForthResource }) => {
-        record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        if (record.password) {
+          record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        }
         return { ok: true };
       }
     },
