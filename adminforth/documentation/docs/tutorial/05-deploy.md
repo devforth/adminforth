@@ -22,6 +22,8 @@ You can use it to build your AdminForth application in Docker container.
 
 ## Building the image
 
+> Make sure that you have database url in your .env.prod file
+
 Now you can build your image:
 
 ```bash
