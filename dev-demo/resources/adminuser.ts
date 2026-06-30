@@ -11,10 +11,22 @@ import UserSoftDelete from '../../plugins/adminforth-user-soft-delete/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import OAuthPlugin from './configs/oauthPluginConfig.js';
 import EmailInvitePlugin from '../../plugins/adminforth-email-invite/index.js';
+import EmailPasswordResetPlugin from '../../plugins/adminforth-email-password-reset/index.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
 }
+
+const fakeEmailAdapter = {
+  validate: async () => {
+    // Implement validation logic if needed
+  },
+  sendEmail: async (from: string, to: string, text: string, html: string, subject: string) => {
+    console.log('Sending email with html:', html);
+    console.log('Sending email with text:', text);
+    return { ok: true };
+  }
+};
 
 export default {
   dataSource: 'sqlite',
@@ -210,16 +222,15 @@ export default {
       emailField: 'email',
       sendFrom: 'noreply@yourapp.com',
       passwordField: 'password',
-      adapter: {
-        validate: async () => {
-
-        },
-        sendEmail: async (from, to, text, html, subject) => {
-          console.log('Sending email with html:', html);
-          return { ok: true };
-        }
-      },
+      adapter: fakeEmailAdapter,
       emailConfirmedField: 'email_confirmed', // Enable email confirmation
+    }),
+    new EmailPasswordResetPlugin({
+      emailField: 'email',
+      passwordField: 'password',
+      sendFrom: 'no-reply@devforth.io',
+      adapter: fakeEmailAdapter,
+      userResetTokensKeyValueAdapter: new KeyValueAdapterRam(),
     }),
   ],
   hooks: {
