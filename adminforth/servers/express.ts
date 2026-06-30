@@ -567,12 +567,19 @@ class ExpressServer implements IExpressHttpServer {
   }
 
   setupOpenApiRoutes() {
-    this.expressApp.get('/api/v1/openapi.json', (req, res) => {
+    let base = this.adminforth.config.baseUrl || '';
+    if (base.endsWith('/')) {
+      base = base.slice(0, -1);
+    }
+
+    const openApiJsonPath = `${base}/api/v1/openapi.json`;
+
+    this.expressApp.get(openApiJsonPath, (req, res) => {
       res.json(this.adminforth.openApi.renderOpenApiDocument());
     });
 
-    this.expressApp.use('/api-docs', apiReference({
-      url: '/api/v1/openapi.json',
+    this.expressApp.use(`${base}/api-docs`, apiReference({
+      url: openApiJsonPath,
       theme: 'saturn',
     }));
   }
