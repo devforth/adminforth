@@ -17,6 +17,8 @@ model adminuser {
   avatar        String?
   
   is_active     Boolean @default(true)
+  email_confirmed Boolean? @default(true)
+
   @@index([is_active])
 }
 
