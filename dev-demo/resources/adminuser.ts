@@ -1,7 +1,6 @@
 import AdminForth, { AdminForthDataTypes, logger } from '../../adminforth/index.js';
 import type { AdminForthResourceInput, AdminForthResource, AdminUser, AdminForthResourceColumn } from '../../adminforth/index.js';
 import { randomUUID } from 'crypto';
-import TwoFactorsAuthPlugin from '../../plugins/adminforth-two-factors-auth/index.js'
 import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-list/index.js';
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
@@ -10,6 +9,7 @@ import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import UserSoftDelete from '../../plugins/adminforth-user-soft-delete/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import OAuthPlugin from './configs/oauthPluginConfig.js';
+import TwoFactorsAuthPlugin from './configs/twoFactorAuthPluginConfig.js';
 import EmailInvitePlugin from '../../plugins/adminforth-email-invite/index.js';
 import EmailPasswordResetPlugin from '../../plugins/adminforth-email-password-reset/index.js';
 
@@ -132,39 +132,7 @@ export default {
     },
   ],
   plugins: [
-    new TwoFactorsAuthPlugin (
-      { 
-        twoFaSecretFieldName: 'secret2fa', 
-        timeStepWindow: 1,
-        stepUpMfaGracePeriodSeconds: 300,
-        usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
-          // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
-          return (true);
-        },
-        passkeys: {
-          keyValueAdapter: new KeyValueAdapterRam(),
-          credentialResourceID: "passkeys",
-          credentialIdFieldName: "credential_id",
-          credentialMetaFieldName: "meta",
-          credentialUserIdFieldName: "user_id",
-          settings: {
-            expectedOrigin: "http://localhost:3123",
-            rp: {
-                name: "New Reality",
-              },
-            user: {
-              nameField: "email",
-              displayNameField: "email",
-            },
-            authenticatorSelection: {
-              authenticatorAttachment: "both",
-              requireResidentKey: true,
-              userVerification: "required",
-            },
-          },
-        } 
-      }
-    ),
+    TwoFactorsAuthPlugin,
     new ForeignInlineListPlugin({
       foreignResourceId: 'cars_sl'
     }),
