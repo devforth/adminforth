@@ -717,8 +717,29 @@ class ExpressServer implements IExpressHttpServer {
         output = await handler(input);
       } catch (e) {
         afLogger.error(`Error in handler ${e}`);
-        // print full stack trace 
+        // print full stack trace
         afLogger.error(e.stack);
+        const expressErrorCallback = this.adminforth.config.expressErrorCallback;
+        if (expressErrorCallback) {
+          try {
+            await expressErrorCallback({
+              error: e,
+              adminforth: this.adminforth,
+              extra: {
+                body,
+                query,
+                headers,
+                cookies: cookies as any,
+                requestUrl,
+                meta: {},
+                response,
+              },
+            });
+          } catch (callbackError) {
+            afLogger.error(`Error in expressErrorCallback ${callbackError}`);
+            afLogger.error(callbackError?.stack);
+          }
+        }
         res.status(500).send('Internal server error');
         return;
       }
