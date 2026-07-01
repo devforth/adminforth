@@ -157,4 +157,4 @@ if (isMainModule) {
   });
 }
 
-export { app, appReady, closeApplication };
+export { app, appReady, closeApplication, Filters };
