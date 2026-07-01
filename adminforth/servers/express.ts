@@ -186,6 +186,12 @@ class ExpressServer implements IExpressHttpServer {
 
     const slashedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
 
+    // Express 5 (path-to-regexp v8) requires named wildcards instead of a bare `*`.
+    // `{*splat}` is an optional catch-all so the SPA route also matches the base path itself
+    // (e.g. `/admin` as well as `/admin/...`; `/` as well as `/foo` when baseUrl is empty).
+    const assetsRoute = `${slashedPrefix}assets/*splat`;
+    const spaCatchAll = prefix ? `${prefix}{*splat}` : '/{*splat}';
+
     if (this.adminforth.runningHotReload) {
       const handler = async (req, res) => {
         // proxy using fetch to webpack dev server 
@@ -199,14 +205,14 @@ class ExpressServer implements IExpressHttpServer {
           return;
         }
       }
-      this.expressApp.get(`${slashedPrefix}assets/*`, handler);
-      afLogger.trace(`®️ Registering SPA serve handler', ${slashedPrefix}assets/*`);
-      this.expressApp.get(`${prefix}*`, handler);
+      this.expressApp.get(assetsRoute, handler);
+      afLogger.trace(`®️ Registering SPA serve handler', ${assetsRoute}`);
+      this.expressApp.get(spaCatchAll, handler);
      
 
     } else {
       const codeInjector = this.adminforth.codeInjector;
-      this.expressApp.get(`${slashedPrefix}assets/*`, (req, res) => {
+      this.expressApp.get(assetsRoute, (req, res) => {
         res.sendFile(
           path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix)),
           {
@@ -224,7 +230,7 @@ class ExpressServer implements IExpressHttpServer {
         });
       })
 
-      this.expressApp.get(`${prefix}*`, async (req, res) => {
+      this.expressApp.get(spaCatchAll, async (req, res) => {
         const fullPath = path.join(codeInjector.getServeDir(), 'index.html');
         
         let fileExists = true;
@@ -301,7 +307,8 @@ class ExpressServer implements IExpressHttpServer {
     });
     this.patchSchemaAwareRouteRegistration();
     this.flushPendingEndpointRegistrations();
-    const stack = (this.expressApp as any)?._router?.stack;
+    // Express 5 exposes the router as `app.router`; Express 4 used the internal `app._router`.
+    const stack = ((this.expressApp as any)?._router ?? (this.expressApp as any)?.router)?.stack;
     if (Array.isArray(stack)) {
       this.registerSchemaAwareStack(stack, '');
     }
@@ -402,7 +409,7 @@ class ExpressServer implements IExpressHttpServer {
           if (!toReturn.allowed) {
             res.status(401).send('Unauthorized by AdminForth');
           } else {
-            handler(req, res, next);
+            return handler(req, res, next);
           }
         }
       });
@@ -424,7 +431,7 @@ class ExpressServer implements IExpressHttpServer {
     return async (req, res, next) => {
       const tr = (msg: string, category: string, params: any, pluralizationNumber?: number): Promise<string> => this.adminforth.tr(msg, category, req.headers['accept-language'], params, pluralizationNumber);
       req.tr = tr;
-      handler(req, res, next);
+      return handler(req, res, next);
     }
   }
 
@@ -713,36 +720,8 @@ class ExpressServer implements IExpressHttpServer {
       const input = { body, query, headers, cookies, adminUser, response, requestUrl, _raw_express_req: req, _raw_express_res: res, tr, abortSignal: abortController.signal};
       
       let output;
-      try {
-        output = await handler(input);
-      } catch (e) {
-        afLogger.error(`Error in handler ${e}`);
-        // print full stack trace
-        afLogger.error(e.stack);
-        const expressErrorCallback = this.adminforth.config.expressErrorCallback;
-        if (expressErrorCallback) {
-          try {
-            await expressErrorCallback({
-              error: e,
-              adminforth: this.adminforth,
-              extra: {
-                body,
-                query,
-                headers,
-                cookies: cookies as any,
-                requestUrl,
-                meta: {},
-                response,
-              },
-            });
-          } catch (callbackError) {
-            afLogger.error(`Error in expressErrorCallback ${callbackError}`);
-            afLogger.error(callbackError?.stack);
-          }
-        }
-        res.status(500).send('Internal server error');
-        return;
-      }
+      output = await handler(input);
+
       response.headers.forEach(([name, value]) => {
         res.setHeader(name, value);
       });
