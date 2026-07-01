@@ -306,7 +306,7 @@ export interface IAdminForthDataSourceConnector {
   /**
    * Function to check whether database has no user data.
    */
-  isDatabaseEmpty(): Promise<boolean>;
+  isDatabaseEmpty?(): Promise<boolean>;
 
   /**
    * Optional.
