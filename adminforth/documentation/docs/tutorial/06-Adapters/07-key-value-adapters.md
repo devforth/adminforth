@@ -78,6 +78,7 @@ model key_values {
   key String @id
   value String
   collection String?
+  expire_at DateTime? //optional column
 
   @@index([key])
   @@index([collection])
@@ -117,6 +118,10 @@ export default {
     {
       name: 'collection',
       type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'expire_at'
+      type: AdminForthDataTypes.DATETIME,
     }
   ],
   options: {
@@ -157,5 +162,6 @@ const adapter = new ResourceKeyValueAdapter({
   keyField: 'key',
   valueField: 'value',
   collectionField: 'collection',
+  expireField: 'expire_at'
 })
 ```
