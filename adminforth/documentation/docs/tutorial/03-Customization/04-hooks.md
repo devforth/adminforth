@@ -199,6 +199,12 @@ Also you can use this hook to enrich the returned records list with some additio
 }
 ```
 
+:::tip Name enriched fields after the virtual column
+When you enrich records with extra fields for display, declare a matching [virtual column](./03-virtualColumns.md) and use **the same name** for the field you add in the hook (e.g. add a `priceWithTax` virtual column and write `r.priceWithTax` in the hook). 
+
+Reusing the same name keeps the enriched value tied to a column the rest of AdminForth knows about. In particular, the [Agent plugin](/docs/tutorial/Plugins/agent/) selects records by column name when answering questions — if the hook writes to a different field than the virtual column, the agent selects the (empty) virtual column and never sees your enriched value.
+:::
+
 ### Dropdown list of foreignResource
 
 By default if there is `foreignResource` like we use for demo on `realtor_id` column, the filter will suggest a
