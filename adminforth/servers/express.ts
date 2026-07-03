@@ -32,7 +32,7 @@ import { createRequire } from 'module';
 // instead of a static JSON import (which would hard-link a peer dep at parse time).
 const require = createRequire(import.meta.url);
 const expressVersion: string = require('express/package.json').version;
-
+ 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
     return string.slice(substring.length);
