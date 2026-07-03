@@ -99,7 +99,6 @@
     "dotenv": "^16.4.5",
     "esm": "^3.2.25",
     "execa": "^9.5.2",
-    "express": "^5.2.1",
     "filewatcher": "^3.0.1",
     "fs-extra": "^11.2.0",
     "fuse.js": "^7.0.0",
@@ -140,7 +139,8 @@
     "@adminforth/connector-mysql": "^1.0.3",
     "@adminforth/connector-postgres": "^1.0.4",
     "@adminforth/connector-qdrant": "^1.0.4",
-    "@adminforth/connector-sqlite": "^1.0.3"
+    "@adminforth/connector-sqlite": "^1.0.3",
+    "express": "^4.21.0 || ^5.0.0"
   },
   "peerDependenciesMeta": {
     "@adminforth/connector-sqlite": {
