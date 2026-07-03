@@ -32,6 +32,7 @@ import { createRequire } from 'module';
 // instead of a static JSON import (which would hard-link a peer dep at parse time).
 const require = createRequire(import.meta.url);
 const expressVersion: string = require('express/package.json').version;
+const expressMajor = Number(expressVersion.split('.')[0]);
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -195,8 +196,12 @@ class ExpressServer implements IExpressHttpServer {
     // Express 5 (path-to-regexp v8) requires named wildcards instead of a bare `*`.
     // `{*splat}` is an optional catch-all so the SPA route also matches the base path itself
     // (e.g. `/admin` as well as `/admin/...`; `/` as well as `/foo` when baseUrl is empty).
-    const assetsRoute = `${slashedPrefix}assets/*splat`;
-    const spaCatchAll = prefix ? `${prefix}{*splat}` : '/{*splat}';
+    let assetsRoute = `${slashedPrefix}assets/*splat`;
+    let spaCatchAll = prefix ? `${prefix}{*splat}` : '/{*splat}';
+    if (expressMajor === 4) {
+      assetsRoute = `${slashedPrefix}assets/*`;
+      spaCatchAll = `${prefix}*`;
+    }
 
     if (this.adminforth.runningHotReload) {
       const handler = async (req, res) => {
@@ -727,7 +732,43 @@ class ExpressServer implements IExpressHttpServer {
       const input = { body, query, headers, cookies, adminUser, response, requestUrl, _raw_express_req: req, _raw_express_res: res, tr, abortSignal: abortController.signal};
       
       let output;
-      output = await handler(input);
+      if (expressMajor === 5) {
+        output = await handler(input);
+      } else if (expressMajor === 4) {
+        // Express 4 does not support async handlers, so we need to wrap it in a try/catch
+        try {
+          output = await handler(input);
+        } catch (e) {
+          afLogger.error(`Error in handler ${e}`);
+          afLogger.error(e.stack);
+
+          const expressErrorCallback = this.adminforth.config.expressErrorCallback;
+          
+          if (expressErrorCallback) {
+            try {
+              await expressErrorCallback({
+                error: e,
+                adminforth: this.adminforth,
+                extra: {
+                  body,
+                  query,
+                  headers,
+                  cookies: cookies as any,
+                  requestUrl,
+                  meta: {},
+                  response,
+                },
+              });
+            } catch (callbackError) {
+              afLogger.error(`Error in expressErrorCallback ${callbackError}`);
+              afLogger.error(callbackError?.stack);
+            }
+          }
+
+          res.status(500).send('Internal server error');
+          return;
+        }
+      }
 
       response.headers.forEach(([name, value]) => {
         res.setHeader(name, value);
