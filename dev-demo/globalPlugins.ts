@@ -1,6 +1,7 @@
 import CompletionAdapterOpenAIResponses from '../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import AdminForthAgent from '../plugins/adminforth-agent/index.js';
 import AdminForthPlugin from '../adminforth/basePlugin.js';
+import OpenAIAudioAdapter from '../adapters/adminforth-audio-adapter-openai/index.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
@@ -73,5 +74,10 @@ export const globalPlugins = [
       responseField: 'response',
       debugField: 'dubbug',
     },
+    audioAdapter: new OpenAIAudioAdapter({
+      apiKey: process.env.OPENAI_API_KEY as string,
+      defaultVoice: 'alloy',
+      defaultSpeed: 1.25,
+    }),
   }),
 ];
