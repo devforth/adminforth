@@ -23,6 +23,10 @@ export default {
     {
       name: 'collection',
       type: AdminForthDataTypes.STRING,
+    },
+    {
+      name: 'expire_at',
+      type: AdminForthDataTypes.DATETIME,
     }
   ],
   options: {
