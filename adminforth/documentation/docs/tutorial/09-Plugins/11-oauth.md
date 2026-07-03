@@ -373,7 +373,7 @@ Register the same `redirectUri` in BotFather under **Login Widget → Redirect U
 
 If you use `@adminforth/chat-surface-adapter-telegram`, users must connect Telegram from **Settings → Connected Accounts** before the Telegram bot can identify them.
 
-### Kaycloack Adapter
+### Keycloak Adapter
 
 Install Adapter:
 

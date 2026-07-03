@@ -120,7 +120,7 @@ export default {
       type: AdminForthDataTypes.STRING,
     },
     {
-      name: 'expire_at'
+      name: 'expire_at',
       type: AdminForthDataTypes.DATETIME,
     }
   ],
