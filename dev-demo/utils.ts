@@ -12,6 +12,7 @@ export const resourceAdapter = new ResourceKeyValueAdapter({
   keyField: 'key',
   valueField: 'value',
   collectionField: 'collection',
+  expireField: 'expire_at',
 })
 
 export const ramAdapter = new RAMKeyValueAdapter();

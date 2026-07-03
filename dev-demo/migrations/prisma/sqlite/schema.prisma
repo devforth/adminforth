@@ -162,7 +162,8 @@ model AdminUserExternalIdentity {
 }
 
 model key_values {
-  key String @id
-  value String
-  collection String?
+  key String  @id
+  value       String
+  collection  String?
+  expire_at   DateTime?
 }
