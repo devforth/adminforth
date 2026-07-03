@@ -37,7 +37,7 @@
     "better-sqlite3": "^10.1.0",
     "clickhouse-migrations": "^1.2.0",
     "decimal.js": "^10.6.0",
-    "express": "^5.2.1",
+    "express": "^4.21.0",
     "pg": "^8.16.3",
     "random-words": "^2.0.1",
     "sqlstring": "^2.3.3",

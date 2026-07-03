@@ -26,6 +26,12 @@ import { afLogger } from '../modules/logger.js';
 import { ADMINFORTH_CLIENT_ID_HEADER, runWithRequestContext } from '../modules/requestContext.js';
 import * as z from 'zod';
 import multer from 'multer';
+import { createRequire } from 'module';
+
+// express is a peer dependency, so resolve it from the host project at runtime
+// instead of a static JSON import (which would hard-link a peer dep at parse time).
+const require = createRequire(import.meta.url);
+const expressVersion: string = require('express/package.json').version;
 
 function replaceAtStart(string, substring) {
   if (string.startsWith(substring)) {
@@ -263,6 +269,7 @@ class ExpressServer implements IExpressHttpServer {
 
     this.server = http.createServer(this.expressApp);
     const wss = new WebSocketServer({ server: this.server, path: `${base}/afws` });
+    afLogger.info(`${this.adminforth.formatAdminForth()} 🚂 Using express v${expressVersion}`);
     afLogger.info(`${this.adminforth.formatAdminForth()} 🌐 WebSocket server started`);
     // Handle WebSocket connections
     wss.on('connection', async (ws, req) => {
