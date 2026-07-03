@@ -73,7 +73,6 @@ export interface IAdminForthEndpointOptionsBase {
   description?: string,
   request_schema?: AnySchemaObject,
   response_schema?: AnySchemaObject,
-  responce_schema?: AnySchemaObject,
   agent?: AgentToolMeta,
   meta?: Record<string, unknown>,
   target?: 'json' | 'upload',
