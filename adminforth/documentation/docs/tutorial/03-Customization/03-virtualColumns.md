@@ -53,6 +53,10 @@ columns: [
 ```
  
  This field will be displayed in show and list views with custom component `CountryFlag.vue`.
+
+:::tip Enriching a virtual column from a hook
+If you fill a virtual column from a hook (e.g. [`afterDatasourceResponse`](./04-hooks.md#modify-record-after-it-is-returned-from-database)) instead of a custom component, write the enriched value into a field with **the same name as the virtual column**. This keeps the value addressable by column name everywhere — most importantly, the [Agent plugin](/docs/tutorial/Plugins/agent/) selects records by column name, so a mismatched field name makes it select the (empty) virtual column and miss your enriched data.
+:::
  Create file `CountryFlag.vue` in `custom` folder of your project:
  
  ```html title="./custom/CountryFlag.vue"
