@@ -121,7 +121,7 @@
           dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover rounded-default gap-1"
       >
         <IconPlusOutline class="w-4 h-4"/>
-        {{ $t('Create') }}
+        <span>{{ $t('Create') }}</span>
       </RouterLink>
 
       <button
@@ -135,7 +135,7 @@
         v-if="coreStore.resource?.options?.allowedActions?.filter"
       >
         <IconFilterOutline class="w-4 h-4"/>
-        {{ $t('Filter') }}
+        <span>{{ $t('Filter') }}</span>
         <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
           <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
               {{ filtersStore.visibleFiltersCount }}
