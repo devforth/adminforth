@@ -37,35 +37,37 @@ Why AdminForth:
 
 ## Project initialisation
 
-To create an AdminForth project, run:
+AdminForth supports two setup paths:
+
+### Path 1: Existing database
+
+Use this path when you already have a database and your own schema or migrations. Provide your database URL with `--db`, or enter it when the CLI asks `Please specify the database URL to use`.
 
 ```bash
-npx adminforth create-app
+npx adminforth create-app --app-name myadmin --db "postgresql://user:password@localhost:5432/dbname"
+cd myadmin
 ```
 
-During the interactive initialization process, AdminForth will ask you to provide a local database URL.
+When you provide your own database URL, AdminForth connects to your database but does not create Prisma schema or migrations for it. The generated project README includes the SQL or schema notes needed to add the required `adminuser` table with your own migration tool.
 
-### Integrating AdminForth into your existing application
-
-If you want to build an admin panel for an existing project that already has a database with tables, you can provide the connection URL to your existing development database, such as a local or deployed one.
-
-After that, you may want to generate AdminForth resource files from your existing database tables:
+After project creation, generate AdminForth resource files from your existing tables:
 
 ```bash
 npx adminforth resource
 ```
 
-Resource files are needed for AdminForth to “know” about your tables and define how to work with them.
+### Path 2: New database
 
-Use the command above every time you add new tables or change their schema.
+Use this path when you want AdminForth to scaffold a standalone app with a new local SQLite database. Omit `--db`, or accept the default `sqlite://.db.sqlite` value in the interactive prompt:
 
-### Starting from scratch
+```bash
+npx adminforth create-app --app-name myadmin
+cd myadmin
+pnpm makemigration --name init && pnpm migrate:local
+pnpm dev
+```
 
-If you do not have a database yet, start an empty local database, for example PostgreSQL in Docker, and provide its URL to the AdminForth CLI.
-
-If the adminforth CLI does not detect any tables, it will suggest adding Prisma as a migration tool. Prisma is not related to AdminForth, but it is one of the most convenient migration tools.
-
-Please follow [getting started](https://adminforth.dev/docs/tutorial/gettingStarted/).
+For the new database path, the CLI can scaffold Prisma files and migration scripts for the default `sqlite://.db.sqlite` database. Please follow [getting started](https://adminforth.dev/docs/tutorial/gettingStarted/) for the full guide.
 
 # For AdminForth developers
 

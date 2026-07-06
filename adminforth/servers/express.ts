@@ -109,7 +109,7 @@ function normalizeExpressRuntimeSchema(schema: unknown): AnySchemaObject | undef
   }
 
   if (isZodSchemaLike(schema)) {
-    return z.toJSONSchema(schema as any, { target: 'openapi-3.0' }) as AnySchemaObject;
+    return z.toJSONSchema(schema as any, { target: 'draft-07' }) as AnySchemaObject;
   }
 
   return schema as AnySchemaObject;
@@ -567,12 +567,19 @@ class ExpressServer implements IExpressHttpServer {
   }
 
   setupOpenApiRoutes() {
-    this.expressApp.get('/api/v1/openapi.json', (req, res) => {
+    let base = this.adminforth.config.baseUrl || '';
+    if (base.endsWith('/')) {
+      base = base.slice(0, -1);
+    }
+
+    const openApiJsonPath = `${base}/api/v1/openapi.json`;
+
+    this.expressApp.get(openApiJsonPath, (req, res) => {
       res.json(this.adminforth.openApi.renderOpenApiDocument());
     });
 
-    this.expressApp.use('/api-docs', apiReference({
-      url: '/api/v1/openapi.json',
+    this.expressApp.use(`${base}/api-docs`, apiReference({
+      url: openApiJsonPath,
       theme: 'saturn',
     }));
   }
@@ -588,7 +595,6 @@ class ExpressServer implements IExpressHttpServer {
       description,
       request_schema,
       response_schema,
-      responce_schema,
       agent,
       target='json'
     } = options;
@@ -596,14 +602,15 @@ class ExpressServer implements IExpressHttpServer {
       throw new Error(`Path must start with /, got: ${path}`);
     }
     const fullPath = `${this.adminforth.config.baseUrl}/adminapi/v1${path}`;
-    const normalizedResponseSchema = response_schema ?? responce_schema;
-    const registeredApiSchema = (request_schema || normalizedResponseSchema)
+    const normalizedRequestSchema = normalizeExpressRuntimeSchema(request_schema);
+    const normalizedResponseSchema = normalizeExpressRuntimeSchema(response_schema);
+    const registeredApiSchema = (normalizedRequestSchema || normalizedResponseSchema)
       ? this.adminforth.openApi.registerApiSchema({
         method,
         noAuth,
         path: fullPath,
         description,
-        request_schema,
+        request_schema: normalizedRequestSchema,
         response_schema: normalizedResponseSchema,
         agent,
         handler,

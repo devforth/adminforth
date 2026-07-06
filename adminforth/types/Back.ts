@@ -73,7 +73,6 @@ export interface IAdminForthEndpointOptionsBase {
   description?: string,
   request_schema?: AnySchemaObject,
   response_schema?: AnySchemaObject,
-  responce_schema?: AnySchemaObject,
   agent?: AgentToolMeta,
   meta?: Record<string, unknown>,
   target?: 'json' | 'upload',
@@ -302,6 +301,12 @@ export interface IAdminForthDataSourceConnector {
    * Function to get all columns in table.
    */
   getAllColumnsInTable(tableName: string): Promise<Array<{ name: string; type?: string; isPrimaryKey?: boolean; sampleValue?: any; }>>;
+
+  /**
+   * Function to check whether database has no user data.
+   */
+  isDatabaseEmpty?(): Promise<boolean>;
+
   /**
    * Optional.
    * You an redefine this function to define how one record should be fetched from database.

@@ -55,10 +55,12 @@ If you don't want to use a key/value adapter and you don't need to clean up file
 
 Since the adapter uses a key/value adapter to store keys for deletion, it is important to use persistent storage, so the data will be safe:
 
-- (⛔️) [RAM adapter](07-key-value-adapters.md#ram-adapter) - not recommended, because after a server restart all data will be lost
-- (✅) [Redis adapter](07-key-value-adapters.md#redis-adapter) - Redis itself stores data in-memory, but you can set it up to write data to an `.rdb` file so the database is restored on server restart. However, it requires regular database snapshots and persistent Docker storage setup
-- (✅✅) [LevelDB adapter](07-key-value-adapters.md#leveldb-adapter) - can be used, but you need to set up persistent storage in your Docker container, so data won't be lost between restarts
-- (✅✅✅) [Resource adapter](07-key-value-adapters.md#resource-based-adapter) - uses a database to store key/value pairs, so data will be safe between restarts, but you need to create an extra table for this storage
+- (⛔️) [RAM adapter](07-key-value-adapters.md#ram-adapter) - not recommended, because after an admin process restart (e.g. redeployment) all data and orphan file tracking info will be lost (and files will not be cleaned up)
+- (✅) [LevelDB adapter](07-key-value-adapters.md#leveldb-adapter) - can be used, but you need to set up persistent storage in your Docker container by monting leveldb data directory into a volume, so data won't be lost between restarts
+- (✅✅) [Redis adapter](07-key-value-adapters.md#redis-adapter) - Redis itself stores data in RAM memory but modern versions also able to persist it into disk. If you are running Redis in docker we recommend you to ensure that CI/CD pipeline does not force it to restarts during each redeployment, also ensure that you mount `/data` dir into volume. ()
+- (✅✅✅) [Resource adapter](07-key-value-adapters.md#resource-based-adapter) - uses a database to store key/value pairs, so data will be safe between restarts, but you need to create an extra table for this storage. 
+
+Please note that one adapter instance can be also reused for any other purposes or plugins, so if your application need KV adapter to multiple purposes, you can instantiate it once in dedicated utility file and reuse this instance in other places. Internally each KV method exposes 'collection' parameter which allows to separate data for different purposes or by different plugins. 
 
 
 ### Cloudflare R2 setup example

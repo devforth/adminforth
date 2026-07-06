@@ -6,11 +6,22 @@ Install dependencies:
 {{packageManager}} install
 ```
 
-Migrate the database:
+{{#if adminUserTableInstructions}}
+Prepare the admin users table in your existing database before starting the app. AdminForth uses this table for back-office authentication, and your own migration tool should own this schema change. The schema below is only an example:
+
+{{{adminUserTableInstructions}}}
+
+The generated app will seed the default `adminforth` / `adminforth` user on first start if the table is empty.
+{{/if}}
+
+{{#if prismaDbUrl}}
+Create the initial migration and apply it to the database:
 
 ```bash
+{{packageManagerRun}} makemigration{{packageManagerScriptArgSeparator}}--name init
 {{packageManagerRun}} migrate:local
 ```
+{{/if}}
 
 Start the server:
 
