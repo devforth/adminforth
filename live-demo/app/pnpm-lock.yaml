@@ -10,79 +10,79 @@ importers:
     dependencies:
       '@adminforth/agent':
         specifier: ^2.0.9
-        version: 2.0.9(adminforth@3.9.1)(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
+        version: 2.0.9(adminforth@3.9.2)(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.1
-        version: 1.3.1(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.1)(ws@8.21.0)(zod@4.4.3)
+        version: 1.3.1(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.2)(ws@8.21.0)(zod@4.4.3)
       '@adminforth/audit-log':
         specifier: ^1.9.29
-        version: 1.9.29(adminforth@3.9.1)
+        version: 1.9.29(adminforth@3.9.2)
       '@adminforth/auto-remove':
         specifier: ^1.0.19
-        version: 1.0.19(adminforth@3.9.1)
+        version: 1.0.19(adminforth@3.9.2)
       '@adminforth/background-jobs':
         specifier: ^1.18.2
-        version: 1.18.2(adminforth@3.9.1)(vue@3.5.38(typescript@5.9.3))
+        version: 1.18.2(adminforth@3.9.2)(vue@3.5.38(typescript@5.9.3))
       '@adminforth/bulk-ai-flow':
         specifier: ^1.27.1
-        version: 1.27.1(adminforth@3.9.1)
+        version: 1.27.1(adminforth@3.9.2)
       '@adminforth/chat-gpt':
         specifier: ^1.0.20
         version: 1.0.20
       '@adminforth/clone-row':
         specifier: ^1.2.21
-        version: 1.2.21(adminforth@3.9.1)
+        version: 1.2.21(adminforth@3.9.2)
       '@adminforth/completion-adapter-openai-responses':
         specifier: ^2.0.27
-        version: 2.0.27(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.1)(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)(zod@4.4.3)
+        version: 2.0.27(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.2)(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)(zod@4.4.3)
       '@adminforth/connector-sqlite':
         specifier: ^1.0.5
-        version: 1.0.5(adminforth@3.9.1)
+        version: 1.0.5(adminforth@3.9.2)
       '@adminforth/email-password-reset':
         specifier: ^1.3.25
-        version: 1.3.25(adminforth@3.9.1)
+        version: 1.3.25(adminforth@3.9.2)
       '@adminforth/foreign-inline-list':
         specifier: ^1.11.1
-        version: 1.11.1(adminforth@3.9.1)
+        version: 1.11.1(adminforth@3.9.2)
       '@adminforth/i18n':
         specifier: ^2.1.1
-        version: 2.1.1(adminforth@3.9.1)
+        version: 2.1.1(adminforth@3.9.2)
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.14
-        version: 1.0.14(adminforth@3.9.1)
+        version: 1.0.14(adminforth@3.9.2)
       '@adminforth/image-vision-adapter-openai':
         specifier: ^1.1.4
-        version: 1.1.4(adminforth@3.9.1)
+        version: 1.1.4(adminforth@3.9.2)
       '@adminforth/import-export':
         specifier: ^1.6.2
-        version: 1.6.2(adminforth@3.9.1)
+        version: 1.6.2(adminforth@3.9.2)
       '@adminforth/login-captcha':
         specifier: ^1.2.1
-        version: 1.2.1(adminforth@3.9.1)
+        version: 1.2.1(adminforth@3.9.2)
       '@adminforth/login-captcha-adapter-cloudflare':
         specifier: ^1.1.3
-        version: 1.1.3(adminforth@3.9.1)
+        version: 1.1.3(adminforth@3.9.2)
       '@adminforth/rich-editor':
         specifier: ^2.1.2
-        version: 2.1.2(adminforth@3.9.1)
+        version: 2.1.2(adminforth@3.9.2)
       '@adminforth/storage-adapter-amazon-s3':
         specifier: ^1.0.21
-        version: 1.0.21(adminforth@3.9.1)
+        version: 1.0.21(adminforth@3.9.2)
       '@adminforth/text-complete':
         specifier: ^2.1.1
-        version: 2.1.1(adminforth@3.9.1)
+        version: 2.1.1(adminforth@3.9.2)
       '@adminforth/two-factors-auth':
         specifier: ^3.3.10
-        version: 3.3.10(adminforth@3.9.1)
+        version: 3.3.10(adminforth@3.9.2)
       '@adminforth/upload':
         specifier: ^2.17.2
-        version: 2.17.2(adminforth@3.9.1)
+        version: 2.17.2(adminforth@3.9.2)
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
       adminforth:
-        specifier: ^3.9.1
-        version: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+        specifier: ^3.9.2
+        version: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       cldr-core:
         specifier: ^48.2.0
         version: 48.2.0
@@ -1259,8 +1259,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adminforth@3.9.1:
-    resolution: {integrity: sha512-JzxUB9L2flUw8Wiojl0jzLJpxanmjXcBLOuQi/o/a1SuaLiL3f0RM1yRnYBDJT2oKeWa5viVQ3Pokvk7IJoFlw==}
+  adminforth@3.9.2:
+    resolution: {integrity: sha512-8JhQ8iB/t81JS8wLwWpinKNSGZJfFCnAgL08bcRyXt3rXh51CsFz5sYVcDQhq6WnBWWd7AiA3tUxJ2V9EgazJA==}
     hasBin: true
     peerDependencies:
       '@adminforth/connector-clickhouse': ^1.0.4
@@ -2926,12 +2926,12 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@2.0.9(adminforth@3.9.1)(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)':
+  '@adminforth/agent@2.0.9(adminforth@3.9.2)(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)':
     dependencies:
       '@langchain/core': 1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0)
       '@langchain/langgraph': 1.4.7(@langchain/core@1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
       '@langchain/langgraph-checkpoint': 1.1.3(@langchain/core@1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       dayjs: 1.11.21
       langchain: 1.5.2(@langchain/core@1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
       multer: 2.2.0
@@ -2949,9 +2949,9 @@ snapshots:
       - vue
       - ws
 
-  '@adminforth/audio-adapter-openai@1.3.1(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.1)(ws@8.21.0)(zod@4.4.3)':
+  '@adminforth/audio-adapter-openai@1.3.1(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.2)(ws@8.21.0)(zod@4.4.3)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       openai: 6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3)
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -2960,19 +2960,19 @@ snapshots:
       - ws
       - zod
 
-  '@adminforth/audit-log@1.9.29(adminforth@3.9.1)':
+  '@adminforth/audit-log@1.9.29(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       dayjs: 1.11.21
 
-  '@adminforth/auto-remove@1.0.19(adminforth@3.9.1)':
+  '@adminforth/auto-remove@1.0.19(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
 
-  '@adminforth/background-jobs@1.18.2(adminforth@3.9.1)(vue@3.5.38(typescript@5.9.3))':
+  '@adminforth/background-jobs@1.18.2(adminforth@3.9.2)(vue@3.5.38(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 14.3.0(vue@3.5.38(typescript@5.9.3))
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       async-mutex: 0.5.0
       level: 10.0.0
       p-limit: 7.3.0
@@ -2980,24 +2980,24 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@adminforth/bulk-ai-flow@1.27.1(adminforth@3.9.1)':
+  '@adminforth/bulk-ai-flow@1.27.1(adminforth@3.9.2)':
     dependencies:
       '@types/handlebars': 4.1.0
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       handlebars: 4.7.9
       zod: 4.4.3
 
   '@adminforth/chat-gpt@1.0.20': {}
 
-  '@adminforth/clone-row@1.2.21(adminforth@3.9.1)':
+  '@adminforth/clone-row@1.2.21(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
 
-  '@adminforth/completion-adapter-openai-responses@2.0.27(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.1)(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)(zod@4.4.3)':
+  '@adminforth/completion-adapter-openai-responses@2.0.27(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(adminforth@3.9.2)(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)(zod@4.4.3)':
     dependencies:
       '@langchain/core': 1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0)
       '@langchain/openai': 1.4.4(@aws-sdk/credential-provider-node@3.972.61)(@langchain/core@1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))(@smithy/signature-v4@5.6.1)(ws@8.21.0)
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       langchain: 1.5.2(@langchain/core@1.2.1(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(ws@8.21.0))(openai@6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.0)
       openai: 6.45.0(@aws-sdk/credential-provider-node@3.972.61)(@smithy/signature-v4@5.6.1)(ws@8.21.0)(zod@4.4.3)
       tiktoken: 1.0.22
@@ -3015,38 +3015,38 @@ snapshots:
       - ws
       - zod
 
-  '@adminforth/connector-qdrant@1.0.4(adminforth@3.9.1)(typescript@5.9.3)':
+  '@adminforth/connector-qdrant@1.0.4(adminforth@3.9.2)(typescript@5.9.3)':
     dependencies:
       '@qdrant/js-client-rest': 1.18.0(typescript@5.9.3)
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       dayjs: 1.11.21
     transitivePeerDependencies:
       - typescript
     optional: true
 
-  '@adminforth/connector-sqlite@1.0.5(adminforth@3.9.1)':
+  '@adminforth/connector-sqlite@1.0.5(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       better-sqlite3: 11.10.0
       dayjs: 1.11.21
 
-  '@adminforth/email-password-reset@1.3.25(adminforth@3.9.1)':
+  '@adminforth/email-password-reset@1.3.25(adminforth@3.9.2)':
     dependencies:
       '@aws-sdk/client-ses': 3.1078.0
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       validator: 13.15.35
 
-  '@adminforth/foreign-inline-list@1.11.1(adminforth@3.9.1)':
+  '@adminforth/foreign-inline-list@1.11.1(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       clone: 2.1.2
       zod: 4.4.3
 
-  '@adminforth/i18n@2.1.1(adminforth@3.9.1)':
+  '@adminforth/i18n@2.1.1(adminforth@3.9.2)':
     dependencies:
       '@aws-sdk/client-ses': 3.1078.0
       '@sapphire/async-queue': 1.5.5
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       bcp-47: 2.1.0
       chokidar: 4.0.3
       country-flag-svg: 1.0.19
@@ -3056,9 +3056,9 @@ snapshots:
       p-limit: 7.3.0
       zod: 4.4.3
 
-  '@adminforth/image-generation-adapter-openai@1.0.14(adminforth@3.9.1)':
+  '@adminforth/image-generation-adapter-openai@1.0.14(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       axios: 1.18.1
       file-type: 20.5.0
       form-data: 4.0.6
@@ -3067,20 +3067,20 @@ snapshots:
       - debug
       - supports-color
 
-  '@adminforth/image-vision-adapter-openai@1.1.4(adminforth@3.9.1)':
+  '@adminforth/image-vision-adapter-openai@1.1.4(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       typescript: 5.9.3
 
-  '@adminforth/import-export@1.6.2(adminforth@3.9.1)':
+  '@adminforth/import-export@1.6.2(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       p-limit: 7.3.0
       zod: 4.4.3
 
-  '@adminforth/login-captcha-adapter-cloudflare@1.1.3(adminforth@3.9.1)':
+  '@adminforth/login-captcha-adapter-cloudflare@1.1.3(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       axios: 1.18.1
       file-type: 20.5.0
       typescript: 5.9.3
@@ -3088,40 +3088,40 @@ snapshots:
       - debug
       - supports-color
 
-  '@adminforth/login-captcha@1.2.1(adminforth@3.9.1)':
+  '@adminforth/login-captcha@1.2.1(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       zod: 4.4.3
 
-  '@adminforth/rich-editor@2.1.2(adminforth@3.9.1)':
+  '@adminforth/rich-editor@2.1.2(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       cheerio: 1.2.0
       zod: 4.4.3
 
-  '@adminforth/storage-adapter-amazon-s3@1.0.21(adminforth@3.9.1)':
+  '@adminforth/storage-adapter-amazon-s3@1.0.21(adminforth@3.9.2)':
     dependencies:
       '@aws-sdk/client-s3': 3.1078.0
       '@aws-sdk/s3-request-presigner': 3.1078.0
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       typescript: 5.9.3
 
-  '@adminforth/text-complete@2.1.1(adminforth@3.9.1)':
+  '@adminforth/text-complete@2.1.1(adminforth@3.9.2)':
     dependencies:
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       zod: 4.4.3
 
-  '@adminforth/two-factors-auth@3.3.10(adminforth@3.9.1)':
+  '@adminforth/two-factors-auth@3.3.10(adminforth@3.9.2)':
     dependencies:
       '@simplewebauthn/server': 13.3.2
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       node-2fa: 2.0.3
 
-  '@adminforth/upload@2.17.2(adminforth@3.9.1)':
+  '@adminforth/upload@2.17.2(adminforth@3.9.2)':
     dependencies:
       '@aws-sdk/client-s3': 3.1078.0
       '@aws-sdk/s3-request-presigner': 3.1078.0
-      adminforth: 3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
+      adminforth: 3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2)
       zod: 4.4.3
 
   '@aws-sdk/checksums@3.1000.11':
@@ -4155,7 +4155,7 @@ snapshots:
 
   acorn@8.17.0: {}
 
-  adminforth@3.9.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2):
+  adminforth@3.9.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.0)(express@4.22.2):
     dependencies:
       '@babel/parser': 7.29.7
       '@faker-js/faker': 9.9.0
@@ -4193,8 +4193,8 @@ snapshots:
       yaml: 2.9.0
       zod: 4.4.3
     optionalDependencies:
-      '@adminforth/connector-qdrant': 1.0.4(adminforth@3.9.1)(typescript@5.9.3)
-      '@adminforth/connector-sqlite': 1.0.5(adminforth@3.9.1)
+      '@adminforth/connector-qdrant': 1.0.4(adminforth@3.9.2)(typescript@5.9.3)
+      '@adminforth/connector-sqlite': 1.0.5(adminforth@3.9.2)
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
