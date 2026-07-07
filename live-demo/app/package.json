@@ -41,7 +41,7 @@
     "@adminforth/two-factors-auth": "^3.3.10",
     "@adminforth/upload": "^2.17.2",
     "@prisma/client": "^6.19.3",
-    "adminforth": "^3.9.2",
+    "adminforth": "^3.9.3",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"
   },
