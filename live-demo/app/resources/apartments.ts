@@ -13,7 +13,7 @@ import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter
 import CloneRow from "@adminforth/clone-row";
 
 const blockDemoUsers = async ({ adminUser }: { adminUser: any }) => {
-  throw new Error("This is a test error and will be removed in few minutes.");
+  // throw new Error("This is a test error and will be removed in few minutes.");
   if (adminUser.dbUser && adminUser.dbUser.role !== 'superadmin') {
     return { ok: false, error: "You can't do this on demo.adminforth.dev" }
   }
