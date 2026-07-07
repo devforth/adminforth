@@ -672,6 +672,24 @@ If you want to have custom label prefix for some reason:
   ],
 ```
 
+## TOTP setup / login validity period
+
+When a user logs in with password, the plugin issues a short-lived temporary login session (stored in a cookie) during which the user must either complete the initial 2FA setup (scan the QR code and enter the code) or enter the OTP code. By default this session lives only **1 minute**.
+
+If your users don't have enough time to scan the QR code and enter the code (or you simply want a more relaxed flow), you can increase it with the `totpSetupValidityPeriod` option:
+
+```ts title='./adminuser.ts'
+    new TwoFactorsAuthPlugin ({
+      twoFaSecretFieldName: 'secret2fa',
+      ...
+      //diff-add
+      totpSetupValidityPeriod: '5m', // e.g. '5m', '10m', '15m'. Default is '1m'
+      ...
+    }),
+```
+
+This value controls both the lifetime of the temporary login JWT and the expiry of the temporary cookie, so they stay in sync.
+
 ## Passkeys setup (WebAuthn) alongside TOTP
 
 If you want to use both passkeys and TOTP simultaneously, you can set them up as follows:
