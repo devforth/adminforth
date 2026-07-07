@@ -224,6 +224,9 @@ class ExpressServer implements IExpressHttpServer {
     } else {
       const codeInjector = this.adminforth.codeInjector;
       this.expressApp.get(assetsRoute, (req, res) => {
+        const fullPath = path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix));
+        console.log(`(2)Serving SPA index.html for ${req.url} from ${fullPath}`);
+        console.log("(2)Exists:", fs.existsSync(fullPath));
         res.sendFile(
           path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix)),
           {
@@ -254,6 +257,8 @@ class ExpressServer implements IExpressHttpServer {
           res.status(500).send(respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
           return;
         }
+        console.log(`(1)Serving SPA index.html for ${req.url} from ${fullPath}`);
+        console.log("(1)Exists:", fs.existsSync(fullPath));
         res.sendFile(fullPath, { 
           cacheControl: false,
           headers: { 
