@@ -225,12 +225,11 @@ class ExpressServer implements IExpressHttpServer {
       const codeInjector = this.adminforth.codeInjector;
       this.expressApp.get(assetsRoute, (req, res) => {
         const fullPath = path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix));
-        console.log(`(2)Serving SPA for ${req.url} from ${fullPath}`);
-        console.log("(2)Exists:", fs.existsSync(fullPath));
         res.sendFile(
-          path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix)),
+          fullPath,
           {
             cacheControl: false,
+            dotfiles: 'allow',
             // store for a year
             headers: {
               'Cache-Control': 'public, max-age=31536000',
