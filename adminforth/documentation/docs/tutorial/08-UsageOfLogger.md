@@ -70,9 +70,9 @@ AF_LOG_SINGLE_LINE=true pnpm start
 
 Accepted truthy values are `true` and `1`. When unset, logs use the default multi-line pretty format.
 
-## Catching unhandled API handler errors
+## Catching unhandled API handler errors (work only with express v4)
 
-When an unhandled error is thrown inside an AdminForth API endpoint handler (built-in or custom), AdminForth logs the
+Express 4.x.x doen't have build-in error handler, so adminforth comes with build-in one. When an unhandled error is thrown inside an AdminForth API endpoint handler (built-in or custom), AdminForth logs the
 error and responds with `500 Internal server error`. If you also want to forward these errors somewhere — for example
 to report them to an external error-tracking service like [Sentry](https://sentry.io/), or to do your own custom
 logging — set the `expressErrorCallback` option in your AdminForth config:
@@ -93,4 +93,6 @@ export const admin = new AdminForth({
   },
 });
 ```
+
+>In express 5.x.x errors are handled automatically and this param is not supported
 
