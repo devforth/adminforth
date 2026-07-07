@@ -224,6 +224,10 @@ class ExpressServer implements IExpressHttpServer {
     } else {
       const codeInjector = this.adminforth.codeInjector;
       this.expressApp.get(assetsRoute, (req, res) => {
+        if (req.url?.includes('..')) {
+          res.status(400).send('Invalid path');
+          return;
+        }
         const fullPath = path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix));
         res.sendFile(
           fullPath,
