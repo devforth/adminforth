@@ -43,7 +43,7 @@
     "@prisma/client": "^6.19.3",
     "adminforth": "^3.9.0",
     "cldr-core": "^48.2.0",
-    "express": "^5.2.1"
+    "express": "^4.22.2"
   },
   "devDependencies": {
     "dotenv": "^16.6.1",
