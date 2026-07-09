@@ -72,26 +72,26 @@ const VARIANT_CONFIGS = {
     info: {
         icon: IconInfoCircleSolid,
         borderClass: 'border-lightPrimary dark:border-darkPrimary',
-        iconClass: 'text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity dark:bg-darkPrimary dark:!text-blue-100',
-        strokeClass: 'stroke-lightPrimary dark:stroke-darkPrimary',
+        iconClass: 'text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity dark:bg-darkPrimary/50 dark:!text-blue-100',
+        strokeClass: 'stroke-lightPrimary/50 dark:stroke-darkPrimary/30',
     },
     danger: {
         icon: IconCloseCircleSolid,
         borderClass: 'border-red-500 dark:border-red-800',
         iconClass: 'text-red-500 bg-red-100 dark:bg-red-800 dark:text-red-200',
-        strokeClass: 'stroke-red-500 dark:stroke-red-800',
+        strokeClass: 'stroke-red-500 dark:stroke-red-700',
     },
     warning: {
         icon: IconExclamationCircleSolid,
         borderClass: 'border-orange-500 dark:border-orange-700',
         iconClass: 'text-orange-500 bg-orange-100 dark:bg-orange-700 dark:text-orange-200',
-        strokeClass: 'stroke-orange-500 dark:stroke-orange-700',
+        strokeClass: 'stroke-orange-500 dark:stroke-orange-600',
     },
     success: {
         icon: IconCheckCircleSolid,
         borderClass: 'border-green-500 dark:border-green-800',
         iconClass: 'text-green-500 bg-green-100 dark:bg-green-800 dark:text-green-200',
-        strokeClass: 'stroke-green-500 dark:stroke-green-800',
+        strokeClass: 'stroke-green-500 dark:stroke-green-600',
     },
 } as const;
 
