@@ -2,21 +2,30 @@
     
 
 <div class="afcl-toast flex items-center w-full p-4 rounded-lg shadow-lg dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText border-l-4"
-    :class="toast.variant == 'info' ? 'border-lightPrimary dark:border-darkPrimary' : toast.variant == 'danger' ? 'border-red-500 dark:border-red-800' : toast.variant == 'warning' ? 'border-orange-500 dark:border-orange-700' : 'border-green-500 dark:border-green-800'"
+    :class="variantConfig.borderClass"
     role="alert"
+    @mouseenter="pauseTimer"
+    @mouseleave="resumeTimer"
 >
-    <div v-if="toast.variant == 'info'" class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity rounded-lg dark:bg-darkPrimary dark:!text-blue-100">
-        <IconInfoCircleSolid class="w-5 h-5" aria-hidden="true" />
-    </div>
-    <div v-else-if="toast.variant == 'danger'" class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-        <IconCloseCircleSolid class="w-5 h-5" aria-hidden="true" />
-    </div>
-    <div v-else-if="toast.variant == 'warning'" class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
-        <IconExclamationCircleSolid class="w-5 h-5" aria-hidden="true" />
-
-    </div>
-    <div v-else class="af-toast-icon inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
-        <IconCheckCircleSolid class="w-5 h-5" aria-hidden="true" />
+    <div class="relative w-8 h-8 flex items-center justify-center">
+        <div class="absolute af-toast-icon inline-flex items-center justify-center flex-shrink-0 rounded-lg w-full h-full" :class="variantConfig.iconClass">
+            <component :is="variantConfig.icon" class="w-5 h-5" aria-hidden="true" />
+        </div>
+        <svg v-if="hasTimer" class="absolute inset-0 w-full h-full rotate-180">
+            <rect
+                x="1"
+                y="1"
+                width="calc(100% - 2px)"
+                height="calc(100% - 2px)"
+                :class="variantConfig.strokeClass"
+                rx="8"
+                fill="none"
+                stroke-width="2"
+                pathLength="100"
+                :stroke-dasharray="`100`"
+                :stroke-dashoffset="dashOffset"
+            />
+        </svg>
     </div>
     <div class="flex flex-col items-center justify-center break-all overflow-hidden [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:70]">
         <div class="ms-3 text-sm font-normal max-w-xs pr-2" v-if="toast.messageHtml" v-html="toast.messageHtml"></div>
@@ -36,14 +45,13 @@
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
         </svg>
     </button>
-    <!-- <div class="h-full ml-3 w-1 rounded-r-lg" :class="toast.variant == 'info' ? 'bg-lightPrimary dark:bg-darkPrimary' : toast.variant == 'danger' ? 'bg-red-500 dark:bg-red-800' : toast.variant == 'warning' ? 'bg-orange-500 dark:bg-orange-700' : 'bg-green-500 dark:bg-green-800'"></div> -->
 </div>
 
 
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, computed, ref } from 'vue';
 import { useToastStore } from '@/stores/toast';
 import { IconInfoCircleSolid, IconCloseCircleSolid, IconExclamationCircleSolid, IconCheckCircleSolid } from '@iconify-prerendered/vue-flowbite';
 
@@ -59,6 +67,69 @@ const props = defineProps<{
         buttons?: { value: any; label: string }[];
     }
 }>();
+
+const VARIANT_CONFIGS = {
+    info: {
+        icon: IconInfoCircleSolid,
+        borderClass: 'border-lightPrimary dark:border-darkPrimary',
+        iconClass: 'text-lightPrimary dark:text-darkPrimary bg-lightPrimaryOpacity dark:bg-darkPrimary dark:!text-blue-100',
+        strokeClass: 'stroke-lightPrimary dark:stroke-darkPrimary',
+    },
+    danger: {
+        icon: IconCloseCircleSolid,
+        borderClass: 'border-red-500 dark:border-red-800',
+        iconClass: 'text-red-500 bg-red-100 dark:bg-red-800 dark:text-red-200',
+        strokeClass: 'stroke-red-500 dark:stroke-red-800',
+    },
+    warning: {
+        icon: IconExclamationCircleSolid,
+        borderClass: 'border-orange-500 dark:border-orange-700',
+        iconClass: 'text-orange-500 bg-orange-100 dark:bg-orange-700 dark:text-orange-200',
+        strokeClass: 'stroke-orange-500 dark:stroke-orange-700',
+    },
+    success: {
+        icon: IconCheckCircleSolid,
+        borderClass: 'border-green-500 dark:border-green-800',
+        iconClass: 'text-green-500 bg-green-100 dark:bg-green-800 dark:text-green-200',
+        strokeClass: 'stroke-green-500 dark:stroke-green-800',
+    },
+} as const;
+
+const variantConfig = computed(() => VARIANT_CONFIGS[props.toast.variant as keyof typeof VARIANT_CONFIGS] ?? VARIANT_CONFIGS.success);
+
+const hasTimer = computed(() => props.toast.timeout !== 'unlimited');
+const totalMs = (typeof props.toast.timeout === 'number' ? props.toast.timeout : 10) * 1e3;
+const dashOffset = ref(0);
+let rafId: number | null = null;
+let remainingMs = totalMs;
+let startedAt = 0;
+
+function frame(now: number) {
+    const leftMs = Math.max(0, remainingMs - (now - startedAt));
+    dashOffset.value = (1 - leftMs / totalMs) * 100;
+    if (leftMs <= 0) {
+        rafId = null;
+        // resolve with undefined on auto-timeout
+        toastStore.resolveToast(props.toast.id);
+        emit('close');
+        return;
+    }
+    rafId = requestAnimationFrame(frame);
+}
+
+function pauseTimer() {
+    if (rafId === null) return;
+    cancelAnimationFrame(rafId);
+    rafId = null;
+    remainingMs = Math.max(0, remainingMs - (performance.now() - startedAt));
+}
+
+function resumeTimer() {
+    if (!hasTimer.value || rafId !== null || remainingMs <= 0) return;
+    startedAt = performance.now();
+    rafId = requestAnimationFrame(frame);
+}
+
 function closeToast() {
     // resolve with undefined on close (X button)
     toastStore.resolveToast(props.toast.id);
@@ -71,14 +142,11 @@ function onButtonClick(value: any) {
 }
 
 onMounted(() => {
-    if (props.toast.timeout === 'unlimited') return;
-    else { 
-      setTimeout(() => {
-        // resolve with undefined on auto-timeout
-        toastStore.resolveToast(props.toast.id);
-        emit('close');
-      }, (props.toast.timeout || 10) * 1e3 );
-    }
+    resumeTimer();
+});
+
+onUnmounted(() => {
+    if (rafId !== null) cancelAnimationFrame(rafId);
 });
 
 </script>
