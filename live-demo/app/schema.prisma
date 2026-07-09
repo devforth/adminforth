@@ -69,11 +69,12 @@ model sessions {
 }
 
 model turns {
-  id         String   @id
-  session_id String
-  created_at DateTime
-  prompt     String?
-  response   String?
+  id            String   @id
+  session_id    String
+  created_at    DateTime
+  prompt        String?
+  response      String?
+  checkpoint_id String?
 }
 
 model agent_checkpoints {
