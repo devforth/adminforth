@@ -1420,8 +1420,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           : undefined;
 
         // remove virtual fields from sort if still presented after beforeDatasourceRequest hook
+        // and drop sort items referencing columns that don't exist in resource config
         const sortFiltered = (sort || []).filter((sortItem: IAdminForthSort) => {
-          return !resource.columns.find((col) => col.name === sortItem.field && col.virtual);
+          const col = resource.columns.find((col) => col.name === sortItem.field);
+          return col && !col.virtual;
         });
 
         // after beforeDatasourceRequest hook, filter can be anything
