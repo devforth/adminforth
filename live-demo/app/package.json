@@ -17,7 +17,7 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^2.5.0",
+    "@adminforth/agent": "^2.5.1",
     "@adminforth/audio-adapter-openai": "^1.3.1",
     "@adminforth/audit-log": "^1.9.29",
     "@adminforth/auto-remove": "^1.0.19",
@@ -41,7 +41,7 @@
     "@adminforth/two-factors-auth": "^3.3.10",
     "@adminforth/upload": "^2.17.2",
     "@prisma/client": "^6.19.3",
-    "adminforth": "^3.11.0",
+    "adminforth": "^3.11.1",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"
   },
