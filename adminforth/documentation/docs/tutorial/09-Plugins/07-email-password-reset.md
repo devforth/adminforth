@@ -60,6 +60,12 @@ plugins: [
     // domain part should be verified in SES
     sendFrom: 'no-reply@devforth.io',
 
+    // origin(s) of your admin panel that reset links are allowed to point to.
+    // Required: the origin is never taken from the request, so an attacker
+    // cannot make the plugin email a valid reset link to a host they control.
+    // Pass an array if the panel is served on multiple origins.
+    expectedOrigin: 'https://admin.example.com',
+
     adapter: new EmailAdapterAwsSes({
       // region where SES is setup
       region: "eu-central-1",
@@ -105,6 +111,12 @@ plugins: [
 
     // domain part should be verified in Mailgun
     sendFrom: 'no-reply@devforth.io',
+
+    // origin(s) of your admin panel that reset links are allowed to point to.
+    // Required: the origin is never taken from the request, so an attacker
+    // cannot make the plugin email a valid reset link to a host they control.
+    // Pass an array if the panel is served on multiple origins.
+    expectedOrigin: 'https://admin.example.com',
 
     adapter: new EmailAdapterMailgun({
       apiKey: process.env.MAILGUN_API_KEY as string,
