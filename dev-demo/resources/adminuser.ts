@@ -199,6 +199,7 @@ export default {
       sendFrom: 'no-reply@devforth.io',
       adapter: fakeEmailAdapter,
       userResetTokensKeyValueAdapter: new KeyValueAdapterRam(),
+      expectedOrigin: process.env.RESET_PASSWORD_ORIGIN || 'http://localhost:3123',
     }),
   ],
   hooks: {
