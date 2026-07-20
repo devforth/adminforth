@@ -251,7 +251,7 @@ async function saveRecord() {
     alert({
       message: t('Record updated successfully'),
       variant: 'success',
-      timeout: 'unlimited'
+      timeout: 10
     });
     router.push({ name: 'resource-show', params: { resourceId: route.params.resourceId, primaryKey: resp.recordId } });
   }
