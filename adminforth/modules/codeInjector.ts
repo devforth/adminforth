@@ -812,9 +812,7 @@ class CodeInjector implements ICodeInjector {
 
 
     if (this.adminforth.config.customization?.customComponentsDir) {
-      console.log(`Checking user packages in ${this.adminforth.config.customization.customComponentsDir}`);
       [usersLockHash, usersPackages] = await this.packagesFromPnpm(this.adminforth.config.customization.customComponentsDir);
-      console.log(`User packages: ${usersPackages.join(', ')}`);
     }
 
     const pluginPackages: {
