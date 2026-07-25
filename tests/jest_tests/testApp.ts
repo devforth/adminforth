@@ -29,9 +29,9 @@ await execFileAsync('pnpm', ['migrate:local'], {
   env: testEnv,
 });
 
-const { app, appReady, closeApplication } = await import('../application/index');
+const { admin, app, appReady, closeApplication, Filters } = await import('../application/index');
 await appReady;
 
 const agent = request.agent(app);
 
-export { agent, app, closeApplication };
+export { admin, agent, app, closeApplication, Filters };
