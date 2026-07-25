@@ -275,6 +275,36 @@ class CodeInjector implements ICodeInjector {
     return path.join(this.getSpaDir(), 'dist');
   }
 
+  async parsePackageLockPackages(dir: string, packageContent: { dependencies: any, devDependencies: any }): Promise<[string, string[]]> {
+    const npmLockPath = path.join(dir, 'package-lock.json');
+    let npmLock: any = null;
+    try {
+      npmLock = JSON.parse(await fs.promises.readFile(npmLockPath, 'utf-8'));
+    } catch (npmLockError) {
+      throw new Error(`Custom pnpm-lock.yaml or package-lock.json does not exist in ${dir}, but package.json does.
+      We can't determine version of packages without pnpm-lock.yaml or package-lock.json. Please run pnpm install or npm install in ${dir}`);
+    }
+
+    const lockHash = hashify(npmLock);
+
+    const packages = [
+      ...Object.keys(packageContent.dependencies || {}),
+      ...Object.keys(packageContent.devDependencies || {})
+    ].reduce(
+      (acc, packageName) => {
+        const pack = npmLock?.packages?.[`node_modules/${packageName}`];
+        if (!pack?.version) {
+          throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
+        }
+
+        acc.push(`${packageName}@${pack.version}`);
+        return acc;
+      }, []
+    );
+
+    return [lockHash, packages];
+  }
+
   async packagesFromPnpm(dir: string): Promise<[string, string[]]> {
     const usersPackagePath = path.join(dir, 'package.json');
     let packageContent: { dependencies: any, devDependencies: any } = null;
@@ -291,33 +321,7 @@ class CodeInjector implements ICodeInjector {
       try {
         lock = yaml.parse(await fs.promises.readFile(lockPath, 'utf-8'));
       } catch (e) {
-        const npmLockPath = path.join(dir, 'package-lock.json');
-        let npmLock: any = null;
-        try {
-          npmLock = JSON.parse(await fs.promises.readFile(npmLockPath, 'utf-8'));
-        } catch (npmLockError) {
-          throw new Error(`Custom pnpm-lock.yaml or package-lock.json does not exist in ${dir}, but package.json does.
-          We can't determine version of packages without pnpm-lock.yaml or package-lock.json. Please run pnpm install or npm install in ${dir}`);
-        }
-
-        lockHash = hashify(npmLock);
-
-        packages = [
-          ...Object.keys(packageContent.dependencies || {}),
-          ...Object.keys(packageContent.devDependencies || {})
-        ].reduce(
-          (acc, packageName) => {
-            const pack = npmLock?.packages?.[`node_modules/${packageName}`];
-            if (!pack?.version) {
-              throw new Error(`Package ${packageName} is not in package-lock.json but is in package.json. Please run 'npm install' in ${dir}`);
-            }
-
-            acc.push(`${packageName}@${pack.version}`);
-            return acc;
-          }, []
-        );
-
-        return [lockHash, packages];
+        return await this.parsePackageLockPackages(dir, packageContent);
       }
       lockHash = hashify(lock);
       const importer = lock?.importers?.['.'];
@@ -330,27 +334,32 @@ class CodeInjector implements ICodeInjector {
         ...(importer.devDependencies || {}),
         ...(importer.optionalDependencies || {}),
       };
+      try {
+        packages = [
+          ...Object.keys(packageContent.dependencies || {}),
+          ...Object.keys(packageContent.devDependencies || {})
+        ].reduce(
+            (acc, packageName) => {
+              const depInfo = importerDeps[packageName];
+              const raw = typeof depInfo === 'string'
+                ? depInfo
+                : (depInfo?.version || depInfo?.specifier);
 
-      packages = [
-        ...Object.keys(packageContent.dependencies || {}),
-        ...Object.keys(packageContent.devDependencies || {})
-      ].reduce(
-          (acc, packageName) => {
-            const depInfo = importerDeps[packageName];
-            const raw = typeof depInfo === 'string'
-              ? depInfo
-              : (depInfo?.version || depInfo?.specifier);
+              if (!raw) {
+                throw new Error(`Package ${packageName} is not in pnpm-lock.yaml but is in package.json. Please run 'pnpm install' in ${dir}`);
+              }
 
-            if (!raw) {
-              throw new Error(`Package ${packageName} is not in pnpm-lock.yaml but is in package.json. Please run 'pnpm install' in ${dir}`);
-            }
+              const cleaned = raw.includes('(') ? raw.split('(')[0] : raw;
 
-            const cleaned = raw.includes('(') ? raw.split('(')[0] : raw;
-
-            acc.push(`${packageName}@${cleaned}`);
-            return acc;
-          }, []
-      );
+              acc.push(`${packageName}@${cleaned}`);
+              return acc;
+            }, []
+        );
+      } catch (e) {
+        console.log(`Error while parsing pnpm-lock.yaml: ${e.message}. Falling back to package-lock.json parsing.`);
+        // if there there is no sync between package.json and pnpm-lock.yaml - fallback to the package-lock.json parsing
+        return await this.parsePackageLockPackages(dir, packageContent);
+      }
     }
     return [lockHash, packages];
   }
@@ -787,7 +796,8 @@ class CodeInjector implements ICodeInjector {
 
     /* hash checking */
     let spaLockHash = '';
-    if (await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir)) {
+    const isTherePnpmLockInCustomFolder = await this.doesUserHasPnpmLockFile(this.adminforth.config.customization.customComponentsDir);
+    if (isTherePnpmLockInCustomFolder) {
       const spaPnpmLockPath = path.join(this.spaTmpPath(), 'pnpm-lock.yaml');
       const spaPnpmLock = yaml.parse(await fs.promises.readFile(spaPnpmLockPath, 'utf-8'));
       spaLockHash = hashify(spaPnpmLock);
@@ -802,7 +812,9 @@ class CodeInjector implements ICodeInjector {
 
 
     if (this.adminforth.config.customization?.customComponentsDir) {
+      console.log(`Checking user packages in ${this.adminforth.config.customization.customComponentsDir}`);
       [usersLockHash, usersPackages] = await this.packagesFromPnpm(this.adminforth.config.customization.customComponentsDir);
+      console.log(`User packages: ${usersPackages.join(', ')}`);
     }
 
     const pluginPackages: {
