@@ -82,6 +82,18 @@ export interface StorageAdapter {
     * @returns A promise that returns true if the URL belongs to this adapter, false otherwise.
     */
   isInternalUrl (url: string): Promise<boolean>;
+
+  /**
+   * Creates an object writer for the specified key and content type. 
+   * For example, this can be used to write large files in chunks or streams (AWS S3 Multipart Upload).
+   * @param key - The key of the file to be written e.g. "uploads/file.txt"
+   * @param contentType - The MIME type of the file to be written e.g. "image/png"
+   */
+  createWriteStream(key: string, contentType: string): Promise<ObjectWriter>;
 }
 
-  
+interface ObjectWriter {
+  write(data: string | Buffer | Uint8Array): Promise<void>;
+  close(): Promise<void>;
+  abort(): Promise<void>;
+}
