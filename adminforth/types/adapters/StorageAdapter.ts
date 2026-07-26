@@ -89,7 +89,7 @@ export interface StorageAdapter {
    * @param key - The key of the file to be written e.g. "uploads/file.txt"
    * @param contentType - The MIME type of the file to be written e.g. "image/png"
    */
-  createWriteStream(key: string, contentType: string): Promise<ObjectWriter>;
+  createWriteStream(key: string, contentType: string, bufferSizeMb?: number): Promise<ObjectWriter>;
 }
 
 interface ObjectWriter {
