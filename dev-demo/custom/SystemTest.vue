@@ -59,6 +59,21 @@
 
       <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
         <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          S3 Storage
+        </div>
+        <div class="flex flex-col gap-3">
+          <Input class="w-full" v-model="s3SizeMb" placeholder="Size in MB (default 12)" />
+          <Button class="w-full" @click="testS3WriteStream(false)">
+            Start multipart upload (createWriteStream)
+          </Button>
+          <Button class="w-full" @click="testS3WriteStream(true)">
+            Start multipart upload and abort it
+          </Button>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
           2FA
         </div>
         <div class="flex flex-col gap-3">
@@ -104,6 +119,7 @@ const valueStart = ref()
 const kvKey = ref('');
 const kvValue = ref('');
 const kvPrefix = ref('');
+const s3SizeMb = ref('12');
 const lastApiOutput = ref('No output yet. Click a button to run an action.');
 
 function setLastApiOutput(actionName: string, data: unknown, isError = false) {
@@ -206,6 +222,26 @@ async function deleteTaskFromTheLastJob() {
   } catch (error) {
     console.error('Error deleting task from the last job:', error);
     setLastApiOutput('Delete Task from the Last Job', String(error), true);
+  }
+}
+
+async function testS3WriteStream(abort: boolean) {
+  const actionName = abort ? 'S3 multipart upload (abort)' : 'S3 multipart upload';
+  try {
+    setLastApiOutput(actionName, 'Uploading, check server logs for progress...');
+    const response = await callApi({
+      path: '/api/testS3WriteStream/',
+      method: 'POST',
+      body: {
+        sizeMb: Number(s3SizeMb.value) || 12,
+        abort,
+      },
+    });
+    console.log('S3 write stream result:', response);
+    setLastApiOutput(actionName, response);
+  } catch (error) {
+    console.error('S3 write stream error:', error);
+    setLastApiOutput(actionName, String(error), true);
   }
 }
 
