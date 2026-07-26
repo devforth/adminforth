@@ -27,6 +27,7 @@ import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
 // import JsonFormPlugin from '../../../plugins/adminforth-json-form/index.js';
+import { s3StorageAdapter } from '../../utils.js';
 
 const CAR_RESOURCE_DB_LABELS = {
   sqlite: 'SQLite',
@@ -271,7 +272,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       //   fieldName: 'specifications',
       //   schema: carSpecificationsSchema,
       // }),
-      new importExport({}),
+      new importExport({
+        exportBigDataset: {
+          storageAdapter: s3StorageAdapter as any
+        }
+      }),
       // new InlineCreatePlugin({}),
       new ListInPlaceEditPlugin({
         columns: ["model", "engine_type", "price"],
