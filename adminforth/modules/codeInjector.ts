@@ -364,6 +364,70 @@ class CodeInjector implements ICodeInjector {
     return [lockHash, packages];
   }
 
+  async allowBuildsFromWorkspaceFile(dir: string, sourceName: string): Promise<{ [packageName: string]: boolean }> {
+    const content = await this.tryReadFile(path.join(dir, 'pnpm-workspace.yaml'));
+    if (!content) {
+      return {};
+    }
+
+    let parsed: any = null;
+    try {
+      parsed = yaml.parse(content);
+    } catch (e) {
+      afLogger.warn(`Could not parse pnpm-workspace.yaml in ${dir}, ignoring its allowBuilds: ${e.message}`);
+      return {};
+    }
+
+    const allowBuilds: { [packageName: string]: boolean } = {};
+    for (const [packageName, allowed] of Object.entries(parsed?.allowBuilds || {})) {
+      if (typeof allowed !== 'boolean') {
+        afLogger.warn(
+          `Ignoring allowBuilds."${packageName}" declared by ${sourceName}: expected true or false, got ${JSON.stringify(allowed)}`
+        );
+        continue;
+      }
+      allowBuilds[packageName] = allowed;
+    }
+    return allowBuilds;
+  }
+
+  async syncAllowBuildsToSpaTmp(): Promise<{ [packageName: string]: boolean }> {
+    const sources: { name: string, dir: string }[] = [];
+    const customComponentsDir = this.adminforth.config.customization?.customComponentsDir;
+    if (customComponentsDir) {
+      sources.push({ name: 'customComponentsDir', dir: path.resolve(customComponentsDir) });
+    }
+    for (const plugin of this.adminforth.activatedPlugins) {
+      sources.push({ name: plugin.constructor.name, dir: plugin.customFolderPath });
+    }
+
+    const merged: { [packageName: string]: boolean } = {};
+    for (const { name, dir } of sources) {
+      const allowBuilds = await this.allowBuildsFromWorkspaceFile(dir, name);
+      for (const [packageName, allowed] of Object.entries(allowBuilds)) {
+        if (merged[packageName] !== undefined && merged[packageName] !== allowed) {
+          afLogger.warn(`Conflicting allowBuilds for "${packageName}", denying the build. Last source: ${name}`);
+          merged[packageName] = false;
+          continue;
+        }
+        merged[packageName] = allowed;
+      }
+    }
+    process.env.HEAVY_DEBUG && console.log(`🪲 allowBuilds collected from plugins/custom dir: ${JSON.stringify(merged)}`);
+
+    if (!Object.keys(merged).length) {
+      return merged;
+    }
+
+    const workspacePath = path.join(this.spaTmpPath(), 'pnpm-workspace.yaml');
+    const workspaceContent = await this.tryReadFile(workspacePath);
+    const workspace = workspaceContent ? (yaml.parse(workspaceContent) || {}) : {};
+    workspace.allowBuilds = { ...merged, ...(workspace.allowBuilds || {}) };
+    await fs.promises.writeFile(workspacePath, yaml.stringify(workspace));
+
+    return merged;
+  }
+
   getSpaDir() {
     let spaDir = path.join(ADMIN_FORTH_ABSOLUTE_PATH, 'spa');
     if (!fs.existsSync(spaDir)) {
@@ -837,6 +901,8 @@ class CodeInjector implements ICodeInjector {
     const pluginsLockHash = pluginPackages.map(({ pluginName, lockHash }) => `${pluginName}>${lockHash}`).join('::');
 
     const iconPackagesNamesHash = hashify(iconPackageNames);
+
+    await this.syncAllowBuildsToSpaTmp();
 
     const fullHash = `spa>${spaLockHash}::icons>${iconPackagesNamesHash}::user/custom>${usersLockHash}::${pluginsLockHash}`;
     const hashPath = path.join(this.spaTmpPath(), 'node_modules', '.adminforth_hash');
