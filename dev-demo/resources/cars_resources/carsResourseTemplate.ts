@@ -134,7 +134,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       {
         name: 'mileage',
         allowMinMaxQuery: true,
-        type: AdminForthDataTypes.FLOAT,
+        type: AdminForthDataTypes.DECIMAL,
       },
       {
         name: 'color',
