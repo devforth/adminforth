@@ -1,0 +1,21 @@
+-- AlterTable
+ALTER TABLE "translations" ADD COLUMN "de_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "it_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "pt_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "nl_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "pl_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "tr_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "cs_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "sv_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "da_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "fi_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "ro_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "hu_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "el_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "bg_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "zh_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "ko_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "ar_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "he_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "hi_string" TEXT;
+ALTER TABLE "translations" ADD COLUMN "vi_string" TEXT;
