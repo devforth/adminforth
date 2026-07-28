@@ -88,6 +88,26 @@ model audit_logs {
     ja_string       String?  // translation for Japanese language
     fr_string       String?  // translation for French language
     es_string       String?  // translation for Spanish language
+    de_string       String?  // translation for German language
+    it_string       String?  // translation for Italian language
+    pt_string       String?  // translation for Portuguese language
+    nl_string       String?  // translation for Dutch language
+    pl_string       String?  // translation for Polish language
+    tr_string       String?  // translation for Turkish language
+    cs_string       String?  // translation for Czech language
+    sv_string       String?  // translation for Swedish language
+    da_string       String?  // translation for Danish language
+    fi_string       String?  // translation for Finnish language
+    ro_string       String?  // translation for Romanian language
+    hu_string       String?  // translation for Hungarian language
+    el_string       String?  // translation for Greek language
+    bg_string       String?  // translation for Bulgarian language
+    zh_string       String?  // translation for Chinese language
+    ko_string       String?  // translation for Korean language
+    ar_string       String?  // translation for Arabic language (RTL)
+    he_string       String?  // translation for Hebrew language (RTL)
+    hi_string       String?  // translation for Hindi language
+    vi_string       String?  // translation for Vietnamese language
     ptBR_string      String?  // Brazilian Portuguese translation using BCP47 code (pt-BR)
     category        String
     source          String?
