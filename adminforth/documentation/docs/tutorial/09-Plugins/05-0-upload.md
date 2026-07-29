@@ -11,7 +11,7 @@ This plugin allows you to upload files to Amazon S3 bucket.
 ## Installation
 
 ```
-pnpm i @adminforth/upload --save
+pnpm add @adminforth/upload --save
 ```
 
 Plugin needs some storage adapter to store files and serve them for preview.
@@ -21,7 +21,7 @@ Plugin needs some storage adapter to store files and serve them for preview.
 Amazon S3 is probably the most popular storage service.
 
 ```
-pnpm i @adminforth/storage-adapter-amazon-s3 --save
+pnpm add @adminforth/storage-adapter-amazon-s3 --save
 ```
 
 1. Go to https://aws.amazon.com and login.
@@ -288,7 +288,7 @@ Also you will have to enable static website hosting in your bucket settings and 
 The local storage adapter saves files directly on the server’s filesystem and serves them through Express routes. It supports both public and private modes (with presigned URLs).
 
 ```
-pnpm i @adminforth/storage-adapter-local --save
+pnpm add @adminforth/storage-adapter-local --save
 ```
 
 ```ts title="./index.ts"
@@ -318,7 +318,7 @@ Upload plugin supports AI generation for images. Yo use it you need to install i
 For example for OpenAI models like `gpt-image-1.5` (or old `DALL-E` models):
 
 ```bash
-pnpm i @adminforth/image-generation-adapter-openai
+pnpm add @adminforth/image-generation-adapter-openai
 ```
 
 

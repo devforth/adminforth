@@ -15,13 +15,13 @@ This plugin provides a captcha for the login page to enhance security.
 To install the plugin, run the following command:
 
 ```bash
-pnpm i @adminforth/login-captcha
+pnpm add @adminforth/login-captcha
 ```
 
 You will also need to install a captcha adapter. For example, to use the Cloudflare adapter, run:
 
 ```bash
-pnpm i @adminforth/login-captcha-adapter-cloudflare
+pnpm add @adminforth/login-captcha-adapter-cloudflare
 ```
 
 ## Usage
@@ -51,7 +51,7 @@ plugins: [
 A captcha token stays valid at the provider for a short period, which means the same token could be replayed for several logins. To prevent this, pass an optional [key-value adapter](/docs/tutorial/Adapters/key-value-adapters) via `keyValueAdapter`. Each token is recorded once it has been used for a successful login, and any later attempt with the same token is rejected.
 
 ```bash
-pnpm i @adminforth/key-value-adapter-ram
+pnpm add @adminforth/key-value-adapter-ram
 ```
 
 ```ts title="./resources/adminuser.ts"

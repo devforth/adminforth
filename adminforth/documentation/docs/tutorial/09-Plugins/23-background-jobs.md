@@ -12,7 +12,7 @@ BackgroundJobsPlugin adds a durable background job system to AdminForth. Jobs ar
 > ‼️ Note, that before deploying this plugin, you should create volume for the level db and pass is as `levelDbPath` param, so background jobs will be saved between redeploys
 First, install the plugin:
 ```bash
-pnpm i @adminforth/background-jobs
+pnpm add @adminforth/background-jobs
 ```
 
 Then create a resource for jobs:

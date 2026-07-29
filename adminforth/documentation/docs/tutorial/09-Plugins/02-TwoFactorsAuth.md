@@ -23,7 +23,7 @@ Also it supports both:
 ## Installation
 
 ``` bash
-pnpm i @adminforth/two-factors-auth --save
+pnpm add @adminforth/two-factors-auth --save
 ```
 
 To import:
@@ -847,7 +847,7 @@ Add the new resource to index.ts:
 ```
 To use passkey you need to use Key-Value adapter. For example:
 ```bash
-pnpm i @adminforth/key-value-adapter-ram
+pnpm add @adminforth/key-value-adapter-ram
 ```
 
 
