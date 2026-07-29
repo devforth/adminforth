@@ -124,7 +124,7 @@ export default {
       statusField: 'status',
       nameField: 'name',
       jobHandlerField: 'job_handler_name',
-      levelDbPath: process.env.NODE_ENV === production ? '/stores/background_job_plugin' : './background_jobs',
+      levelDbPath: process.env.NODE_ENV === 'production' ? '/stores/background_job_plugin' : './background_jobs',
     })
   ]
 } as AdminForthResourceInput;
