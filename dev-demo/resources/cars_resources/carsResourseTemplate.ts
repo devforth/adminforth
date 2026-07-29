@@ -274,7 +274,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       //   schema: carSpecificationsSchema,
       // }),
       new importExport({
-        exportBigDataset: {
+        exportViaUpload: {
           storageAdapter: s3StorageAdapter as any
         }
       }),
