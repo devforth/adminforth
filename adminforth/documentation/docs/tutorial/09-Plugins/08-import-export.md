@@ -28,7 +28,7 @@ So if you want to export big databases, use the `exportViaUpload` param. It uses
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/import-export --save
+pnpm add @adminforth/import-export --save
 ```
 
 ## Setup

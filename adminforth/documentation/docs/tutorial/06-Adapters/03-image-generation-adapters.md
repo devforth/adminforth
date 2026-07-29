@@ -11,7 +11,7 @@ Used for image-generating AI tools.
 ## OpenAI Image Generation Adapter
 
 ```bash
-pnpm i @adminforth/image-generation-adapter-openai
+pnpm add @adminforth/image-generation-adapter-openai
 ```
 
 Uses OpenAI image generation models such as DALL·E, `gpt-image-1`, and `gpt-image-1.5` to generate images from text prompts.
@@ -21,7 +21,7 @@ Up to the winter 2026 OpenAI models are one of the most powerful image generatio
 ## Gemini (Nano Banana) Image Generation Adapter
 
 ```bash
-pnpm i @adminforth/image-generation-adapter-nano-banana
+pnpm add @adminforth/image-generation-adapter-nano-banana
 ```
 
 Uses the latest `gemini-3.1-flash-image-preview` model for instant image generation with text descriptions.
