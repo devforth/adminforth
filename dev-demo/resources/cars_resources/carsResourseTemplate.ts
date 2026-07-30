@@ -14,6 +14,7 @@ import ForeignInlineShowPlugin from '../../../plugins/adminforth-foreign-inline-
 import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
 import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
 import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
+import JsonEditorPlugin from '../../../plugins/adminforth-json-editor/index.js';
 
 import CompletionAdapterOpenAIResponses from '../../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
@@ -26,7 +27,8 @@ import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-ima
 import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
-import JsonEditorPlugin from '../../../plugins/adminforth-json-editor/index.js';
+// import JsonFormPlugin from '../../../plugins/adminforth-json-form/index.js';
+import { s3StorageAdapter } from '../../utils.js';
 
 const CAR_RESOURCE_DB_LABELS = {
   sqlite: 'SQLite',
@@ -267,10 +269,15 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           }
         } : {}),
       }),
-      new JsonEditorPlugin({
-        fieldName: 'specifications',
+      // new JsonFormPlugin({
+      //   fieldName: 'specifications',
+      //   schema: carSpecificationsSchema,
+      // }),
+      new importExport({
+        exportViaUpload: {
+          storageAdapter: s3StorageAdapter as any
+        }
       }),
-      new importExport({}),
       // new InlineCreatePlugin({}),
       new ListInPlaceEditPlugin({
         columns: ["model", "engine_type", "price"],
@@ -314,6 +321,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       // new Many2ManyPlugin({
       //   linkedResourceId: 'adminuser'
       // }),
+      new JsonEditorPlugin({
+        fieldName: 'specifications',
+      }),
     /*********************************************************************************
      
                                         AI Plugins

@@ -43,6 +43,17 @@ const turnsResource: AdminForthResourceInput = {
       name: 'response',
       type: AdminForthDataTypes.TEXT,
     },
+    {
+      name: 'checkpoint_id',
+      type: AdminForthDataTypes.STRING,
+      showIn: {
+        list: false,
+        show: true,
+        edit: false,
+        create: false,
+        filter: false,
+      },
+    },
   ],
   options: {
     allowedActions: {

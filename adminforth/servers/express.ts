@@ -224,10 +224,16 @@ class ExpressServer implements IExpressHttpServer {
     } else {
       const codeInjector = this.adminforth.codeInjector;
       this.expressApp.get(assetsRoute, (req, res) => {
+        if (req.url?.includes('..')) {
+          res.status(400).send('Invalid path');
+          return;
+        }
+        const fullPath = path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix));
         res.sendFile(
-          path.join(codeInjector.getServeDir(), replaceAtStart(req.url, prefix)),
+          fullPath,
           {
             cacheControl: false,
+            dotfiles: 'allow',
             // store for a year
             headers: {
               'Cache-Control': 'public, max-age=31536000',
@@ -255,6 +261,7 @@ class ExpressServer implements IExpressHttpServer {
           return;
         }
         res.sendFile(fullPath, { 
+          dotfiles: 'allow',
           cacheControl: false,
           headers: { 
             'Content-Type': 'text/html', 

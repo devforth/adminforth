@@ -19,7 +19,7 @@ The plugin stores approval requests in a separate resource. Each request contain
 Install the plugin:
 
 ```bash
-pnpm i @adminforth/crud-approve-plugin --save
+pnpm add @adminforth/crud-approve-plugin --save
 ```
 
 To import:

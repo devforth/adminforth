@@ -12,7 +12,7 @@ Requires separate table in the database to store logs.
 
 
 ```bash
-pnpm i @adminforth/audit-log --save
+pnpm add @adminforth/audit-log --save
 ```
 
 Create `auditLogs.ts` in `resources` folder:

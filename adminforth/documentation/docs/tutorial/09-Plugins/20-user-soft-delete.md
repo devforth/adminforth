@@ -14,7 +14,7 @@ Allows to deactivate users accound without deleting it.
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/user-soft-delete --save
+pnpm add @adminforth/user-soft-delete --save
 ```
 
 ## Setting up

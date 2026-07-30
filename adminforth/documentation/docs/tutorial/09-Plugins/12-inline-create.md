@@ -13,7 +13,7 @@ The Inline Create plugin enables inline create in AdminForth, allowing users to 
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/inline-create --save
+pnpm add @adminforth/inline-create --save
 ```
 
 

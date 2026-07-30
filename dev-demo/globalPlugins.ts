@@ -1,6 +1,7 @@
 import CompletionAdapterOpenAIResponses from '../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import AdminForthAgent from '../plugins/adminforth-agent/index.js';
 import AdminForthPlugin from '../adminforth/basePlugin.js';
+import OpenAIAudioAdapter from '../adapters/adminforth-audio-adapter-openai/index.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
@@ -72,6 +73,28 @@ export const globalPlugins = [
       promptField: 'prompt',
       responseField: 'response',
       debugField: 'dubbug',
+      checkpointIdField: 'checkpoint_id',
     },
+    checkpointResource: {
+      resourceId: 'agent_checkpoints',
+      idField: 'id',
+      threadIdField: 'thread_id',
+      checkpointNamespaceField: 'checkpoint_namespace',
+      checkpointIdField: 'checkpoint_id',
+      parentCheckpointIdField: 'parent_checkpoint_id',
+      rowKindField: 'row_kind',
+      taskIdField: 'task_id',
+      sequenceField: 'sequence',
+      createdAtField: 'created_at',
+      checkpointPayloadField: 'checkpoint_payload',
+      metadataPayloadField: 'metadata_payload',
+      writesPayloadField: 'writes_payload',
+      schemaVersionField: 'schema_version',
+    },
+    audioAdapter: new OpenAIAudioAdapter({
+      apiKey: process.env.OPENAI_API_KEY as string,
+      defaultVoice: 'alloy',
+      defaultSpeed: 1.25,
+    }),
   }),
 ];
