@@ -26,6 +26,13 @@ export const admin = new AdminForth({
         return "Please use <b>adminforth</b> as username and <b>adminforth</b> as password"
       }
     },
+    websocketTopicAuth: async (topic: string, adminUser: AdminUser) => {
+      if (!adminUser) {
+        // don't allow anonymous users to subscribe
+        return false;
+      }
+      return true;
+    }
   },
   customization: {
     brandName: "{{appName}}",
