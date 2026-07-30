@@ -1,8 +1,14 @@
 import { Express, Response } from "express";
+import { randomBytes } from "crypto";
 import { Filters, IAdminForth, IAdminUserExpressRequest } from "adminforth";
 import * as z from "zod";
 import TwoFactorsAuthPlugin from "../plugins/adminforth-two-factors-auth/index.js";
-import { levelDbAdapter, resourceAdapter, ramAdapter } from './utils.js';
+import { levelDbAdapter, resourceAdapter, ramAdapter, s3StorageAdapter } from './utils.js';
+let isLifecycleSetupDone = false;
+if (!isLifecycleSetupDone) {
+  s3StorageAdapter.setupLifecycle();
+  isLifecycleSetupDone = true;
+}
 
 const CURRENT_KV_ADAPTER = resourceAdapter;
 const CURRENT_COLLECTION = 'dev-demo';
@@ -14,6 +20,7 @@ const DASHBOARD_CAR_SOURCES = [
   { resourceId: 'cars_mongo', label: 'MongoDB' },
   { resourceId: 'cars_ch', label: 'ClickHouse' },
 ] as const;
+
 
 type DashboardCarRecord = {
   model: string;
@@ -229,6 +236,53 @@ export function initApi(app: Express, admin: IAdminForth) {
         const { key } = _req.body;
         await CURRENT_KV_ADAPTER.delete(key, CURRENT_COLLECTION);
         res.json({ ok: true });
+      }
+    )
+  );
+  app.post(`${admin.config.baseUrl}/api/testS3WriteStream/`,
+    admin.express.authorize(
+      async (_req: IAdminUserExpressRequest, res: Response) => {
+        const sizeMb = Math.min(Math.max(Number(_req.body?.sizeMb) || 12, 1), 100);
+        const abort = Boolean(_req.body?.abort);
+        const key = `dev-demo-write-stream-test/${Date.now()}-${randomBytes(4).toString('hex')}.bin`;
+        console.log(`[testS3WriteStream] start, key="${key}", sizeMb=${sizeMb}, abort=${abort}`);
+
+        const startedAt = Date.now();
+        try {
+          const writer = await s3StorageAdapter.createWriteStream(key, 'application/octet-stream');
+          console.log('[testS3WriteStream] writer created, multipart upload started');
+
+          // 1MB of random data per write, so >5MB total gives more than one uploaded part
+          for (let i = 0; i < sizeMb; i++) {
+            await writer.write(randomBytes(1024 * 1024));
+            console.log(`[testS3WriteStream] written chunk ${i + 1}/${sizeMb} (1 MB each)`);
+          }
+
+          if (abort) {
+            await writer.abort();
+            console.log(`[testS3WriteStream] aborted upload for key="${key}"`);
+            res.json({ ok: true, aborted: true, key, sizeMb, tookMs: Date.now() - startedAt });
+            return;
+          }
+
+          await writer.close();
+          console.log(`[testS3WriteStream] closed, multipart upload completed for key="${key}"`);
+
+          const downloadUrl = await s3StorageAdapter.getDownloadUrl(key, 3600);
+          console.log(`[testS3WriteStream] done in ${Date.now() - startedAt}ms, url=${downloadUrl}`);
+
+          res.json({
+            ok: true,
+            aborted: false,
+            key,
+            sizeMb,
+            tookMs: Date.now() - startedAt,
+            downloadUrl,
+          });
+        } catch (e) {
+          console.error('[testS3WriteStream] failed:', e);
+          res.status(500).json({ ok: false, key, error: `${e}` });
+        }
       }
     )
   );

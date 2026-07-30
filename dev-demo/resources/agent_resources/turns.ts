@@ -59,5 +59,16 @@ export default {
         filter: false,
       },
     },
+    {
+      name: 'checkpoint_id',
+      type: AdminForthDataTypes.STRING,
+      showIn: {
+        list: false,
+        show: true,
+        edit: false,
+        create: false,
+        filter: false,
+      },
+    },
   ],
 } as AdminForthResourceInput;

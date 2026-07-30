@@ -6,6 +6,7 @@ export default {
     ...usersResource.plugins?.filter((p) => ![
       'AdminForthAgentPlugin',
       'TwoFactorsAuthPlugin',
+      'DashboardPlugin',
     ].includes(p.className)) || [],
   ],
 }

@@ -35,6 +35,7 @@ vars:
     - "adminforth-agent"
     - "adminforth-dashboard"
     - "adminforth-json-editor"
+    - "adminforth-json-form"
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"

@@ -58,7 +58,7 @@ Before using the dashboard, you need to perform the initial package installation
 ### 1. Install Package
 
 ```bash
-pnpm install @adminforth/dashboard --save
+pnpm add @adminforth/dashboard --save
 ```
 
 ### 2. Create Dashboard Configs Table

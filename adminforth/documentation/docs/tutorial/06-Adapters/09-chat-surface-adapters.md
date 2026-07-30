@@ -12,8 +12,8 @@ Chat surface adapters connect external chat products to the [Agent plugin](/docs
 For Telegram you need both adapters:
 
 ```bash
-pnpm i @adminforth/chat-surface-adapter-telegram
-pnpm i @adminforth/oauth-adapter-telegram
+pnpm add @adminforth/chat-surface-adapter-telegram
+pnpm add @adminforth/oauth-adapter-telegram
 ```
 
 Create a Telegram bot with BotFather and copy the token:

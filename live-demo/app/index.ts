@@ -187,7 +187,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       admin.express.authorize(
         async (req: Request, res: Response) => {
         const db = admin.resource('aparts').dataConnector.client;
-        const days = req.body.days || 7;
+        const days = Number(req.query.days) || 7;
         const apartsByDays = await db.prepare(
           `SELECT
             strftime('%Y-%m-%d', created_at) as day, 

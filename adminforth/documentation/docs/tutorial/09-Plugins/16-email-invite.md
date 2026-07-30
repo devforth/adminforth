@@ -13,13 +13,13 @@ Email Invite plugin allows administrators to create users without setting passwo
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/email-invite --save
+pnpm add @adminforth/email-invite --save
 ```
 
 You'll also need an email adapter. For AWS SES:
 
 ```bash
-pnpm install @adminforth/email-adapter-aws-ses --save
+pnpm add @adminforth/email-adapter-aws-ses --save
 ```
 
 ## SES
@@ -184,7 +184,7 @@ export default {
 If you want to use this plugin with Mailgun, first install it:
 
 ```bash
-pnpm install @adminforth/email-adapter-mailgun
+pnpm add @adminforth/email-adapter-mailgun
 ```
 
 Then, in the adapter options, add:

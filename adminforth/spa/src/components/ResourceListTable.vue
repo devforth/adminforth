@@ -364,7 +364,7 @@
         :placeholder="pageSizeInternal?.toString()"        
         class="text-sm min-w-20 af-page-size-button" 
         classesForInput="
-        af-page-size-btn h-[34px] min-h-0 py-1 pl-2 pr-6 text-left text-sm font-medium transition-all 
+        af-page-size-btn h-[2.125rem] min-h-0 py-1 pl-2 pr-6 text-left text-sm font-medium transition-all 
         outline-none cursor-pointer af-button-shadow rounded-default bg-lightListViewButtonBackground 
         text-lightListViewButtonText border-lightListViewButtonBorder 
         dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder 

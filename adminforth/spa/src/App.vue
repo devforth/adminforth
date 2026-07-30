@@ -118,7 +118,7 @@
       </div>
     </div>
     <AcceptModal />
-    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 right-5 flex gap-1 flex-col-reverse z-[100]">
+    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 flex gap-1 flex-col-reverse z-[100]" :style="{ right: `calc(${appPaddingRight}px + 1.25rem)` }">
       <transition-group
         name="fade"
         tag="div"
@@ -185,7 +185,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, onBeforeMount } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, onBeforeMount } from 'vue';
 import { RouterView } from 'vue-router';
 import { Dropdown } from 'flowbite'
 import './index.scss'
@@ -296,6 +296,20 @@ const title = computed(() => {
   return `${coreStore.config?.title || coreStore.config?.brandName || 'Adminforth'} | ${ resourceTitle || route.meta.title || ' '}`;
 });
 
+const appPaddingRight = ref(0);
+let appPaddingObserver: MutationObserver | null = null;
+let appPaddingResizeObserver: ResizeObserver | null = null;
+
+function updateAppPaddingRight() {
+  const app = document.getElementById('app');
+  if (!app) {
+    appPaddingRight.value = 0;
+    return;
+  }
+  const style = window.getComputedStyle(app);
+  appPaddingRight.value = parseInt(style.paddingRight, 10) || 0;
+}
+
 // TODO - useHead not working in this way
 // useHead({
 //   title: title.value
@@ -349,6 +363,22 @@ onMounted(async () => {
 
   window.addEventListener('online', () => coreStore.isInternetError = false);
   window.addEventListener('offline', () => coreStore.isInternetError = true);
+
+  const app = document.getElementById('app');
+  updateAppPaddingRight();
+  if (app) {
+    // padding-right changes come in via inline style / class updates on #app
+    appPaddingObserver = new MutationObserver(updateAppPaddingRight);
+    appPaddingObserver.observe(app, { attributes: true, attributeFilter: ['style', 'class'] });
+    // and via viewport/box size changes that affect resolved padding
+    appPaddingResizeObserver = new ResizeObserver(updateAppPaddingRight);
+    appPaddingResizeObserver.observe(app);
+  }
+})
+
+onUnmounted(() => {
+  appPaddingObserver?.disconnect();
+  appPaddingResizeObserver?.disconnect();
 })
 
 onBeforeMount(()=>{

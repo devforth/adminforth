@@ -56,9 +56,6 @@ const translationsResource: AdminForthResourceInput = {
       completeAdapter: new CompletionAdapterOpenAIResponses({
         openAiApiKey: process.env.OPENAI_API_KEY as string,
         model: 'gpt-5.4-mini',
-        extraRequestBodyParameters: {
-          temperature: 0.5,
-        },
       }),
     }),
 
