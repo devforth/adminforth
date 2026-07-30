@@ -3,13 +3,14 @@ import {
   AdminForthResourceColumn,
   IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter,
   AdminForthConfig,
-  IAggregationRule, IGroupByRule, IGroupByDateTrunc,
+  IAggregationRule, IGroupByRule, IGroupByDateTrunc
 } from "../types/Back.js";
 
-
+import type { AdminUser } from "../types/Common.js"
 
 import { suggestIfTypo } from "../modules/utils.js";
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { interpretResource } from "../modules/restApi.js";
+import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum } from "../types/Common.js";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import { afLogger } from '../modules/logger.js';
@@ -24,11 +25,32 @@ type AdminForthFilterNormalizationResult = {
 };
 
 async function publishShowPageUpdate(resource: AdminForthResource, recordId: string, updates: Record<string, any>) {
-  await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, {
-    resourceId: resource.resourceId,
-    recordId,
-    updates,
-  });
+  await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, 
+    {
+      resourceId: resource.resourceId,
+      recordId,
+      updates,
+    },
+    async (adminUser: AdminUser): Promise<boolean> => {
+      if (!adminUser) {
+        // anonymous clients should never receive record updates
+        return false;
+      }
+      try {
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          { requestBody: null, pk: recordId },
+          ActionCheckSource.ShowRequest,
+          global.adminforth,
+        );
+        return allowedActions[AllowedActionsEnum.show] === true;
+      } catch (e) {
+        afLogger.error(`Error while checking show access for ${resource.resourceId} record ${recordId}, assuming update should not be sent: ${e}`);
+        return false;
+      }
+    }
+  );
 }
 
 
