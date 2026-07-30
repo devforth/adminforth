@@ -28,6 +28,7 @@ import {
   AdminForthResourcePages,
   AdminForthDataTypes,
   Predicate,
+  AdminUser,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
@@ -1213,6 +1214,16 @@ export default class ConfigValidator implements IConfigValidator {
           if (!match) {
             errors.push(`auth.rememberMeDuration must be in format "1s", "1m", "1h", or "1d" (e.g., "30d" for 30 days), got: "${duration}"`);
           }
+        }
+      }
+
+      if (!newConfig.auth.websocketTopicAuth) {
+        newConfig.auth.websocketTopicAuth = async (topic: string, adminUser: AdminUser) => {
+          if (!adminUser) {
+            // don't allow anonymous users to subscribe
+            return false;
+          }
+          return true;
         }
       }
 
