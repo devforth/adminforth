@@ -410,7 +410,7 @@ const taskStatusLabels: Record<JobTask['status'], string> = {
 
 const props = defineProps<{
   meta: any;
-  getJobTasks: (limit?: number, offset?: number) => Promise<JobTask[]>;
+  getJobTasks: (limit?: number, offset?: number, fieldsToReturn?: string[]) => Promise<JobTask[]>;
   subscribeToJobStateFields: (fieldNames: string[]) => () => void;
   subscribeToJobTaskFields: (fieldNames: string[]) => () => void;
   job: {
@@ -556,7 +556,6 @@ in the open job. Both helpers return an unsubscribe function, though the plugin 
 remaining field subscriptions when the job dialog closes.
 
 
-
 ## Frontend API
 ### Job info popup
 If you want to immediately open the job info popup, return the job ID from the API that creates the job:
@@ -588,6 +587,26 @@ For example:
       backgroundJobApi.openJobInfoPopup(jobId);
     }
   }
+
+```
+
+### Filtering task fields you are getting on the frontend
+
+Sometimes task state fields can be very complex and big, so when you run such a task with a big dataset and then fetch the tasks on the frontend, it can overload the browser with information you are not using. For those cases you can use the `fieldsToReturn` param in your custom component on the frontend to receive only the fields that you need.
+
+```vue title="./custom/JobCustomComponent.vue"
+
+...
+
+async function loadTasks() {
+  /**
+   * props.getJobTasks will return only 'task_number' and 'task_counter',
+   * so if you have data you don't want to send to the frontend, you can use this param
+   */
+  tasks.value = await props.getJobTasks(100, 0, ['task_number', 'task_counter']);
+}
+
+...
 
 ```
 
