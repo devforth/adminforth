@@ -154,13 +154,19 @@ export default class SocketBroker implements IWebSocketBroker {
   }
 
   async publish(topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>): Promise<void> {
+    console.log(`_____________________________________________Publishing to topic ${topic} data ${JSON.stringify(data)}`);
+    console.log("Does filterUsers exist? ", filterUsers ? "Yes" : "No");
     if (!this.topics[topic]) {
+      console.log(`No clients subscribed to topic ${topic}`);
       afLogger.trace(`No clients subscribed to topic ${topic}`);
       return;
     }
     for (const client of this.topics[topic]) {
+      console.log(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
       if (filterUsers) {
+        console.log(`Filtering users for topic ${topic} ${client.adminUser}`);
         if (! (await filterUsers(client.adminUser)) ) {
+          console.log(`Client not authorized to receive message ${topic} ${client.adminUser}`);
           afLogger.trace(`Client not authorized to receive message ${topic} ${client.adminUser}`);
           continue;
         }

@@ -25,18 +25,21 @@ type AdminForthFilterNormalizationResult = {
 };
 
 async function publishShowPageUpdate(resource: AdminForthResource, recordId: string, updates: Record<string, any>) {
-  await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, 
-    {
+  await global.adminforth.websocket.publish({
+    topic: `/showPage/${resource.resourceId}/${String(recordId)}`,
+    data: {
       resourceId: resource.resourceId,
       recordId,
       updates,
     },
-    async (adminUser: AdminUser): Promise<boolean> => {
+    filterUsers: async (adminUser: AdminUser): Promise<boolean> => {
+      console.log(`Checking show access for ${resource.resourceId} record ${recordId} `);
       if (!adminUser) {
         // anonymous clients should never receive record updates
         return false;
       }
       try {
+        console.log(`Checking show access for ${resource.resourceId} record ${recordId}`);
         const { allowedActions } = await interpretResource(
           adminUser,
           resource,
@@ -44,12 +47,14 @@ async function publishShowPageUpdate(resource: AdminForthResource, recordId: str
           ActionCheckSource.ShowRequest,
           global.adminforth,
         );
+        console.log(`Allowed actions for ${resource.resourceId} record ${recordId} for user: ${JSON.stringify(allowedActions)}`);
         return allowedActions[AllowedActionsEnum.show] === true;
       } catch (e) {
         afLogger.error(`Error while checking show access for ${resource.resourceId} record ${recordId}, assuming update should not be sent: ${e}`);
         return false;
       }
     }
+  }
   );
 }
 
