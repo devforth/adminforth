@@ -89,7 +89,7 @@
       </template>
     </span>
     <span v-else-if="column.enum">
-      {{ checkEmptyValues(column.enum.find(e => e.value === record[column.name])?.label || record[column.name], route.meta.type as "show" | "list") }}
+      {{ checkEmptyValues(column.enum.find((e: any) => e.value === record[column.name])?.label || record[column.name], route.meta.type as "show" | "list") }}
     </span>
     <span v-else-if="column.type === 'datetime'" class="whitespace-nowrap">
       {{ checkEmptyValues(formatDateTime(record[column.name]), route.meta.type as "show" | "list") }}
@@ -126,6 +126,7 @@ import type { AdminForthResourceColumnCommon } from '@/types/Common';
 const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => module.JsonViewer))
 
 import { useCoreStore } from '@/stores/core';
+import type { any } from 'zod';
 
 const coreStore = useCoreStore();
 const route = useRoute();
