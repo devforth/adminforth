@@ -625,24 +625,46 @@ export function applyRegexValidation(value, validation) {
   }
 }
 
- export function formatHugePluginError(message: string) {
-    const RED = '\x1b[31m';
-    const BG = '\x1b[41m';
-    const WHITE = '\x1b[97m';
-    const BOLD = '\x1b[1m';
-    const RESET = '\x1b[0m';
+export function formatHugePluginError(message: string) {
+  const RED = '\x1b[31m';
+  const BG = '\x1b[41m';
+  const WHITE = '\x1b[97m';
+  const BOLD = '\x1b[1m';
+  const RESET = '\x1b[0m';
 
-    const horizontal = '═'.repeat(100);
+  const horizontal = '═'.repeat(100);
 
-    return `
-  ${BG}${WHITE}${BOLD}
-  ╔${horizontal}╗
-  ║${' '.repeat(100)}║
-  ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
-  ║${' '.repeat(100)}║
-  ║  ${message.padEnd(98)}║
-  ║${' '.repeat(100)}║
-  ╚${horizontal}╝
-  ${RESET}
-`;
+  return `
+    ${BG}${WHITE}${BOLD}
+    ╔${horizontal}╗
+    ║${' '.repeat(100)}║
+    ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
+    ║${' '.repeat(100)}║
+    ║  ${message.padEnd(98)}║
+    ║${' '.repeat(100)}║
+    ╚${horizontal}╝
+    ${RESET}
+  `;
+}
+
+export function checkIfLinkInAllowedHosts(url: string, allowedHosts: string[]) {
+  if (!allowedHosts?.length) {
+    return;
   }
+  let hostname: string;
+  try {
+    hostname = new URL(url).hostname.toLowerCase().replace(/\.$/, '');
+  } catch {
+    throw new Error(`Invalid attachment URL: ${url}`);
+  }
+  const allowed = allowedHosts.some((raw) => {
+    const entry = (raw || '').trim().toLowerCase().replace(/^\*/, '').replace(/\.$/, '');
+    if (!entry) {
+      return false;
+    }
+    return entry.startsWith('.') ? (hostname === entry.slice(1) || hostname.endsWith(entry)) : hostname === entry;
+  });
+  if (!allowed) {
+    throw new Error(`Attachment host "${hostname}" is not in attachImagesAllowedHosts`);
+  }
+}
