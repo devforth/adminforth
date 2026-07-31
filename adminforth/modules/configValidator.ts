@@ -1219,6 +1219,7 @@ export default class ConfigValidator implements IConfigValidator {
 
       if (!newConfig.auth.websocketTopicAuth) {
         newConfig.auth.websocketTopicAuth = async (topic: string, adminUser: AdminUser) => {
+          afLogger.warn('websocketTopicAuth is not provided. Public access to websocket topics (except /opentopic) is blocked.');
           if (!adminUser) {
             // don't allow anonymous users to subscribe
             return false;
