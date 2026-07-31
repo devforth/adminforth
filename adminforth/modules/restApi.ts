@@ -955,10 +955,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-      let defaultUserExists = false;
-        if (username === 'adminforth') {
-          defaultUserExists = true;
-        }
+        const usersResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+        const defaultUserExists = await this.adminforth.resource(usersResource.resourceId).get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
+
         
         const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
