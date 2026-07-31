@@ -31,7 +31,7 @@
           {{ foreignResource.label }}
         </RouterLink>
       </span>
-      <RouterLink v-else-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
+      <RouterLink v-else-if="record[column.name] && column.foreignResource.allowedActions?.show" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
           :to="{
             name: 'resource-show',
             params: {
@@ -49,6 +49,9 @@
         >
         {{ record[column.name].label }}
       </RouterLink>
+      <p v-else-if="record[column.name]" class="font-medium text-lightListTableText dark:text-darkListTableText whitespace-nowrap">
+        {{ record[column.name].label }}
+      </p>
       <div v-else>
         <span class="text-gray-400">-</span>
       </div>
@@ -132,7 +135,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const props = defineProps<{
-  column: AdminForthResourceColumnCommon,
+  column: any,
   record: any
 }>();
 
