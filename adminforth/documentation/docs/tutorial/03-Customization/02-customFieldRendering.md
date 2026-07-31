@@ -605,7 +605,7 @@ For fields containing sensitive data (like passwords, API keys, tokens, or other
 
 The renderer wraps the standard value output and adds a click-to-reveal blur effect. Clicking again hides the value.
 
-For long values (like API keys) you can enable compact mode by passing `compact: true` via `meta`. When set, the value is shortened the same way as the `CompactUUID` renderer (first 4 + `...` + last 4 characters). In compact mode you can additionally pass `copy: true` to render a copy-to-clipboard button next to the value. The copy button is only shown once the value is revealed (blur removed):
+For long values (like API keys) you can enable compact mode by passing `compact: true` via `meta`. When set, the value is shortened the same way as the `CompactUUID` renderer (first 4 + `...` + last 4 characters). You can additionally pass `copy: true` to render a copy-to-clipboard button next to the value, and `eyeButton: true` to render an eye icon that also toggles the blur. `compact`, `copy` and `eyeButton` are independent of each other and can be combined in any way:
 
 ```ts title='./resources/anyResource.ts'
   columns: [
@@ -617,13 +617,13 @@ For long values (like API keys) you can enable compact mode by passing `compact:
   //diff-add
           file: '@/renderers/SensitiveBlurCell.vue',
   //diff-add
-          meta: { compact: true, copy: true },
+          meta: { compact: true, copy: true, eyeButton: true },
         },
         list: {
   //diff-add
           file: '@/renderers/SensitiveBlurCell.vue',
   //diff-add
-          meta: { compact: true, copy: true },
+          meta: { compact: true, copy: true, eyeButton: true },
         },
       },
     ...
