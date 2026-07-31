@@ -15,6 +15,7 @@ import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
 import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
 import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
 import JsonEditorPlugin from '../../../plugins/adminforth-json-editor/index.js';
+import JSONFormPlugin from '../../../plugins/adminforth-json-form/index.js'
 
 import CompletionAdapterOpenAIResponses from '../../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
@@ -27,8 +28,8 @@ import AdminForthImageVisionAdapterOpenAi from '../../../adapters/adminforth-ima
 import { logger } from '../../../adminforth/modules/logger.js';
 import { afLogger } from '../../../adminforth/modules/logger.js';
 import ForeignInlineListPlugin from '../../../plugins/adminforth-foreign-inline-list/index.js';
-// import JsonFormPlugin from '../../../plugins/adminforth-json-form/index.js';
 import { s3StorageAdapter } from '../../utils.js';
+
 
 const CAR_RESOURCE_DB_LABELS = {
   sqlite: 'SQLite',
@@ -321,8 +322,15 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       // new Many2ManyPlugin({
       //   linkedResourceId: 'adminuser'
       // }),
-      new JsonEditorPlugin({
+      new JSONFormPlugin({
         fieldName: 'specifications',
+        schema: {
+            "title": "Specifications",
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+        }
       }),
     /*********************************************************************************
      
