@@ -12,6 +12,11 @@
         :loader="false" class="w-full" mode="secondary">
         Secondary button
       </Button>
+
+      <Button @click="doSmth" 
+        :loader="false" class="w-full" mode="danger">
+        Danger button
+      </Button>
  
       <Button @click="doSmth" 
           :loader="true" class="w-full mt-4">
