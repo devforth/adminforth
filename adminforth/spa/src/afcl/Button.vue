@@ -40,8 +40,6 @@ const props = withDefaults(defineProps<{
   shadow: true,
 });
 
-// mode is deprecated, but we still want to support it for backward compatibility,
-// so we check both variant and mode props
 const currentVariant = computed(() => props.variant ?? props.mode ?? 'primary');
 
 const buttonClasses = computed(() => getButtonClasses(

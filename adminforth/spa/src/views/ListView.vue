@@ -98,7 +98,7 @@
       </div>
 
       <LinkButton v-if="coreStore.resource?.options?.allowedActions?.create"
-        :to="`/resource/${$route.params.resourceId}/create`"
+        :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
         class="af-create-button h-[2.125rem] px-2.5"
       >
         <IconPlusOutline class="w-4 h-4"/>
