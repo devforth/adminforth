@@ -114,7 +114,7 @@ const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]
 const showDropdown = ref(false);
 const actionLoadingStates = ref<Record<string, boolean>>({});
 const dropdownRef = ref<HTMLElement | null>(null);
-const buttonTriggerRef = ref<HTMLElement | null>(null);
+const buttonTriggerRef = ref<ComponentPublicInstance | null>(null);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
@@ -192,7 +192,9 @@ function toggleDropdownVisibility() {
 function handleClickOutside(e: MouseEvent) {
   if (!dropdownRef.value) return
 
-  if (!dropdownRef.value.contains(e.target as Node) && !buttonTriggerRef.value?.contains(e.target as Node)) {
+  const triggerEl = buttonTriggerRef.value?.$el as HTMLElement | undefined;
+
+  if (!dropdownRef.value.contains(e.target as Node) && !triggerEl?.contains(e.target as Node)) {
     showDropdown.value = false;
   }
 }
