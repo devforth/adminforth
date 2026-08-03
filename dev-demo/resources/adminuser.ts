@@ -171,6 +171,7 @@ export default {
       defaultFieldValues: {
         role: 'user',
       },
+      expectedOrigin: process.env.RESET_PASSWORD_ORIGIN || 'http://localhost:3123',
     }),
     OAuthPlugin,
     new DashboardPlugin({
