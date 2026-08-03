@@ -36,6 +36,7 @@ new OpenSignupPlugin({
     defaultFieldValues: {
       role: 'user',
     },
+    expectedOrigin: process.env.OPEN_SIGHNUP_ORIGIN || 'http://localhost:3500',
   }),
 ```
 
