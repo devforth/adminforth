@@ -1,25 +1,49 @@
 <template>
-  <router-link 
-    v-bind="$attrs"
+  <router-link
+    v-bind="restAttrs"
     :to="props.to"
-    type="submit" 
-    class="afcl-link-button flex items-center justify-center gap-1 text-lightButtonsText bg-lightButtonsBackground border border-lightButtonsBorder dark:bg-darkButtonsBackground hover:bg-lightButtonsHover hover:border-lightButtonsBorderHover
-      focus:ring-4 focus:outline-none focus:ring-lightButtonFocusRing focus:ring-opacity-50 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:focus:ring-darkButtonFocusRing dark:text-darkButtonsText dark:border-darkButtonsBorder dark:hover:bg-darkButtonsHover dark:hover:border-darkButtonsBorderHover"
-    :class="{
-      'cursor-default': props.disabled,
-      'opacity-50': props.disabled,
-      'pointer-events-none': props.disabled,
-    }"
+    :class="buttonClasses"
   >
     <slot></slot>
   </router-link>
 </template>
 
 <script setup lang="ts">
+import { computed, useAttrs } from 'vue';
+import { type ClassNameValue } from 'tailwind-merge';
+import { getButtonClasses, type ButtonVariant } from './buttonStyles';
+import type { RouteLocationAsRelativeGeneric, RouteLocationAsPathGeneric } from 'vue-router';
+defineOptions({ inheritAttrs: false });
 
-const props = defineProps<{
-  disabled?: boolean,
-  to: string,
-}>();
+const attrs = useAttrs();
+
+const restAttrs = computed(() => {
+  const { class: _class, ...rest } = attrs;
+  return rest;
+});
+
+const props = withDefaults(defineProps<{
+  to: string | RouteLocationAsRelativeGeneric | RouteLocationAsPathGeneric;
+  disabled?: boolean;
+  active?: boolean;
+  variant?: ButtonVariant;
+  shadow?: boolean;
+}>(), {
+  disabled: false,
+  active: false,
+  variant: 'primary',
+  shadow: true,
+});
+
+const buttonClasses = computed(() => getButtonClasses(
+  {
+    variant: props.variant,
+    shadow: props.shadow,
+    active: props.active,
+    disabled: props.disabled,
+  },
+  'afcl-link-button',
+  attrs.class as ClassNameValue,
+));
 
 </script>

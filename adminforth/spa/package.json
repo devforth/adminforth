@@ -29,6 +29,7 @@
     "lodash.debounce": "^4.0.8",
     "pinia": "^2.1.7",
     "sanitize-html": "^2.17.4",
+    "tailwind-merge": "^3.6.0",
     "unhead": "^1.9.12",
     "vue": "^3.5.12",
     "vue-diff": "^1.2.4",

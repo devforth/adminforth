@@ -10,16 +10,17 @@
       :adminUser="coreStore.adminUser"
     />
     <BreadcrumbsWithButtons>
-      <RouterLink
+      <LinkButton
         v-if="hasListNavContext && coreStore.resourceOptions?.showNextButton !== false"
         :to="nextRecordRoute ?? $route"
         @click="handleNextClick()"
         :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
-        class="af-button-shadow h-[2.125rem] inline-flex items-center gap-1 px-3 py-2 text-sm font-medium transition-all border outline-none bg-lightListViewButtonBackground text-lightListViewButtonText border-lightListViewButtonBorder dark:bg-darkListViewButtonBackground dark:text-darkListViewButtonText dark:border-darkListViewButtonBorder hover:bg-lightListViewButtonBackgroundHover hover:text-lightListViewButtonTextHover rounded-default dark:hover:text-darkListViewButtonTextHover dark:hover:bg-darkListViewButtonBackgroundHover"
+        class="h-[2.125rem]"
+        variant="secondary"
       >
         <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />
         {{ $t('Next') }}
-      </RouterLink>
+      </LinkButton>
 
       <template v-if="coreStore.resource?.options?.actions">
 
@@ -30,10 +31,11 @@
             @callAction="(payload?: any) => startCustomAction(action.id, payload)"
             :disabled="actionLoadingStates[action.id]"
           >
-            <button 
+            <Button 
               :key="action.id"
               :disabled="actionLoadingStates[action.id!]"
-              class="flex items-center af-button-shadow h-[2.125rem] py-1 px-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-default border border-gray-300 hover:bg-gray-100 hover:text-lightPrimary focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+              class="af-button-shadow h-[2.125rem] px-2.5"
+              variant="secondary"
             >
               <component 
                 v-if="action.icon && !actionLoadingStates[action.id!]" 
@@ -45,31 +47,34 @@
                 class="w-5 h-5 me-2 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
               />
               {{ action.name }}
-            </button>
+            </Button>
           </component>
         </div>
       </template>
-      <RouterLink v-if="coreStore.resource?.options?.allowedActions?.create"
+      <LinkButton v-if="coreStore.resource?.options?.allowedActions?.create"
         :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-add-new-button af-button-shadow h-[2.125rem] flex items-center py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover rounded-default gap-1"
+        class="af-add-new-button h-[2.125rem] px-2.5"
+        variant="secondary"
       >
         <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Add new') }}
-      </RouterLink>
+      </LinkButton>
 
-      <RouterLink v-if="coreStore?.resourceOptions?.allowedActions?.edit" :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: $route.params.primaryKey } }" 
-        class="flex items-center h-[2.125rem] af-button-shadow af-edit-button py-1 px-3 text-sm font-medium text-lightShowViewButtonText focus:outline-none bg-lightShowViewButtonBackground rounded-default border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-lightShowViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-darkShowViewButtonText dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
+      <LinkButton v-if="coreStore?.resourceOptions?.allowedActions?.edit" :to="{ name: 'resource-edit', params: { resourceId: $route.params.resourceId, primaryKey: $route.params.primaryKey } }" 
+        class="h-[2.125rem] af-edit-button px-2.5"
+        variant="secondary"
       >
         <IconPenSolid class="w-4 h-4" />
         {{ $t('Edit') }}
-      </RouterLink>
+      </LinkButton>
 
-      <button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
-        class="flex items-center h-[2.125rem] af-button-shadow af-delete-button py-1 px-3 text-sm font-medium rounded-default text-red-600 focus:outline-none bg-lightShowViewButtonBackground  border border-lightShowViewButtonBorder hover:bg-lightShowViewButtonBackgroundHover hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-lightShowViewButtonFocusRing dark:focus:ring-darkShowViewButtonFocusRing dark:bg-darkShowViewButtonBackground dark:text-red-500 dark:border-darkShowViewButtonBorder dark:hover:text-darkShowViewButtonTextHover dark:hover:bg-darkShowViewButtonBackgroundHover gap-1"
+      <Button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
+        class="h-[2.125rem] af-delete-button px-3 text-red-600 hover:text-red-700 focus:z-10 dark:text-red-500 dark:hover:text-darkShowViewButtonTextHover"
+        variant="secondary"  
       >
         <IconTrashBinSolid class="w-4 h-4" />
         {{ $t('Delete') }}
-      </button>
+      </Button>
 
       <ThreeDotsMenu
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.show?.threeDotsDropdownItems as [])"
@@ -204,7 +209,7 @@ import { useI18n } from 'vue-i18n';
 import { getIcon } from '@/utils';
 import { type AdminForthComponentDeclarationFull, type AdminForthResourceColumnCommon, type FieldGroup } from '@/types/Common.js';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
-import { Spinner } from '@/afcl';
+import { Spinner, Button, LinkButton } from '@/afcl';
 import websocket from '@/websocket';
 
 const route = useRoute();
