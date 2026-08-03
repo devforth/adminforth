@@ -11,20 +11,22 @@
 
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
-      <button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="flex items-center h-[2.125rem] af-button-shadow py-1 px-3 me-2 text-sm font-medium text-lightEditViewButtonText  rounded-default focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover"
+      <Button @click="() => {cancelButtonClicked = true; $router.back()}"
+        class="h-[2.125rem] px-3 mr-2"
+        variant="secondary"
       >
         {{ $t('Cancel') }}
-      </button>
-      <button
+      </Button>
+      <Button
         @click="() => saveRecord()"
-        class="flex items-center h-[2.125rem] af-button-shadow py-1 px-3 text-sm font-medium  rounded-default text-lightEditViewSaveButtonText focus:outline-none bg-lightEditViewButtonBackground rounded border border-lightEditViewButtonBorder hover:bg-lightEditViewButtonBackgroundHover hover:text-lightEditViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightEditViewButtonFocusRing dark:focus:ring-darkEditViewButtonFocusRing dark:bg-darkEditViewButtonBackground dark:text-darkEditViewSaveButtonText dark:border-darkEditViewButtonBorder dark:hover:text-darkEditViewSaveButtonTextHover dark:hover:bg-darkEditViewButtonBackgroundHover disabled:opacity-50 gap-1"
+        class="h-[2.125rem] px-3 text-sm text-lightEditViewSaveButtonText hover:text-lightEditViewSaveButtonTextHover dark:text-darkEditViewSaveButtonText dark:hover:text-darkEditViewSaveButtonTextHover"
         :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
+        variant="secondary"
       >
         <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
         <IconFloppyDiskSolid v-else class="w-4 h-4" />
         {{ $t('Save') }}
-      </button>
+      </Button>
 
       <ThreeDotsMenu 
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.edit?.threeDotsDropdownItems as [])"
@@ -87,7 +89,7 @@ import { formatComponent } from '@/utils';
 import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import type { AdminForthResourceColumn } from '@/types/Back';
 import { scrollToInvalidField, saveRecordPreparations } from '@/utils';
-import { Spinner } from '@/afcl'
+import { Spinner, Button, LinkButton } from '@/afcl'
 import CreateEditSkeleton from './CreateEditSkeleton.vue';
 
 const { t } = useI18n();
