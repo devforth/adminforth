@@ -15,7 +15,7 @@
         :to="nextRecordRoute ?? $route"
         @click="handleNextClick()"
         :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
-        class="h-[2.125rem]"
+        class="h-[2.125rem] text-lightListViewButtonText dark:text-darkListViewButtonText px-3 py-3"
         variant="secondary"
       >
         <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />

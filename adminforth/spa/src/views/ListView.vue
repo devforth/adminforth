@@ -106,7 +106,7 @@
       </LinkButton>
 
       <Button
-        class="h-[2.125rem] px-2.5"
+        class="af-filter-button h-[2.125rem] px-3 py-3"
         @click="()=>{filtersShow = !filtersShow}"
         v-if="coreStore.resource?.options?.allowedActions?.filter"
         variant="secondary"
