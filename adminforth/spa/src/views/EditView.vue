@@ -12,7 +12,7 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <Button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="h-[2.125rem] px-3 mr-2"
+        class="h-[2.125rem] px-3 mr-2 text-lightEditViewButtonText dark:text-darkEditViewButtonText"
         variant="secondary"
       >
         {{ $t('Cancel') }}
