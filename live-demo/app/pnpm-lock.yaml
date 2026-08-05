@@ -72,8 +72,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(adminforth@3.12.1)
       '@adminforth/two-factors-auth':
-        specifier: ^4.4.3
-        version: 4.4.3(adminforth@3.12.1)
+        specifier: ^4.4.4
+        version: 4.4.4(adminforth@3.12.1)
       '@adminforth/upload':
         specifier: ^2.17.2
         version: 2.17.2(adminforth@3.12.1)
@@ -216,8 +216,8 @@ packages:
     peerDependencies:
       adminforth: ^3.8.2
 
-  '@adminforth/two-factors-auth@4.4.3':
-    resolution: {integrity: sha512-RqIgg/NKZORz0EgEAYANiUFBkN2K/ZueHCnPAkiEXomPUPNf/bOOr0Zv71vt1xur95B7UWHHe4ZBIcawo1Z8Ag==}
+  '@adminforth/two-factors-auth@4.4.4':
+    resolution: {integrity: sha512-KjIjZgBKFrI04NhFSdOTgUhhMLJUZOklKt89h4cqn4MggJVBqADYK3J4kt1pfjQk9zrwBPDhBB0CazpSoQSr7w==}
     peerDependencies:
       adminforth: ^3.8.2
 
@@ -3105,7 +3105,7 @@ snapshots:
       adminforth: 3.12.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.1)(express@5.2.1)
       zod: 4.4.3
 
-  '@adminforth/two-factors-auth@4.4.3(adminforth@3.12.1)':
+  '@adminforth/two-factors-auth@4.4.4(adminforth@3.12.1)':
     dependencies:
       '@simplewebauthn/server': 13.3.2
       adminforth: 3.12.1(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.5)(@types/node@26.1.1)(express@5.2.1)
