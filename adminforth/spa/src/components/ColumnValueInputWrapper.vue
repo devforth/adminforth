@@ -24,16 +24,16 @@
       />
     </div>
     <div class="flex items-center">
-      <button
+      <Button
         v-if="!column.editReadonly"
         type="button"
       @click="addArrayItem"
       class="flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightInputText focus:outline-none bg-lightInputBackground rounded border border-lightInputBorder hover:bg-lightInputBackgroundHover hover:text-lightInputTextHover hover:border-lightInputBorderHover focus:z-10 focus:ring-4 focus:ring-lightInputFocusRing dark:focus:ring-darkInputFocusRing dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder dark:hover:darkInputTextHover dark:hover:bg-darkInputHover"
       :class="{'mt-2': currentValues[column.name].length}"
     >
-      <IconPlusOutline class="w-4 h-4 me-2"/>
+      <IconPlusOutline class="w-4 h-4"/>
         {{ $t('Add') }}
-      </button>
+      </Button>
     </div>
   </template>
   
@@ -62,7 +62,7 @@
   import { IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
   import ColumnValueInput from "./ColumnValueInput.vue";
   import { ref, watch, nextTick } from 'vue';
-  import { Spinner } from '@/afcl';
+  import { Spinner, Button } from '@/afcl';
   
   const props = defineProps<{
     source: 'create' | 'edit',
