@@ -20,7 +20,7 @@ pnpm add @adminforth/json-form --save
 
 The plugin works **only with `json` columns**. If the target column is not of type `json`, the plugin throws during config validation.
 
-First update schema: 
+First, update the schema:
 
 ```title="./schema.prisma"
 model apartments {
@@ -29,7 +29,7 @@ model apartments {
   config    Json? 
 }
 ```
-and make migration:
+and make a migration:
 
 ```bash
 pnpm makemigration --name add-apartment-config; pnpm migrate:local
@@ -131,4 +131,24 @@ export default {
 ```
 
 The same form is rendered in both the create and edit views for the `config` field.
+
+## Key-value renderer
+
+Since using JSON as key-value storage is a popular use case, the JSON Form plugin provides a custom key-value editor:
+
+```js title="schema example"
+schema: {
+  "title": "Specifications",
+  "type": "object",
+  "additionalProperties": {
+      "type": "string"
+  }
+}
+```
+
+![Key-value editor](json-form-key-value-editor.png)
+
+Any object that declares no `properties` and does not set `additionalProperties: false` is rendered this way by default, so no extra keyword is needed to opt in. Rows are added inline, without a popup: the new key starts empty and gets the focus, the key itself is applied when the input loses focus or on `Enter`, and the trash button removes the entry right away. Renaming a key to one that already exists is refused with an inline message.
+
+The value cell holds the regular editor for whatever `additionalProperties` describes, so values are not limited to strings — nested objects and arrays work too, and keep their own formatting and validation rules.
 
