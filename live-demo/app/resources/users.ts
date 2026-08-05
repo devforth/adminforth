@@ -1,6 +1,7 @@
 import AdminForth, { AdminForthDataTypes, AdminForthResourceColumn } from 'adminforth';
 import type { AdminForthResource, AdminForthResourceInput } from 'adminforth';
 import ForeignInlineListPlugin from '@adminforth/foreign-inline-list';
+import TwoFactorsAuthPlugin from '@adminforth/two-factors-auth';
 import { randomUUID } from 'crypto';
 
 const blockDemoUsers = async ({ adminUser }: { adminUser: any }) => {
@@ -26,7 +27,16 @@ const usersResource: AdminForthResourceInput = {
     }),
     new ForeignInlineListPlugin({
       foreignResourceId: 'audit_logs',
-    }), 
+    }),
+    new TwoFactorsAuthPlugin({
+      twoFaSecretFieldName: 'secret2fa',
+      timeStepWindow: 1,
+      usersFilterToApply: (adminUser: any) => {
+        // the shared demo account is used by everyone on demo.adminforth.dev,
+        // so 2FA is enforced only for real (non-demo) users
+        return adminUser.dbUser.role === 'superadmin';
+      },
+    }),
   ],
   columns: [
     { 
@@ -71,7 +81,8 @@ const usersResource: AdminForthResourceInput = {
       showIn: ['create', 'edit'], // to show field only on create and edit pages
       masked: true, // to show stars in input field
     },
-    { name: 'password_hash', backendOnly: true, showIn: []}
+    { name: 'password_hash', backendOnly: true, showIn: []},
+    { name: 'secret2fa', backendOnly: true, showIn: []}
   ],
   hooks: {
     create: {

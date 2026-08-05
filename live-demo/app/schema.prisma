@@ -11,8 +11,9 @@ model users {
   id            String     @id
   created_at    DateTime 
   email         String   @unique
-  role          String     
+  role          String
   password_hash String
+  secret2fa     String?
 }
 
 model apartments {
