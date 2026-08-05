@@ -38,7 +38,7 @@
     "@adminforth/rich-editor": "^2.1.2",
     "@adminforth/storage-adapter-amazon-s3": "^1.0.24",
     "@adminforth/text-complete": "^2.1.1",
-    "@adminforth/two-factors-auth": "^3.3.10",
+    "@adminforth/two-factors-auth": "^4.4.3",
     "@adminforth/upload": "^2.17.2",
     "@prisma/client": "^6.19.3",
     "adminforth": "^3.12.1",
