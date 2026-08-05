@@ -28,15 +28,15 @@ const usersResource: AdminForthResourceInput = {
     new ForeignInlineListPlugin({
       foreignResourceId: 'audit_logs',
     }),
-    new TwoFactorsAuthPlugin({
-      twoFaSecretFieldName: 'secret2fa',
-      timeStepWindow: 1,
-      usersFilterToApply: (adminUser: any) => {
-        // the shared demo account is used by everyone on demo.adminforth.dev,
-        // so 2FA is enforced only for real (non-demo) users
-        return adminUser.dbUser.role === 'superadmin';
-      },
-    }),
+    // new TwoFactorsAuthPlugin({
+    //   twoFaSecretFieldName: 'secret2fa',
+    //   timeStepWindow: 1,
+    //   usersFilterToApply: (adminUser: any) => {
+    //     // the shared demo account is used by everyone on demo.adminforth.dev,
+    //     // so 2FA is enforced only for real (non-demo) users
+    //     return adminUser.dbUser.role === 'superadmin';
+    //   },
+    // }),
   ],
   columns: [
     { 
