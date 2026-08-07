@@ -118,23 +118,23 @@ importers:
         version: 4.3.6
     devDependencies:
       '@adminforth/connector-clickhouse':
-        specifier: ^1.0.4
-        version: 1.0.4(adminforth@3.6.5)
+        specifier: ^1.0.7
+        version: 1.0.7(adminforth@3.6.5)
       '@adminforth/connector-mongo':
-        specifier: ^1.0.3
-        version: 1.0.3(adminforth@3.6.5)
+        specifier: ^1.0.5
+        version: 1.0.5(adminforth@3.6.5)
       '@adminforth/connector-mysql':
-        specifier: ^1.0.3
-        version: 1.0.3(@types/node@20.19.37)(adminforth@3.6.5)
+        specifier: ^1.0.9
+        version: 1.0.9(@types/node@20.19.37)(adminforth@3.6.5)
       '@adminforth/connector-postgres':
-        specifier: ^1.0.4
-        version: 1.0.4(adminforth@3.6.5)
+        specifier: ^1.0.6
+        version: 1.0.6(adminforth@3.6.5)
       '@adminforth/connector-qdrant':
         specifier: ^1.0.4
         version: 1.0.4(adminforth@3.6.5)(typescript@5.9.3)
       '@adminforth/connector-sqlite':
-        specifier: ^1.0.3
-        version: 1.0.3(adminforth@3.6.5)
+        specifier: ^1.0.6
+        version: 1.0.6(adminforth@3.6.5)
       '@semantic-release/exec':
         specifier: ^7.1.0
         version: 7.1.0(semantic-release@24.2.9(typescript@5.9.3))
@@ -304,35 +304,35 @@ importers:
 
 packages:
 
-  '@adminforth/connector-clickhouse@1.0.4':
-    resolution: {integrity: sha512-CnDYwhj5po6V7pI5WEb1rfsHddZ32Hh8NPWzW51JG4M8WUrf0YgaYQCQp1pb6I8xeT0OjY5ZV9jAx+WIXVYHog==}
+  '@adminforth/connector-clickhouse@1.0.7':
+    resolution: {integrity: sha512-5N+1M4KwKYoPdp6Q9BNQkoLtWX/FEVZ6EdoISLJxL8kF2hU/Y25IRKJMQaGleRyT8NGMICm0DdK6J18UQkOQUg==}
     peerDependencies:
-      adminforth: ^3.1.0
+      adminforth: ^3.8.0
 
-  '@adminforth/connector-mongo@1.0.3':
-    resolution: {integrity: sha512-phWt7Q24AzzhAK9CiGVXzJvkO4NxNopBVwWHSm4wgXl7rx6xG5o3h+FDSbSSgrRS8b8PGLhn26h/XEJl+2piKg==}
+  '@adminforth/connector-mongo@1.0.5':
+    resolution: {integrity: sha512-6OwnmF+RhZICERbRpfanbBugyGnqGLCh83USsPqL2cBoWOovHWZTfLsPcc47cOjM9JNzQIv2bfBgaEf9TpcJTA==}
     peerDependencies:
-      adminforth: ^3.2.6
+      adminforth: ^3.8.0
 
-  '@adminforth/connector-mysql@1.0.3':
-    resolution: {integrity: sha512-UEZrFOjZ02GSbAU9QoUGa0ZMQC0lfh+pV4Rut4CudlAR8h8WmZFFTJhXsy7BQO529zqoq98wxJ/5cJx3EXjOXw==}
+  '@adminforth/connector-mysql@1.0.9':
+    resolution: {integrity: sha512-S61QyKrqxYasZvPTz3FB1S43YmGxDYRcWGE1GEh/3JVb8HniWtUXpJ/WvD8NvKk18qozD0lLb+eqtUVza5F2ow==}
     peerDependencies:
-      adminforth: ^3.2.6
+      adminforth: ^3.8.0
 
-  '@adminforth/connector-postgres@1.0.4':
-    resolution: {integrity: sha512-jHsWT5USoYKJZssKdZUf/OI5DC7g3YgrL6H2oNquUt6JXA4cD7vCpxZc5S2OAKmB7vz0/+Ou/eiP1UkBP1OfVg==}
+  '@adminforth/connector-postgres@1.0.6':
+    resolution: {integrity: sha512-XAucdDxIletY4SKKaueqTHEroRNgkEK3Zo7vOo0Yc/DqoLnmRAiv3GUfBNLdk5oz+9rxsx3NKDdSRII2m5BTFA==}
     peerDependencies:
-      adminforth: ^3.2.6
+      adminforth: ^3.8.0
 
   '@adminforth/connector-qdrant@1.0.4':
     resolution: {integrity: sha512-ThblJRLSKLPHBOXNeJ8wCj+3sxOgFa0bEj1JX3s3Kl+XpZmAHChECgXLErS+IyqaAobjjmWck9jIO2dP917gGw==}
     peerDependencies:
       adminforth: ^3.2.6
 
-  '@adminforth/connector-sqlite@1.0.3':
-    resolution: {integrity: sha512-wt6FitF93RiyVf+yvs9dJboK1GWnvxDVlxP/f7/SIuu3GXhTJL3NyXbFzLOhRXtQ3XRbXaP4HPYbR1KG8tH4mQ==}
+  '@adminforth/connector-sqlite@1.0.6':
+    resolution: {integrity: sha512-ztx+zjYA9gCXrkX39KzrMoUtTTehI342aDgV2N6KToI4yMMA0BcsuwsEehIvfapIe8CabwKWVIOxL0qGwOAZWQ==}
     peerDependencies:
-      adminforth: ^3.2.6
+      adminforth: ^3.8.0
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -386,6 +386,7 @@ packages:
 
   '@clickhouse/client-common@1.18.1':
     resolution: {integrity: sha512-kDk8miGZVDAzqFrBZRmD9rD82Li8gwaGlJ5MNUpWgxx1OUXRBUkcV6ULysWP1C9Jinb3yle3YLz/XbNOPVgVtQ==}
+    deprecated: 'Deprecated: import from @clickhouse/client or @clickhouse/client-web instead.'
 
   '@clickhouse/client@1.18.1':
     resolution: {integrity: sha512-fO4QggCOSr0WBS9oGIFa83FUhbweP8VTFGOXF51DJQbR/oEXegdocNSma3Gp6F4Km9A1Xm1ZAhwrldtg3prPiQ==}
@@ -4600,17 +4601,17 @@ packages:
 
 snapshots:
 
-  '@adminforth/connector-clickhouse@1.0.4(adminforth@3.6.5)':
+  '@adminforth/connector-clickhouse@1.0.7(adminforth@3.6.5)':
     dependencies:
       '@clickhouse/client': 1.18.1
-      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37)
-      bson: 7.2.0
+      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37)
+      bson: 7.3.1
       dayjs: 1.11.21
 
-  '@adminforth/connector-mongo@1.0.3(adminforth@3.6.5)':
+  '@adminforth/connector-mongo@1.0.5(adminforth@3.6.5)':
     dependencies:
-      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37)
-      bson: 7.2.0
+      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37)
+      bson: 7.3.1
       dayjs: 1.11.21
       mongodb: 6.6.2
     transitivePeerDependencies:
@@ -4622,18 +4623,18 @@ snapshots:
       - snappy
       - socks
 
-  '@adminforth/connector-mysql@1.0.3(@types/node@20.19.37)(adminforth@3.6.5)':
+  '@adminforth/connector-mysql@1.0.9(@types/node@20.19.37)(adminforth@3.6.5)':
     dependencies:
-      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37)
-      bson: 7.2.0
+      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37)
+      bson: 7.3.1
       dayjs: 1.11.21
       mysql2: 3.19.0(@types/node@20.19.37)
     transitivePeerDependencies:
       - '@types/node'
 
-  '@adminforth/connector-postgres@1.0.4(adminforth@3.6.5)':
+  '@adminforth/connector-postgres@1.0.6(adminforth@3.6.5)':
     dependencies:
-      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37)
+      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37)
       dayjs: 1.11.21
       pg: 8.21.0
     transitivePeerDependencies:
@@ -4642,14 +4643,14 @@ snapshots:
   '@adminforth/connector-qdrant@1.0.4(adminforth@3.6.5)(typescript@5.9.3)':
     dependencies:
       '@qdrant/js-client-rest': 1.18.0(typescript@5.9.3)
-      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37)
+      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37)
       dayjs: 1.11.21
     transitivePeerDependencies:
       - typescript
 
-  '@adminforth/connector-sqlite@1.0.3(adminforth@3.6.5)':
+  '@adminforth/connector-sqlite@1.0.6(adminforth@3.6.5)':
     dependencies:
-      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37)
+      adminforth: 3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37)
       better-sqlite3: 11.10.0
       dayjs: 1.11.21
 
@@ -5806,7 +5807,7 @@ snapshots:
 
   acorn@8.16.0: {}
 
-  adminforth@3.6.5(@adminforth/connector-clickhouse@1.0.4)(@adminforth/connector-mongo@1.0.3)(@adminforth/connector-mysql@1.0.3)(@adminforth/connector-postgres@1.0.4)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.3)(@types/node@20.19.37):
+  adminforth@3.6.5(@adminforth/connector-clickhouse@1.0.7)(@adminforth/connector-mongo@1.0.5)(@adminforth/connector-mysql@1.0.9)(@adminforth/connector-postgres@1.0.6)(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@20.19.37):
     dependencies:
       '@adminforth/connector-qdrant': 1.0.4(adminforth@3.6.5)(typescript@5.9.3)
       '@babel/parser': 7.29.8
@@ -5846,11 +5847,11 @@ snapshots:
       yaml: 2.9.0
       zod: 4.4.3
     optionalDependencies:
-      '@adminforth/connector-clickhouse': 1.0.4(adminforth@3.6.5)
-      '@adminforth/connector-mongo': 1.0.3(adminforth@3.6.5)
-      '@adminforth/connector-mysql': 1.0.3(@types/node@20.19.37)(adminforth@3.6.5)
-      '@adminforth/connector-postgres': 1.0.4(adminforth@3.6.5)
-      '@adminforth/connector-sqlite': 1.0.3(adminforth@3.6.5)
+      '@adminforth/connector-clickhouse': 1.0.7(adminforth@3.6.5)
+      '@adminforth/connector-mongo': 1.0.5(adminforth@3.6.5)
+      '@adminforth/connector-mysql': 1.0.9(@types/node@20.19.37)(adminforth@3.6.5)
+      '@adminforth/connector-postgres': 1.0.6(adminforth@3.6.5)
+      '@adminforth/connector-sqlite': 1.0.6(adminforth@3.6.5)
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
