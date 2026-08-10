@@ -375,7 +375,7 @@ The plugin also calls the protected resource hooks while applying approved chang
 
 ## Protect reviewer access
 
-The approval resource should normally be visible only to users who are allowed to approve or reject changes. A simple role-based check can be added through `allowedActions`:
+Who may approve is decided by the `show` permission of the approval resource itself: the plugin resolves `options.allowedActions.show` of the approval resource on every approve and reject request, and rejects the request with `403` if the user is not allowed to see the queue. So the `allowedActions` below is not only a UI matter, it is the actual approval permission and it is enforced on the backend:
 
 ```ts title="./resources/crud_manual_approve.ts"
 options: {
@@ -394,6 +394,29 @@ options: {
 ```
 
 You can also use a stricter policy and allow only `superadmin` users to open the approval queue.
+
+The `show` callback receives the usual `{ adminUser, resource, meta, source, adminforth }` arguments, and for approve/reject calls `meta` contains the approval request being reviewed (`meta.record`) and its primary key (`meta.pk`). This allows granular policies, for example letting reviewers approve requests for some resources only:
+
+```ts title="./resources/crud_manual_approve.ts"
+show: async ({ adminUser, meta }: any) => {
+  if (adminUser.dbUser.role === 'superadmin') {
+    return true;
+  }
+  return adminUser.dbUser.role === 'reviewer' && meta?.record?.resource_id !== 'adminuser';
+},
+```
+
+### Separation of duties
+
+On top of the `show` check, the plugin does not allow a user to approve or reject a request he created himself, so the four-eyes principle holds even if requester and reviewer share the same role. If you really need to allow self-approval (for example in a single-admin development setup), pass `allowSelfApproval: true`:
+
+```ts title="./resources/crud_manual_approve.ts"
+export const crudApprovePlugin = new CRUDApprovePlugin({
+  resourceColumns: { ... },
+  // do not use in production: makes the four-eyes principle void
+  allowSelfApproval: true,
+});
+```
 
 ## Optional: require 2FA before applying approved changes
 
@@ -529,6 +552,10 @@ Check that:
 ### Approve or reject button is not visible
 
 Approve and reject controls are shown only for requests with `status = 1`.
+
+### Approve or reject returns "You are not allowed to ..."
+
+The reviewer did not pass the `canApprove` check, or he is the author of the request himself. Both checks run on the backend for every approve/reject call. See [Protect reviewer access](#protect-reviewer-access).
 
 ### Reviewers cannot open the approval resource
 
