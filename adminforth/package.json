@@ -122,6 +122,7 @@
   },
   "devDependencies": {
     "@adminforth/connector-clickhouse": "^1.0.7",
+    "@adminforth/connector-duckdb": "^1.0.0",
     "@adminforth/connector-mongo": "^1.0.5",
     "@adminforth/connector-mysql": "^1.0.9",
     "@adminforth/connector-postgres": "^1.0.6",
@@ -136,6 +137,7 @@
   },
   "peerDependencies": {
     "@adminforth/connector-clickhouse": "^1.0.7",
+    "@adminforth/connector-duckdb": "^1.0.0",
     "@adminforth/connector-mongo": "^1.0.5",
     "@adminforth/connector-mysql": "^1.0.9",
     "@adminforth/connector-postgres": "^1.0.6",
@@ -157,6 +159,9 @@
       "optional": true
     },
     "@adminforth/connector-clickhouse": {
+      "optional": true
+    },
+    "@adminforth/connector-duckdb": {
       "optional": true
     },
     "@adminforth/connector-qdrant": {
