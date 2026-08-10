@@ -5,7 +5,6 @@ import ForeignInlineListPlugin from '../../plugins/adminforth-foreign-inline-lis
 import UploadPlugin from '../../plugins/adminforth-upload/index.js';
 import AdminForthStorageAdapterLocalFilesystem from "../../adapters/adminforth-storage-adapter-local/index.js";
 import OpenSignupPlugin from '../../plugins/adminforth-open-signup/index.js';
-import DashboardPlugin from '../../plugins/adminforth-dashboard/index.js';
 import UserSoftDelete from '../../plugins/adminforth-user-soft-delete/index.js';
 import KeyValueAdapterRam from '../../adapters/adminforth-key-value-adapter-ram/index.js';
 import OAuthPlugin from './configs/oauthPluginConfig.js';
@@ -174,9 +173,6 @@ export default {
       expectedOrigin: process.env.RESET_PASSWORD_ORIGIN || 'http://localhost:3123',
     }),
     OAuthPlugin,
-    new DashboardPlugin({
-      dashboardConfigsResourceId: 'dashboard_configs',
-    }),
     new UserSoftDelete({
       activeFieldName: "is_active",
       //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
