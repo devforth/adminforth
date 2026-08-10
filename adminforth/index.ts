@@ -502,7 +502,7 @@ class AdminForth implements IAdminForth {
       dataSourcesDatabasesTypes.push(dbType)
     });
     const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
-    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector, DuckDBConnector;
     if (uniqueDbTypes.includes('sqlite')) {
       SQLiteConnector = await this.tryToImportConnector('sqlite', doesUserHavePnpmLock);
     }
@@ -521,6 +521,9 @@ class AdminForth implements IAdminForth {
     if (uniqueDbTypes.includes('qdrant')) {
       QdrantConnector = await this.tryToImportConnector('qdrant', doesUserHavePnpmLock);
     }
+    if (uniqueDbTypes.includes('duckdb')) {
+      DuckDBConnector = await this.tryToImportConnector('duckdb', doesUserHavePnpmLock);
+    }
 
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
@@ -530,6 +533,7 @@ class AdminForth implements IAdminForth {
       'clickhouse': ClickhouseConnector,
       'mysql': MysqlConnector,
       'qdrant': QdrantConnector,
+      'duckdb': DuckDBConnector,
     };
     this.config.databaseConnectors = {
       ...this.connectorClasses,
