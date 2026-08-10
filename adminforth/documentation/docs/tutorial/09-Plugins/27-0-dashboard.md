@@ -175,20 +175,27 @@ export const admin = new AdminForth({
 
 ### 4. Configure Plugin
 
-Attach the plugin to one of your resources, usually the users resource:
+Register the plugin in the application's `globalPlugins` array:
 
-```ts title="./resources/adminuser.ts"
+```ts title="./globalPlugins.ts"
 import DashboardPlugin from '@adminforth/dashboard';
 
-export default {
+export const globalPlugins = [
+  new DashboardPlugin({
+    dashboardConfigsResourceId: 'dashboard_configs',
+  }),
+];
+```
+
+Then pass it to the AdminForth configuration:
+
+```ts title="./index.ts"
+import { globalPlugins } from './globalPlugins.js';
+
+export const admin = new AdminForth({
   // ...
-  plugins: [
-    // ...
-    new DashboardPlugin({
-      dashboardConfigsResourceId: 'dashboard_configs',
-    }),
-  ],
-} as AdminForthResourceInput;
+  globalPlugins,
+});
 ```
 
 After `admin.discoverDatabases()` runs, the plugin creates a default dashboard config if the table is empty:
