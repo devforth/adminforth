@@ -152,7 +152,6 @@ export default {
         "png",
         "gif",
         "webm",
-        "exe",
         "webp",
       ],
       maxFileSize: 1024 * 1024 * 20, // 20MB
