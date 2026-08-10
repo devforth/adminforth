@@ -2,16 +2,22 @@
   <div class="inline-flex items-center gap-1">
     <Tooltip v-if="tooltipText">
       <div
-        class="overflow-hidden max-h-[20px] rounded-default"
-        :class="{ 'shrink-0 w-[90px]': compact }"
+        class="rounded-default me-2"
+        :class="{
+          'overflow-hidden max-h-[20px]': !isMultiline,
+          'shrink-0 w-[90px]': compact,
+        }"
         @click="toggle"
       >
         <span
           class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
           :class="{
             'block truncate': compact,
+            'block': isMultiline,
             'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
+            'pointer-events-none': isMultiline && !show,
           }"
+          @click="onValueClick"
         >
           <template v-if="compact">{{ visualValue }}</template>
           <ValueRenderer v-else :column="column" :record="record" />
@@ -23,16 +29,22 @@
     </Tooltip>
     <div
       v-else
-      class="overflow-hidden max-h-[20px] rounded-default"
-      :class="{ 'shrink-0 w-[90px]': compact }"
+      class="rounded-default me-2"
+      :class="{
+        'overflow-hidden max-h-[20px]': !isMultiline,
+        'shrink-0 w-[90px]': compact,
+      }"
       @click="toggle"
     >
       <span
         class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
         :class="{
           'block truncate': compact,
+          'block': isMultiline,
           'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
+          'pointer-events-none': isMultiline && !show,
         }"
+        @click="onValueClick"
       >
         <template v-if="compact">{{ visualValue }}</template>
         <ValueRenderer v-else :column="column" :record="record" />
@@ -83,16 +95,25 @@ const { alert } = useAdminforth();
 
 const show = ref(false);
 
-const rawValue = computed(() => props.record[props.column.name]);
+const rawValue = computed(() => {
+  const value = props.record[props.column.name];
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+});
 
 const compact = computed(() => props.meta?.compact);
 const showCopy = computed(() => props.meta?.copy);
-const eyeButton = computed(() => props.meta?.eyeButton);
+
+const isMultiline = computed(
+  () => props.column.type === 'json' && !props.column.isArray?.enabled && !compact.value
+);
+const eyeButton = computed(() => props.meta?.eyeButton ?? isMultiline.value);
 const visualValue = computed(() => {
   const val = rawValue.value;
-  if (val && String(val).length > 8) {
-    const s = String(val);
-    return `${s.slice(0, 4)}...${s.slice(-4)}`;
+  if (val.length > 8) {
+    return `${val.slice(0, 4)}...${val.slice(-4)}`;
   }
   return val;
 });
@@ -110,6 +131,12 @@ const tooltipText = computed(() => {
 function toggle(event: MouseEvent) {
   show.value = !show.value;
   event.stopPropagation();
+}
+
+function onValueClick(event: MouseEvent) {
+  if (isMultiline.value && show.value && eyeButton.value) {
+    event.stopPropagation();
+  }
 }
 
 function copyToCB() {
