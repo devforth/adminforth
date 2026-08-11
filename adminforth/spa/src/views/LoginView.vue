@@ -5,7 +5,7 @@
       'background-size': 'cover',
       'background-position': 'center',
       'background-blend-mode': coreStore.config?.removeBackgroundBlendMode ? 'normal' : 'darken',
-      'background-color': 'rgba(0, 0, 0, 0.4)',
+      'background-color': 'rgba(0, 0, 0, 0)',
     }: {}"
   >
     
