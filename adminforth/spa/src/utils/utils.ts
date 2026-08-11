@@ -128,16 +128,6 @@ export async function redirectToLogin() {
   await router.push({ name: 'login', query });
 }
 
-/**
- * Drops local authorization state and sends user to the login page.
- * Called when backend says that user is not authorized (401 response or not authorized config response).
- */
-export async function unauthorizeAndRedirectToLogin() {
-  useUserStore().unauthorize();
-  useCoreStore().resetAdminUser();
-  await redirectToLogin();
-}
-
 export async function callApi({path, method, body, headers, silentError = false, abortSignal}: {
   path: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' 
   body?: any
@@ -161,9 +151,11 @@ export async function callApi({path, method, body, headers, silentError = false,
   try {
     const r = await fetch(fullPath, options);
     if (r.status == 401 && !path.includes('/login')) {
-      await unauthorizeAndRedirectToLogin();
+      useUserStore().unauthorize();
+      useCoreStore().resetAdminUser();
+      await redirectToLogin();
       return null;
-    }
+    } 
     return await r.json();
   } catch(e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
