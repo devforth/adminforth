@@ -12,7 +12,6 @@ import {
   IAdminForthEndpointOptions,
   IAdminForthExpressRouteSchema,
   IAdminForthNoAuthEndpointOptions,
-  IAdminForthOptionalAuthEndpointOptions,
   IExpressHttpServer,
   HttpExtra,
 } from '../types/Back.js';
@@ -384,87 +383,54 @@ class ExpressServer implements IExpressHttpServer {
   }
   
 
-  /**
-   * Resolves adminUser from the auth JWT cookie of the request.
-   * Returns 'unauthorized' when there is no valid JWT or authorize callbacks rejected the user,
-   * and 'error' when verification itself failed (e.g. database initialization in progress).
-   */
-  async resolveRequestAdminUser(req, res): Promise<{ status: 'ok', adminUser: AdminUser } | { status: 'unauthorized' } | { status: 'error' }> {
-    const cookies = await parseExpressCookie(req);
-    const brandSlug = this.adminforth.config.customization.brandNameSlug;
-    // check if multiple adminforth_jwt providerd and show warning
-    const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
-    if (jwts.length > 1) {
-      afLogger.error('Multiple adminforth_jwt cookies provided');
-    }
-
-    const jwt = jwts[0]?.value;
-
-    if (!jwt) {
-      return { status: 'unauthorized' };
-    }
-    let adminforthUser;
-    try {
-      adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
-    } catch (e) {
-      // this might happen if e.g. database intialization in progress.
-      // so we can't answer with 401 (would logout user)
-      // reproduced during usage of listRowsAutoRefreshSeconds
-      afLogger.error(e.stack);
-      return { status: 'error' };
-    }
-    if (!adminforthUser) {
-      return { status: 'unauthorized' };
-    }
-    const toReturn: { error?: string, allowed: boolean } = { allowed: true };
-    await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
-      body: req.body,
-      query: req.query,
-      headers: req.headers,
-      cookies: cookies as any,
-      requestUrl: req.url,
-      meta: {},
-      response: res
-    });
-    if (!toReturn.allowed) {
-      return { status: 'unauthorized' };
-    }
-    return { status: 'ok', adminUser: adminforthUser };
-  }
-
   authorize(handler) {
     return async (req, res, next) => {
       return this.runInRequestContext(req, async () => {
-        const resolved = await this.resolveRequestAdminUser(req, res);
-        if (resolved.status === 'error') {
-          res.status(500).send('Failed to verify JWT token - something went wrong');
-          return;
+        const cookies = await parseExpressCookie(req);
+        const brandSlug = this.adminforth.config.customization.brandNameSlug;
+        // check if multiple adminforth_jwt providerd and show warning
+        const jwts = cookies.filter(({key}) => key === `adminforth_${brandSlug}_jwt`);
+        if (jwts.length > 1) {
+          afLogger.error('Multiple adminforth_jwt cookies provided');
         }
-        if (resolved.status === 'unauthorized') {
-          res.status(401).send('Unauthorized by AdminForth');
-          return;
-        }
-        req.adminUser = resolved.adminUser;
-        return handler(req, res, next);
-      });
-    };
-  }
 
-  /**
-   * Same as authorize, but instead of answering 401 for not logged-in users it passes
-   * adminUser=null to the handler, so handler decides what data such user is allowed to get.
-   */
-  authorizeOptional(handler) {
-    return async (req, res, next) => {
-      return this.runInRequestContext(req, async () => {
-        const resolved = await this.resolveRequestAdminUser(req, res);
-        if (resolved.status === 'error') {
-          // we can't pretend user is not logged in (would logout user), so answer with 500
+        const jwt = jwts[0]?.value;
+
+        if (!jwt) {
+          res.status(401).send('Unauthorized by AdminForth');
+          return
+        }
+        let adminforthUser;
+        try {
+          adminforthUser = await this.adminforth.auth.verify(jwt, 'auth');
+        } catch (e) {
+          // this might happen if e.g. database intialization in progress.
+          // so we can't answer with 401 (would logout user)
+          // reproduced during usage of listRowsAutoRefreshSeconds
+          afLogger.error(e.stack);
           res.status(500).send('Failed to verify JWT token - something went wrong');
           return;
         }
-        req.adminUser = resolved.status === 'ok' ? resolved.adminUser : null;
-        return handler(req, res, next);
+        if (!adminforthUser) {
+          res.status(401).send('Unauthorized by AdminForth');
+        } else {
+          req.adminUser = adminforthUser;
+          const toReturn: { error?: string, allowed: boolean } = { allowed: true };
+          await this.processAuthorizeCallbacks(adminforthUser, toReturn, res, {
+            body: req.body,
+            query: req.query,
+            headers: req.headers,
+            cookies: cookies as any,
+            requestUrl: req.url,
+            meta: {},
+            response: res
+          });
+          if (!toReturn.allowed) {
+            res.status(401).send('Unauthorized by AdminForth');
+          } else {
+            return handler(req, res, next);
+          }
+        }
       });
     };
   }
@@ -646,7 +612,6 @@ class ExpressServer implements IExpressHttpServer {
 
   endpoint(options: IAdminForthAuthenticatedEndpointOptions): void;
   endpoint(options: IAdminForthNoAuthEndpointOptions): void;
-  endpoint(options: IAdminForthOptionalAuthEndpointOptions): void;
   endpoint(options: IAdminForthEndpointOptions) {
     const {
       method='GET',
@@ -659,7 +624,6 @@ class ExpressServer implements IExpressHttpServer {
       agent,
       target='json'
     } = options;
-    const optionalAuth = (options as IAdminForthOptionalAuthEndpointOptions).optionalAuth === true;
     if (!path.startsWith('/')) {
       throw new Error(`Path must start with /, got: ${path}`);
     }
@@ -669,14 +633,14 @@ class ExpressServer implements IExpressHttpServer {
     const registeredApiSchema = (normalizedRequestSchema || normalizedResponseSchema)
       ? this.adminforth.openApi.registerApiSchema({
         method,
-        noAuth: noAuth || optionalAuth,
+        noAuth,
         path: fullPath,
         description,
         request_schema: normalizedRequestSchema,
         response_schema: normalizedResponseSchema,
         agent,
         handler,
-      } as IAdminForthEndpointOptions)
+      })
       : null;
 
     const expressHandler = async (req, res) => this.runInRequestContext(req, async () => {
@@ -840,11 +804,7 @@ class ExpressServer implements IExpressHttpServer {
 
     const registerEndpoint = () => {
       afLogger.trace(`👂 Adding endpoint ${method} ${fullPath}`);
-      let routeHandler: (req: any, res: any, next?: any) => any = expressHandler;
-      if (!noAuth) {
-        routeHandler = optionalAuth ? this.authorizeOptional(expressHandler) : this.authorize(expressHandler);
-      }
-      this.expressApp[method.toLowerCase()](fullPath, routeHandler);
+      this.expressApp[method.toLowerCase()](fullPath, noAuth ? expressHandler : this.authorize(expressHandler));
     };
 
     if (this.expressApp) {

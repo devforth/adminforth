@@ -1335,18 +1335,6 @@ export interface AdminForthConfigForFrontend {
   }[],
 }
 
-/**
- * Part of the frontend config which is allowed to be exposed to not logged-in users (login page needs it).
- */
-export type AdminForthPublicConfigForFrontend = Pick<
-  AdminForthConfigForFrontend,
-  'brandName' | 'usernameFieldName' | 'loginBackgroundImage' | 'loginBackgroundPosition' |
-  'removeBackgroundBlendMode' | 'title' | 'demoCredentials' | 'loginPageInjections' |
-  'rememberMeDuration' | 'singleTheme' | 'customHeadItems'
-> & {
-  globalInjections: Pick<AdminForthConfigForFrontend['globalInjections'], 'sidebarTop' | 'everyPageBottom'>,
-};
-
 export interface GetBaseConfigResponse {
   user: UserData,
   resources: ResourceVeryShort[],
@@ -1355,14 +1343,6 @@ export interface GetBaseConfigResponse {
   adminUser: AdminUser,
   version: string,
 }
-
-/**
- * Response of `/get_config` endpoint. For requests with valid auth JWT it returns both public and private
- * parts of config, for not logged-in users - only the public part.
- */
-export type GetConfigResponse =
-  | (GetBaseConfigResponse & { authorized: true })
-  | { authorized: false, config: AdminForthPublicConfigForFrontend };
 
 export interface ColumnMinMaxValue { 
   [key: string]: { min: any, max: any } 
