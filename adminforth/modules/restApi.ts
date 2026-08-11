@@ -27,7 +27,7 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
   AdminForthSortDirections,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved,
    AnnouncementBadgeResponse,
-   GetBaseConfigResponse,
+   GetConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
 import is_ip_private from 'private-ip'
@@ -841,22 +841,27 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     })
 
     server.endpoint({
-      noAuth: true,
+      optionalAuth: true,
       method: 'GET',
-      path: '/get_public_config',
-      handler: async ({ tr }) => {
-
-        // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
-
+      path: '/get_config',
+      handler: async ({ adminUser, tr, response }): Promise<GetConfigResponse>=> {
         // find resource
         if (!this.adminforth.config.auth) {
           throw new Error('No config.auth defined');
         }
-        const usernameField = this.adminforth.config.auth.usernameField;
-        const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
-        return {
+        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        response.setHeader('Pragma', 'no-cache');
+        response.setHeader('Expires', '0');
+        response.setHeader('Surrogate-Control', 'no-store');
+
+        const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+
+        const usernameField = this.adminforth.config.auth.usernameField;
+        const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
+
+        // this part is returned to everyone, including not logged in users (login page needs it)
+        const publicPart = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
@@ -873,33 +878,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
-      },
-    });
 
-    server.endpoint({
-      method: 'GET',
-      path: '/get_base_config',
-      handler: async ({ adminUser, cookies, tr, response }): Promise<GetBaseConfigResponse>=> {
-        let username = ''
-        let userFullName = ''
-    
-        // find resource
-        if (!this.adminforth.config.auth) {
-          throw new Error('No config.auth defined');
+        if (!adminUser) {
+          // no valid JWT passed, so user is allowed to get only public part of config
+          return {
+            authorized: false,
+            config: publicPart,
+          };
         }
 
-        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        response.setHeader('Pragma', 'no-cache');
-        response.setHeader('Expires', '0');
-        response.setHeader('Surrogate-Control', 'no-store');
-
         const dbUser = adminUser.dbUser;
-        username = dbUser[this.adminforth.config.auth.usernameField]; 
-        userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
-        const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        
-        const usernameField = this.adminforth.config.auth.usernameField;
-        const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
+        const username = dbUser[this.adminforth.config.auth.usernameField];
+        const userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
@@ -958,20 +948,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const usersResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const defaultUserExists = await this.adminforth.resource(usersResource.resourceId).get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
 
-        
-        const publicPart = {
-          brandName: this.adminforth.config.customization.brandName,
-          usernameFieldName: usernameColumn.label,
-          loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
-          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
-          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
-          title: this.adminforth.config.customization?.title,
-          demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
-          singleTheme: this.adminforth.config.customization.singleTheme,
-          customHeadItems: this.adminforth.config.customization.customHeadItems,
-        }
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
@@ -1048,13 +1024,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         return {
+          authorized: true,
           user: userData,
           resources: this.adminforth.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
           })),
           menu: newMenu,
-          config: { 
+          config: {
             ...publicPart,
             ...loggedInPart,
           },

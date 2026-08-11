@@ -63,6 +63,10 @@ export interface IAdminForthAuthenticatedEndpointHandlerInput extends IAdminFort
   adminUser: AdminUser;
 }
 
+export interface IAdminForthOptionalAuthEndpointHandlerInput extends Omit<IAdminForthEndpointHandlerInput, 'adminUser'> {
+  adminUser: AdminUser | null;
+}
+
 export type AgentToolMeta = {
   isDangerous?: boolean;
 };
@@ -88,9 +92,21 @@ export interface IAdminForthNoAuthEndpointOptions extends IAdminForthEndpointOpt
   handler: (input: IAdminForthEndpointHandlerInput) => void | Promise<any>,
 }
 
+export interface IAdminForthOptionalAuthEndpointOptions extends IAdminForthEndpointOptionsBase {
+  noAuth?: false,
+  /**
+   * Endpoint is available for not logged-in users (like noAuth endpoints), but when request contains
+   * valid auth JWT, `adminUser` will be resolved and passed to the handler. For not logged-in users
+   * `adminUser` is `null`, so handler can decide which part of data it is allowed to return.
+   */
+  optionalAuth: true,
+  handler: (input: IAdminForthOptionalAuthEndpointHandlerInput) => void | Promise<any>,
+}
+
 export type IAdminForthEndpointOptions =
   | IAdminForthAuthenticatedEndpointOptions
-  | IAdminForthNoAuthEndpointOptions;
+  | IAdminForthNoAuthEndpointOptions
+  | IAdminForthOptionalAuthEndpointOptions;
 
 export type AdminForthExpressSchemaInput = AnySchemaObject | ZodType;
 
@@ -176,6 +192,7 @@ export interface IHttpServer {
    */
   endpoint(options: IAdminForthAuthenticatedEndpointOptions): void;
   endpoint(options: IAdminForthNoAuthEndpointOptions): void;
+  endpoint(options: IAdminForthOptionalAuthEndpointOptions): void;
 
 }
 

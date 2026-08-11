@@ -1,10 +1,10 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { defineStore } from 'pinia'
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, unauthorizeAndRedirectToLogin } from '@/utils';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
 
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthResourceFrontend } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthResourceFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
 
 
@@ -75,15 +75,32 @@ export const useCoreStore = defineStore('core', () => {
     window.localStorage.setItem('af__theme', theme.value);
   }
 
-  async function fetchMenuAndResource() {
-    const resp: GetBaseConfigResponse = await callAdminForthApi({
-      path: '/get_base_config',
+  /**
+   * Fetches config from backend. Backend returns private (logged-in) part of config only when
+   * request has valid auth JWT, otherwise only public part (which is needed e.g. by login page) is returned.
+   *
+   * @param redirectToLoginIfNotAuthorized - when backend answered that user is not authorized, do the same
+   *   as we do for 401 responses: drop local auth state and send user to the login page.
+   */
+  async function fetchConfig({ redirectToLoginIfNotAuthorized = false }: { redirectToLoginIfNotAuthorized?: boolean } = {}) {
+    const resp: GetConfigResponse | null = await callAdminForthApi({
+      path: '/get_config',
       method: 'GET',
     });
 
     if(!resp){
       return
     }
+
+    if (!resp.authorized) {
+      // only public part arrived, so we can't fill menu/user data
+      config.value = { ...config.value, ...resp.config } as AdminForthConfigForFrontend;
+      if (redirectToLoginIfNotAuthorized) {
+        await unauthorizeAndRedirectToLogin();
+      }
+      return;
+    }
+
     menu.value = resp.menu;
     resourceById.value = resp.resources.reduce((acc: Record<string, ResourceVeryShort>, resource: ResourceVeryShort) => {
       acc[resource.resourceId] = resource;
@@ -94,6 +111,10 @@ export const useCoreStore = defineStore('core', () => {
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
     subscribeToMenuRefresh();
+  }
+
+  async function fetchMenuAndResource() {
+    await fetchConfig({ redirectToLoginIfNotAuthorized: true });
   }
 
   async function refreshMenu() {
@@ -234,12 +255,11 @@ export const useCoreStore = defineStore('core', () => {
     isResourceFetching.value = false;
   }
 
+  /**
+   * Loads config without redirecting not logged-in user to the login page.
+   */
   async function getPublicConfig() {
-    const res = await callAdminForthApi({
-      path: '/get_public_config',
-      method: 'GET',
-    });
-    config.value = {...config.value, ...res};
+    await fetchConfig();
   }
 
   async function getLoginFormConfig() {
@@ -279,8 +299,9 @@ export const useCoreStore = defineStore('core', () => {
     username,
     userFullname,
     userAvatarUrl,
+    fetchConfig,
     getPublicConfig,
-    fetchMenuAndResource, 
+    fetchMenuAndResource,
     refreshMenu,
     getLoginFormConfig,
     fetchRecord, 

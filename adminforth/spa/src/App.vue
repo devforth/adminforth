@@ -272,11 +272,17 @@ async function initRouter() {
 }
 
 async function loadMenu() {
+  await coreStore.fetchMenuAndResource();
+}
+
+async function loadConfig() {
   await initRouter();
-  if (route.meta.sidebarAndHeader !== 'none') {
-    // for custom layouts we don't need to fetch menu
-    await coreStore.fetchMenuAndResource();
-  }
+  // single request returns public part of config for not logged in users and public+private part for logged in ones.
+  // for custom layouts we don't redirect not logged in user to login page
+  await coreStore.fetchConfig({
+    redirectToLoginIfNotAuthorized: route.meta.sidebarAndHeader !== 'none',
+  });
+  publicConfigLoaded.value = true;
   loginRedirectCheckIsReady.value = true;
 }
 
@@ -341,16 +347,9 @@ watch(dropdownUserButton, async (dropdownUserButton) => {
   }
 })
 
-async function loadPublicConfig() {
-  await coreStore.getPublicConfig();
-  publicConfigLoaded.value = true;
-}
-
-
 // initialize components based on data attribute selectors
 onMounted(async () => {
-  await loadPublicConfig(); // run this in async mode
-  await loadMenu(); // and this
+  await loadConfig();
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
   document.documentElement.setAttribute('data-theme', theme.value);
