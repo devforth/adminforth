@@ -43,7 +43,7 @@ const ADMIN_BASE_URL = '';
 export const admin = new AdminForth({
   baseUrl: ADMIN_BASE_URL,
   auth: {
-    rateLimit: ['5/5m'],
+    rateLimit: ['500/5m'],
     usersResourceId: 'adminuser',
     usernameField: 'email',
     passwordHashField: 'password_hash',
