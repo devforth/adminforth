@@ -103,6 +103,12 @@ async function tryAutologin(autologin: string): Promise<boolean> {
   return !!coreStore.adminUser;
 }
 
+export async function handleNotAuthorized() {
+  useUserStore().unauthorize();
+  useCoreStore().resetAdminUser();
+  await redirectToLogin();
+}
+
 export async function redirectToLogin() {
   const currentPath = router.currentRoute.value.path;
   const homeRoute = router.getRoutes().find(route => route.name === 'home');
@@ -151,11 +157,9 @@ export async function callApi({path, method, body, headers, silentError = false,
   try {
     const r = await fetch(fullPath, options);
     if (r.status == 401 && !path.includes('/login')) {
-      useUserStore().unauthorize();
-      useCoreStore().resetAdminUser();
-      await redirectToLogin();
+      await handleNotAuthorized();
       return null;
-    } 
+    }
     return await r.json();
   } catch(e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
