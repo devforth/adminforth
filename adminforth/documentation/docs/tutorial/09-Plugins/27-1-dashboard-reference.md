@@ -30,9 +30,9 @@ query:
       direction: desc
 ```
 
-Step-based charts use a `steps` query when each step needs its own resource, metric, and filters. Funnel charts always use this query shape.
+Step-based charts use a `steps` query when each step needs its own resource, measure, and filters. Funnel charts can also use this query shape; like every other chart, they accept a single-resource query as well.
 
-Depending on the widget, `query` can also use `limit`, `offset`, `calcs`, `time_series`, `period`, `bucket`, and `formatting`.
+Depending on the widget, `query` can also use `limit`, `offset`, `calcs`, `bucket`, and `formatting`.
 
 Widget-scoped constants can be defined with `variables`. They are available inside `query.calcs` through `lookup($variables.path, field, default)`.
 
@@ -50,19 +50,20 @@ chart:
   y:
     field: adjusted_value
 query:
+  source: steps
   steps:
     - name: SQLite
       resource: cars_sl
-      metric:
-        agg: avg
-        field: price
-        as: value
+      select:
+        - agg: avg
+          field: price
+          as: value
     - name: MySQL
       resource: cars_mysql
-      metric:
-        agg: avg
-        field: price
-        as: value
+      select:
+        - agg: avg
+          field: price
+          as: value
   calcs:
     - calc: value * lookup($variables.price_multipliers, resource, 1)
       as: adjusted_value
