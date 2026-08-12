@@ -6,7 +6,6 @@ import {
   AllowedActionValue,
   AllowedActions,
   AfterDataSourceResponseFunction,
-  AdminUserAuthorizeFunction,
   BeforeDataSourceRequestFunction,
   IAdminForthEndpointHandlerInput,
   IAdminForthRestAPI,
@@ -676,33 +675,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   private async getAdminUserFromRequest(
     { body, query, headers, cookies, requestUrl, response }: Pick<IAdminForthEndpointHandlerInput, 'body' | 'query' | 'headers' | 'cookies' | 'requestUrl' | 'response'>
   ): Promise<AdminUser | null> {
-    const brandSlug = this.adminforth.config.customization.brandNameSlug;
-    const jwts = cookies.filter(({ key }) => key === `adminforth_${brandSlug}_jwt`);
-    if (jwts.length > 1) {
-      afLogger.error('Multiple adminforth_jwt cookies provided');
-    }
-    const jwt = jwts[0]?.value;
-    if (!jwt) {
-      return null;
-    }
+    const result = await this.adminforth.auth.authorizeByCookies({
+      cookies,
+      response,
+      extra: { body, query, headers, cookies, requestUrl, meta: {}, response },
+    });
 
-    const adminUser = await this.adminforth.auth.verify(jwt, 'auth') as AdminUser | null;
-    if (!adminUser) {
-      return null;
+    if (result.status === 'verifyFailed') {
+      throw result.error;
     }
-
-    for (const hook of listify(this.adminforth.config.auth.adminUserAuthorize as (AdminUserAuthorizeFunction[] | undefined))) {
-      const resp = await hook({
-        adminUser,
-        response,
-        adminforth: this.adminforth,
-        extra: { body, query, headers, cookies, requestUrl, meta: {}, response },
-      });
-      if (resp?.allowed === false || resp?.error) {
-        return null;
-      }
-    }
-    return adminUser;
+    return result.status === 'ok' ? result.adminUser : null;
   }
 
   private normalizeJsonColumns(resource: AdminForthResource, record: any): string | null {
