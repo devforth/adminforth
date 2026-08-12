@@ -187,6 +187,19 @@ export const globalPlugins = [
 ];
 ```
 
+#### Control Dashboard Editing Permissions
+
+By default, only users with the `superadmin` role can edit dashboards (add, rename, reorder, and remove groups or widgets). Use the `editRoles` option to grant editing to other roles:
+
+```ts title="./globalPlugins.ts"
+new DashboardPlugin({
+  dashboardConfigsResourceId: 'dashboard_configs',
+  editRoles: ['superadmin', 'admin'], // allow 'admin' users to edit dashboards too
+});
+```
+
+Users whose role is not listed in `editRoles` can view dashboards but are not shown the editing controls and cannot modify dashboards, groups, or widgets through the API.
+
 Then pass it to the AdminForth configuration:
 
 ```ts title="./index.ts"
@@ -216,7 +229,7 @@ widgets: []
 If you need to configure dashboards without using the AI Agent, you can do so manually via the AdminForth interface:
 
 1. **Access Dashboards**: Open the **Dashboards** group in the sidebar and choose a dashboard page.
-2. **Interactive UI Editor**: Superadmins can add, rename, reorder, and remove groups or widgets directly from the user interface.
+2. **Interactive UI Editor**: Users with a role listed in the plugin's `editRoles` option (defaults to `superadmin`) can add, rename, reorder, and remove groups or widgets directly from the user interface.
 3. **YAML Configuration Editor**: The dashboard builder has built-in code editors. When editing a widget or a group manually, you write configurations using a YAML-based DSL.
 
 For the complete schema specifications of queries, formulas, custom variables, layout fields, and advanced chart configurations, see the **[Dashboard Query Reference](/docs/tutorial/Plugins/dashboard-reference)**.
