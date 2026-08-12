@@ -1335,6 +1335,15 @@ export interface AdminForthConfigForFrontend {
   }[],
 }
 
+export type AdminForthPublicConfigForFrontend = Pick<
+  AdminForthConfigForFrontend,
+  'brandName' | 'usernameFieldName' | 'loginBackgroundImage' | 'loginBackgroundPosition' |
+  'removeBackgroundBlendMode' | 'title' | 'demoCredentials' | 'loginPageInjections' |
+  'rememberMeDuration' | 'singleTheme' | 'customHeadItems'
+> & {
+  globalInjections: Pick<AdminForthConfigForFrontend['globalInjections'], 'everyPageBottom'>,
+};
+
 export interface GetBaseConfigResponse {
   user: UserData,
   resources: ResourceVeryShort[],
@@ -1343,6 +1352,24 @@ export interface GetBaseConfigResponse {
   adminUser: AdminUser,
   version: string,
 }
+
+
+export interface GetConfigResponseAnonymous {
+  loggedIn: false,
+  config: AdminForthPublicConfigForFrontend,
+}
+
+export interface GetConfigResponseAuthorized {
+  loggedIn: true,
+  config: AdminForthConfigForFrontend,
+  user: UserData,
+  resources: ResourceVeryShort[],
+  menu: AdminForthConfigMenuItem[],
+  adminUser: AdminUser,
+  version: string,
+}
+
+export type GetConfigResponse = GetConfigResponseAnonymous | GetConfigResponseAuthorized;
 
 export interface ColumnMinMaxValue { 
   [key: string]: { min: any, max: any } 
