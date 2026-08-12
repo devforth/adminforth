@@ -78,6 +78,17 @@ export const admin = new AdminForth({
     showBrandNameInSidebar: true,
     showBrandLogoInSidebar: true,
     emptyFieldPlaceholder: '-',
+    customPages: [
+      {
+        path: '/public-page',
+        component: {
+          file: '@@/PublicPage.vue',
+          meta: {
+            sidebarAndHeader: 'none',
+          },
+        },
+      },
+    ],
     styles:{
       colors: {
         light: {
