@@ -479,8 +479,44 @@ export interface IAdminForthDataSourceConnectorConstructor {
   new (): IAdminForthDataSourceConnectorBase;
 }
 
+/**
+ * Result of {@link IAdminForthAuth.authorizeByCookies}.
+ * Statuses are separated because caller decides how to answer: authenticated endpoints answer 401 on any
+ * non-ok status except `verifyFailed` (which is a server side problem and must not logout user),
+ * while noAuth endpoints just treat caller as anonymous.
+ */
+export type AdminUserAuthorizationResult =
+  | { status: 'ok', adminUser: AdminUser }
+  /** no auth cookie in request at all */
+  | { status: 'noToken' }
+  /** jwt is expired, malformed or its user does not exist anymore */
+  | { status: 'invalidToken' }
+  /** verification itself failed, e.g. database is not ready yet */
+  | { status: 'verifyFailed', error: any }
+  /** one of `adminUserAuthorize` hooks denied the user */
+  | { status: 'notAllowed', error?: string };
+
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
+
+  /**
+   * Takes auth jwt from cookies, verifies it and runs `adminUserAuthorize` hooks.
+   */
+  authorizeByCookies({ cookies, response, extra }: {
+    cookies: {key: string, value: string}[],
+    response: IAdminForthHttpResponse,
+    extra: HttpExtra,
+  }): Promise<AdminUserAuthorizationResult>;
+
+  /**
+   * Runs `adminUserAuthorize` hooks for already authenticated user.
+   */
+  runAdminUserAuthorizeHooks(adminUser: AdminUser, response: IAdminForthHttpResponse, extra: HttpExtra): Promise<{ allowed: boolean, error?: string }>;
+
+  /**
+   * Returns auth jwt from cookies, or null if it is not there.
+   */
+  getAuthCookie(cookies: {key: string, value: string}[]): string | null;
 
   issueJWT(payload: Object, type: string, expiresIn?: string | number): string;
 
