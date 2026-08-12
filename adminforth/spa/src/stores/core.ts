@@ -113,6 +113,14 @@ export const useCoreStore = defineStore('core', () => {
     await fetchConfig();
   }
 
+  /**
+   * @deprecated kept for plugins which were written when public config had own endpoint. Use fetchConfig instead.
+   * Old endpoint was noAuth and never redirected to login, so anonymous answer is not redirected here as well.
+   */
+  async function getPublicConfig() {
+    await fetchConfig({ redirectToLoginIfNotLoggedIn: false });
+  }
+
   async function refreshMenu() {
     await fetchMenuAndResource();
     await fetchMenuBadges();
@@ -289,6 +297,7 @@ export const useCoreStore = defineStore('core', () => {
     userFullname,
     userAvatarUrl,
     fetchConfig,
+    getPublicConfig,
     fetchMenuAndResource,
     refreshMenu,
     getLoginFormConfig,
