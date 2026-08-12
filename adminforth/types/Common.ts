@@ -1341,7 +1341,7 @@ export type AdminForthPublicConfigForFrontend = Pick<
   'removeBackgroundBlendMode' | 'title' | 'demoCredentials' | 'loginPageInjections' |
   'rememberMeDuration' | 'singleTheme' | 'customHeadItems'
 > & {
-  globalInjections: Pick<AdminForthConfigForFrontend['globalInjections'], 'sidebarTop' | 'everyPageBottom'>,
+  globalInjections: Pick<AdminForthConfigForFrontend['globalInjections'], 'everyPageBottom'>,
 };
 
 export interface GetBaseConfigResponse {
