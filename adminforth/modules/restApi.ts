@@ -6,7 +6,9 @@ import {
   AllowedActionValue,
   AllowedActions,
   AfterDataSourceResponseFunction,
+  AdminUserAuthorizeFunction,
   BeforeDataSourceRequestFunction,
+  IAdminForthEndpointHandlerInput,
   IAdminForthRestAPI,
   IAdminForthSort,
   HttpExtra,
@@ -27,7 +29,7 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
   AdminForthSortDirections,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved,
    AnnouncementBadgeResponse,
-   GetBaseConfigResponse,
+   GetConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
 import is_ip_private from 'private-ip'
@@ -671,6 +673,37 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
   }
+  private async getAdminUserFromRequest(
+    { body, query, headers, cookies, requestUrl, response }: Pick<IAdminForthEndpointHandlerInput, 'body' | 'query' | 'headers' | 'cookies' | 'requestUrl' | 'response'>
+  ): Promise<AdminUser | null> {
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
+    const jwts = cookies.filter(({ key }) => key === `adminforth_${brandSlug}_jwt`);
+    if (jwts.length > 1) {
+      afLogger.error('Multiple adminforth_jwt cookies provided');
+    }
+    const jwt = jwts[0]?.value;
+    if (!jwt) {
+      return null;
+    }
+
+    const adminUser = await this.adminforth.auth.verify(jwt, 'auth') as AdminUser | null;
+    if (!adminUser) {
+      return null;
+    }
+
+    for (const hook of listify(this.adminforth.config.auth.adminUserAuthorize as (AdminUserAuthorizeFunction[] | undefined))) {
+      const resp = await hook({
+        adminUser,
+        response,
+        adminforth: this.adminforth,
+        extra: { body, query, headers, cookies, requestUrl, meta: {}, response },
+      });
+      if (resp?.allowed === false || resp?.error) {
+        return null;
+      }
+    }
+    return adminUser;
+  }
 
   private normalizeJsonColumns(resource: AdminForthResource, record: any): string | null {
     for (const column of resource.columns) {
@@ -843,20 +876,27 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       noAuth: true,
       method: 'GET',
-      path: '/get_public_config',
-      handler: async ({ tr }) => {
-
-        // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
+      path: '/get_config',
+      handler: async ({ body, query, headers, cookies, requestUrl, tr, response }): Promise<GetConfigResponse>=> {
+        let username = ''
+        let userFullName = ''
 
         // find resource
         if (!this.adminforth.config.auth) {
           throw new Error('No config.auth defined');
         }
-        const usernameField = this.adminforth.config.auth.usernameField;
-        const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        const usernameColumn = resource.columns.find((col) => col.name === usernameField);
 
-        return {
+        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        response.setHeader('Pragma', 'no-cache');
+        response.setHeader('Expires', '0');
+        response.setHeader('Surrogate-Control', 'no-store');
+
+        const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+
+        const usernameField = this.adminforth.config.auth.usernameField;
+        const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
+
+        const public_config = {
           brandName: this.adminforth.config.customization.brandName,
           usernameFieldName: usernameColumn.label,
           loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
@@ -873,33 +913,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           singleTheme: this.adminforth.config.customization.singleTheme,
           customHeadItems: this.adminforth.config.customization.customHeadItems,
         };
-      },
-    });
 
-    server.endpoint({
-      method: 'GET',
-      path: '/get_base_config',
-      handler: async ({ adminUser, cookies, tr, response }): Promise<GetBaseConfigResponse>=> {
-        let username = ''
-        let userFullName = ''
-    
-        // find resource
-        if (!this.adminforth.config.auth) {
-          throw new Error('No config.auth defined');
+        // this endpoint is noAuth (login page needs public config), so here we repeat authorize flow
+        // of express server to understand whether caller is allowed to get base config as well
+        const adminUser = await this.getAdminUserFromRequest({ body, query, headers, cookies, requestUrl, response });
+
+        if (!adminUser) {
+          return { loggedIn: false, config: public_config };
         }
 
-        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        response.setHeader('Pragma', 'no-cache');
-        response.setHeader('Expires', '0');
-        response.setHeader('Surrogate-Control', 'no-store');
-
         const dbUser = adminUser.dbUser;
-        username = dbUser[this.adminforth.config.auth.usernameField]; 
+        username = dbUser[this.adminforth.config.auth.usernameField];
         userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
-        const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        
-        const usernameField = this.adminforth.config.auth.usernameField;
-        const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
@@ -958,20 +983,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const usersResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const defaultUserExists = await this.adminforth.resource(usersResource.resourceId).get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
 
-        
-        const publicPart = {
-          brandName: this.adminforth.config.customization.brandName,
-          usernameFieldName: usernameColumn.label,
-          loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
-          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
-          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
-          title: this.adminforth.config.customization?.title,
-          demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
-          singleTheme: this.adminforth.config.customization.singleTheme,
-          customHeadItems: this.adminforth.config.customization.customHeadItems,
-        }
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
@@ -1048,16 +1059,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         return {
+          loggedIn: true,
+          config: {
+            ...public_config,
+            ...loggedInPart,
+          },
           user: userData,
           resources: this.adminforth.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
           })),
           menu: newMenu,
-          config: { 
-            ...publicPart,
-            ...loggedInPart,
-          },
           adminUser,
           version: ADMINFORTH_VERSION,
         };
