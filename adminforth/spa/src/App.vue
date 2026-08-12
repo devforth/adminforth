@@ -197,7 +197,7 @@ import AcceptModal from './components/AcceptModal.vue';
 import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { createHead } from 'unhead'
-import { getCustomComponent } from '@/utils';
+import { getCustomComponent, handleNotAuthorized } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
 import { initFrontedAPI } from '@/adminforth';
@@ -271,11 +271,24 @@ async function initRouter() {
   routerIsReady.value = true;
 }
 
+// used by Sidebar to reload menu, initial load is done by loadConfig below
 async function loadMenu() {
   await initRouter();
   if (route.meta.sidebarAndHeader !== 'none') {
     // for custom layouts we don't need to fetch menu
     await coreStore.fetchMenuAndResource();
+  }
+  loginRedirectCheckIsReady.value = true;
+}
+
+async function loadConfig() {
+  const resp = await coreStore.fetchConfig({ redirectToLoginIfNotLoggedIn: false });
+  publicConfigLoaded.value = true;
+
+  await initRouter();
+  if (resp && !resp.loggedIn && route.meta.sidebarAndHeader !== 'none') {
+    // for custom layouts we don't force login, they are allowed to be rendered for anonymous user
+    await handleNotAuthorized();
   }
   loginRedirectCheckIsReady.value = true;
 }
@@ -341,16 +354,9 @@ watch(dropdownUserButton, async (dropdownUserButton) => {
   }
 })
 
-async function loadPublicConfig() {
-  await coreStore.getPublicConfig();
-  publicConfigLoaded.value = true;
-}
-
-
 // initialize components based on data attribute selectors
 onMounted(async () => {
-  await loadPublicConfig(); // run this in async mode
-  await loadMenu(); // and this
+  await loadConfig();
   // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
   await initRouter();
   document.documentElement.setAttribute('data-theme', theme.value);
