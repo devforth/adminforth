@@ -352,14 +352,6 @@ class ExpressServer implements IExpressHttpServer {
     return `http://127.0.0.1:${(address as AddressInfo).port}`;
   }
 
-  async processAuthorizeCallbacks(adminUser: AdminUser, toReturn: { error?: string, allowed: boolean }, response: Response, extra: HttpExtra) {
-    const { allowed, error } = await this.adminforth.auth.runAdminUserAuthorizeHooks(adminUser, response as any, extra);
-    if (!allowed || error) {
-      // delete all items from toReturn and add these:
-      toReturn.allowed = allowed;
-      toReturn.error = error;
-    }
-  }
 
   runInRequestContext(req, callback) {
     return runWithRequestContext({
