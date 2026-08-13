@@ -204,3 +204,19 @@ model key_values {
   collection  String?
   expire_at   DateTime?
 }
+
+model crud_manual_approve {
+  id           String   @id
+  record_id    String?
+  resource_id  String
+  action       String
+  data         Json
+  user_id      String
+  responser_id String?
+  status       Int      @default(1)
+  created_at   DateTime @default(now())
+  extra        Json?
+
+  @@index([status, created_at])
+  @@index([resource_id])
+}
