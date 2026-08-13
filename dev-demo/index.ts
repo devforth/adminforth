@@ -33,6 +33,7 @@ import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
 import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
 import key_value_resource from './resources/key_value_resource.js';
+import crudManualApproveResource from './resources/crud_manual_approve.js';
 
 import { logger } from '../adminforth/modules/logger.js';
 
@@ -163,6 +164,7 @@ export const admin = new AdminForth({
     dashboardConfigsResource,
     adminExternalIdentitiesResource,
     key_value_resource,
+    crudManualApproveResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -261,6 +263,11 @@ export const admin = new AdminForth({
       label: 'Key-Value Store',
       icon: 'material-symbols:key',
       resourceId: 'key_values',
+    },
+    {
+      label: 'Approvals',
+      icon: 'flowbite:clipboard-check-solid',
+      resourceId: 'crud_manual_approve',
     }
   ],
   globalPlugins: globalPlugins,
