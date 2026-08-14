@@ -18,10 +18,8 @@ Installation:
 ```bash
 pnpm add @adminforth/email-password-reset
 pnpm add @adminforth/email-adapter-aws-ses
-pnpm add @adminforth/key-value-adapter-ram
 ```
 
->⚠️Note: we use key/value adapter to store used password reset token for validity period and we recomend to use stateful adapter like Redis in production, because stateless adapter (like key/value RAM) is cleared after server restart and password reset token could be re-used for the second time 
 
 Import plugin:
 
@@ -45,7 +43,6 @@ Add plugin to user resource:
 ```typescript ./resources/adminuser.ts
 import EmailResetPasswordPlugin from '@adminforth/email-password-reset';
 import EmailAdapterAwsSes from '@adminforth/email-adapter-aws-ses';
-import KeyValueAdapterRam from '@adminforth/key-value-adapter-ram';
 
 ...
 plugins: [
@@ -72,7 +69,6 @@ plugins: [
       accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
     }),
-    userResetTokensKeyValueAdapter: new KeyValueAdapterRam(),
   }),
 ]
 ```
@@ -124,7 +120,6 @@ plugins: [
       //baseUrl is optional, if not provided, will default to "https://api.mailgun.net" but if you are using Mailgun EU, you should use "https://api.eu.mailgun.net" instead
       baseUrl: process.env.MAILGUN_REGION_URL as string,
     }),
-    userResetTokensKeyValueAdapter: new KeyValueAdapterRam(),
   }),
 ]
 ```
