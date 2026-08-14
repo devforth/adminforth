@@ -208,6 +208,11 @@ export default {
         role: 'user',
       },
       expectedOrigin: process.env.RESET_PASSWORD_ORIGIN || 'http://localhost:3123',
+      confirmEmails: {
+        emailConfirmedField: 'email_confirmed',
+        sendFrom: 'aboba@ab.oba',
+        adapter: fakeEmailAdapter
+      }
     }),
     OAuthPlugin,
     new UserSoftDelete({

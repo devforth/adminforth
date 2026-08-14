@@ -9,7 +9,7 @@ datasource db {
 model adminuser {
   id            String     @id
   email         String     @unique
-  password_hash String
+  password_hash String?
   role          String
   created_at    DateTime
   secret2fa     String?
