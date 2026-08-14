@@ -39,6 +39,7 @@ import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './mod
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
+import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
 export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
@@ -726,6 +727,8 @@ class AdminForth implements IAdminForth {
   ): Promise<CreateResourceRecordResult> {
     const { resource, record, adminUser, extra, response } = params;
 
+    normalizeRecordValues(resource, record);
+
     const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
@@ -816,6 +819,7 @@ class AdminForth implements IAdminForth {
   ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
     const dataToUse = updates || record;
+    normalizeRecordValues(resource, dataToUse);
     const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
       return { error: err };
