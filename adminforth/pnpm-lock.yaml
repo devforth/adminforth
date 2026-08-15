@@ -38,6 +38,9 @@ importers:
       chalk:
         specifier: ^5.4.1
         version: 5.6.2
+      chokidar:
+        specifier: ^4.0.3
+        version: 4.0.3
       connection-string:
         specifier: ^4.4.0
         version: 4.4.0
@@ -56,9 +59,6 @@ importers:
       express:
         specifier: ^4.21.0 || ^5.0.0
         version: 5.2.1
-      filewatcher:
-        specifier: ^3.0.1
-        version: 3.0.1
       fs-extra:
         specifier: ^11.2.0
         version: 11.3.4
