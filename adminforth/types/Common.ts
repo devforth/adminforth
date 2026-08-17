@@ -726,6 +726,16 @@ export interface AdminForthResourceColumnInputCommon {
   name: string,
 
   /**
+   * Normalizes a column value before it is saved or used as the username during login.
+   *
+   * @example
+   * ```ts
+   * normalize: (value: string) => value.trim().toLowerCase(),
+   * ```
+   */
+  normalize?: (value: any) => any,
+
+  /**
    * How column can be labled in the admin panel.
    * Use it for renaming columns. Defaulted to column name with Uppercased first letter.
    */

@@ -31,7 +31,7 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
    GetConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
-import is_ip_private from 'private-ip'
+import { normalizeColumnValue } from './columnValueNormalizer.js';
 
 
 async function resolveBoolOrFn(
@@ -760,6 +760,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           throw new Error('No config.auth defined we need it to find user, please follow the docs');
         }
         const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+        const usernameColumn = userResource.columns.find((col) => col.name === this.adminforth.config.auth.usernameField);
+        const normalizedUsername = normalizeColumnValue(usernameColumn, username);
         // if there is no passwordHashField, in columns, add it, with backendOnly and showIn: []
         if (!userResource.dataSourceColumns.find((col) => col.name === this.adminforth.config.auth.passwordHashField)) {
           userResource.dataSourceColumns.push({
@@ -775,7 +777,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           await this.adminforth.connectors[userResource.dataSource].getData({
             resource: userResource,
             filters: { operator: AdminForthFilterOperators.AND, subFilters: [
-              { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
+              { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: normalizedUsername },
             ]},
             limit: 1,
             offset: 0,
@@ -795,7 +797,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           adminUser = { 
             dbUser: userRecord,
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
-            username,
+            username: normalizedUsername,
           };
 
           const expireInDuration = rememberMe 
@@ -811,7 +813,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             this.adminforth.auth.setAuthCookie({ 
               expireInDuration,
               response, 
-              username, 
+              username: normalizedUsername,
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
             });
           } 
