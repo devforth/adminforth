@@ -7,6 +7,20 @@ afterAll(async () => {
   await closeApplication();
 });
 
+describe('POST /login', () => {
+  it('normalizes the username using the configured column normalizer', async () => {
+    const res = await agent
+      .post('/adminapi/v1/login')
+      .send({
+        username: '  ADMINFORTH  ',
+        password: 'adminforth',
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+  });
+});
+
 describe('POST /create_record', () => {
   const requestBody: any ={
     "resourceId": "cars_sl",
@@ -378,7 +392,7 @@ describe('POST /update_record', () => {
       body_type: "sedan",
     });
   });
-    
+
   it('should throw error, that resource is not found', async () => {
     const res = await agent
       .set('Cookie', authCookie)
