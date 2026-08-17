@@ -153,4 +153,4 @@ This will always run latest version of adminforth package.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=devforth/adminforth&type=date&legend=top-left)](https://www.star-history.com/#devforth/adminforth&type=date&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=devforth/adminforth&type=date&legend=top-left)](https://star-history.dera.page/#devforth/adminforth&type=date&legend=top-left)
