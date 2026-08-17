@@ -12,6 +12,7 @@ import {
   IAdminForthSort,
   HttpExtra,
   IAdminForthAndOrFilter,
+  IAggregationRule,
   BackendOnlyInput,
   Filters,
 } from "../types/Back.js";
@@ -264,6 +265,33 @@ export function rejectApiRawFilters(filters: any): { error: string } | undefined
   if (hasApiRawFilter(filters)) {
     return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
   }
+}
+
+/**
+ * Collects every column name referenced anywhere in a (possibly nested) filter tree,
+ * so the caller can check those columns against the visibility rules.
+ */
+function collectFilterFields(filters: any, fields: Set<string> = new Set()): Set<string> {
+  if (!filters || typeof filters !== 'object') {
+    return fields;
+  }
+
+  if (Array.isArray(filters)) {
+    filters.forEach((filter) => collectFilterFields(filter, fields));
+    return fields;
+  }
+
+  if (typeof filters.field === 'string') {
+    fields.add(filters.field);
+  }
+  if (typeof filters.rightField === 'string') {
+    fields.add(filters.rightField);
+  }
+  if (Array.isArray(filters.subFilters)) {
+    filters.subFilters.forEach((filter) => collectFilterFields(filter, fields));
+  }
+
+  return fields;
 }
 
 function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
@@ -1721,7 +1749,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/aggregate',
-      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation.',
+      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation. Requires list and show access to the resource, and only accepts columns the user can read on the show view: backend-only columns and columns hidden from the show view are rejected.',
       request_schema: aggregateRequestSchema,
       response_schema: aggregateResponseSchema,
       handler: async ({ body, adminUser, headers }) => {
@@ -1750,9 +1778,73 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           this.adminforth
         );
 
+        // aggregation reads a whole set of records at once, so it needs list access
         const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
         if (!allowed) {
           return { error };
+        }
+
+        // ...and min/max/groupBy return raw per-field values, which is what the show view does,
+        // so a resource with no reachable show view must not be aggregatable either
+        const { allowed: showAllowed, error: showError } = checkAccess(AllowedActionsEnum.show, allowedActions);
+        if (!showAllowed) {
+          return { error: showError };
+        }
+
+        const columnCtx = {
+          adminUser,
+          resource,
+          meta,
+          source: ActionCheckSource.ShowRequest,
+          adminforth: this.adminforth,
+        };
+
+        // a column may only take part in an aggregation if the user could have read the
+        // very same value from the show view
+        const columnExposureError = async (fieldName: string, context: string): Promise<string | null> => {
+          const column = resource.columns.find((col) => col.name === fieldName);
+          if (!column) {
+            return `${context}: unknown column "${fieldName}"`;
+          }
+          if (await isBackendOnly(column, columnCtx)) {
+            return `${context}: column "${fieldName}" cannot be aggregated (backendOnly is true).`;
+          }
+          if (!await isShown(column, 'show', columnCtx)) {
+            return `${context}: column "${fieldName}" cannot be aggregated (showIn.show is false).`;
+          }
+          return null;
+        };
+
+        for (const [alias, rule] of Object.entries((aggregations || {}) as { [alias: string]: IAggregationRule })) {
+          // plain count does not reference any column
+          if (!rule?.field) {
+            continue;
+          }
+          const fieldError = await columnExposureError(rule.field, `Aggregation "${alias}"`);
+          if (fieldError) {
+            return { error: fieldError };
+          }
+        }
+
+        const groupByRules = Array.isArray(groupBy) ? groupBy : (groupBy ? [groupBy] : []);
+        for (const groupByRule of groupByRules) {
+          if (!groupByRule?.field) {
+            continue;
+          }
+          const fieldError = await columnExposureError(groupByRule.field, 'GroupBy');
+          if (fieldError) {
+            return { error: fieldError };
+          }
+        }
+
+        // filters are not returned to the caller, but combined with an aggregation they turn
+        // into an oracle which reads a value out one comparison at a time, so backendOnly
+        // columns are off limits here as well
+        for (const fieldName of collectFilterFields(filters)) {
+          const column = resource.columns.find((col) => col.name === fieldName);
+          if (column && await isBackendOnly(column, columnCtx)) {
+            return { error: `Filter: column "${fieldName}" cannot be used (backendOnly is true).` };
+          }
         }
 
         // normalize filters same way as get_resource_data
