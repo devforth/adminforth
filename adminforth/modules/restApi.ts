@@ -1274,8 +1274,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     }
                     if (col.foreignResource) {
                       const foreignResource = this.adminforth.config.resources.find((res) => res.resourceId === col.foreignResource.resourceId);
-                      const allowedActionsForForeignResource = await interpretResource(adminUser, foreignResource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
-                      col.foreignResource.allowedActions = allowedActionsForForeignResource.allowedActions;
+                      try {
+                        const allowedActionsForForeignResource = await interpretResource(adminUser, foreignResource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
+                        col.foreignResource.allowedActions = allowedActionsForForeignResource.allowedActions;
+                      } catch (error) {
+                        // error is not critical, user probably provided specific config
+                      }
                     }
                     if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
                       col.suggestOnCreate = await inCol.suggestOnCreate({ adminUser });
