@@ -938,6 +938,33 @@ describe('POST /get_resource_data', () => {
       expect(res.body.resource.dataSourceColumns).toBeUndefined();
       expect(res.body.resource.columns.find((column: any) => column.name === 'model').listCssClass).toBe('text-lightPrimary dark:text-darkPrimary');
     });
+
+    it('resolves allowed actions for every polymorphic foreign resource', async () => {
+      const res = await agent
+        .set('Cookie', authCookie)
+        .post('/adminapi/v1/get_resource')
+        .send({
+          resourceId: 'polymorphic_car_refs',
+        });
+
+      expect(res.status).toEqual(200);
+      expect(res.body.error).toBeUndefined();
+
+      const recordIdColumn = res.body.resource.columns.find((column: any) => column.name === 'record_id');
+      expect(recordIdColumn.foreignResource.allowedActions).toBeUndefined();
+      expect(recordIdColumn.foreignResource.polymorphicResources).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            resourceId: 'cars_sl',
+            allowedActions: expect.objectContaining({ show: true }),
+          }),
+          expect.objectContaining({
+            resourceId: 'cars_sl_no_show',
+            allowedActions: expect.objectContaining({ show: false }),
+          }),
+        ])
+      );
+    });
   });
 
   it('should throw error, that resource is not found', async () => {
