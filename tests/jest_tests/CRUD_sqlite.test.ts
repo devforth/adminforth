@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { agent, app, closeApplication } from './testApp';
+import { admin, agent, app, closeApplication } from './testApp';
 
 let authCookie: string;
 
@@ -907,6 +907,75 @@ describe('POST /get_resource_data', () => {
     });
     expect(res.body.data[0]._label.startsWith('Polymorphic car refs ')).toBe(true);
     expect(res.body.data[0].resource_id).toBeUndefined();
+  });
+
+  it('resolves polymorphic records by resource id and record id', async () => {
+    const collisionEmail = 'polymorphic-collision@example.com';
+    const collisionRecordId = 'polymorphic-shared-record-id';
+    const createdAt = new Date().toISOString();
+    const carReferenceId = 'polymorphic-car-collision';
+    const userReferenceId = 'polymorphic-user-collision';
+
+    const carResult = await admin.resource('cars_sl').create({
+      id: collisionRecordId,
+      model: 'Collision Car',
+      price: 1234,
+      created_at: createdAt,
+      mileage: 0,
+    });
+    const userResult = await admin.resource('adminuser').create({
+      id: collisionRecordId,
+      email: collisionEmail,
+      role: 'user',
+      created_at: createdAt,
+    });
+    const carReferenceResult = await admin.resource('polymorphic_car_refs').create({
+      id: carReferenceId,
+      created_at: createdAt,
+      resource_id: 'car',
+      record_id: collisionRecordId,
+      image_path: 'car-collision.png',
+    });
+    const userReferenceResult = await admin.resource('polymorphic_car_refs').create({
+      id: userReferenceId,
+      created_at: createdAt,
+      resource_id: 'admin_user',
+      record_id: collisionRecordId,
+      image_path: 'user-collision.png',
+    });
+
+    expect(carResult.ok).toBe(true);
+    expect(userResult.ok).toBe(true);
+    expect(carReferenceResult.ok).toBe(true);
+    expect(userReferenceResult.ok).toBe(true);
+
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/get_resource_data')
+      .send({
+        resourceId: 'polymorphic_car_refs',
+        source: 'list',
+        limit: 2,
+        offset: 0,
+        sort: [],
+        filters: [{ field: 'id', operator: 'in', value: [carReferenceId, userReferenceId] }],
+        columns: ['id', 'resource_id', 'record_id'],
+      });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: carReferenceId,
+          record_id: expect.objectContaining({ label: '🚘 Collision Car 🚗' }),
+        }),
+        expect.objectContaining({
+          id: userReferenceId,
+          record_id: expect.objectContaining({ label: `👤 ${collisionEmail}` }),
+        }),
+      ])
+    );
   });
 
   describe('POST /get_resource', () => {

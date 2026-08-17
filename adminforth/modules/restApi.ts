@@ -1591,7 +1591,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }), {});
               targetDataMap = Object.keys(targetData).reduce((tdAcc, polymorphicOnValue) => ({
                 ...tdAcc,
-                ...targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
+                [polymorphicOnValue]: targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
                   dAcc[item[targetResourcePkFields[polymorphicOnValue]]] = {
                     label: targetResources[polymorphicOnValue].recordLabel(item),
                     pk: item[targetResourcePkFields[polymorphicOnValue]],
@@ -1608,7 +1608,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   item[col.name] = item[col.name].map((i) => targetDataMap[i]);
                 }
               } else {
-                item[col.name] = targetDataMap[item[col.name]];
+                const itemTargetDataMap = col.foreignResource.resourceId
+                  ? targetDataMap
+                  : targetDataMap[item[col.foreignResource.polymorphicOn]];
+                item[col.name] = itemTargetDataMap?.[item[col.name]];
               }
             });
           })
