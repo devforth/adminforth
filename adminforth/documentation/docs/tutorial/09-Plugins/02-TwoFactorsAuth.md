@@ -826,7 +826,11 @@ Next, you need to create a new resource for passkeys:
       }
     ],
     plugins: [],
-    options: {},
+    options: {
+      // The passkey table holds login credentials, not business data: the plugin manages every
+      // row through its own endpoints, so nobody should reach it through the resource API.
+      allowedActions: { all: false },
+    },
   } as AdminForthResourceInput;
 ```
 
