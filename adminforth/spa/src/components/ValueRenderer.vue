@@ -31,7 +31,7 @@
           {{ foreignResource.label }}
         </RouterLink>
       </span>
-      <RouterLink v-else-if="record[column.name] && column.foreignResource.allowedActions?.show" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
+      <RouterLink v-else-if="record[column.name] && canShowForeignRecord" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
           :to="{
             name: 'resource-show',
             params: {
@@ -121,7 +121,7 @@ import timezone from 'dayjs/plugin/timezone';
 import {checkEmptyValues} from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import "vue3-json-viewer/dist/vue3-json-viewer.css";
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
 const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => module.JsonViewer))
 
@@ -139,6 +139,16 @@ const props = defineProps<{
   column: any,
   record: any
 }>();
+
+const canShowForeignRecord = computed(() => {
+  if (props.column.foreignResource.resourceId) {
+    return props.column.foreignResource.allowedActions?.show;
+  }
+
+  return props.column.foreignResource.polymorphicResources.find(
+    (resource: any) => resource.whenValue === props.record[props.column.foreignResource.polymorphicOn]
+  )?.allowedActions?.show;
+});
 
 function formatDateTime(date: string) {
   if (!date) return '';

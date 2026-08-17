@@ -44,6 +44,10 @@ export default {
             resourceId: 'cars_sl',
             whenValue: 'car',
           },
+          {
+            resourceId: 'cars_sl_no_show',
+            whenValue: 'car_without_show_access',
+          },
         ],
       },
     },
