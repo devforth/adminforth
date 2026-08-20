@@ -13,6 +13,21 @@ Plugin allows to reset password for admin users who forgot their password by sen
 
 > ⚠️ If user with email does not exist, plugin will still show to user success message to prevent email enumeration.
 
+## Email normalization
+
+The plugin applies the column's [`normalize`](/docs/tutorial/Customization/standardPagesTuning/#normalize-values-before-saving) callback before validating and looking up the submitted email. It uses the normalized value in the reset token, for token confirmation, and as the email delivery address.
+
+For example, configure the email column to make password reset and login insensitive to surrounding whitespace and letter case:
+
+```typescript title="./resources/adminuser.ts"
+{
+  name: 'email',
+  required: true,
+  isUnique: true,
+  normalize: (value: string) => value.trim().toLowerCase(),
+}
+```
+
 Installation:
 
 ```bash
