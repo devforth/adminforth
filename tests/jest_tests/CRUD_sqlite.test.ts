@@ -122,6 +122,21 @@ describe('POST /create_record', () => {
     expect(res.body.error).toBeUndefined();
   });
 
+  it('lists only requested data source columns through the operational API', async () => {
+    const records = await admin.resource('cars_sl').list(
+      [Filters.EQ('id', createdRecordId)],
+      1,
+      0,
+      [],
+      ['model', 'price'],
+    );
+
+    expect(records).toEqual([{
+      model: 'Abobus amogus',
+      price: 1234,
+    }]);
+  });
+
   it('throw an error, that record with existing id cannot be created', async () => {
     const res = await agent
       .set('Cookie', authCookie)
