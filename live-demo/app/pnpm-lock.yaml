@@ -10,79 +10,79 @@ importers:
     dependencies:
       '@adminforth/agent':
         specifier: ^2.7.4
-        version: 2.7.4(adminforth@3.15.0)(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)
+        version: 2.7.4(adminforth@3.17.2)(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.3
-        version: 1.3.3(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.15.0)(ws@8.21.3)(zod@4.4.3)
+        version: 1.3.3(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.17.2)(ws@8.21.3)(zod@4.5.4)
       '@adminforth/audit-log':
         specifier: ^1.10.1
-        version: 1.10.1(adminforth@3.15.0)
+        version: 1.10.1(adminforth@3.17.2)
       '@adminforth/auto-remove':
         specifier: ^1.0.20
-        version: 1.0.20(adminforth@3.15.0)
+        version: 1.0.20(adminforth@3.17.2)
       '@adminforth/background-jobs':
         specifier: ^1.20.2
-        version: 1.20.2(adminforth@3.15.0)(vue@3.5.38(typescript@5.9.3))
+        version: 1.20.2(adminforth@3.17.2)(vue@3.5.38(typescript@5.9.3))
       '@adminforth/bulk-ai-flow':
         specifier: ^1.27.3
-        version: 1.27.3(adminforth@3.15.0)
+        version: 1.27.3(adminforth@3.17.2)
       '@adminforth/chat-gpt':
         specifier: ^1.0.20
         version: 1.0.20
       '@adminforth/clone-row':
         specifier: ^1.2.22
-        version: 1.2.22(adminforth@3.15.0)
+        version: 1.2.22(adminforth@3.17.2)
       '@adminforth/completion-adapter-openai-responses':
         specifier: ^2.0.27
-        version: 2.0.27(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.15.0)(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)(zod@4.4.3)
+        version: 2.0.27(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.17.2)(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)(zod@4.5.4)
       '@adminforth/connector-sqlite':
         specifier: ^1.0.6
-        version: 1.0.6(adminforth@3.15.0)
+        version: 1.0.6(adminforth@3.17.2)
       '@adminforth/email-password-reset':
         specifier: ^1.3.25
-        version: 1.3.25(adminforth@3.15.0)
+        version: 1.3.25(adminforth@3.17.2)
       '@adminforth/foreign-inline-list':
         specifier: ^1.11.4
-        version: 1.11.4(adminforth@3.15.0)
+        version: 1.11.4(adminforth@3.17.2)
       '@adminforth/i18n':
         specifier: ^2.3.0
-        version: 2.3.0(adminforth@3.15.0)
+        version: 2.3.0(adminforth@3.17.2)
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.18
-        version: 1.0.18(adminforth@3.15.0)
+        version: 1.0.18(adminforth@3.17.2)
       '@adminforth/image-vision-adapter-openai':
         specifier: ^1.1.6
-        version: 1.1.6(adminforth@3.15.0)
+        version: 1.1.6(adminforth@3.17.2)
       '@adminforth/import-export':
         specifier: ^1.9.0
-        version: 1.9.0(adminforth@3.15.0)
+        version: 1.9.0(adminforth@3.17.2)
       '@adminforth/login-captcha':
         specifier: ^1.3.3
-        version: 1.3.3(adminforth@3.15.0)
+        version: 1.3.3(adminforth@3.17.2)
       '@adminforth/login-captcha-adapter-cloudflare':
         specifier: ^1.1.5
-        version: 1.1.5(adminforth@3.15.0)
+        version: 1.1.5(adminforth@3.17.2)
       '@adminforth/rich-editor':
         specifier: ^2.1.2
-        version: 2.1.2(adminforth@3.15.0)
+        version: 2.1.2(adminforth@3.17.2)
       '@adminforth/storage-adapter-amazon-s3':
         specifier: ^1.2.0
-        version: 1.2.0(adminforth@3.15.0)
+        version: 1.2.0(adminforth@3.17.2)
       '@adminforth/text-complete':
         specifier: ^2.1.1
-        version: 2.1.1(adminforth@3.15.0)
+        version: 2.1.1(adminforth@3.17.2)
       '@adminforth/two-factors-auth':
         specifier: ^4.4.4
-        version: 4.4.4(adminforth@3.15.0)
+        version: 4.4.4(adminforth@3.17.2)
       '@adminforth/upload':
         specifier: ^2.17.2
-        version: 2.17.2(adminforth@3.15.0)
+        version: 2.17.2(adminforth@3.17.2)
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
       adminforth:
-        specifier: ^3.15.0
-        version: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+        specifier: ^3.17.2
+        version: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       cldr-core:
         specifier: ^48.2.0
         version: 48.2.0
@@ -98,7 +98,7 @@ importers:
         version: 6.19.3(typescript@5.9.3)
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12)(typescript@5.9.3)(yaml@2.9.0)
+        version: 8.5.1(jiti@2.7.0)(postcss@8.5.28)(tsx@4.23.12)(typescript@5.9.3)(yaml@2.9.0)
       tsx:
         specifier: ^4.23.12
         version: 4.23.12
@@ -1227,6 +1227,9 @@ packages:
   '@types/node@26.2.0':
     resolution: {integrity: sha512-5IviulTZeRNp2vAJ514cc/HUlY5nZ9fCbq9DMyC52BrhFZACo3nI0R7qBxhQmo/d27NFe96ur/b7Wwxklda+kg==}
 
+  '@types/node@26.4.1':
+    resolution: {integrity: sha512-k97ENvZWtvA6yqz5/FS6a7duDgOPEeOQOc2iKS/nY6mX6qJUKtLnWzQS+Xj6tXweyj6ZcTAK2Qecetnvi9nCLA==}
+
   '@types/notp@2.0.5':
     resolution: {integrity: sha512-ZsZS0PYUa6ZE4K3yOGerBvaxCp4ePf6ZmkFbPeilcqz2Ui/lmXox7KlRt7XZkXzqUgXhFLkc09ixyVmFLCU3gQ==}
 
@@ -1303,8 +1306,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adminforth@3.15.0:
-    resolution: {integrity: sha512-Vxh/55fuoVp69DWgvRcOEPik3ZZ7G68POhn3c9NBaIs13i2flLwlWiIIn8xAkEea1Fsf6QfbhK0LqtG4cd+AvA==}
+  adminforth@3.17.2:
+    resolution: {integrity: sha512-MXaCVpp6EU5IEbUp3MRzt0o/DbCxyfreIFBifbFp664RPnNeOn+YqxLgcOMZS/A9QbPg+denaW9AEnYoU+DCLg==}
     hasBin: true
     peerDependencies:
       '@adminforth/connector-clickhouse': ^1.0.7
@@ -1346,8 +1349,8 @@ packages:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
 
-  ansi-regex@6.2.2:
-    resolution: {integrity: sha512-Bq3SmSpyFHaWjPk8If9yc6svM8c56dB5BAtW4Qbw5jHTwwXXcTLoRMkpDJp6VL0XzlWaCHTXrkFURMYmD0sLqg==}
+  ansi-regex@6.3.0:
+    resolution: {integrity: sha512-WpDfL7NO6j7tH88IDBNVdUJxDh9nmCteAVW9dsep846XdwF4naCBK+/tGLX3KJgcpgMRXCFlTM2hKGoK9FsdrQ==}
     engines: {node: '>=12'}
 
   ansi-styles@4.3.0:
@@ -1375,8 +1378,8 @@ packages:
     resolution: {integrity: sha512-O0yuUDnZeQDL+ncNGlJ78BiO4jnYI3bvMsD5prT0/nsgijG/LpNBIr63gTjVTNsiGkgQhiyCShTgxt8oXOrklA==}
     engines: {node: '>=4'}
 
-  ast-types@0.16.1:
-    resolution: {integrity: sha512-6t10qk83GOG8p0vKmaCr8eiilZwO171AvbROMtvvNiwrTly62t+7XkA8RdIIVbpMhCASAsxgAzdRSwh6nw/5Dg==}
+  ast-types@0.16.3:
+    resolution: {integrity: sha512-FvWoWYfSCM6kRxCSH+MGLHIKKGRL6A6AW7Zek2O32REPQRdg131428uRTKMBYAeRd3XXAaHDS60Wpri7CdKDrA==}
     engines: {node: '>=4'}
 
   async-mutex@0.5.0:
@@ -1420,8 +1423,8 @@ packages:
   browser-level@3.0.0:
     resolution: {integrity: sha512-kGXtLh29jMwqKaskz5xeDLtCtN1KBz/DbQSqmvH7QdJiyGRC7RAM8PPg6gvUiNMa+wVnaxS9eSmEtP/f5ajOVw==}
 
-  bson@7.3.1:
-    resolution: {integrity: sha512-h/C0qe6857pQhcSJHLfsR1uYGj98Ge3wKAD3Ed9KqH3wcVh+BM4Jq4xISD7vs9OPuT07n+q3QQVjslJ286j6ag==}
+  bson@7.3.2:
+    resolution: {integrity: sha512-1w0ra+ho1cuE+w8jzwgzTFIimFtCfZeCoOsvIPQg6uyFCsp8M29U7bNNf5GrFh88TXbYg1g3TyKUGpd6O7q6zA==}
     engines: {node: '>=20.19.0'}
 
   buffer-equal-constant-time@1.0.1:
@@ -1616,6 +1619,9 @@ packages:
   dayjs@1.11.21:
     resolution: {integrity: sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==}
 
+  dayjs@1.11.23:
+    resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
+
   debounce@1.2.1:
     resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
 
@@ -1802,8 +1808,8 @@ packages:
     resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
     engines: {node: '>=8.0.0'}
 
-  fast-copy@4.0.4:
-    resolution: {integrity: sha512-eVAiWVNPSEGIzDl5yPuLrx8fNMogScXvD9xp1Kzd41FjRIz2I3sSIcxsFeM5EzFfHAfobdvs8ZySffUopljvIA==}
+  fast-copy@4.1.1:
+    resolution: {integrity: sha512-A4QTJmuiztpGtr6AMeJts9R4hbj2ZBUwtOaKrG6rw2y7t6+IaJKjz5M3XDs8BUznxDH43FVc6A0y/gWlMl4UtA==}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -1811,8 +1817,8 @@ packages:
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
-  fast-uri@3.1.5:
-    resolution: {integrity: sha512-gHwA1O9LDIcKunMKhObS/HimwtehO1nPUECKAu5TpKgaO19fcWEl4bliWe1jWxVFvIXztJjjQ4L8XQ1EU9f7Jw==}
+  fast-uri@3.1.7:
+    resolution: {integrity: sha512-dOvZVzjdZdz7phd9v6jCbwxrBW3fK6n8Rc0CtdmM4bumzMnxywBYhuph6J819RRw/ku+rLbelwfMunktuzVVHg==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -2031,8 +2037,8 @@ packages:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
     engines: {node: '>=12'}
 
-  is-plain-object@5.0.0:
-    resolution: {integrity: sha512-VRSzKkbMm5jMDoKLbltAkFQ5Qr7VDiTFGXxYFXXowVj387GeGNOCsOH6Msy00SGZ3Fp84b1Naa1psqgcCIEP5Q==}
+  is-plain-object@5.1.0:
+    resolution: {integrity: sha512-bUi/yjmtKYcRVUtWRGr0UA6xEFh2I6zWUwMrUXB3s7bmYCaZ8a+0ZsTRkrawh/mzlSD1Y0Ph8bp/U+TvBpWDNw==}
     engines: {node: '>=0.10.0'}
 
   is-promise@4.0.0:
@@ -2237,6 +2243,10 @@ packages:
     resolution: {integrity: sha512-6rdyFg2kLrMh9Jee7/BMPuV9lEAd7lLW2YUpF9/YxR7njyoUwwQ0ZPh3TaIY50Sw6vlyD2HW3wGOkTS4P79xrQ==}
     engines: {node: '>= 10.16.0'}
 
+  multer@2.3.0:
+    resolution: {integrity: sha512-cjNbm3sttszgZeGfJR124D+jFEfkXCVAsoPBmFn9X7UxmDSFHWqE2CoEj0vrmSpuAFnqWR1Szcm9QTsiHr60Xw==}
+    engines: {node: '>= 10.16.0'}
+
   mustache@4.2.0:
     resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
     hasBin: true
@@ -2368,6 +2378,10 @@ packages:
     resolution: {integrity: sha512-0trZaiG7Y7kN/Egy9a8j47t9osC0Tch4PaIWd9yGF6bvmlk7muExRvGNYb8sXBwEKMoNKsbNN9P8EefuQekE4Q==}
     engines: {node: '>=20'}
 
+  p-limit@7.3.2:
+    resolution: {integrity: sha512-Ll0w3fU24vYpXoZmjjZIee6bJQDgG0oAyo1PdmFYI8UDwJJddaHAypxIH9avUu+t+lSsAwKVsb1jDCMIIChliw==}
+    engines: {node: '>=20'}
+
   p-queue@6.6.2:
     resolution: {integrity: sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==}
     engines: {node: '>=8'}
@@ -2474,8 +2488,8 @@ packages:
       yaml:
         optional: true
 
-  postcss@8.5.26:
-    resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
+  postcss@8.5.28:
+    resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
   prebuild-install@7.1.3:
@@ -2484,8 +2498,8 @@ packages:
     deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
     hasBin: true
 
-  pretty-ms@9.3.0:
-    resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
+  pretty-ms@9.3.1:
+    resolution: {integrity: sha512-HzMy3Geq23nVALD/M2LliU+F+M+gVNsvkQWWqeBZ8HDiCgzo6YPJ/Omrmtq24EFrIsk0a3EkQGEd7bDOo+IhGA==}
     engines: {node: '>=18'}
 
   prisma@6.19.3:
@@ -2566,8 +2580,8 @@ packages:
   real-require@1.0.0:
     resolution: {integrity: sha512-P4nbQYQfePJxRSmY+v/KINxVucm4NF3p3s7pJveMTtom52FR4YGltUQLB8idDXwDDWW+eYrWDFbuzUnjoWHF7g==}
 
-  recast@0.23.19:
-    resolution: {integrity: sha512-T98lym7kH+pnZmRaD8yDRdaNqyUbwnbEBx0MuchrzMFOEMray4AO3ZJoTUZ5r78Ao78X/OhzW0DL8GB85w/I2w==}
+  recast@0.23.21:
+    resolution: {integrity: sha512-mFAyJq9vUbSTARLZUvAEf1z3YxlvAwswbmxMx2mPA/MSm4KmpwvwvhsH/NIrZhyOuwD60Lzyw2qh83uCbgTPYw==}
     engines: {node: '>= 4'}
 
   reflect-metadata@0.2.2:
@@ -2843,8 +2857,8 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
-  type-fest@5.8.0:
-    resolution: {integrity: sha512-YGYEVz3Fm5iy/AybuA0oyNFq7H4CgQNfRp/qfe8nurE1kuCeNm3/vfm9X4Mtl+qLyaKJUh5xrFZwogr41SMjYA==}
+  type-fest@5.9.0:
+    resolution: {integrity: sha512-yANm3Jr3GiJ1qgJlxGAVxTOIcEOk1rhQHamlXtnrCK7EHP4HeM9OGxtMg/W7HFdrVzw/ZWJKGVIJusVH85sLtw==}
     engines: {node: '>=20'}
 
   type-is@1.6.18:
@@ -2996,16 +3010,19 @@ packages:
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
+  zod@4.5.4:
+    resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
+
 snapshots:
 
-  '@adminforth/agent@2.7.4(adminforth@3.15.0)(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)':
+  '@adminforth/agent@2.7.4(adminforth@3.17.2)(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      '@langchain/langgraph': 1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
-      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      '@langchain/langgraph': 1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
+      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       dayjs: 1.11.21
-      langchain: 1.3.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)
+      langchain: 1.3.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)
       multer: 2.2.0
       vue-i18n: 11.4.8(vue@3.5.38(typescript@5.9.3))
       yaml: 2.9.0
@@ -3022,10 +3039,10 @@ snapshots:
       - ws
       - zod-to-json-schema
 
-  '@adminforth/audio-adapter-openai@1.3.3(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.15.0)(ws@8.21.3)(zod@4.4.3)':
+  '@adminforth/audio-adapter-openai@1.3.3(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.17.2)(ws@8.21.3)(zod@4.5.4)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
-      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
+      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4)
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -3033,19 +3050,19 @@ snapshots:
       - ws
       - zod
 
-  '@adminforth/audit-log@1.10.1(adminforth@3.15.0)':
+  '@adminforth/audit-log@1.10.1(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       dayjs: 1.11.21
 
-  '@adminforth/auto-remove@1.0.20(adminforth@3.15.0)':
+  '@adminforth/auto-remove@1.0.20(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
 
-  '@adminforth/background-jobs@1.20.2(adminforth@3.15.0)(vue@3.5.38(typescript@5.9.3))':
+  '@adminforth/background-jobs@1.20.2(adminforth@3.17.2)(vue@3.5.38(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.38(typescript@5.9.3))
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       async-mutex: 0.5.0
       level: 10.0.0
       p-limit: 7.3.1
@@ -3053,26 +3070,26 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@adminforth/bulk-ai-flow@1.27.3(adminforth@3.15.0)':
+  '@adminforth/bulk-ai-flow@1.27.3(adminforth@3.17.2)':
     dependencies:
       '@types/handlebars': 4.1.0
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       handlebars: 4.7.9
       zod: 4.4.3
 
   '@adminforth/chat-gpt@1.0.20': {}
 
-  '@adminforth/clone-row@1.2.22(adminforth@3.15.0)':
+  '@adminforth/clone-row@1.2.22(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
 
-  '@adminforth/completion-adapter-openai-responses@2.0.27(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.15.0)(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)(zod@4.4.3)':
+  '@adminforth/completion-adapter-openai-responses@2.0.27(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(adminforth@3.17.2)(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)(zod@4.5.4)':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      '@langchain/openai': 1.4.4(@aws-sdk/credential-provider-node@3.972.78)(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(@smithy/signature-v4@5.6.12)(ws@8.21.3)
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
-      langchain: 1.5.5(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)
-      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      '@langchain/openai': 1.4.4(@aws-sdk/credential-provider-node@3.972.78)(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(@smithy/signature-v4@5.6.12)(ws@8.21.3)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
+      langchain: 1.5.5(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3)
+      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4)
       tiktoken: 1.0.22
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -3088,38 +3105,38 @@ snapshots:
       - ws
       - zod
 
-  '@adminforth/connector-qdrant@1.0.4(adminforth@3.15.0)(typescript@5.9.3)':
+  '@adminforth/connector-qdrant@1.0.4(adminforth@3.17.2)(typescript@5.9.3)':
     dependencies:
       '@qdrant/js-client-rest': 1.19.0(typescript@5.9.3)
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
-      dayjs: 1.11.21
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
+      dayjs: 1.11.23
     transitivePeerDependencies:
       - typescript
     optional: true
 
-  '@adminforth/connector-sqlite@1.0.6(adminforth@3.15.0)':
+  '@adminforth/connector-sqlite@1.0.6(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       better-sqlite3: 11.10.0
       dayjs: 1.11.21
 
-  '@adminforth/email-password-reset@1.3.25(adminforth@3.15.0)':
+  '@adminforth/email-password-reset@1.3.25(adminforth@3.17.2)':
     dependencies:
       '@aws-sdk/client-ses': 3.1106.0
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       validator: 13.15.35
 
-  '@adminforth/foreign-inline-list@1.11.4(adminforth@3.15.0)':
+  '@adminforth/foreign-inline-list@1.11.4(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       clone: 2.1.2
       zod: 4.4.3
 
-  '@adminforth/i18n@2.3.0(adminforth@3.15.0)':
+  '@adminforth/i18n@2.3.0(adminforth@3.17.2)':
     dependencies:
       '@aws-sdk/client-ses': 3.1106.0
       '@sapphire/async-queue': 1.5.5
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       bcp-47: 2.1.1
       chokidar: 4.0.3
       country-flag-svg: 1.0.19
@@ -3129,9 +3146,9 @@ snapshots:
       p-limit: 7.3.1
       zod: 4.4.3
 
-  '@adminforth/image-generation-adapter-openai@1.0.18(adminforth@3.15.0)':
+  '@adminforth/image-generation-adapter-openai@1.0.18(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       axios: 1.19.0
       file-type: 20.5.0
       form-data: 4.0.6
@@ -3140,21 +3157,21 @@ snapshots:
       - debug
       - supports-color
 
-  '@adminforth/image-vision-adapter-openai@1.1.6(adminforth@3.15.0)':
+  '@adminforth/image-vision-adapter-openai@1.1.6(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       typescript: 5.9.3
 
-  '@adminforth/import-export@1.9.0(adminforth@3.15.0)':
+  '@adminforth/import-export@1.9.0(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       csv: 6.6.3
       p-limit: 7.3.1
       zod: 4.4.3
 
-  '@adminforth/login-captcha-adapter-cloudflare@1.1.5(adminforth@3.15.0)':
+  '@adminforth/login-captcha-adapter-cloudflare@1.1.5(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       axios: 1.19.0
       file-type: 20.5.0
       typescript: 5.9.3
@@ -3162,41 +3179,41 @@ snapshots:
       - debug
       - supports-color
 
-  '@adminforth/login-captcha@1.3.3(adminforth@3.15.0)':
+  '@adminforth/login-captcha@1.3.3(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       zod: 4.4.3
 
-  '@adminforth/rich-editor@2.1.2(adminforth@3.15.0)':
+  '@adminforth/rich-editor@2.1.2(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       cheerio: 1.2.0
       zod: 4.4.3
 
-  '@adminforth/storage-adapter-amazon-s3@1.2.0(adminforth@3.15.0)':
+  '@adminforth/storage-adapter-amazon-s3@1.2.0(adminforth@3.17.2)':
     dependencies:
       '@aws-sdk/client-s3': 3.1106.0
       '@aws-sdk/s3-request-presigner': 3.1106.0
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       typescript: 5.9.3
 
-  '@adminforth/text-complete@2.1.1(adminforth@3.15.0)':
+  '@adminforth/text-complete@2.1.1(adminforth@3.17.2)':
     dependencies:
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       zod: 4.4.3
 
-  '@adminforth/two-factors-auth@4.4.4(adminforth@3.15.0)':
+  '@adminforth/two-factors-auth@4.4.4(adminforth@3.17.2)':
     dependencies:
       '@simplewebauthn/server': 13.3.2
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       node-2fa: 2.0.3
       zod: 4.4.3
 
-  '@adminforth/upload@2.17.2(adminforth@3.15.0)':
+  '@adminforth/upload@2.17.2(adminforth@3.17.2)':
     dependencies:
       '@aws-sdk/client-s3': 3.1106.0
       '@aws-sdk/s3-request-presigner': 3.1106.0
-      adminforth: 3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1)
+      adminforth: 3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
       zod: 4.4.3
 
   '@aws-sdk/checksums@3.1000.26':
@@ -3565,128 +3582,128 @@ snapshots:
 
   '@inquirer/ansi@1.0.2': {}
 
-  '@inquirer/checkbox@4.3.2(@types/node@26.2.0)':
+  '@inquirer/checkbox@4.3.2(@types/node@26.4.1)':
     dependencies:
       '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
       '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/confirm@5.1.21(@types/node@26.2.0)':
+  '@inquirer/confirm@5.1.21(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/core@10.3.2(@types/node@26.2.0)':
+  '@inquirer/core@10.3.2(@types/node@26.4.1)':
     dependencies:
       '@inquirer/ansi': 1.0.2
       '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
       cli-width: 4.1.0
       mute-stream: 2.0.0
       signal-exit: 4.1.0
       wrap-ansi: 6.2.0
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/editor@4.2.23(@types/node@26.2.0)':
+  '@inquirer/editor@4.2.23(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/external-editor': 1.0.3(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/external-editor': 1.0.3(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/expand@4.0.23(@types/node@26.2.0)':
+  '@inquirer/expand@4.0.23(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/external-editor@1.0.3(@types/node@26.2.0)':
+  '@inquirer/external-editor@1.0.3(@types/node@26.4.1)':
     dependencies:
       chardet: 2.2.0
       iconv-lite: 0.7.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   '@inquirer/figures@1.0.15': {}
 
-  '@inquirer/input@4.3.1(@types/node@26.2.0)':
+  '@inquirer/input@4.3.1(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/number@3.0.23(@types/node@26.2.0)':
+  '@inquirer/number@3.0.23(@types/node@26.4.1)':
     dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/password@4.0.23(@types/node@26.2.0)':
-    dependencies:
-      '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
-    optionalDependencies:
-      '@types/node': 26.2.0
-
-  '@inquirer/prompts@7.10.1(@types/node@26.2.0)':
-    dependencies:
-      '@inquirer/checkbox': 4.3.2(@types/node@26.2.0)
-      '@inquirer/confirm': 5.1.21(@types/node@26.2.0)
-      '@inquirer/editor': 4.2.23(@types/node@26.2.0)
-      '@inquirer/expand': 4.0.23(@types/node@26.2.0)
-      '@inquirer/input': 4.3.1(@types/node@26.2.0)
-      '@inquirer/number': 3.0.23(@types/node@26.2.0)
-      '@inquirer/password': 4.0.23(@types/node@26.2.0)
-      '@inquirer/rawlist': 4.1.11(@types/node@26.2.0)
-      '@inquirer/search': 3.2.2(@types/node@26.2.0)
-      '@inquirer/select': 4.4.2(@types/node@26.2.0)
-    optionalDependencies:
-      '@types/node': 26.2.0
-
-  '@inquirer/rawlist@4.1.11(@types/node@26.2.0)':
-    dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
-      yoctocolors-cjs: 2.1.3
-    optionalDependencies:
-      '@types/node': 26.2.0
-
-  '@inquirer/search@3.2.2(@types/node@26.2.0)':
-    dependencies:
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
-      yoctocolors-cjs: 2.1.3
-    optionalDependencies:
-      '@types/node': 26.2.0
-
-  '@inquirer/select@4.4.2(@types/node@26.2.0)':
+  '@inquirer/password@4.0.23(@types/node@26.4.1)':
     dependencies:
       '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/figures': 1.0.15
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
+    optionalDependencies:
+      '@types/node': 26.4.1
+
+  '@inquirer/prompts@7.10.1(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/checkbox': 4.3.2(@types/node@26.4.1)
+      '@inquirer/confirm': 5.1.21(@types/node@26.4.1)
+      '@inquirer/editor': 4.2.23(@types/node@26.4.1)
+      '@inquirer/expand': 4.0.23(@types/node@26.4.1)
+      '@inquirer/input': 4.3.1(@types/node@26.4.1)
+      '@inquirer/number': 3.0.23(@types/node@26.4.1)
+      '@inquirer/password': 4.0.23(@types/node@26.4.1)
+      '@inquirer/rawlist': 4.1.11(@types/node@26.4.1)
+      '@inquirer/search': 3.2.2(@types/node@26.4.1)
+      '@inquirer/select': 4.4.2(@types/node@26.4.1)
+    optionalDependencies:
+      '@types/node': 26.4.1
+
+  '@inquirer/rawlist@4.1.11(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
       yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
-  '@inquirer/type@3.0.10(@types/node@26.2.0)':
+  '@inquirer/search@3.2.2(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/figures': 1.0.15
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
+      yoctocolors-cjs: 2.1.3
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
+
+  '@inquirer/select@4.4.2(@types/node@26.4.1)':
+    dependencies:
+      '@inquirer/ansi': 1.0.2
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/figures': 1.0.15
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
+      yoctocolors-cjs: 2.1.3
+    optionalDependencies:
+      '@types/node': 26.4.1
+
+  '@inquirer/type@3.0.10(@types/node@26.4.1)':
+    optionalDependencies:
+      '@types/node': 26.4.1
 
   '@intlify/core-base@11.4.8':
     dependencies:
@@ -3720,12 +3737,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)':
+  '@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       '@standard-schema/spec': 1.1.0
       js-tiktoken: 1.0.21
-      langsmith: 0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      langsmith: 0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
       mustache: 4.2.0
       p-queue: 6.6.2
       zod: 4.4.3
@@ -3736,28 +3753,28 @@ snapshots:
       - openai
       - ws
 
-  '@langchain/langgraph-checkpoint@1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))':
+  '@langchain/langgraph-checkpoint@1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
       uuid: 10.0.0
 
-  '@langchain/langgraph-checkpoint@1.1.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))':
+  '@langchain/langgraph-checkpoint@1.1.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
 
-  '@langchain/langgraph-sdk@1.8.10(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))':
+  '@langchain/langgraph-sdk@1.8.10(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))':
     dependencies:
       '@types/json-schema': 7.0.15
       p-queue: 9.3.3
       p-retry: 7.1.1
       uuid: 13.0.2
     optionalDependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
       vue: 3.5.38(typescript@5.9.3)
 
-  '@langchain/langgraph-sdk@1.9.28(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))':
+  '@langchain/langgraph-sdk@1.9.28(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
       '@langchain/protocol': 0.0.18
       '@types/json-schema': 7.0.15
       p-queue: 9.3.3
@@ -3765,11 +3782,11 @@ snapshots:
     optionalDependencies:
       vue: 3.5.38(typescript@5.9.3)
 
-  '@langchain/langgraph@1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)':
+  '@langchain/langgraph@1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))
-      '@langchain/langgraph-sdk': 1.8.10(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))
+      '@langchain/langgraph-sdk': 1.8.10(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))
       '@standard-schema/spec': 1.1.0
       uuid: 10.0.0
       zod: 4.4.3
@@ -3779,26 +3796,26 @@ snapshots:
       - svelte
       - vue
 
-  '@langchain/langgraph@1.4.9(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)':
+  '@langchain/langgraph@1.4.9(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.5.4)':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      '@langchain/langgraph-checkpoint': 1.1.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))
-      '@langchain/langgraph-sdk': 1.9.28(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      '@langchain/langgraph-checkpoint': 1.1.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))
+      '@langchain/langgraph-sdk': 1.9.28(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))
       '@langchain/protocol': 0.0.18
       '@standard-schema/spec': 1.1.0
-      zod: 4.4.3
+      zod: 4.5.4
     transitivePeerDependencies:
       - react
       - react-dom
       - svelte
       - vue
 
-  '@langchain/openai@1.4.4(@aws-sdk/credential-provider-node@3.972.78)(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(@smithy/signature-v4@5.6.12)(ws@8.21.3)':
+  '@langchain/openai@1.4.4(@aws-sdk/credential-provider-node@3.972.78)(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(@smithy/signature-v4@5.6.12)(ws@8.21.3)':
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
       js-tiktoken: 1.0.21
-      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3)
-      zod: 4.4.3
+      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4)
+      zod: 4.5.4
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -4057,8 +4074,8 @@ snapshots:
     dependencies:
       '@scalar/helpers': 0.8.1
       nanoid: 5.1.16
-      type-fest: 5.8.0
-      zod: 4.4.3
+      type-fest: 5.9.0
+      zod: 4.5.4
 
   '@scalar/validation@0.6.0': {}
 
@@ -4125,17 +4142,17 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   '@types/estree@1.0.9': {}
 
   '@types/express-serve-static-core@5.1.3':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
       '@types/qs': 6.15.1
       '@types/range-parser': 1.2.7
       '@types/send': 1.2.1
@@ -4158,6 +4175,10 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
+  '@types/node@26.4.1':
+    dependencies:
+      undici-types: 8.3.0
+
   '@types/notp@2.0.5':
     dependencies:
       '@types/node': 26.2.0
@@ -4168,12 +4189,12 @@ snapshots:
 
   '@types/send@1.2.1':
     dependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   '@types/web-bluetooth@0.0.21': {}
 
@@ -4199,7 +4220,7 @@ snapshots:
       '@vue/shared': 3.5.38
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.26
+      postcss: 8.5.28
       source-map-js: 1.2.1
 
   '@vue/compiler-ssr@3.5.38':
@@ -4262,20 +4283,20 @@ snapshots:
 
   acorn@8.18.0: {}
 
-  adminforth@3.15.0(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.2.0)(express@5.2.1):
+  adminforth@3.17.2(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1):
     dependencies:
       '@babel/parser': 7.29.8
       '@faker-js/faker': 9.9.0
-      '@inquirer/prompts': 7.10.1(@types/node@26.2.0)
+      '@inquirer/prompts': 7.10.1(@types/node@26.4.1)
       '@scalar/express-api-reference': 0.9.20
       '@types/express': 5.0.6
       ajv: 8.20.0
       arg: 5.0.2
       ast-types: 0.14.2
-      bson: 7.3.1
+      bson: 7.3.2
       chalk: 5.6.2
       connection-string: 4.4.0
-      dayjs: 1.11.21
+      dayjs: 1.11.23
       dotenv: 16.6.1
       esm: 3.2.25
       execa: 9.6.1
@@ -4284,25 +4305,25 @@ snapshots:
       fs-extra: 11.4.0
       fuse.js: 7.5.0
       handlebars: 4.7.9
-      inquirer: 12.11.1(@types/node@26.2.0)
+      inquirer: 12.11.1(@types/node@26.4.1)
       jiti: 2.7.0
       jsonwebtoken: 9.0.3
       listr2: 8.3.3
-      multer: 2.2.0
+      multer: 2.3.0
       node-fetch: 3.3.2
-      p-limit: 7.3.1
+      p-limit: 7.3.2
       pino: 10.3.1
       pino-pretty: 13.1.3
       private-ip: 3.0.2
       rate-limiter-flexible: 8.3.0
-      recast: 0.23.19
+      recast: 0.23.21
       sanitize-html: 2.17.4
       ws: 8.21.3
       yaml: 2.9.0
-      zod: 4.4.3
+      zod: 4.5.4
     optionalDependencies:
-      '@adminforth/connector-qdrant': 1.0.4(adminforth@3.15.0)(typescript@5.9.3)
-      '@adminforth/connector-sqlite': 1.0.6(adminforth@3.15.0)
+      '@adminforth/connector-qdrant': 1.0.4(adminforth@3.17.2)(typescript@5.9.3)
+      '@adminforth/connector-sqlite': 1.0.6(adminforth@3.17.2)
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -4317,7 +4338,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.5
+      fast-uri: 3.1.7
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -4327,7 +4348,7 @@ snapshots:
 
   ansi-regex@5.0.1: {}
 
-  ansi-regex@6.2.2: {}
+  ansi-regex@6.3.0: {}
 
   ansi-styles@4.3.0:
     dependencies:
@@ -4351,7 +4372,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  ast-types@0.16.1:
+  ast-types@0.16.3:
     dependencies:
       tslib: 2.8.1
 
@@ -4418,7 +4439,7 @@ snapshots:
     dependencies:
       abstract-level: 3.1.1
 
-  bson@7.3.1: {}
+  bson@7.3.2: {}
 
   buffer-equal-constant-time@1.0.1: {}
 
@@ -4611,6 +4632,8 @@ snapshots:
 
   dayjs@1.11.21: {}
 
+  dayjs@1.11.23: {}
+
   debounce@1.2.1: {}
 
   debug@4.4.3:
@@ -4798,7 +4821,7 @@ snapshots:
       is-plain-obj: 4.1.0
       is-stream: 4.0.1
       npm-run-path: 6.0.0
-      pretty-ms: 9.3.0
+      pretty-ms: 9.3.1
       signal-exit: 4.1.0
       strip-final-newline: 4.0.0
       yoctocolors: 2.2.0
@@ -4844,13 +4867,13 @@ snapshots:
     dependencies:
       pure-rand: 6.1.0
 
-  fast-copy@4.0.4: {}
+  fast-copy@4.1.1: {}
 
   fast-deep-equal@3.1.3: {}
 
   fast-safe-stringify@2.1.1: {}
 
-  fast-uri@3.1.5: {}
+  fast-uri@3.1.7: {}
 
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
@@ -5031,17 +5054,17 @@ snapshots:
 
   ini@1.3.8: {}
 
-  inquirer@12.11.1(@types/node@26.2.0):
+  inquirer@12.11.1(@types/node@26.4.1):
     dependencies:
       '@inquirer/ansi': 1.0.2
-      '@inquirer/core': 10.3.2(@types/node@26.2.0)
-      '@inquirer/prompts': 7.10.1(@types/node@26.2.0)
-      '@inquirer/type': 3.0.10(@types/node@26.2.0)
+      '@inquirer/core': 10.3.2(@types/node@26.4.1)
+      '@inquirer/prompts': 7.10.1(@types/node@26.4.1)
+      '@inquirer/type': 3.0.10(@types/node@26.4.1)
       mute-stream: 2.0.0
       run-async: 4.0.6
       rxjs: 7.8.2
     optionalDependencies:
-      '@types/node': 26.2.0
+      '@types/node': 26.4.1
 
   ip-regex@5.0.0: {}
 
@@ -5072,7 +5095,7 @@ snapshots:
 
   is-plain-obj@4.1.0: {}
 
-  is-plain-object@5.0.0: {}
+  is-plain-object@5.1.0: {}
 
   is-promise@4.0.0: {}
 
@@ -5126,12 +5149,12 @@ snapshots:
       jwa: 2.0.1
       safe-buffer: 5.2.1
 
-  langchain@1.3.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3):
+  langchain@1.3.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3):
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      '@langchain/langgraph': 1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
-      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))
-      langsmith: 0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      '@langchain/langgraph': 1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
+      '@langchain/langgraph-checkpoint': 1.0.1(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))
+      langsmith: 0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
       uuid: 11.1.1
       zod: 4.4.3
     transitivePeerDependencies:
@@ -5146,13 +5169,13 @@ snapshots:
       - ws
       - zod-to-json-schema
 
-  langchain@1.5.5(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3):
+  langchain@1.5.5(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(vue@3.5.38(typescript@5.9.3))(ws@8.21.3):
     dependencies:
-      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      '@langchain/langgraph': 1.4.9(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.4.3)
-      '@langchain/langgraph-checkpoint': 1.1.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3))
-      langsmith: 0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3)
-      zod: 4.4.3
+      '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      '@langchain/langgraph': 1.4.9(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))(vue@3.5.38(typescript@5.9.3))(zod@4.5.4)
+      '@langchain/langgraph-checkpoint': 1.1.3(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3))
+      langsmith: 0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3)
+      zod: 4.5.4
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - '@opentelemetry/exporter-trace-otlp-proto'
@@ -5164,16 +5187,16 @@ snapshots:
       - vue
       - ws
 
-  langsmith@0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3))(ws@8.21.3):
+  langsmith@0.8.9(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4))(ws@8.21.3):
     dependencies:
       p-queue: 6.6.2
     optionalDependencies:
-      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3)
+      openai: 6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4)
       ws: 8.21.3
 
   launder@1.7.1:
     dependencies:
-      dayjs: 1.11.21
+      dayjs: 1.11.23
 
   level-supports@6.2.0: {}
 
@@ -5277,6 +5300,13 @@ snapshots:
       concat-stream: 2.0.0
       type-is: 1.6.18
 
+  multer@2.3.0:
+    dependencies:
+      append-field: 1.0.0
+      busboy: 1.6.0
+      concat-stream: 2.0.0
+      type-is: 1.6.18
+
   mustache@4.2.0: {}
 
   mute-stream@2.0.0: {}
@@ -5361,16 +5391,20 @@ snapshots:
     dependencies:
       mimic-function: 5.0.1
 
-  openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.4.3):
+  openai@6.49.0(@aws-sdk/credential-provider-node@3.972.78)(@smithy/signature-v4@5.6.12)(ws@8.21.3)(zod@4.5.4):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.78
       '@smithy/signature-v4': 5.6.12
       ws: 8.21.3
-      zod: 4.4.3
+      zod: 4.5.4
 
   p-finally@1.0.0: {}
 
   p-limit@7.3.1:
+    dependencies:
+      yocto-queue: 1.2.2
+
+  p-limit@7.3.2:
     dependencies:
       yocto-queue: 1.2.2
 
@@ -5435,7 +5469,7 @@ snapshots:
     dependencies:
       colorette: 2.0.20
       dateformat: 4.6.3
-      fast-copy: 4.0.4
+      fast-copy: 4.1.1
       fast-safe-stringify: 2.1.1
       help-me: 5.0.0
       joycon: 3.1.1
@@ -5477,16 +5511,16 @@ snapshots:
       exsolve: 1.1.1
       pathe: 2.0.3
 
-  postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12)(yaml@2.9.0):
+  postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.28)(tsx@4.23.12)(yaml@2.9.0):
     dependencies:
       lilconfig: 3.1.3
     optionalDependencies:
       jiti: 2.7.0
-      postcss: 8.5.26
+      postcss: 8.5.28
       tsx: 4.23.12
       yaml: 2.9.0
 
-  postcss@8.5.26:
+  postcss@8.5.28:
     dependencies:
       nanoid: 3.3.18
       picocolors: 1.1.1
@@ -5507,7 +5541,7 @@ snapshots:
       tar-fs: 2.1.5
       tunnel-agent: 0.6.0
 
-  pretty-ms@9.3.0:
+  pretty-ms@9.3.1:
     dependencies:
       parse-ms: 4.0.0
 
@@ -5591,9 +5625,9 @@ snapshots:
 
   real-require@1.0.0: {}
 
-  recast@0.23.19:
+  recast@0.23.21:
     dependencies:
-      ast-types: 0.16.1
+      ast-types: 0.16.3
       esprima: 4.0.1
       source-map: 0.6.1
       tiny-invariant: 1.3.3
@@ -5671,10 +5705,10 @@ snapshots:
       deepmerge: 4.3.1
       escape-string-regexp: 4.0.0
       htmlparser2: 10.1.0
-      is-plain-object: 5.0.0
+      is-plain-object: 5.1.0
       launder: 1.7.1
       parse-srcset: 1.0.2
-      postcss: 8.5.26
+      postcss: 8.5.28
 
   secure-json-parse@4.1.0: {}
 
@@ -5801,7 +5835,7 @@ snapshots:
 
   strip-ansi@7.2.0:
     dependencies:
-      ansi-regex: 6.2.2
+      ansi-regex: 6.3.0
 
   strip-final-newline@4.0.0: {}
 
@@ -5883,7 +5917,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.5.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12)(typescript@5.9.3)(yaml@2.9.0):
+  tsup@8.5.1(jiti@2.7.0)(postcss@8.5.28)(tsx@4.23.12)(typescript@5.9.3)(yaml@2.9.0):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.7)
       cac: 6.7.14
@@ -5894,7 +5928,7 @@ snapshots:
       fix-dts-default-cjs-exports: 1.0.1
       joycon: 3.1.1
       picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.26)(tsx@4.23.12)(yaml@2.9.0)
+      postcss-load-config: 6.0.1(jiti@2.7.0)(postcss@8.5.28)(tsx@4.23.12)(yaml@2.9.0)
       resolve-from: 5.0.0
       rollup: 4.62.4
       source-map: 0.7.6
@@ -5903,7 +5937,7 @@ snapshots:
       tinyglobby: 0.2.17
       tree-kill: 1.2.2
     optionalDependencies:
-      postcss: 8.5.26
+      postcss: 8.5.28
       typescript: 5.9.3
     transitivePeerDependencies:
       - jiti
@@ -5925,7 +5959,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  type-fest@5.8.0:
+  type-fest@5.9.0:
     dependencies:
       tagged-tag: 1.0.0
 
@@ -6030,3 +6064,5 @@ snapshots:
   yoctocolors@2.2.0: {}
 
   zod@4.4.3: {}
+
+  zod@4.5.4: {}
