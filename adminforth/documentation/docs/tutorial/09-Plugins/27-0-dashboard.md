@@ -187,9 +187,9 @@ export const globalPlugins = [
 ];
 ```
 
-#### Control Dashboard Editing Permissions
+#### Control Dashboard Access and Editing Permissions
 
-By default, only users with the `superadmin` role can edit dashboards (add, rename, reorder, and remove groups or widgets). Use the `editRoles` option to grant editing to other roles:
+By default, only users with the `superadmin` role can access dashboards. Use the `editRoles` option to grant dashboard access and editing to other roles:
 
 ```ts title="./globalPlugins.ts"
 new DashboardPlugin({
@@ -198,7 +198,11 @@ new DashboardPlugin({
 });
 ```
 
-Users whose role is not listed in `editRoles` can view dashboards but are not shown the editing controls and cannot modify dashboards, groups, or widgets through the API.
+Users whose role is not listed in `editRoles` do not see the **Dashboards** sidebar group and receive a `403` response from dashboard configuration and widget-data endpoints. The same role check protects all dashboard mutations on the backend.
+
+Dashboard widget queries also respect the target resource's list access rules. Before loading data, the plugin checks `allowedActions.list`, runs the resource's `list.beforeDatasourceRequest` hooks, and applies any filters added by those hooks. A widget cannot query a column that is `backendOnly` or hidden from the current user with `showIn.list`.
+
+When a query omits `select`, it implicitly requests every column. If the resource contains restricted columns, specify an explicit `select` containing only columns the dashboard users may list. These checks also apply to fields used only for filters, grouping, ordering, buckets, or sparklines.
 
 Then pass it to the AdminForth configuration:
 
@@ -232,6 +236,22 @@ If you need to configure dashboards without using the AI Agent, you can do so ma
 2. **Interactive UI Editor**: Users with a role listed in the plugin's `editRoles` option (defaults to `superadmin`) can add, rename, reorder, and remove groups or widgets directly from the user interface.
 3. **YAML Configuration Editor**: The dashboard builder has built-in code editors. When editing a widget or a group manually, you write configurations using a YAML-based DSL.
 
+### Editing dashboard settings
+
+Click the tools icon in the dashboard header to edit the dashboard itself. The YAML editor accepts these fields:
+
+```yaml
+label: Sales Overview
+slug: sales-overview
+icon: flowbite:chart-pie-solid
+```
+
+- `label` is the page title and sidebar label.
+- `slug` defines the URL at `/dashboard/<slug>`. It must contain only lowercase letters, numbers, and hyphens, and must be unique.
+- `icon` is an optional [Iconify](https://icon-sets.iconify.design/) icon name used in the sidebar. Remove the field to use the default dashboard icon.
+
+Saving a changed slug redirects the browser to the new dashboard URL.
+
 For the complete schema specifications of queries, formulas, custom variables, layout fields, and advanced chart configurations, see the **[Dashboard Query Reference](/docs/tutorial/Plugins/dashboard-reference)**.
 
 ### Adding new dashboard pages manually
@@ -240,6 +260,7 @@ To create a new dashboard page manually, add a new record to your dashboard conf
 
 ```yaml title="dashboard_configs.config"
 version: 1
+icon: flowbite:chart-pie-solid
 groups:
   - id: sales
     label: Sales

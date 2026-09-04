@@ -1,12 +1,12 @@
 ---
 title: Import Export
-description: "Guide to the Import-Export plugin for CSV-based data transfer, including installation, import flow, export flow, and resource-level usage."
+description: "Guide to the Import Export plugin for CSV and XLSX data transfer, including installation, import flow, export flow, and resource-level usage."
 slug: /tutorial/Plugins/import-export
 ---
 
 # Import-Export
 
-Import-Export is a plugin that allows you to import data from and export data to a CSV file.
+Import Export is a plugin that allows you to import and export resource data as CSV or Excel (`.xlsx`) files.
 
 This plugin is mostly useful for the following use cases:
 
@@ -51,8 +51,40 @@ export default {
   ],
   ...
 }
-  
 ```
+
+CSV import and export are enabled by default.
+
+## File format
+
+Set `fileFormat` on each plugin instance to choose the format used by both import and export:
+
+```typescript
+new ImportExport({
+  fileFormat: 'xlsx',
+})
+```
+
+Supported values are:
+
+- `'csv'` (default)
+- `'xlsx'`
+
+For XLSX imports, the first row of each non-empty worksheet is treated as the column header. Rows from multiple worksheets are combined, but all non-empty worksheets must have the same columns in the same order.
+
+Both classic and upload export support XLSX. A background XLSX export that exceeds Excel's limit of 1,048,575 data rows per worksheet is automatically split into multiple worksheets, with the header repeated on each worksheet.
+
+## Export-only mode
+
+Import is enabled by default. To expose only the export action, set `importEnabled` to `false`:
+
+```typescript
+new ImportExport({
+  importEnabled: false,
+})
+```
+
+This removes the import action from the resource UI and does not register the import endpoints. Export remains available in the selected `fileFormat`.
 
 
 ## Upload export
@@ -81,6 +113,7 @@ export default {
   plugins: [
     ...
     new ImportExport({
+      fileFormat: 'xlsx', // optional; defaults to 'csv'
       exportViaUpload: {
         storageAdapter: new AdminForthAdapterS3Storage({
           bucket: process.env.AWS_BUCKET_NAME as string,
@@ -94,5 +127,16 @@ export default {
   ],
   ...
 }
-  
+```
+
+The upload mode supports the same `fileFormat` values as classic export. You can also tune memory usage and database read size:
+
+```typescript
+new ImportExport({
+  exportViaUpload: {
+    storageAdapter,
+    bufferSizeMb: 10, // defaults to 5 MiB; minimum is 5 MiB
+    readChunkSize: 500, // defaults to 100 records
+  },
+})
 ```

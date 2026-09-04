@@ -31,7 +31,8 @@ export default class OperationalResource implements IOperationalResource {
       filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, 
       limit: number | null = null, 
       offset: number | null = null,
-      sort: IAdminForthSort | IAdminForthSort[] = []
+      sort: IAdminForthSort | IAdminForthSort[] = [],
+      columns?: string[]
   ): Promise<any[]> {
     // check if type of limit and offset is number
     if (limit !== null && typeof limit !== 'number') {
@@ -57,6 +58,7 @@ export default class OperationalResource implements IOperationalResource {
       offset: appliedOffset,
       sort: sortsIfSort(sort),
       getTotals: false,
+      columns: columns ? this.resourceConfig.dataSourceColumns.filter((column) => columns.includes(column.name)) : undefined,
     });
     return data;
   }
