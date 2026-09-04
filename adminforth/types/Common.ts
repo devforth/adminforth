@@ -695,8 +695,9 @@ export type ShowInResolved = {
 }
 
 export interface AdminForthPolymorphicForeignResource {
-  resourceId: string,
+  resourceId: string | null,
   whenValue: string,
+  allowedActions?: AllowedActionsResolved,
 }
 export interface AdminForthForeignResourceCommon {
   resourceId?: string,
@@ -705,6 +706,7 @@ export interface AdminForthForeignResourceCommon {
   unsetLabel?: string,
   searchableFields?: string | string[],
   searchIsCaseSensitive?: boolean,
+  allowedActions?: AllowedActionsResolved,
 }
 
 export type FillOnCreateFunction = (params: {

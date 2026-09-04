@@ -1273,12 +1273,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
                     if (col.foreignResource) {
-                      const foreignResource = this.adminforth.config.resources.find((res) => res.resourceId === col.foreignResource.resourceId);
-                      try {
+                      if (col.foreignResource.resourceId) {
+                        const foreignResource = this.adminforth.config.resources.find((res) => res.resourceId === col.foreignResource.resourceId);
                         const allowedActionsForForeignResource = await interpretResource(adminUser, foreignResource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
                         col.foreignResource.allowedActions = allowedActionsForForeignResource.allowedActions;
-                      } catch (error) {
-                        // error is not critical, user probably provided specific config
+                      } else {
+                        await Promise.all(
+                          col.foreignResource.polymorphicResources
+                            .filter((polymorphicResource) => polymorphicResource.resourceId !== null)
+                            .map(async (polymorphicResource) => {
+                              const foreignResource = this.adminforth.config.resources.find((res) => res.resourceId === polymorphicResource.resourceId);
+                              const allowedActionsForForeignResource = await interpretResource(adminUser, foreignResource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
+                              polymorphicResource.allowedActions = allowedActionsForForeignResource.allowedActions;
+                            })
+                        );
                       }
                     }
                     if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
@@ -1583,7 +1591,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }), {});
               targetDataMap = Object.keys(targetData).reduce((tdAcc, polymorphicOnValue) => ({
                 ...tdAcc,
-                ...targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
+                [polymorphicOnValue]: targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
                   dAcc[item[targetResourcePkFields[polymorphicOnValue]]] = {
                     label: targetResources[polymorphicOnValue].recordLabel(item),
                     pk: item[targetResourcePkFields[polymorphicOnValue]],
@@ -1600,7 +1608,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   item[col.name] = item[col.name].map((i) => targetDataMap[i]);
                 }
               } else {
-                item[col.name] = targetDataMap[item[col.name]];
+                const itemTargetDataMap = col.foreignResource.resourceId
+                  ? targetDataMap
+                  : targetDataMap[item[col.foreignResource.polymorphicOn]];
+                item[col.name] = itemTargetDataMap?.[item[col.name]];
               }
             });
           })
