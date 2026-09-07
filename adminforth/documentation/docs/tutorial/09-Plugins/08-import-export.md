@@ -87,6 +87,93 @@ new ImportExport({
 This removes the import action from the resource UI and does not register the import endpoints. Export remains available in the selected `fileFormat`.
 
 
+## Choosing columns to export
+
+By default every column of the resource is exported, except virtual ones (nothing stores them) and `backendOnly` ones (they never leave the server).
+
+Pass `columnsToExport` to control the file precisely. The list is **exact and ordered** — only the named columns are exported, in the order they are named, so the option doubles as the file layout:
+
+```typescript
+new ImportExport({
+  columnsToExport: ['id', 'model', 'price'],
+})
+```
+
+```csv
+id,model,price
+a1b2c3,Tesla Model 3,42000
+```
+
+Because the list is exact, a column added to the resource later does not show up in the file until it is added here too. Names are checked at startup: an unknown name fails with a `suggestIfTypo` hint, a duplicated name fails, and an empty array fails (remove the option instead to export everything).
+
+Virtual columns may be named here as well — that is the only way to get them into a file. They are not filled by anything on their own, so pair them with the hook below; if a virtual column is exported without a `hooks.export.beforeWrite`, the plugin warns at startup that the column will be empty:
+
+```typescript
+new ImportExport({
+  columnsToExport: ['id', 'model', 'price', 'owner_email'], // owner_email is virtual
+  hooks: { export: { beforeWrite: fillOwnerEmail } },
+})
+```
+
+Two things to keep in mind:
+
+- `backendOnly` columns are rejected at startup even when named explicitly. If you really need such a column in a file, drop `backendOnly` from the column definition.
+- Leaving the primary key out is allowed — useful for reports that should not leak internal ids — but then an import of that file creates new records instead of updating existing ones, because there is no key to match them by.
+
+`columnsToExport` affects export only. Import keeps accepting every column described in the resource, so a narrower export still imports back, and a file which still carries an exported virtual column imports cleanly too: virtual columns are dropped from every imported row, because there is no place in the database to store them.
+
+## Transforming records before they are written
+
+`hooks.export.beforeWrite` is called with every batch of records right before they are serialized into the file. Records are passed as a mutable array, so the hook fills virtual columns, rewrites values, or drops rows:
+
+```typescript
+import { Filters } from 'adminforth';
+
+new ImportExport({
+  virtualColumnsToExport: ['owner_email'],
+  hooks: {
+    export: {
+      beforeWrite: async ({ records, adminforth }) => {
+        // one request per batch, not per record
+        const owners = await adminforth.resource('users').list(
+          Filters.IN('id', records.map((record) => record.owner_id))
+        );
+        const emailById = Object.fromEntries(owners.map((owner) => [owner.id, owner.email]));
+
+        records.forEach((record) => {
+          record.owner_email = emailById[record.owner_id] ?? '';
+        });
+      },
+    },
+  },
+})
+```
+
+The hook receives:
+
+| Param | Description |
+| --- | --- |
+| `records` | Records about to be written, mutated in place by the hook |
+| `columns` | Columns which will be written, in the order they appear in the file |
+| `resource` | Resource being exported |
+| `adminforth` | AdminForth instance |
+| `adminUser` | User who started the export (absent when the export was started programmatically without one) |
+| `fileFormat` | `'csv'` or `'xlsx'` |
+| `exportMode` | `'classical'` for the REST export, `'upload'` for the background job export |
+| `batchOffset` | Zero-based index of the first record of the batch within the whole export |
+
+Batching differs per export mode: classical export calls the hook once with the whole dataset, while upload export calls it once per `readChunkSize` chunk. Write the hook so it works for both, and batch external requests per call instead of doing one request per record.
+
+Records can be dropped from or pushed into the array, and whatever the array holds when the hook returns is what gets written. Database paging is not affected by that, so upload export keeps reading `readChunkSize` records per iteration regardless.
+
+Returning `{ ok: false, error }` aborts the export: classical export responds with the error, and upload export fails the background job with it.
+
+An array of functions is accepted as well, and they are called in order.
+
+:::info
+The `classicalUploadLimitMiB` check runs before the hook, on the data as it comes from the database. A hook which adds a lot of data to every record (e.g. a long virtual column) makes the response bigger than the estimate, so leave some headroom in the limit.
+:::
+
 ## Upload export
 
 1) First, set up the Background Jobs plugin: go to the [Background Jobs Plugin page](/docs/tutorial/Plugins/background-jobs) and complete the setup.
