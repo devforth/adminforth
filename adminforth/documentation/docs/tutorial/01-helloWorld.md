@@ -311,6 +311,7 @@ export default {
       required: true,
       isUnique: true,
       type: AdminForthDataTypes.STRING,
+      normalize: (value: string) => value.trim().toLowerCase(),
       validation: [
         // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object
         {

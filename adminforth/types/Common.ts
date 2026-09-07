@@ -728,7 +728,10 @@ export interface AdminForthResourceColumnInputCommon {
   name: string,
 
   /**
-   * Normalizes a column value before it is saved or used as the username during login.
+   * Normalizes a column value before AdminForth CRUD create and update operations and, when this column
+   * is configured as `auth.usernameField`, before the password-login lookup.
+   *
+   * Does not normalize filter values or existing stored records.
    *
    * @example
    * ```ts
