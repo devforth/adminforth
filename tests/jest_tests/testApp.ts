@@ -12,7 +12,7 @@ const sqliteDbPath = path.join(applicationDir, '.db.sqlite');
 
 const testEnv = {
   ...process.env,
-  ADMINFORTH_SECRET: process.env.ADMINFORTH_SECRET ?? '123',
+  ADMINFORTH_SECRET: process.env.ADMINFORTH_SECRET ?? 'dev-only-secret-not-for-production-000000000000000000000000',
   NODE_ENV: process.env.NODE_ENV ?? 'test',
   SQLITE_URL: process.env.SQLITE_URL ?? `sqlite://${sqliteDbPath}`,
   SQLITE_FILE_URL: process.env.SQLITE_FILE_URL ?? `file:${sqliteDbPath}`,
