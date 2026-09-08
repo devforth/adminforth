@@ -100,7 +100,8 @@ myadmin/
 ├── package.json          # Project dependencies
 ├── pnpm-workspace.yaml
 ├── tsconfig.json         # TypeScript configuration
-├── .env                  # Env vars like tokens, secrets that should not be in version control
+├── .env                  # Env vars like tokens, secrets that should not be in version control (ADMINFORTH_SECRET is generated here for you)
+├── .env.example          # Committed template listing the secrets each developer must create locally
 ├── .env.local            # General local environment variables
 └── .gitignore
 

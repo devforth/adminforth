@@ -28,7 +28,7 @@ const appDir = path.dirname(appFilePath);
 const sqliteDbPath = path.join(appDir, '.db.sqlite');
 const customComponentsDir = path.join(appDir, 'custom');
 
-process.env.ADMINFORTH_SECRET ??= '123';
+process.env.ADMINFORTH_SECRET ??= 'dev-only-secret-not-for-production-000000000000000000000000';
 process.env.NODE_ENV ??= 'test';
 process.env.SQLITE_URL ??= `sqlite://${sqliteDbPath}`;
 process.env.SQLITE_FILE_URL ??= `file:${sqliteDbPath}`;

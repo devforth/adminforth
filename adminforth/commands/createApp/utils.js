@@ -9,6 +9,7 @@ import { Listr } from 'listr2'
 import { fileURLToPath, pathToFileURL } from 'url';
 import {ConnectionString} from 'connection-string';
 import { exec } from 'child_process';
+import crypto from 'crypto';
 
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
@@ -454,7 +455,7 @@ function getPackageManagerTemplateData(useNpm, nodeMajor) {
   };
 }
 
-async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
+export async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
   const {
     dbUrl, prismaDbUrl, appName, provider, existingDb, nodeMajor,
     dbUrlProd, prismaDbUrlProd, sqliteFile
@@ -540,10 +541,17 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
       data: {},
     },
     {
-      // We'll write .env using the same content as .env.sample
+      // gitignored: holds the JWT signing key, unique per developer and per deployment
       src: '.env.hbs',
       dest: '.env',
-      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl },
+      data: { adminforthSecret: crypto.randomBytes(32).toString('hex') },
+      mode: 0o600,
+    },
+    {
+      // committed: tells the next developer which secrets to create locally
+      src: '.env.example.hbs',
+      dest: '.env.example',
+      data: {},
     },
     {
       src: 'adminuser.ts.hbs',
@@ -635,7 +643,11 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
         ...packageManagerTemplateData,
         ...task.data,
       });
-      await fs.promises.writeFile(destPath, compiled);
+      await fs.promises.writeFile(destPath, compiled, task.mode ? { mode: task.mode } : undefined);
+      if (task.mode) {
+        // writeFile's mode is masked by the umask and ignored on overwrite; enforce it unconditionally
+        await fs.promises.chmod(destPath, task.mode);
+      }
     }
   }
 }

@@ -35,8 +35,12 @@ Your colleagues will need to pull the changes and run `pnpm migrate:local` to ap
 You have Dockerfile ready for production deployment. You can test the build with:
 
 ```bash
+# Generate a signing key once and keep it in your secret store (never commit it).
+# On Windows without openssl: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+export ADMINFORTH_SECRET="$(openssl rand -hex 32)"
+
 docker build -t application-image .
-docker run -p 3500:3500 -e ADMINFORTH_SECRET=123 -v $(pwd)/db:/code/db application-image
+docker run -p 3500:3500 -e ADMINFORTH_SECRET="$ADMINFORTH_SECRET" -v $(pwd)/db:/code/db application-image
 ```
 
 To set non-sensitive environment variables in production, use `.env.prod` file.
