@@ -32,7 +32,6 @@ const options = {
   prismaDbUrl: null,
   prismaDbUrlProd: null,
   provider: 'sqlite',
-  existingDb: false,
   nodeMajor: 22,
   sqliteFile: '.db.sqlite',
 };
