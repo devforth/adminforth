@@ -533,7 +533,7 @@ If your field has absolute URLs as text strings you can use `URLs` renderer to r
 
 ### Relative Time
 
-To format your date fields to display the elapsed time, you can utilize the RelativeTime renderer.
+To format your date fields to display the elapsed time, you can utilize the RelativeTime renderer. Empty or invalid values render as an empty cell.
  
 ```ts title='./resources/anyResource.ts'
   columns: [
