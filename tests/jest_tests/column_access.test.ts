@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import AdminForth from '../../adminforth/index.js';
 import { ActionCheckSource } from '../../adminforth/types/Common.js';
 import {
   resolveBoolOrFn,
@@ -138,5 +139,31 @@ describe('recordWriteError', () => {
 
   it('ignores a restricted column the record does not touch', async () => {
     expect(await recordWriteError({ id: 1 }, 'edit', ctxFor(columns))).toBeNull();
+  });
+});
+
+describe('enforceColumnAccess on the programmatic write API', () => {
+  // the guard must run before anything else touches the record, so a stubbed
+  // validateRecordValues tells us whether the call got past it
+  const stub = { validateRecordValues: () => 'reached validation' } as any;
+  const resource: any = { resourceId: 'things', columns: [col('id', { primaryKey: true }), col('secret', { backendOnly: true })], hooks: {} };
+  const params = (extra: Record<string, any>) => ({ resource, record: { secret: 'x' }, adminUser: EDITOR, ...extra });
+
+  it('refuses a backendOnly column when asked to enforce', async () => {
+    const result = await AdminForth.prototype.createResourceRecord.call(stub, params({ enforceColumnAccess: true }));
+
+    expect(result.error).toBe('Field "secret" cannot be modified as it is restricted from creation (backendOnly is true).');
+  });
+
+  it('stays out of the way by default', async () => {
+    const result = await AdminForth.prototype.createResourceRecord.call(stub, params({}));
+
+    expect(result.error).toBe('reached validation');
+  });
+
+  it('refuses on update before anything else touches the record', async () => {
+    const result = await AdminForth.prototype.updateResourceRecord.call(stub, params({ enforceColumnAccess: true, recordId: 1, updates: { secret: 'x' }, record: undefined }));
+
+    expect(result.error).toBe('Field "secret" cannot be modified as it is restricted from editing (backendOnly is true).');
   });
 });

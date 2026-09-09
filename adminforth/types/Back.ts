@@ -849,12 +849,19 @@ export type CreateResourceRecordParams = {
    * Extra HTTP information. Prefer using extra.response over the top-level response field.
    */
   extra?: HttpExtra;
+
+  /**
+   * Apply the same column checks the REST routes apply: backendOnly, showIn, editReadonly and the
+   * allowModifyWhenNotShowIn* escapes. Off by default, because the programmatic API is a system-level
+   * API and plugins legitimately write columns that no user may write.
+   */
+  enforceColumnAccess?: boolean;
 };
 
 /**
  * Parameters for {@link IAdminForth.updateResourceRecord}.
  */
-export type UpdateResourceRecordParams =
+export type UpdateResourceRecordParams = (
   | {
       /**
        * Resource configuration used to update a record.
@@ -944,7 +951,15 @@ export type UpdateResourceRecordParams =
        * Partial record data with only changed fields. Mutually exclusive with record.
        */
       updates: any;
-    };
+    }
+  ) & {
+  /**
+   * Apply the same column checks the REST routes apply: backendOnly, showIn, editReadonly and the
+   * allowModifyWhenNotShowIn* escapes. Off by default, because the programmatic API is a system-level
+   * API and plugins legitimately write columns that no user may write.
+   */
+  enforceColumnAccess?: boolean;
+};
 
 /**
  * Parameters for {@link IAdminForth.deleteResourceRecord}.
