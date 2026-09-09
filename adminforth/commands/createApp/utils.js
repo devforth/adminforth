@@ -264,7 +264,7 @@ export async function promptForMissingOptions(options) {
 
   if (!resolvedOptions.dbInspected) {
     console.log(chalk.yellow('\n🗄️  Continuing as a new database because it could not be inspected.' +
-      (prismaCapable ? ' If it already has data, answer No below so no Prisma migrations are generated.' : '') +
+      (prismaCapable ? ' Prisma migrations are therefore not offered by default; answer Yes below only if it is in fact empty.' : '') +
       ` ${sqlNote}`));
   } else if (resolvedOptions.existingDb) {
     console.log(chalk.cyan(`\n🗄️  The database already contains data, so no Prisma migrations will be generated for it. ${sqlNote}`));
@@ -290,7 +290,9 @@ export async function promptForMissingOptions(options) {
         { name: 'Yes', value: true },
         { name: 'No', value: false },
       ],
-      default: true,
+      // only recommend Prisma when the database was actually observed to be empty: on a database
+      // we could not inspect, pressing Enter must not scaffold migrations over existing data
+      default: resolvedOptions.dbInspected,
     }]);
     resolvedOptions.includePrismaMigrations = prismaAnswer.includePrismaMigrations;
   } else {
