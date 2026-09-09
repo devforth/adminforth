@@ -620,6 +620,11 @@ class AdminForth implements IAdminForth {
         ADMINFORTH_SECRET variable is used to sign JWT tokens
       `);
     }
+    if (adminforthSecret.length < 16) {
+      afLogger.warn(`ADMINFORTH_SECRET is too short (${adminforthSecret.length} characters). ` +
+        'It is the key that signs every auth cookie: a guessable value lets anyone forge a session for any user. ' +
+        'Generate one with: openssl rand -hex 32');
+    }
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
