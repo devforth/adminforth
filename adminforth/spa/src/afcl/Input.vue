@@ -12,7 +12,7 @@
       ref="input"
       v-bind="$attrs"
       :type="type"
-      @input="$emit('update:modelValue', type === 'number' ? Number(($event.target as HTMLInputElement)?.value) : ($event.target as HTMLInputElement)?.value)"
+      @input="$emit('update:modelValue', type === 'number' ? numberInputValue(($event.target as HTMLInputElement)?.value) : ($event.target as HTMLInputElement)?.value)"
       :value="modelValue"
       aria-describedby="helper-text-explanation"
       class="afcl-input  inline-flex bg-lightInputBackground text-lightInputText dark:text-darkInputText border border-lightInputBorder rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
@@ -37,6 +37,7 @@
 
 import { ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
+import { numberInputValue } from './inputValue';
 
 const coreStore = useCoreStore();
 const isIos = coreStore.isIos;
