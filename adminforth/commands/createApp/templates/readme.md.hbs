@@ -7,7 +7,7 @@ Install dependencies:
 ```
 
 {{#if adminUserTableInstructions}}
-Prepare the admin users table in your existing database before starting the app. AdminForth uses this table for back-office authentication, and your own migration tool should own this schema change. The schema below is only an example:
+Create the admin users table in your database before starting the app: AdminForth needs it for back-office authentication, and no Prisma migrations were generated for this project.
 
 {{{adminUserTableInstructions}}}
 
@@ -22,6 +22,13 @@ Create the initial migration and apply it to the database:
 {{packageManagerRun}} migrate:local
 ```
 {{/if}}
+
+First-time setup on a fresh clone: `create-app` wrote a random `ADMINFORTH_SECRET` into `.env`, but that file is gitignored, so every developer and every deployment creates their own (see `.env.example`). The command below only creates `.env` when it does not exist yet:
+
+```bash
+# On Windows (PowerShell): node -e "require('fs').writeFileSync('.env', 'ADMINFORTH_SECRET=' + require('crypto').randomBytes(32).toString('hex') + '\n', { flag: 'wx' })"
+[ -f .env ] || (umask 077; echo "ADMINFORTH_SECRET=$(openssl rand -hex 32)" > .env)
+```
 
 Start the server:
 
@@ -48,8 +55,12 @@ Your colleagues will need to pull the changes and run `{{packageManagerRun}} mig
 You have Dockerfile ready for production deployment. You can test the build with:
 
 ```bash
+# Generate a signing key once and keep it in your secret store (never commit it).
+# On Windows without openssl: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+export ADMINFORTH_SECRET="$(openssl rand -hex 32)"
+
 docker build -t {{appName}}-image .
-docker run -p 3500:3500 -e ADMINFORTH_SECRET=123 {{#if sqliteFile}}-v $(pwd)/db:/code/db {{/if}}{{appName}}-image
+docker run -p 3500:3500 -e ADMINFORTH_SECRET="$ADMINFORTH_SECRET" {{#if sqliteFile}}-v $(pwd)/db:/code/db {{/if}}{{appName}}-image
 ```
 
 To set non-sensitive environment variables in production, use `.env.prod` file.

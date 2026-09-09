@@ -34,7 +34,7 @@ Use this path when you already have a database and your own schema or migrations
 npx adminforth create-app --app-name myadmin --db "postgresql://user:password@localhost:5432/dbname"
 ```
 
-When you provide your own database URL, the CLI treats this as your own database. It does not create Prisma schema or Prisma migration scripts for that database. Instead, the generated project README contains the SQL or schema notes for adding the required `adminuser` table with your own migration tool.
+The CLI connects to the database and checks whether it already contains tables — passing `--db` alone does not decide the path. If tables exist, the database is treated as your own: no Prisma schema or migration scripts are generated, and both the CLI output and the generated project README contain the SQL for adding the required `adminuser` table with your own migration tool (MongoDB needs no table up front — the collection is created on first write). If a PostgreSQL, MySQL or SQLite database is still empty, the CLI asks `Include Prisma migrations? >` — answer **No** to keep managing the schema yourself and you get the same `adminuser` SQL; answer **Yes** and AdminForth manages the schema for you (see Path 2). The CLI offers Prisma migrations only for PostgreSQL, MySQL and SQLite, so MongoDB and ClickHouse never get the question and always keep their schema yours. If the CLI cannot load the database connector (for example offline, or the installed connector is too old to inspect a database), it warns, continues as if the database were empty and defaults the question to **No**, so pressing Enter never scaffolds migrations over a database that may already hold data; a database it cannot connect to makes `create-app` fail with the connection error.
 
 After the project is created, navigate into it and generate resources from your existing tables:
 
@@ -65,12 +65,12 @@ Once the project is created, navigate into its directory:
 cd myadmin # or any other name you provided
 ```
 
-For the new database path, the CLI can scaffold Prisma files and migration scripts for the default SQLite database.
+For an empty database (the default SQLite file, or an empty SQLite/PostgreSQL/MySQL database passed with `--db`), the CLI asks `Include Prisma migrations? >`, defaulting to **Yes**. Answer **Yes** to have AdminForth scaffold the Prisma schema and migration scripts; answer **No** to manage the schema yourself — the CLI output and the generated README then contain the SQL for the required `adminuser` table.
 
 CLI options:
 
 * **`--app-name`** - name for your project. Used in `package.json`, `index.ts` branding, etc. Default value: **`adminforth-app`**.
-* **`--db`** - database connection string. Currently PostgreSQL, MongoDB, SQLite, MySQL, Clickhouse and Qdrant (read only) are supported. Default value: **`sqlite://.db.sqlite`**
+* **`--db`** - database connection string. `create-app` accepts `sqlite://`, `postgresql://`, `mongodb://`, `mysql://` and `clickhouse://` URLs. Default value: **`sqlite://.db.sqlite`**
 
 > ☝️ Database Connection String format:
 >
@@ -95,12 +95,13 @@ myadmin/
 │   └── tsconfig.json     # Tsconfig for Vue project (adds completion for AdminForth core components)
 ├── resources
 │   └── adminuser.ts      # Example resource file for users management
-├── schema.prisma         # Prisma schema file, generated only for the new database path
+├── schema.prisma         # Prisma schema file, generated only when you include Prisma migrations
 ├── index.ts              # Main entry point: configures AdminForth & starts the server
 ├── package.json          # Project dependencies
 ├── pnpm-workspace.yaml
 ├── tsconfig.json         # TypeScript configuration
-├── .env                  # Env vars like tokens, secrets that should not be in version control
+├── .env                  # Env vars like tokens, secrets that should not be in version control (ADMINFORTH_SECRET is generated here for you)
+├── .env.example          # Committed template listing the secrets each developer must create locally
 ├── .env.local            # General local environment variables
 └── .gitignore
 
@@ -108,7 +109,7 @@ myadmin/
 
 ### Initial Migration & Future Migrations
 
-For the new database path, the CLI creates Prisma files for managing migrations. Prisma is not required by AdminForth itself, but it is a convenient migration tool for standalone projects that do not have database management yet.
+When you answer **Yes** to `Include Prisma migrations? >`, the CLI creates Prisma files for managing migrations. Prisma is not required by AdminForth itself, but it is a convenient migration tool for standalone projects that do not have database management yet.
 
 CLI will suggest you a command to initialize the database with Prisma:
 
@@ -126,7 +127,7 @@ pnpm makemigration --name init ; pnpm migrate:local
 
 Other developers need to pull migration and run `pnpm migrate:local` to apply any unapplied migrations.
 
-For the existing database path, use your own migration tool instead. The generated project README shows how to add the required `adminuser` table to your database.
+When no Prisma migrations were generated — the database already had tables, you answered **No**, or the database is MongoDB or ClickHouse — use your own migration tool instead. The CLI output and the generated project README show how to add the required `adminuser` table to your database (MongoDB needs none).
 
 ## Run the Server
 

@@ -47,10 +47,22 @@ Create two files in your project's root directory:
 Put the following content to the `.env.local` file:
 
 ```bash title="./.env.local"
-ADMINFORTH_SECRET=123
 NODE_ENV=development
 DATABASE_URL=sqlite://.db.sqlite
 PRISMA_DATABASE_URL=file:.db.sqlite
+```
+
+Generate a signing key into the gitignored `.env` file, readable by you only (AdminForth logs a warning at startup if the secret is shorter than 16 characters; on Windows without openssl use `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`):
+
+```bash
+(umask 077; echo "ADMINFORTH_SECRET=$(openssl rand -hex 32)" > .env)
+```
+
+Make sure `.env` never reaches the repository or a Docker image:
+
+```bash
+echo ".env" >> .gitignore
+echo ".env" >> .dockerignore
 ```
 
 > ☝️ Production best practices:
