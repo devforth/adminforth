@@ -2100,20 +2100,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const { record, requiredColumnsToSkip } = body;
 
-            // todo if showIn.create is function, code below will be buggy (will not detect required fact)
-            for (const column of resource.columns) {
-              if (
-                  (column.required as {create?: boolean, edit?: boolean})?.create &&
-                  record[column.name] === undefined &&
-                  column.showIn.create
-              ) {
-                  const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
-                  if (!shouldWeSkipColumn) {
-                    return { error: `Column '${column.name}' is required`, ok: false };
-                  }
-              }
-            }
-
             const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
             if (record[primaryKeyColumn.name] !== undefined) {
               const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);

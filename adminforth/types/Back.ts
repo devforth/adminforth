@@ -2141,6 +2141,14 @@ export class Sorts {
   }
 }
 
+/**
+ * Low-level system API. It takes no adminUser, so it applies no allowedActions, no backendOnly,
+ * no showIn, no editReadonly and no hooks: get() and list() return every non-virtual column,
+ * including backendOnly ones, and update()/create() write whatever they are given.
+ *
+ * Before returning a record to a browser call stripBackendOnly(record, ctx); before writing
+ * user-supplied fields call recordWriteError(record, 'edit' | 'create', ctx).
+ */
 export interface IOperationalResource {
   get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
