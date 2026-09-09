@@ -9,16 +9,17 @@ type Handler = (input: Record<string, unknown>) => Promise<any>;
 const ADMIN_USER = { dbUser: { role: 'editor' } };
 const RECORD = { id: 1, en_string: 'Hello', de_string: '', category: 'ui', secret: 's3cr3t', editors_note: 'for editors', reviewed: { en_string: true } };
 
-function resourceConfig(rules: Rules) {
+function resourceConfig(rules: Rules, backendOnlyColumns: Record<string, any> = {}) {
+  const backendOnly = (name: string) => backendOnlyColumns[name];
   return {
     resourceId: 'things',
     dataSource: 'db',
     columns: [
       { name: 'id', primaryKey: true },
-      { name: 'en_string' },
-      { name: 'de_string' },
+      { name: 'en_string', backendOnly: backendOnly('en_string') },
+      { name: 'de_string', backendOnly: backendOnly('de_string') },
       { name: 'category' },
-      { name: 'reviewed' },
+      { name: 'reviewed', backendOnly: backendOnly('reviewed') },
       { name: 'secret', backendOnly: true },
       { name: 'editors_note', backendOnly: async ({ adminUser }: any) => adminUser.dbUser.role !== 'editor' },
     ],
@@ -228,14 +229,14 @@ describe('bulk-ai-flow record endpoints', () => {
 });
 
 describe('i18n record endpoints', () => {
-  function setUp(rules: Rules = {}, extraOptions: Record<string, unknown> = {}) {
+  function setUp(rules: Rules = {}, extraOptions: Record<string, unknown> = {}, backendOnlyColumns: Record<string, any> = {}) {
     const plugin: any = new I18nPlugin({
       supportedLanguages: ['en', 'de'],
       translationFieldNames: { en: 'en_string', de: 'de_string' },
       categoryFieldName: 'category',
       ...extraOptions,
     } as any);
-    const config = resourceConfig(rules);
+    const config = resourceConfig(rules, backendOnlyColumns);
     const fakes = fakeAdminforth(config);
     plugin.adminforth = fakes.adminforth;
     plugin.resourceConfig = config;
@@ -273,6 +274,45 @@ describe('i18n record endpoints', () => {
     const result = await handlers['update-field'](request(UPDATE));
 
     expect(updateResourceRecord).toHaveBeenCalledWith(expect.objectContaining({ recordId: 1, record: { de_string: 'Hallo' } }));
+    expect(result.record).toEqual({ id: 1, en_string: 'Hello', de_string: '' });
+  });
+
+  it('update-field leaves a backendOnly translation column out of the response', async () => {
+    const { handlers } = setUp({}, {}, { de_string: true });
+
+    const result = await handlers['update-field'](request(UPDATE));
+
+    expect(result.record).toEqual({ id: 1, en_string: 'Hello' });
+  });
+
+  it('update-field leaves a backendOnly reviewed column out of the response', async () => {
+    const { handlers } = setUp({}, { reviewedCheckboxesFieldName: 'reviewed' }, { reviewed: true });
+
+    const result = await handlers['update-field'](request({ ...UPDATE, reviewed: true }));
+
+    expect(result.record).toEqual({ id: 1, en_string: 'Hello', de_string: '' });
+  });
+
+  it('update-field resolves a function-valued backendOnly, with the context core passes when loading a record for edit', async () => {
+    const backendOnly = jest.fn(async () => true);
+    const { handlers } = setUp({}, {}, { de_string: backendOnly });
+
+    const result = await handlers['update-field'](request(UPDATE));
+
+    expect(result.record).toEqual({ id: 1, en_string: 'Hello' });
+    expect(backendOnly).toHaveBeenCalledWith(expect.objectContaining({
+      adminUser: ADMIN_USER,
+      source: 'editLoadRequest',
+      meta: expect.objectContaining({ pk: 1 }),
+    }));
+  });
+
+  it('update-field omits a translation field that is not a column of the resource', async () => {
+    const { plugin, handlers } = setUp();
+    plugin.trFieldNames = { ...plugin.trFieldNames, fr: 'fr_string' };
+
+    const result = await handlers['update-field'](request(UPDATE));
+
     expect(result.record).toEqual({ id: 1, en_string: 'Hello', de_string: '' });
   });
 
