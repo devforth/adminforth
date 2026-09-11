@@ -3,7 +3,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError, recordWriteError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -730,7 +730,16 @@ class AdminForth implements IAdminForth {
   async createResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult> {
-    const { resource, record, adminUser, extra, response } = params;
+    const { resource, record, adminUser, extra, response, enforceColumnAccess } = params;
+
+    if (enforceColumnAccess) {
+      const accessError = await recordWriteError(record, 'create', {
+        adminUser, resource, meta: { requestBody: record }, source: ActionCheckSource.CreateRequest, adminforth: this,
+      });
+      if (accessError) {
+        return { error: accessError };
+      }
+    }
 
     normalizeRecordValues(resource, record);
 
@@ -822,8 +831,19 @@ class AdminForth implements IAdminForth {
   async updateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult> {
-    const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
+    const { resource, recordId, record, oldRecord, adminUser, response, extra, updates, enforceColumnAccess } = params;
     const dataToUse = updates || record;
+
+    // before the editReadonly strip below, which would erase the field and hide the refusal
+    if (enforceColumnAccess) {
+      const accessError = await recordWriteError(dataToUse, 'edit', {
+        adminUser, resource, meta: { newRecord: dataToUse, oldRecord, pk: recordId }, source: ActionCheckSource.EditRequest, adminforth: this,
+      });
+      if (accessError) {
+        return { error: accessError };
+      }
+    }
+
     normalizeRecordValues(resource, dataToUse);
     const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {

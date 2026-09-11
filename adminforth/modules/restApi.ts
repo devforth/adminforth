@@ -22,7 +22,8 @@ import {cascadeChildrenDelete} from './utils.js'
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter,
+  isBackendOnly, isShown, stripBackendOnly, recordWriteError } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
@@ -34,51 +35,6 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
 import { filtersTools } from "../modules/filtersTools.js";
 import { normalizeColumnValue } from './columnValueNormalizer.js';
 
-
-async function resolveBoolOrFn(
-  val: BackendOnlyInput | undefined,
-  ctx: {
-    adminUser: AdminUser;
-    resource: AdminForthResource;
-    meta: any;
-    source: ActionCheckSource;
-    adminforth: IAdminForth;
-  }
-): Promise<boolean> {
-  if (typeof val === 'function') {
-    return !!(await (val)(ctx));
-  }
-  return !!val;
-}
-
-async function isBackendOnly(
-  col: AdminForthResource['columns'][number],
-  ctx: {
-    adminUser: AdminUser;
-    resource: AdminForthResource;
-    meta: any;
-    source: ActionCheckSource;
-    adminforth: IAdminForth;
-  }
-): Promise<boolean> {
-  return await resolveBoolOrFn(col.backendOnly, ctx);
-}
-
-async function isShown(
-  col: AdminForthResource['columns'][number],
-  page: 'list' | 'show' | 'edit' | 'create' | 'filter',
-  ctx: Parameters<typeof isBackendOnly>[1]
-): Promise<boolean> {
-  const s = (col.showIn as any) || {};
-  if (s[page] !== undefined) return await resolveBoolOrFn(s[page], ctx);
-  if (s.all !== undefined) return await resolveBoolOrFn(s.all, ctx);
-  return true;
-}
-
-async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
-  const fillOnCreate = !!col.fillOnCreate;
-  return fillOnCreate;
-}
 
 function stripResourceColumnFrontendMeta(column: Record<string, any>) {
   const { default: _default, _baseTypeDebug, ...sanitizedColumn } = column;
@@ -1061,13 +1017,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           source: ActionCheckSource.ShowRequest,
           adminforth: this.adminforth,
         };
-        for (const key of Object.keys(adminUser.dbUser)) {
-          const col = userResource.columns.find((c) => c.name === key);
-          const bo = col ? await isBackendOnly(col, ctx) : true;
-          if (!col || bo) {
-            delete adminUser.dbUser[key];
-          }
-        }
+        await stripBackendOnly(adminUser.dbUser, ctx);
 
         return {
           loggedIn: true,
@@ -1632,13 +1582,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           };
         
           for (const item of data.data) {
-            for (const key of Object.keys(item)) {
-              const col = resource.columns.find((c) => c.name === key);
-              const bo = col ? await isBackendOnly(col, ctx) : true;
-              if (!col || bo) {
-                delete item[key];
-              }
-            }
+            await stripBackendOnly(item, ctx);
             if (!selectedColumnNameSet || shouldAddListHelpers) {
               item._label = resource.recordLabel(item);
             }
@@ -2156,20 +2100,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
             const { record, requiredColumnsToSkip } = body;
 
-            // todo if showIn.create is function, code below will be buggy (will not detect required fact)
-            for (const column of resource.columns) {
-              if (
-                  (column.required as {create?: boolean, edit?: boolean})?.create &&
-                  record[column.name] === undefined &&
-                  column.showIn.create
-              ) {
-                  const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
-                  if (!shouldWeSkipColumn) {
-                    return { error: `Column '${column.name}' is required`, ok: false };
-                  }
-              }
-            }
-
             const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
             if (record[primaryKeyColumn.name] !== undefined) {
               const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
@@ -2198,26 +2128,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            for (const column of resource.columns) {
-              const fieldName = column.name;
-              if (fieldName in record) {
-                const shown = await isShown(column, 'create', ctxCreate); //
-                const bo = await isBackendOnly(column, ctxCreate);
-                const filledOnCreate = await isFilledOnCreate(column);
-                if (bo) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly is true).`,
-                    ok: false,
-                  };
-                }
-
-                if (!shown && !filledOnCreate && !column.allowModifyWhenNotShowInCreate) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`,
-                    ok: false,
-                  };
-                }
-              }
+            const createFieldError = await recordWriteError(record, 'create', ctxCreate);
+            if (createFieldError) {
+              return { error: createFieldError, ok: false };
             }
           
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
@@ -2342,32 +2255,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               adminforth: this.adminforth,
             };
             
-            for (const column of resource.columns) {
-              const fieldName = column.name;
-              if (fieldName in record) {
-                const shown = await isShown(column, 'edit', ctxEdit);
-                const bo = await isBackendOnly(column, ctxEdit);
-                if (bo) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly is true).`,
-                    ok: false,
-                  };
-                }
-
-                if (column.editReadonly) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (editReadonly is true).`,
-                    ok: false,
-                  };
-                }
-
-                if (!shown && !column.allowModifyWhenNotShowInEdit) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`,
-                    ok: false,
-                  };
-                }
-              }
+            const editFieldError = await recordWriteError(record, 'edit', ctxEdit);
+            if (editFieldError) {
+              return { error: editFieldError, ok: false };
             }
             // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
             for (const column of resource.columns) {

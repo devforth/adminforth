@@ -5,7 +5,8 @@ import Fuse from 'fuse.js';
 import crypto from 'crypto';
 import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
-import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
+import { PERIOD_UNITS, type PeriodString, type PeriodUnit, type BackendOnlyInput } from '../types/Back.js';
+import type { AdminUser, ActionCheckSource } from '../types/Common.js';
 
 // @ts-ignore-next-line
 
@@ -667,4 +668,100 @@ export function checkIfLinkInAllowedHosts(url: string, allowedHosts: string[]) {
   if (!allowed) {
     throw new Error(`Attachment host "${hostname}" is not in attachImagesAllowedHosts`);
   }
+}
+
+
+export type ColumnAccessContext = {
+  adminUser: AdminUser;
+  resource: AdminForthResource;
+  meta?: any;
+  source: ActionCheckSource;
+  adminforth: IAdminForth;
+};
+
+type Column = AdminForthResource['columns'][number];
+
+export async function resolveBoolOrFn(val: BackendOnlyInput | undefined, ctx: ColumnAccessContext): Promise<boolean> {
+  if (typeof val === 'function') {
+    return !!(await (val as any)(ctx));
+  }
+  return !!val;
+}
+
+export async function isBackendOnly(col: Column, ctx: ColumnAccessContext): Promise<boolean> {
+  return await resolveBoolOrFn(col.backendOnly, ctx);
+}
+
+export async function isShown(
+  col: Column,
+  page: 'list' | 'show' | 'edit' | 'create' | 'filter',
+  ctx: ColumnAccessContext,
+): Promise<boolean> {
+  const s = (col.showIn as any) || {};
+  if (s[page] !== undefined) {
+    return await resolveBoolOrFn(s[page], ctx);
+  }
+  if (s.all !== undefined) {
+    return await resolveBoolOrFn(s.all, ctx);
+  }
+  return true;
+}
+
+/**
+ * Removes every key that is not a declared column of the resource, or is backendOnly for this user.
+ * Apply it to any record before it leaves the server. Mutates and returns the record.
+ */
+export async function stripBackendOnly<T extends Record<string, any>>(record: T, ctx: ColumnAccessContext): Promise<T> {
+  for (const key of Object.keys(record)) {
+    const col = ctx.resource.columns.find((c) => c.name === key);
+    if (!col || await isBackendOnly(col, ctx)) {
+      delete record[key];
+    }
+  }
+  return record;
+}
+
+/**
+ * Returns null when the column may be written on this page, otherwise the message
+ * the REST create/update routes return.
+ */
+export async function columnWriteError(
+  col: Column,
+  page: 'create' | 'edit',
+  ctx: ColumnAccessContext,
+): Promise<string | null> {
+  const action = page === 'edit' ? 'editing' : 'creation';
+  if (await isBackendOnly(col, ctx)) {
+    return `Field "${col.name}" cannot be modified as it is restricted from ${action} (backendOnly is true).`;
+  }
+  if (page === 'edit' && col.editReadonly) {
+    return `Field "${col.name}" cannot be modified as it is restricted from editing (editReadonly is true).`;
+  }
+  if (await isShown(col, page, ctx)) {
+    return null;
+  }
+  if (page === 'edit') {
+    return col.allowModifyWhenNotShowInEdit ? null
+      : `Field "${col.name}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`;
+  }
+  return (col.fillOnCreate || col.allowModifyWhenNotShowInCreate) ? null
+    : `Field "${col.name}" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`;
+}
+
+/** Returns null when every declared column the record touches may be written on this page, otherwise the first error. */
+export async function recordWriteError(
+  record: Record<string, any>,
+  page: 'create' | 'edit',
+  ctx: ColumnAccessContext,
+): Promise<string | null> {
+  for (const col of ctx.resource.columns) {
+    if (!(col.name in record)) {
+      continue;
+    }
+    const error = await columnWriteError(col, page, ctx);
+    if (error) {
+      return error;
+    }
+  }
+  return null;
 }

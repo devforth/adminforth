@@ -849,12 +849,19 @@ export type CreateResourceRecordParams = {
    * Extra HTTP information. Prefer using extra.response over the top-level response field.
    */
   extra?: HttpExtra;
+
+  /**
+   * Apply the same column checks the REST routes apply: backendOnly, showIn, editReadonly and the
+   * allowModifyWhenNotShowIn* escapes. Off by default, because the programmatic API is a system-level
+   * API and plugins legitimately write columns that no user may write.
+   */
+  enforceColumnAccess?: boolean;
 };
 
 /**
  * Parameters for {@link IAdminForth.updateResourceRecord}.
  */
-export type UpdateResourceRecordParams =
+export type UpdateResourceRecordParams = (
   | {
       /**
        * Resource configuration used to update a record.
@@ -944,7 +951,15 @@ export type UpdateResourceRecordParams =
        * Partial record data with only changed fields. Mutually exclusive with record.
        */
       updates: any;
-    };
+    }
+  ) & {
+  /**
+   * Apply the same column checks the REST routes apply: backendOnly, showIn, editReadonly and the
+   * allowModifyWhenNotShowIn* escapes. Off by default, because the programmatic API is a system-level
+   * API and plugins legitimately write columns that no user may write.
+   */
+  enforceColumnAccess?: boolean;
+};
 
 /**
  * Parameters for {@link IAdminForth.deleteResourceRecord}.
@@ -2126,6 +2141,14 @@ export class Sorts {
   }
 }
 
+/**
+ * Low-level system API. It takes no adminUser, so it applies no allowedActions, no backendOnly,
+ * no showIn, no editReadonly and no hooks: get() and list() return every non-virtual column,
+ * including backendOnly ones, and update()/create() write whatever they are given.
+ *
+ * Before returning a record to a browser call stripBackendOnly(record, ctx); before writing
+ * user-supplied fields call recordWriteError(record, 'edit' | 'create', ctx).
+ */
 export interface IOperationalResource {
   get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
