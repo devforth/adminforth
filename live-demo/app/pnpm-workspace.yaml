@@ -10,3 +10,4 @@ minimumReleaseAgeExclude:
   - '@adminforth/i18n'
   - adminforth
   - '@adminforth/agent'
+  - '@adminforth/background-jobs@1.20.9'
