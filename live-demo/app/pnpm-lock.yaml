@@ -21,8 +21,8 @@ importers:
         specifier: ^1.0.20
         version: 1.0.20(adminforth@3.17.4)
       '@adminforth/background-jobs':
-        specifier: ^1.20.8
-        version: 1.20.8(adminforth@3.17.4)(vue@3.5.38(typescript@5.9.3))
+        specifier: ^1.20.9
+        version: 1.20.9(adminforth@3.17.4)(vue@3.5.38(typescript@5.9.3))
       '@adminforth/bulk-ai-flow':
         specifier: ^1.27.4
         version: 1.27.4(adminforth@3.17.4)
@@ -45,8 +45,8 @@ importers:
         specifier: ^1.11.4
         version: 1.11.4(adminforth@3.17.4)
       '@adminforth/i18n':
-        specifier: ^2.3.1
-        version: 2.3.1(adminforth@3.17.4)
+        specifier: ^2.3.2
+        version: 2.3.2(adminforth@3.17.4)
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.19
         version: 1.0.19(adminforth@3.17.4)
@@ -128,8 +128,8 @@ packages:
     peerDependencies:
       adminforth: ^3.7.1
 
-  '@adminforth/background-jobs@1.20.8':
-    resolution: {integrity: sha512-Bo+nNeG2G6AzqD2c8bfy65cqOgAIkVenHliOOBOB+5RCHjlRMDIkjqH1Fik9zLWtRJfFwm7Ww54uAgpt7FmB0Q==}
+  '@adminforth/background-jobs@1.20.9':
+    resolution: {integrity: sha512-rSyaho5BNTQHEpg00HqdkGh+P1tsb4jrJkq01kX1wxq1Hufx9u8NQqm2Q+bGP6307XHBK3EWKg3PvJNtFOFtHw==}
     peerDependencies:
       adminforth: ^3.8.2
 
@@ -171,8 +171,8 @@ packages:
     peerDependencies:
       adminforth: ^3.8.2
 
-  '@adminforth/i18n@2.3.1':
-    resolution: {integrity: sha512-w/2eIFEz0/AiJPgOaANXJqu/1FGGm2fjQytUauCcmFbAiinxJH3TxP9eg7fUbrWQKxqXk+2FVb+ygrMA99dgOg==}
+  '@adminforth/i18n@2.3.2':
+    resolution: {integrity: sha512-MaeBz85mbtGcx3leW5UOEBqEjXU0f5menKhmwgCtMvpA0l3Z+lkeoVJwN0hyMqxfqnBslUrVpan1VzoZwE3smA==}
     peerDependencies:
       adminforth: ^3.8.2
 
@@ -3291,7 +3291,7 @@ snapshots:
     dependencies:
       adminforth: 3.17.4(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
 
-  '@adminforth/background-jobs@1.20.8(adminforth@3.17.4)(vue@3.5.38(typescript@5.9.3))':
+  '@adminforth/background-jobs@1.20.9(adminforth@3.17.4)(vue@3.5.38(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.38(typescript@5.9.3))
       adminforth: 3.17.4(@adminforth/connector-qdrant@1.0.4)(@adminforth/connector-sqlite@1.0.6)(@types/node@26.4.1)(express@5.2.1)
@@ -3362,7 +3362,7 @@ snapshots:
       clone: 2.1.2
       zod: 4.6.1
 
-  '@adminforth/i18n@2.3.1(adminforth@3.17.4)':
+  '@adminforth/i18n@2.3.2(adminforth@3.17.4)':
     dependencies:
       '@aws-sdk/client-ses': 3.1129.0
       '@sapphire/async-queue': 1.5.5
