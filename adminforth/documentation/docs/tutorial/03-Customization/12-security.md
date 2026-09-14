@@ -308,9 +308,9 @@ export const admin = new AdminForth({
 
   auth: {
     beforeLoginAttempt: [
-      async ({ username, adminforth, extra }) => {
+      async ({ username, adminforth, extra, tr }) => {
         if (!await captchaIsValid(extra)) {
-          return { ok: false, error: "Captcha verification failed" };
+          return { ok: false, error: await tr("Captcha verification failed", "errors") };
         }
         return { ok: true };
       }

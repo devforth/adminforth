@@ -97,6 +97,7 @@
                           :key="`under-inputs-${index}`"
                           :is="getCustomComponent(formatComponent(c))"
                           :meta="formatComponent(c).meta"
+                          :failedLoginAttempts="failedLoginAttempts"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                         />
                         
@@ -117,6 +118,7 @@
                           :key="`under-login-button-${index}`"
                           :is="getCustomComponent(formatComponent(c))"
                           :meta="formatComponent(c).meta"
+                          :failedLoginAttempts="failedLoginAttempts"
                           @update:disableLoginButton="setDisableLoginButton($event)"
                           @update:oauthRedirecting="oauthRedirecting = $event"
                         />
@@ -161,6 +163,8 @@ const showPw = ref(false);
 
 const error = ref(null);
 const disableLoginButton = ref(false);
+// login page injections (e.g. captcha widget) use it to know that attempt was rejected and they have to refresh themselves
+const failedLoginAttempts = ref(0);
 
 const backgroundPosition = computed(() => {
   return coreStore.config?.loginBackgroundPosition || '1/2';
@@ -194,6 +198,7 @@ async function login() {
   });
   if (resp.error) {
       error.value = resp.error;
+      failedLoginAttempts.value++;
   } else if (resp.redirectTo) {
     error.value = null;
     isSuccess.value = true;
