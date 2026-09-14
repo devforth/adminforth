@@ -29,10 +29,74 @@ const admin = new AdminForth({
 });
 
 // get the resource object
-await admin.resource('adminuser').get(Filters.EQ('id', '1234'));
+await admin.resource('adminuser').asSystem({ hooks: false }).get(Filters.EQ('id', '1234'));
 ```
 
 Here we will show you how to use the Data API with simple examples.
+
+## Access scope
+
+Choose an explicit access scope for new code which works with resource data:
+
+```ts
+const users = admin.resource('adminuser');
+
+await users.asUser(adminUser, { meta }).create(record);
+await users.asSystem({ meta }).create(record);
+await users.asSystem({ hooks: false }).create(record);
+```
+
+`asUser()` enforces the resource ACL and column access rules, validates the
+record, and runs lifecycle hooks. `asSystem()` skips ACL and column access but
+still validates the record and runs hooks. Pass `{ hooks: false }` for a trusted
+connector-level operation which still performs normalization and validation.
+
+A denied or failed operation is always visible. `get`, `list`, `count`,
+`aggregate` and `delete` throw, since their return value carries no room for an
+error; `create` and `update` resolve to `{ ok: false, error }`. `delete` returns
+`false` when the record simply did not exist:
+
+```ts
+const { ok, error } = await users.asUser(adminUser, { meta }).update(id, updates);
+
+try {
+  const deleted = await users.asUser(adminUser, { meta }).delete('1234');
+  // deleted === false means there was no such record
+} catch (e) {
+  // ACL denial, cascade failure, or a hook rejection
+}
+```
+
+When the caller has already loaded the record, pass it in so the scoped call does
+not read it a second time and hooks see the same snapshot the caller worked from:
+
+```ts
+await users.asUser(adminUser, { meta, oldRecord }).update(recordId, updates);
+await users.asUser(adminUser, { meta, record }).delete(recordId);
+```
+
+An optional `adminUser` can be attached to a system operation when hooks need
+user attribution without enabling user ACL checks:
+
+```ts
+await users.asSystem({ adminUser, meta }).create(record);
+```
+
+Deprecated unscoped calls remain aliases for the trusted, hook-free scope for
+backward compatibility:
+
+```ts
+await admin.resource('adminuser').create(record);
+await admin.resource('adminuser').asSystem({ hooks: false }).create(record);
+```
+
+The two calls have the same behavior. This applies to `get`, `list`, `count`,
+`aggregate`, `create`, `update`, and `delete`. Unscoped calls will be removed in
+the next major version, so use an explicit scope in new code.
+
+The legacy `admin.createResourceRecord`, `admin.updateResourceRecord`, and
+`admin.deleteResourceRecord` methods are deprecated and will be removed in the
+next major version.
 
 ## Get one item from database
 
@@ -48,7 +112,7 @@ Signature:
 Get item by ID:
 
 ```ts
-const user = await admin.resource('adminuser').get(
+const user = await admin.resource('adminuser').asSystem({ hooks: false }).get(
   [Filters.EQ('id', '1234')]
 );
 ```
@@ -56,7 +120,7 @@ const user = await admin.resource('adminuser').get(
 Check School with name 'Hawkins Elementary' exits in DB
 
 ```ts
-const schoolExists = !!(await admin.resource('schools').get(
+const schoolExists = !!(await admin.resource('schools').asSystem({ hooks: false }).get(
   [Filters.EQ('name', 'Hawkins Elementary')]
 ));
 ```
@@ -65,7 +129,7 @@ const schoolExists = !!(await admin.resource('schools').get(
 Get user with name 'John' and role not 'SuperAdmin'
 
 ```ts
-const user = await admin.resource('adminuser').get(
+const user = await admin.resource('adminuser').asSystem({ hooks: false }).get(
   Filters.EQ('name', 'John'), 
   Filters.NEQ('role', 'SuperAdmin')
 );
@@ -88,7 +152,7 @@ Signature:
 Get 15 latest users which role is not Admin:
 
 ```ts
-const users = await admin.resource('adminuser').list(
+const users = await admin.resource('adminuser').asSystem({ hooks: false }).list(
   [Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt')
 );
 ```
@@ -96,19 +160,19 @@ const users = await admin.resource('adminuser').list(
 Get 10 oldest users (with highest age):
 
 ```ts
-const users = await admin.resource('adminuser').list([], 10, 0, Sorts.ASC('age'));
+const users = await admin.resource('adminuser').asSystem({ hooks: false }).list([], 10, 0, Sorts.ASC('age'));
 ```
 
 Get next page of oldest users:
 
 ```ts
-const users = await admin.resource('adminuser').list([], 10, 10, Sorts.ASC('age'));
+const users = await admin.resource('adminuser').asSystem({ hooks: false }).list([], 10, 10, Sorts.ASC('age'));
 ```
 
 Get 10 schools, sort by rating first, then oldest by founded year:
 
 ```ts
-const schools = await admin.resource('schools').list(
+const schools = await admin.resource('schools').asSystem({ hooks: false }).list(
   [], 10, 0, [Sorts.DESC('rating'), Sorts.ASC('foundedYear')]
 );
 ```
@@ -116,7 +180,7 @@ const schools = await admin.resource('schools').list(
 Get all users that have gmail address AND the ones created not in 2024
 
 ```ts
-const users = await admin.resource('adminuser').list(
+const users = await admin.resource('adminuser').asSystem({ hooks: false }).list(
   Filters.AND(
     Filters.LIKE('email', '@gmail.com'),
     Filters.OR(
@@ -134,7 +198,7 @@ Technically it happened that AdminForth allows you to do this also
 
 ```js
 const minUgcAge = 18;
-const usersWithNoUgcAccess = await admin.resource('adminuser').list(
+const usersWithNoUgcAccess = await admin.resource('adminuser').asSystem({ hooks: false }).list(
   [
     Filters.NEQ('role', 'Admin'), 
     {
@@ -172,7 +236,7 @@ Returns value representing created item with all fields, including fields which 
 Create a new school:
 
 ```ts
-await admin.resource('schools').create({
+await admin.resource('schools').asSystem().create({
   name: 'Hawkins Elementary',
   rating: 5,
   foundedYear: 1950,
@@ -194,7 +258,7 @@ Returns number of items in database which match the filters.
 Count number of schools with rating above 4:
 
 ```ts
-const schoolsCount = await admin.resource('schools').count(Filters.GT('rating', 4));
+const schoolsCount = await admin.resource('schools').asSystem({ hooks: false }).count(Filters.GT('rating', 4));
 ```
 
 Create data for daily report with number of users signed up daily for last 7 days:
@@ -211,7 +275,7 @@ const dailyReports = await Promise.all(
     const dateEnd = new Date(dateStart);
     dateEnd.setDate(dateEnd.getDate() + 1);
 
-    return admin.resource('adminuser').count(
+    return admin.resource('adminuser').asSystem({ hooks: false }).count(
       [Filters.GTE('createdAt', dateStart.toISOString()), Filters.LT('createdAt', dateEnd.toISOString())]
     );
   })
@@ -234,7 +298,7 @@ Signature:
 Update school rating to 4.8
 
 ```ts
-await admin.resource('schools').update('1234', { rating: 4.8 });
+await admin.resource('schools').asSystem().update('1234', { rating: 4.8 });
 ```
 
 ## Delete item from database
@@ -250,7 +314,7 @@ Signature:
 Delete school with ID '1234'
 
 ```ts
-await admin.resource('schools').delete('1234');
+await admin.resource('schools').asSystem().delete('1234');
 ```
 
 
@@ -266,10 +330,10 @@ Golden rule: create one index per query you are going to use often or where you 
 For example if you have two queries:
 
 ```ts
-const users = await admin.resource('adminuser').list(
+const users = await admin.resource('adminuser').asSystem({ hooks: false }).list(
   [Filters.NEQ('role', 'Admin')], 15, 0, Sorts.DESC('createdAt')
 );
-const users = await admin.resource('adminuser').list(
+const users = await admin.resource('adminuser').asSystem({ hooks: false }).list(
   [Filters.EQ('name', 'John'), Filters.NEQ('role', 'SuperAdmin')]
 );
 ```
@@ -388,7 +452,7 @@ With explicit grouping aliases:
 
 ### Get daily apartment stats (count, avg, sum, median) for listed apartments
 ```ts
-const rows = await admin.resource('apartments').aggregate(
+const rows = await admin.resource('apartments').asSystem({ hooks: false }).aggregate(
   Filters.EQ('listed', true),
   {
     count: Aggregates.count(),
@@ -413,7 +477,7 @@ median('price') → median price
 
 ### Get apartment stats grouped by country
 ```ts
-const rows = await admin.resource('apartments').aggregate(
+const rows = await admin.resource('apartments').asSystem({ hooks: false }).aggregate(
   [],
   {
     count: Aggregates.count(),
@@ -433,7 +497,7 @@ What is happening here:
 
 ### Get apartment stats grouped by country and month
 ```ts
-const rows = await admin.resource('apartments').aggregate(
+const rows = await admin.resource('apartments').asSystem({ hooks: false }).aggregate(
   [],
   {
     count: Aggregates.count(),

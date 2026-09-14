@@ -612,14 +612,27 @@ export interface IAdminForth {
   
   tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
+  /**
+   * @deprecated Will be removed in the next major version. Use
+   * `resource(resourceId).asUser(adminUser, { meta }).create(record)` or
+   * `resource(resourceId).asSystem({ hooks: false }).create(record)`.
+   */
   createResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult>;
 
+  /**
+   * @deprecated Will be removed in the next major version. Use the scoped
+   * resource API through `asUser()` or `asSystem()`.
+   */
   updateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult>;
 
+  /**
+   * @deprecated Will be removed in the next major version. Use the scoped
+   * resource API through `asUser()` or `asSystem()`.
+   */
   deleteResourceRecord(
     params: DeleteResourceRecordParams,
   ): Promise<DeleteResourceRecordResult>;
@@ -2209,7 +2222,16 @@ export class Sorts {
   }
 }
 
-export interface IOperationalResource {
+/**
+ * Resource API scoped to a trust level by {@link IOperationalResource.asUser} or
+ * {@link IOperationalResource.asSystem}.
+ *
+ * Error contract: a denied or failed operation is always visible. `get`, `list`, `count`,
+ * `aggregate` and `delete` throw, since their return value carries no room for an error;
+ * `create` and `update` resolve to `{ ok: false, error }`. `delete` resolves to `false` when the
+ * record simply did not exist.
+ */
+export interface IScopedOperationalResource {
   get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
   list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[], columns?: string[]) => Promise<any[]>;
@@ -2222,13 +2244,77 @@ export interface IOperationalResource {
     groupBy?: IGroupByRule | IGroupByRule[]
   ) => Promise<Array<{ group?: string, [key: string]: any }>>;
 
-  create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
+  create: (record: any) => Promise<CreateResourceRecordResult & { ok: boolean; createdRecord: any }>;
 
   update: (primaryKey: any, record: any) => Promise<any>;
 
   delete: (primaryKey: any) => Promise<boolean>;
 
   dataConnector: IAdminForthDataSourceConnectorBase;
+}
+
+export interface IOperationalResource {
+  /**
+   * Returns a resource API scoped to an authenticated admin user. Operations enforce
+   * resource ACL and column access and run lifecycle hooks; mutations also validate records.
+   */
+  asUser: (adminUser: AdminUser, options?: OperationalResourceUserOptions) => IScopedOperationalResource;
+
+  /**
+   * Returns a trusted resource API which skips ACL and column access. Hooks run by
+   * default and can be disabled explicitly for connector-level system operations.
+   */
+  asSystem: (options?: OperationalResourceSystemOptions) => IScopedOperationalResource;
+
+  /** @deprecated Use `asUser(...).get(...)` or `asSystem({ hooks: false }).get(...)`. */
+  get: IScopedOperationalResource['get'];
+
+  /** @deprecated Use `asUser(...).list(...)` or `asSystem({ hooks: false }).list(...)`. */
+  list: IScopedOperationalResource['list'];
+
+  /** @deprecated Use `asUser(...).count(...)` or `asSystem({ hooks: false }).count(...)`. */
+  count: IScopedOperationalResource['count'];
+
+  /** @deprecated Use `asUser(...).aggregate(...)` or `asSystem({ hooks: false }).aggregate(...)`. */
+  aggregate: IScopedOperationalResource['aggregate'];
+
+  /** @deprecated Use `asUser(...).create(...)` or `asSystem({ hooks: false }).create(...)`. */
+  create: IScopedOperationalResource['create'];
+
+  /** @deprecated Use `asUser(...).update(...)` or `asSystem({ hooks: false }).update(...)`. */
+  update: IScopedOperationalResource['update'];
+
+  /** @deprecated Use `asUser(...).delete(...)` or `asSystem({ hooks: false }).delete(...)`. */
+  delete: IScopedOperationalResource['delete'];
+
+  dataConnector: IAdminForthDataSourceConnectorBase;
+}
+
+export interface OperationalResourceContextOptions {
+  meta?: any;
+  extra?: HttpExtra;
+  response?: IAdminForthHttpResponse;
+
+  /**
+   * Record as it is stored before the mutation. Supply it when the caller has already loaded the
+   * record, so `update()` does not read it a second time and hooks see the same snapshot the
+   * caller worked from.
+   */
+  oldRecord?: any;
+
+  /**
+   * Record to delete, when the caller has already loaded it. Same purpose as `oldRecord`, for
+   * `delete()`.
+   */
+  record?: any;
+}
+
+export type OperationalResourceUserOptions = OperationalResourceContextOptions;
+
+export interface OperationalResourceSystemOptions extends OperationalResourceContextOptions {
+  hooks?: boolean;
+  /** User attribution passed to hooks and fillOnCreate without enabling ACL checks. */
+  adminUser?: AdminUser;
 }
 
 

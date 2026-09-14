@@ -36,7 +36,8 @@ import {
 
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './modules/restApi.js';
+import AdminForthRestAPI, { rejectApiRawFilters } from './modules/restApi.js';
+import { interpretResource } from './modules/resourceAccess.js';
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -663,7 +664,17 @@ class AdminForth implements IAdminForth {
 
     this.operationalResources = {};
     this.config.resources.forEach((resource) => {
-      this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
+      this.operationalResources[resource.resourceId] = new OperationalResource(
+        this.connectors[resource.dataSource],
+        resource,
+        this,
+        {
+          create: (params) => this.executeCreateResourceRecord(params),
+          update: (params) => this.executeUpdateResourceRecord(params),
+          delete: (params) => this.executeDeleteResourceRecord(params),
+          validate: (targetResource, record, mode) => this.validateRecordValues(targetResource, record, mode),
+        },
+      );
     });
     
     const adminforthSecret = process.env.ADMINFORTH_SECRET;
@@ -777,10 +788,18 @@ class AdminForth implements IAdminForth {
 
   /**
    * Create record and execute hooks
+   * @deprecated Will be removed in the next major version. Use the scoped resource API.
    * @param params - Parameters for record creation. See CreateResourceRecordParams.
    * @returns Result of record creation. See CreateResourceRecordResult.
    */
   async createResourceRecord(
+    params: CreateResourceRecordParams,
+  ): Promise<CreateResourceRecordResult> {
+    this.warnDeprecatedResourceMutation('createResourceRecord', params.resource.resourceId, 'create');
+    return this.executeCreateResourceRecord(params);
+  }
+
+  private async executeCreateResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult> {
     const { resource, record, adminUser, extra, response } = params;
@@ -871,10 +890,24 @@ class AdminForth implements IAdminForth {
    * record is partial record with only changed fields
    * 
    * Update record by id and execute hooks
-    * @param params - Parameters for record update. See UpdateResourceRecordParams.
-    * @returns Result of record update. See UpdateResourceRecordResult.
+   * @deprecated Will be removed in the next major version. Use the scoped resource API.
+   * @param params - Parameters for record update. See UpdateResourceRecordParams.
+   * @returns Result of record update. See UpdateResourceRecordResult.
    */
   async updateResourceRecord(
+    params: UpdateResourceRecordParams,
+  ): Promise<UpdateResourceRecordResult> {
+    this.warnDeprecatedResourceMutation('updateResourceRecord', params.resource.resourceId, 'update');
+    const dataToUse = params.updates || params.record;
+    for (const column of params.resource.columns.filter((candidate) => candidate.editReadonly)) {
+      if (column.name in dataToUse) {
+        delete dataToUse[column.name];
+      }
+    }
+    return this.executeUpdateResourceRecord(params);
+  }
+
+  private async executeUpdateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
@@ -887,12 +920,6 @@ class AdminForth implements IAdminForth {
 
     if (record) {
       afLogger.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
-    }
-
-    // remove editReadonly columns from record
-    for (const column of resource.columns.filter((col) => col.editReadonly)) {
-      if (column.name in dataToUse)
-        delete dataToUse[column.name];
     }
 
     // execute hook if needed
@@ -959,10 +986,18 @@ class AdminForth implements IAdminForth {
 
   /**
    * Delete record by id and execute hooks
+   * @deprecated Will be removed in the next major version. Use the scoped resource API.
    * @param params - Parameters for record deletion. See DeleteResourceRecordParams.
    * @returns Result of record deletion. See DeleteResourceRecordResult.
    */
   async deleteResourceRecord(
+    params: DeleteResourceRecordParams,
+  ): Promise<DeleteResourceRecordResult> {
+    this.warnDeprecatedResourceMutation('deleteResourceRecord', params.resource.resourceId, 'delete');
+    return this.executeDeleteResourceRecord(params);
+  }
+
+  private async executeDeleteResourceRecord(
     params: DeleteResourceRecordParams,
   ): Promise<DeleteResourceRecordResult> {
     const { resource, recordId, adminUser, record, response, extra } = params;
@@ -1004,6 +1039,26 @@ class AdminForth implements IAdminForth {
     }
 
     return { error: null };
+  }
+
+  private warnedDeprecatedResourceMutations = new Set<string>();
+
+  private warnDeprecatedResourceMutation(
+    method: 'createResourceRecord' | 'updateResourceRecord' | 'deleteResourceRecord',
+    resourceId: string,
+    operation: 'create' | 'update' | 'delete',
+  ): void {
+    // these run on every CRUD action of every plugin, so warn once per resource and method
+    const warnKey = `${resourceId}.${method}`;
+    if (this.warnedDeprecatedResourceMutations.has(warnKey)) {
+      return;
+    }
+    this.warnedDeprecatedResourceMutations.add(warnKey);
+    afLogger.warn(
+      `${method} is deprecated and will be removed in the next major version. `
+      + `Use adminforth.resource('${resourceId}').asUser(adminUser, { meta }).${operation}(...) `
+      + `or adminforth.resource('${resourceId}').asSystem({ hooks: false }).${operation}(...) instead.`,
+    );
   }
 
   async runAction({
