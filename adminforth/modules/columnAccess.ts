@@ -9,6 +9,10 @@ import {
   type AdminUser,
 } from '../types/Common.js';
 
+/**
+ * Everything a column rule needs to resolve itself. Column rules may be plain booleans or
+ * functions of the current user and request, so they can only be answered in a context.
+ */
 export interface ColumnAccessContext {
   adminUser: AdminUser;
   resource: AdminForthResource;
@@ -19,131 +23,95 @@ export interface ColumnAccessContext {
 
 export async function resolveBoolOrFn(
   value: BackendOnlyInput | AllowedActionValue | undefined,
-  context: ColumnAccessContext,
+  ctx: ColumnAccessContext,
 ): Promise<boolean> {
   if (typeof value === 'function') {
-    return !!(await value(context));
+    return !!(await value(ctx));
   }
   return !!value;
 }
 
 export async function isBackendOnly(
   column: AdminForthResource['columns'][number],
-  context: ColumnAccessContext,
+  ctx: ColumnAccessContext,
 ): Promise<boolean> {
-  return resolveBoolOrFn(column.backendOnly, context);
+  return resolveBoolOrFn(column.backendOnly, ctx);
 }
 
 export async function isShown(
   column: AdminForthResource['columns'][number],
   page: 'list' | 'show' | 'edit' | 'create' | 'filter',
-  context: ColumnAccessContext,
+  ctx: ColumnAccessContext,
 ): Promise<boolean> {
   const showIn = column.showIn as Record<string, AllowedActionValue> | undefined;
   if (showIn?.[page] !== undefined) {
-    return resolveBoolOrFn(showIn[page], context);
+    return resolveBoolOrFn(showIn[page], ctx);
   }
   if (showIn?.all !== undefined) {
-    return resolveBoolOrFn(showIn.all, context);
+    return resolveBoolOrFn(showIn.all, ctx);
   }
   return true;
 }
 
-export interface AssertRecordWritableParams {
-  resource: AdminForthResource;
-  record: Record<string, any>;
-  mode: 'create' | 'edit';
-  adminUser: AdminUser;
-  meta: any;
-  adminforth: IAdminForth;
-}
-
-export async function assertRecordWritable({
-  resource,
-  record,
-  mode,
-  adminUser,
-  meta,
-  adminforth,
-}: AssertRecordWritableParams): Promise<void> {
-  const context: ColumnAccessContext = {
-    adminUser,
-    resource,
-    meta,
-    source: mode === 'create' ? ActionCheckSource.CreateRequest : ActionCheckSource.EditRequest,
-    adminforth,
-  };
-
-  for (const column of resource.columns) {
+/**
+ * Checks every field the caller wants to write against the column rules which restrict writing:
+ * backendOnly, editReadonly, showIn plus its allowModifyWhenNotShowIn* / fillOnCreate escapes.
+ *
+ * @returns the reason the record cannot be written, or null when it can.
+ */
+export async function recordWriteError(
+  ctx: ColumnAccessContext,
+  record: Record<string, any>,
+  mode: 'create' | 'edit',
+): Promise<string | null> {
+  for (const column of ctx.resource.columns) {
     const fieldName = column.name;
     if (!(fieldName in record)) {
       continue;
     }
 
-    const shown = await isShown(column, mode, context);
-    const backendOnly = await isBackendOnly(column, context);
-
-    if (backendOnly) {
-      throw new Error(
-        `Field "${fieldName}" cannot be modified as it is restricted from ${mode === 'create' ? 'creation' : 'editing'} (backendOnly is true).`,
-      );
+    if (await isBackendOnly(column, ctx)) {
+      return `Field "${fieldName}" cannot be modified as it is restricted from `
+        + `${mode === 'create' ? 'creation' : 'editing'} (backendOnly is true).`;
     }
 
+    const shown = await isShown(column, mode, ctx);
+
     if (mode === 'create') {
-      if (
-        !shown
-        && !column.fillOnCreate
-        && !column.allowModifyWhenNotShowInCreate
-      ) {
-        throw new Error(
-          `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`,
-        );
+      if (!shown && !column.fillOnCreate && !column.allowModifyWhenNotShowInCreate) {
+        return `Field "${fieldName}" cannot be modified as it is restricted from creation `
+          + `(showIn.create is false). If you need to set this hidden field during creation, either `
+          + `configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`;
       }
       continue;
     }
 
     if (column.editReadonly) {
-      throw new Error(
-        `Field "${fieldName}" cannot be modified as it is restricted from editing (editReadonly is true).`,
-      );
+      return `Field "${fieldName}" cannot be modified as it is restricted from editing `
+        + `(editReadonly is true).`;
     }
 
     if (!shown && !column.allowModifyWhenNotShowInEdit) {
-      throw new Error(
-        `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`,
-      );
+      return `Field "${fieldName}" cannot be modified as it is restricted from editing `
+        + `(showIn.edit is false). If you need to allow updating this hidden field during editing, `
+        + `set column.allowModifyWhenNotShowInEdit = true.`;
     }
   }
+
+  return null;
 }
 
-export interface StripReadForbiddenColumnsParams {
-  resource: AdminForthResource;
-  record: Record<string, any>;
-  adminUser: AdminUser;
-  meta: any;
-  source: ActionCheckSource;
-  adminforth: IAdminForth;
-}
-
-export async function stripReadForbiddenColumns({
-  resource,
-  record,
-  adminUser,
-  meta,
-  source,
-  adminforth,
-}: StripReadForbiddenColumnsParams): Promise<Record<string, any>> {
-  const context: ColumnAccessContext = {
-    adminUser,
-    resource,
-    meta,
-    source,
-    adminforth,
-  };
-
+/**
+ * Drops in place every key the user is not allowed to read: backendOnly columns, and keys which
+ * are not described in the resource at all.
+ */
+export async function stripReadForbiddenColumns(
+  ctx: ColumnAccessContext,
+  record: Record<string, any>,
+): Promise<Record<string, any>> {
   for (const key of Object.keys(record)) {
-    const column = resource.columns.find((candidate) => candidate.name === key);
-    if (!column || await isBackendOnly(column, context)) {
+    const column = ctx.resource.columns.find((candidate) => candidate.name === key);
+    if (!column || await isBackendOnly(column, ctx)) {
       delete record[key];
     }
   }
@@ -178,104 +146,76 @@ export function collectFilterFields(filters: any, fields: Set<string> = new Set(
   return fields;
 }
 
-export interface AssertFilterColumnsReadableParams {
-  resource: AdminForthResource;
-  filters: any;
-  adminUser: AdminUser;
-  meta: any;
-  source: ActionCheckSource;
-  adminforth: IAdminForth;
-}
-
 /**
  * Filter values are never echoed back, but combined with any readable output they turn into an
  * oracle which reads a hidden value out one comparison at a time, so backendOnly columns must not
  * be filterable either.
+ *
+ * @returns the reason the filter cannot be used, or null when it can.
  */
-export async function assertFilterColumnsReadable({
-  resource,
-  filters,
-  adminUser,
-  meta,
-  source,
-  adminforth,
-}: AssertFilterColumnsReadableParams): Promise<void> {
-  const context: ColumnAccessContext = { adminUser, resource, meta, source, adminforth };
-
+export async function filterColumnsReadableError(
+  ctx: ColumnAccessContext,
+  filters: any,
+): Promise<string | null> {
   for (const fieldName of collectFilterFields(filters)) {
-    const column = resource.columns.find((candidate) => candidate.name === fieldName);
-    if (column && await isBackendOnly(column, context)) {
-      throw new Error(`Filter: column "${fieldName}" cannot be used (backendOnly is true).`);
+    const column = ctx.resource.columns.find((candidate) => candidate.name === fieldName);
+    if (column && await isBackendOnly(column, ctx)) {
+      return `Filter: column "${fieldName}" cannot be used (backendOnly is true).`;
     }
   }
-}
 
-export interface AssertColumnsAggregatableParams {
-  resource: AdminForthResource;
-  aggregations?: { [alias: string]: { field?: string } };
-  groupBy?: { field?: string } | Array<{ field?: string }>;
-  filters?: any;
-  adminUser: AdminUser;
-  meta: any;
-  adminforth: IAdminForth;
+  return null;
 }
 
 /**
  * A column may only take part in an aggregation if the user could have read the very same value
  * from the show view, otherwise min/max/groupBy become a way to read hidden columns.
+ *
+ * @returns the reason the aggregation cannot run, or null when it can.
  */
-export async function assertColumnsAggregatable({
-  resource,
-  aggregations,
-  groupBy,
-  filters,
-  adminUser,
-  meta,
-  adminforth,
-}: AssertColumnsAggregatableParams): Promise<void> {
-  const context: ColumnAccessContext = {
-    adminUser,
-    resource,
-    meta,
-    source: ActionCheckSource.ShowRequest,
-    adminforth,
-  };
-
-  const assertExposable = async (fieldName: string, label: string): Promise<void> => {
-    const column = resource.columns.find((candidate) => candidate.name === fieldName);
+export async function columnsAggregatableError(
+  ctx: ColumnAccessContext,
+  query: {
+    aggregations?: { [alias: string]: { field?: string } };
+    groupBy?: { field?: string } | Array<{ field?: string }>;
+    filters?: any;
+  },
+): Promise<string | null> {
+  const exposureError = async (fieldName: string, label: string): Promise<string | null> => {
+    const column = ctx.resource.columns.find((candidate) => candidate.name === fieldName);
     if (!column) {
-      throw new Error(`${label}: unknown column "${fieldName}"`);
+      return `${label}: unknown column "${fieldName}"`;
     }
-    if (await isBackendOnly(column, context)) {
-      throw new Error(`${label}: column "${fieldName}" cannot be aggregated (backendOnly is true).`);
+    if (await isBackendOnly(column, ctx)) {
+      return `${label}: column "${fieldName}" cannot be aggregated (backendOnly is true).`;
     }
-    if (!await isShown(column, 'show', context)) {
-      throw new Error(`${label}: column "${fieldName}" cannot be aggregated (showIn.show is false).`);
+    if (!await isShown(column, 'show', ctx)) {
+      return `${label}: column "${fieldName}" cannot be aggregated (showIn.show is false).`;
     }
+    return null;
   };
 
-  for (const [alias, rule] of Object.entries(aggregations || {})) {
+  for (const [alias, rule] of Object.entries(query.aggregations || {})) {
     // plain count does not reference any column
     if (!rule?.field) {
       continue;
     }
-    await assertExposable(rule.field, `Aggregation "${alias}"`);
+    const error = await exposureError(rule.field, `Aggregation "${alias}"`);
+    if (error) {
+      return error;
+    }
   }
 
-  const groupByRules = Array.isArray(groupBy) ? groupBy : (groupBy ? [groupBy] : []);
+  const groupByRules = Array.isArray(query.groupBy) ? query.groupBy : (query.groupBy ? [query.groupBy] : []);
   for (const groupByRule of groupByRules) {
     if (!groupByRule?.field) {
       continue;
     }
-    await assertExposable(groupByRule.field, 'GroupBy');
+    const error = await exposureError(groupByRule.field, 'GroupBy');
+    if (error) {
+      return error;
+    }
   }
 
-  await assertFilterColumnsReadable({
-    resource,
-    filters,
-    adminUser,
-    meta,
-    source: ActionCheckSource.ShowRequest,
-    adminforth,
-  });
+  return filterColumnsReadableError(ctx, query.filters);
 }

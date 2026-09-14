@@ -943,14 +943,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           source: ActionCheckSource.ShowRequest,
           adminforth: this.adminforth,
         };
-        await stripReadForbiddenColumns({
-          resource: userResource,
-          record: adminUser.dbUser,
-          adminUser,
-          meta: ctx.meta,
-          source: ctx.source,
-          adminforth: this.adminforth,
-        });
+        await stripReadForbiddenColumns(ctx, adminUser.dbUser);
 
         return {
           loggedIn: true,
@@ -1515,14 +1508,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           };
         
           for (const item of data.data) {
-            await stripReadForbiddenColumns({
-              resource,
-              record: item,
-              adminUser,
-              meta,
-              source: ctx.source,
-              adminforth: this.adminforth,
-            });
+            await stripReadForbiddenColumns(ctx, item);
             if (!selectedColumnNameSet || shouldAddListHelpers) {
               item._label = resource.recordLabel(item);
             }
