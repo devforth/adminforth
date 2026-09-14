@@ -55,8 +55,9 @@ function setup(resourceId = 'users') {
     },
     hooks: {
       list: {
-        beforeDatasourceRequest: [async () => {
+        beforeDatasourceRequest: [async ({ query }) => {
           calls.beforeList++;
+          query.filtersTools.replaceOrAddTopFilter({ field: 'tenant', operator: 'eq', value: 't1' });
           return { ok: true };
         }],
         afterDatasourceResponse: [async () => {
@@ -68,6 +69,7 @@ function setup(resourceId = 'users') {
   } as any;
   resource.dataSourceColumns = resource.columns;
 
+  const seenFilters: Record<string, any> = {};
   const connector = {
     createRecord: async ({ record }) => {
       calls.connectorCreate++;
@@ -85,12 +87,14 @@ function setup(resourceId = 'users') {
       calls.connectorGetData++;
       return { data: [{ id: 1, name: 'John', private: 'hidden' }], total: 1 };
     },
-    getCount: async () => {
+    getCount: async ({ filters }) => {
       calls.connectorCount++;
+      seenFilters.count = filters;
       return 1;
     },
-    aggregate: async () => {
+    aggregate: async ({ filters }) => {
       calls.connectorAggregate++;
+      seenFilters.aggregate = filters;
       return [{ total: 1 }];
     },
     validateAndNormalizeInputFilters: (filter) => filter,
@@ -118,6 +122,7 @@ function setup(resourceId = 'users') {
 
   return {
     calls,
+    seenFilters,
     resource: new OperationalResource(connector, resource, adminforth, executors),
   };
 }
@@ -277,5 +282,31 @@ describe('OperationalResource access scopes', () => {
     expect(await second.resource.count([])).toBe(1);
     expect(first.calls).toMatchObject({ acl: 0, connectorGetData: 1 });
     expect(second.calls).toMatchObject({ acl: 0, connectorCount: 1 });
+  });
+
+  it('row-scopes aggregate and count through the same read hooks as list', async () => {
+    const { calls, seenFilters, resource } = setup();
+    const scoped = resource.asUser({} as any, { meta: { allowed: true } });
+    const tenantFilter = { field: 'tenant', operator: 'eq', value: 't1' };
+
+    await scoped.aggregate([], { total: { fn: 'count' } } as any, { field: 'name' } as any);
+    await scoped.count([]);
+
+    // without this an aggregation reports across every tenant's rows
+    expect(seenFilters.aggregate).toContainEqual(tenantFilter);
+    expect(seenFilters.count).toContainEqual(tenantFilter);
+    expect(calls).toMatchObject({ beforeList: 2, connectorAggregate: 1, connectorCount: 1 });
+  });
+
+  it('does not row-scope reads for a trusted system scope', async () => {
+    const { calls, seenFilters, resource } = setup();
+    const hooksFree = resource.asSystem({ hooks: false });
+
+    await hooksFree.aggregate([], { total: { fn: 'count' } } as any);
+    await hooksFree.count([]);
+
+    expect(seenFilters.aggregate).toEqual([]);
+    expect(seenFilters.count).toEqual([]);
+    expect(calls).toMatchObject({ beforeList: 0 });
   });
 });
