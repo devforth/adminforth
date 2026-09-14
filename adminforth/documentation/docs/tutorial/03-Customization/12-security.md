@@ -296,6 +296,38 @@ So to completely hide the email field from all users apart superadmins, you shou
 
 So if you will configure the email column in user resource like this, only superadmin will be able to see emails, and only in the list view.
 
+## Blocking login attempts before credentials check
+
+`auth.beforeLoginAttempt` hooks are called on every request to the login endpoint, before AdminForth looks the user up in the database.
+Each hook gets the username which user tries to log in with and can reject the attempt:
+
+```ts title="./index.ts"
+export const admin = new AdminForth({
+
+  ...
+
+  auth: {
+    beforeLoginAttempt: [
+      async ({ username, adminforth, extra }) => {
+        if (!await captchaIsValid(extra)) {
+          return { ok: false, error: "Captcha verification failed" };
+        }
+        return { ok: true };
+      }
+    ]
+  }
+
+  ...
+
+})
+```
+
+When a hook returns `{ ok: false }`, AdminForth answers with status `401` and `{ error }`, and never touches the database.
+This is what makes the hook a right place for captcha and other anti-bruteforce checks: the response is the same for existing and
+non-existing users, so an attacker can't use it to find out whether credentials were correct.
+
+If your check needs the user record itself (like two-factor authentication does), use [auth.beforeLoginConfirmation](/docs/api/Back/type-aliases/BeforeLoginConfirmationFunction) instead: it is called after credentials are verified.
+
 ## Custom user authorization hook
 
 Default user authorization checks that cookie with JWT token is valid, signed and not expired. 

@@ -1,6 +1,7 @@
 import { 
   type IAdminForth, 
   type IHttpServer,
+  BeforeLoginAttemptFunction,
   BeforeLoginConfirmationFunction,
   AdminForthResource,
   AllowedActionValue,
@@ -733,6 +734,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     return null;
   }
 
+  /**
+   * Runs beforeLoginAttempt hooks. Returns error to answer with, or null if login attempt is allowed to proceed.
+   */
+  async processBeforeLoginAttempt(username: string, extra: HttpExtra): Promise<{ error: string } | null> {
+    const beforeLoginAttempt = this.adminforth.config.auth.beforeLoginAttempt as (BeforeLoginAttemptFunction[] | undefined);
+
+    for (const hook of listify(beforeLoginAttempt)) {
+      const hookRespError = hookResponseError(await hook({ username, adminforth: this.adminforth, extra }), 'beforeLoginAttempt');
+      if (hookRespError) {
+        return hookRespError;
+      }
+    }
+    return null;
+  }
+
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
@@ -790,6 +806,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = userResource.columns.find((col) => col.name === this.adminforth.config.auth.usernameField);
         const normalizedUsername = normalizeColumnValue(usernameColumn, username);
+
+        // hooks are called before any lookup in database, so rejected attempt looks the same
+        // for existing and non-existing users (e.g. captcha check should not leak valid credentials)
+        const loginAttemptError = await this.processBeforeLoginAttempt(normalizedUsername, {
+          body, headers, query, cookies, requestUrl, response
+        });
+        if (loginAttemptError) {
+          response.setStatus(401);
+          return loginAttemptError;
+        }
+
         // if there is no passwordHashField, in columns, add it, with backendOnly and showIn: []
         if (!userResource.dataSourceColumns.find((col) => col.name === this.adminforth.config.auth.passwordHashField)) {
           userResource.dataSourceColumns.push({
