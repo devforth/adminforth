@@ -1245,6 +1245,18 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
+      // normalize beforeLoginAttempt hooks
+      const bla = this.inputConfig.auth.beforeLoginAttempt;
+      if (!Array.isArray(bla)) {
+        if (bla) {
+          newConfig.auth.beforeLoginAttempt = [bla];
+        } else {
+          newConfig.auth.beforeLoginAttempt = [];
+        }
+      } else {
+        newConfig.auth.beforeLoginAttempt = bla;
+      }
+
       // normalize beforeLoginConfirmation hooks
       const blc = this.inputConfig.auth.beforeLoginConfirmation;
       if (!Array.isArray(blc)) {

@@ -1267,6 +1267,27 @@ export type BeforeLoginConfirmationFunction = (params?: {
 }>;
 
 /**
+ * Allows to reject login attempt before AdminForth checks credentials in the database.
+ * Called on every call of login endpoint, even if username does not exist or password is wrong,
+ * so it is a right place for captcha and other anti-bruteforce checks: user gets the same response
+ * regardless of whether credentials were correct.
+ */
+export type BeforeLoginAttemptFunction = (params: {
+  /**
+   * Username which user tries to login with, normalized in same way as it is stored in database.
+   */
+  username: string,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information of login request. Use extra.response to set custom status or headers.
+   */
+  extra: HttpExtra,
+}) => Promise<{ ok: boolean, error?: string }>;
+
+/**
  * Allow to make extra authorization
  */
 export type AdminUserAuthorizeFunction = ((params?: { 
@@ -1745,6 +1766,27 @@ export interface AdminForthInputConfig {
        * Default: false
        */
       removeBackgroundBlendMode?: boolean,
+
+      /**
+       * Function or functions which will be called before AdminForth checks credentials in the database.
+       * Each function receives username which user tries to login with and can reject the attempt by
+       * returning `{ ok: false, error: 'Some reason' }`.
+       * 
+       * Use it for captcha/anti-bruteforce checks: rejection happens before user lookup, so response does not
+       * depend on whether such user exists or password is correct.
+       * 
+       * Example:
+       * 
+       * ```ts
+       * beforeLoginAttempt: async ({ username, extra }) => {
+       *   if (!await captchaIsValid(extra)) {
+       *     return { ok: false, error: 'Captcha verification failed' };
+       *   }
+       *   return { ok: true };
+       * },
+       * ```
+       */
+      beforeLoginAttempt?: BeforeLoginAttemptFunction | Array<BeforeLoginAttemptFunction>,
 
       /**
        * Function or functions  which will be called before user try to login.
