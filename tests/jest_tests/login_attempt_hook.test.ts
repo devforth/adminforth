@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import request from 'supertest';
 import { admin, app, closeApplication } from './authTestApp';
 
-type LoginAttemptHook = (params: { username: string, adminforth: any, extra: any }) => Promise<{ ok: boolean, error?: string }>;
+type LoginAttemptHook = (params: { username: string, adminforth: any, extra: any, tr: any }) => Promise<{ ok: boolean, error?: string }>;
 
 const hooks = admin.config.auth.beforeLoginAttempt as LoginAttemptHook[];
 
@@ -45,10 +45,10 @@ describe('auth.beforeLoginAttempt', () => {
     getData.mockRestore();
   });
 
-  it('receives normalized username and request data', async () => {
-    const calls: { username: string, headers: Record<string, string> }[] = [];
-    hooks.push(async ({ username, extra }) => {
-      calls.push({ username, headers: extra.headers });
+  it('receives normalized username, request data and translate function', async () => {
+    const calls: { username: string, headers: Record<string, string>, translated: string }[] = [];
+    hooks.push(async ({ username, extra, tr }) => {
+      calls.push({ username, headers: extra.headers, translated: await tr('Captcha verification failed', 'errors') });
       return { ok: true };
     });
 
@@ -62,6 +62,7 @@ describe('auth.beforeLoginAttempt', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0].username).toEqual('adminforth');
     expect(calls[0].headers['x-captcha-token']).toEqual('token');
+    expect(calls[0].translated).toEqual('Captcha verification failed');
   });
 
   it('stops on first rejecting hook and lets login pass when all hooks allow it', async () => {

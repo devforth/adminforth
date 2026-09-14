@@ -9,6 +9,7 @@ import {
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
   IAdminForthEndpointHandlerInput,
+  ITranslateFunction,
   IAdminForthRestAPI,
   IAdminForthSort,
   HttpExtra,
@@ -737,11 +738,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   /**
    * Runs beforeLoginAttempt hooks. Returns error to answer with, or null if login attempt is allowed to proceed.
    */
-  async processBeforeLoginAttempt(username: string, extra: HttpExtra): Promise<{ error: string } | null> {
+  async processBeforeLoginAttempt(username: string, extra: HttpExtra, tr: ITranslateFunction): Promise<{ error: string } | null> {
     const beforeLoginAttempt = this.adminforth.config.auth.beforeLoginAttempt as (BeforeLoginAttemptFunction[] | undefined);
 
     for (const hook of listify(beforeLoginAttempt)) {
-      const hookRespError = hookResponseError(await hook({ username, adminforth: this.adminforth, extra }), 'beforeLoginAttempt');
+      const hookRespError = hookResponseError(await hook({ username, adminforth: this.adminforth, extra, tr }), 'beforeLoginAttempt');
       if (hookRespError) {
         return hookRespError;
       }
@@ -811,7 +812,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         // for existing and non-existing users (e.g. captcha check should not leak valid credentials)
         const loginAttemptError = await this.processBeforeLoginAttempt(normalizedUsername, {
           body, headers, query, cookies, requestUrl, response
-        });
+        }, tr);
         if (loginAttemptError) {
           response.setStatus(401);
           return loginAttemptError;

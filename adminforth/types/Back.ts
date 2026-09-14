@@ -1285,6 +1285,10 @@ export type BeforeLoginAttemptFunction = (params: {
    * Extra HTTP information of login request. Use extra.response to set custom status or headers.
    */
   extra: HttpExtra,
+  /**
+   * Translate function, respects language of login request.
+   */
+  tr: ITranslateFunction,
 }) => Promise<{ ok: boolean, error?: string }>;
 
 /**
