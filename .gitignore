@@ -6,4 +6,4 @@ adapters/*
 !adapters/README.md
 !adapters/AGENTS.md
 background-jobs-dbs
-tests/jest_tests/db/
+tests/jest_tests/db/connectors/adminforth-connector-*/
