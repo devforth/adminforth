@@ -147,6 +147,12 @@ const images = [
     description: 'Provides an internal agent that can perform various tasks based on natural language instructions. Connect it to your data and let it help you with content generation, data management, or any custom use case you can think of'
   },
   {
+    original: require('@site/static/img/previews/mcp.png').default,
+    title: 'MCP Server Plugin - plug your admin into coding agents',
+    link: '/docs/tutorial/Plugins/mcp/',
+    description: 'Expose AdminForth resources and actions as remote MCP tools for Claude Code, OpenAI Codex, Gemini CLI and any other MCP client. Every call runs as the AdminForth user who created the auth secret, so your resource permissions, validation and hooks still apply'
+  },
+  {
     original: require('@site/static/img/previews/dashboards-plugin.png').default,
     title: 'Dashboard Plugin - creare custom dashboards from web interface',
     link: '/docs/tutorial/Plugins/dashboard/',
