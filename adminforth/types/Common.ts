@@ -106,6 +106,12 @@ export interface AdminUser {
   dbUser: any,
 
   /**
+   * Optional software actor executing an action on behalf of this user.
+   * For example, `af-agent` or `codex@1.2.3 | Production Codex`.
+   */
+  executedBy?: string,
+
+  /**
    * Flag which indicates that this user is not real user from database, but external user from e.g. custom website.
    * True here is not possible in AdminForth built-in functions, auth middleware etc. 
    * True value is only possible in your need to tell AdminForth that this is not real "fake" admin user

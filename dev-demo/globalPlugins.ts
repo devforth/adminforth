@@ -3,6 +3,7 @@ import AdminForthAgent from '../plugins/adminforth-agent/index.js';
 import AdminForthPlugin from '../adminforth/basePlugin.js';
 import OpenAIAudioAdapter from '../adapters/adminforth-audio-adapter-openai/index.js';
 import DashboardPlugin from '../plugins/adminforth-dashboard/index.js';
+import AdminForthMcpPlugin from '../plugins/adminforth-mcp/index.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
@@ -37,6 +38,18 @@ function createAgentCompletionAdapter(
 export const globalPlugins = [
   new DashboardPlugin({
     dashboardConfigsResourceId: 'dashboard_configs',
+  }),
+  new AdminForthMcpPlugin({
+    authSecretResource: {
+      resourceId: 'mcp_auth_secrets',
+      idField: 'id',
+      nameField: 'name',
+      secretHashField: 'secret_hash',
+      userIdField: 'user_id',
+      createdAtField: 'created_at',
+      lastUsedAtField: 'last_used_at',
+      lastUsedByAgentField: 'last_used_by_agent',
+    },
   }),
   new AdminForthAgent({
     placeholderMessages: async ({ adminUser, httpExtra }) => {

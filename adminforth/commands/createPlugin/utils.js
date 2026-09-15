@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { execa } from 'execa';
 import Handlebars from 'handlebars';
 import { resolveAdminforthVersionRange } from '../cli.js';
+import { checkNodeVersion } from '../nodeVersion.js';
 
 export function parseArgumentsIntoOptions(rawArgs) {
   const args = arg(
@@ -45,18 +46,6 @@ export async function promptForMissingOptions(options) {
   };
 }
 
-function checkNodeVersion(minRequiredVersion = 20) {
-  const current = process.versions.node.split(".");
-  const major = parseInt(current[0], 10);
-
-  if (isNaN(major) || major < minRequiredVersion) {
-    throw new Error(
-      `Node.js v${minRequiredVersion}+ is required. You have ${process.versions.node}. ` +
-        `Please upgrade Node.js. We recommend using nvm for managing multiple Node.js versions.`
-    );
-  }
-}
-
 function checkForExistingPackageJson() {
   if (fs.existsSync(path.join(process.cwd(), "package.json"))) {
     throw new Error(
@@ -70,7 +59,7 @@ function initialChecks() {
   return [
     {
       title: "👀 Checking Node.js version...",
-      task: () => checkNodeVersion(20),
+      task: () => checkNodeVersion(),
     },
     {
       title: "👀 Validating current working directory...",

@@ -1,6 +1,9 @@
 
 FROM {{dockerBaseImage}}
 WORKDIR /code/
+{{#if usePnpm}}
+RUN corepack enable && corepack install --global pnpm@11.24.0
+{{/if}}
 ADD package.json {{dockerAdditionalManifestFiles}} /code/
 RUN {{packageManager}} {{dockerPackageInstallSubcommand}}  
 ADD . /code/

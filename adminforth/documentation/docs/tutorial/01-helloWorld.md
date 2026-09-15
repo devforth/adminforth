@@ -19,12 +19,12 @@ When back-office user creates a new post it will be automatically assigned using
 
 ## Prerequisites
 
-We will use Node v20 for this demo. If you have other Node versions, we recommend using [NVM](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script) to switch them easily:
+AdminForth supports Node.js 22.12+, 24, and 26. Node.js 20 and 21 are no longer supported. This demo uses Node.js 24 LTS. You can use [NVM](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script) to switch versions:
 
 ```bash
-nvm install 20
-nvm alias default 20
-nvm use 20
+nvm install 24
+nvm alias default 24
+nvm use 24
 ```
 
 ## Installation
@@ -104,7 +104,7 @@ Open `package.json` and add the following scripts:
     //diff-add
     "author": "",
     //diff-add
-    "node": ">=20"
+    "node": "^22.12.0 || ^24.0.0 || ^26.0.0"
     //diff-add
   },
 }
