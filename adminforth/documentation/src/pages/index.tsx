@@ -5,7 +5,6 @@ import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
-const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
 const YOUTUBE_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/4tB8uzY__uk';
 const HOME_TITLE = 'Agent-first open-source admin panel framework';
 const HOME_DESCRIPTION = 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. AdminForth is a flexible, modern foundation for developer-owned back-end management systems.';
@@ -297,6 +296,77 @@ function Terminal({note}: {note?: string}): JSX.Element {
   );
 }
 
+function BrandMark(): JSX.Element {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        d="M8.034 6.006V13H6.097V12.194C5.59433 12.8007 4.86633 13.104 3.913 13.104C3.25433 13.104 2.65633 12.9567 2.119 12.662C1.59033 12.3673 1.17433 11.947 0.871 11.401C0.567667 10.855 0.416 10.2223 0.416 9.503C0.416 8.78367 0.567667 8.151 0.871 7.605C1.17433 7.059 1.59033 6.63867 2.119 6.344C2.65633 6.04933 3.25433 5.902 3.913 5.902C4.80567 5.902 5.50333 6.18367 6.006 6.747V6.006H8.034ZM4.264 11.44C4.77533 11.44 5.2 11.2667 5.538 10.92C5.876 10.5647 6.045 10.0923 6.045 9.503C6.045 8.91367 5.876 8.44567 5.538 8.099C5.2 7.74367 4.77533 7.566 4.264 7.566C3.744 7.566 3.315 7.74367 2.977 8.099C2.639 8.44567 2.47 8.91367 2.47 9.503C2.47 10.0923 2.639 10.5647 2.977 10.92C3.315 11.2667 3.744 11.44 4.264 11.44Z"
+        fill="currentColor"
+      />
+      <path
+        d="M13.317 5.538C12.589 5.538 12.0387 5.69833 11.666 6.019C11.2933 6.331 11.107 6.80333 11.107 7.436V7.995H14.851V9.685H11.107V13H9.001V7.449C9.001 6.279 9.365 5.369 10.093 4.719C10.8297 4.069 11.8567 3.744 13.174 3.744C13.694 3.744 14.1837 3.80033 14.643 3.913C15.1023 4.017 15.501 4.173 15.839 4.381L15.189 6.045C14.669 5.707 14.045 5.538 13.317 5.538Z"
+        fill="var(--signal)"
+      />
+    </svg>
+  );
+}
+
+const PANEL_ROWS = [
+  {email: 'alice@acme.io', role: 'Admin', status: 'Active', tone: 'ok'},
+  {email: 'b.novak@acme.io', role: 'Editor', status: 'Active', tone: 'ok'},
+  {email: 'carol@vendor.co', role: 'Viewer', status: 'Invited', tone: 'warn'},
+  {email: 'd.ross@acme.io', role: 'Editor', status: 'Suspended', tone: 'off'},
+];
+
+const PILL_TONE = {ok: styles.pillOk, warn: styles.pillWarn, off: styles.pillOff};
+
+function PanelPreview(): JSX.Element {
+  return (
+    <div className={styles.panel}>
+      <div className={styles.panelBar}>
+        <span className={styles.tl} />
+        <span className={styles.tl} />
+        <span className={styles.tl} />
+        <span className={styles.panelUrl}>localhost:3000/resource/users</span>
+      </div>
+      <div className={styles.panelBody}>
+        <aside className={styles.panelSide}>
+          <div className={styles.sideBrand}><BrandMark />AdminForth</div>
+          <nav>
+            <a className={styles.on} href="#users">Users</a>
+            <a href="#users">Orders</a>
+            <a href="#users">Products</a>
+            <a href="#users">Audit log</a>
+          </nav>
+        </aside>
+        <div>
+          <div className={styles.panelHead}>
+            <b>Users</b>
+            <span className={styles.count}>1 284 records</span>
+            <span className={styles.mini}>+ Create</span>
+          </div>
+          <div className={styles.scroll}>
+            <table>
+              <thead>
+                <tr><th>Email</th><th>Role</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                {PANEL_ROWS.map((row) => (
+                  <tr key={row.email}>
+                    <td>{row.email}</td>
+                    <td>{row.role}</td>
+                    <td><span className={`${styles.pill} ${PILL_TONE[row.tone]}`}>{row.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Hero(): JSX.Element {
   return (
     <header className={styles.hero}>
@@ -318,15 +388,7 @@ function Hero(): JSX.Element {
           </div>
           <Terminal note="# Postgres &middot; MySQL &middot; SQLite &middot; Mongo" />
         </div>
-        <div className={styles.panel}>
-          <div className={styles.panelBar}>
-            <span className={styles.tl} />
-            <span className={styles.tl} />
-            <span className={styles.tl} />
-            <span className={styles.panelUrl}>demo.adminforth.dev/overview</span>
-          </div>
-          <iframe className={styles.demoFrame} src={LIVE_DEMO_IFRAME_URL} title="AdminForth live demo" />
-        </div>
+        <PanelPreview />
       </div>
     </header>
   );
@@ -387,9 +449,9 @@ function AgentSurfaces(): JSX.Element {
           <span className={styles.flag}>New plugin</span>
           <Heading as="h3" className={styles.h3}>MCP Server</Heading>
           <p>
-            Expose AdminForth API methods as remote MCP tools. Every call runs as the user who
-            created the auth secret, so resource permissions, validation and hooks still apply &mdash;
-            and each secret is revocable on its own.
+            Let your agent work the data in your panel &mdash; read it, clean it up, write it back.
+            An agent is just another frontend for the same data: the same hooks, the same
+            permissions, the same audit log.
           </p>
           <Link className={styles.link} to="/docs/tutorial/Plugins/mcp/">Read the MCP docs</Link>
         </div>
