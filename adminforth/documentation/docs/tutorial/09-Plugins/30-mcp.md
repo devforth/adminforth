@@ -84,6 +84,7 @@ new AdminForth({
   // ...
   globalPlugins: [
     new AdminForthMcpPlugin({
+      adminPanelOrigin: 'https://your-adminforth-host.example.com',
       authSecretResource: {
         resourceId: 'mcp_auth_secrets',
         idField: 'id',
@@ -98,6 +99,8 @@ new AdminForth({
   ],
 });
 ```
+
+The MCP server identifies itself to agents as the AdminForth admin panel for the configured [`customization.brandName`](/docs/tutorial/Customization/branding/). Set `adminPanelOrigin` when the same agent uses several AdminForth installations. Pass only the public origin, such as `https://admin.example.com`; the plugin appends the existing AdminForth `baseUrl` path. The origin is optional and is not inferred from request headers.
 
 The plugin adds **MCP Settings** under the user profile. A user can create or revoke auth secrets there and copy the short setup prompt. Use one auth secret per agent.
 
