@@ -2,7 +2,9 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import AdminForth from './index.js';
-import { IAdminForthAuth } from './types/Back.js';
+import { AdminUserAuthorizationResult, AdminUserAuthorizeFunction, HttpExtra, IAdminForthAuth, IAdminForthHttpResponse } from './types/Back.js';
+import { AdminUser } from './types/Common.js';
+import { listify } from './modules/utils.js';
 import { afLogger } from './modules/logger.js';
 import is_ip_private from 'private-ip'
 
@@ -133,7 +135,60 @@ class AdminForthAuth implements IAdminForthAuth {
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
     return cookies.find((cookie) => cookie.key === `adminforth_${brandSlug}_${name}`)?.value || null;
   }
- 
+
+  getAuthCookie(cookies: {key: string, value: string}[]): string | null {
+    const brandSlug = this.adminforth.config.customization.brandNameSlug;
+    const jwts = cookies.filter(({ key }) => key === `adminforth_${brandSlug}_jwt`);
+    if (jwts.length > 1) {
+      afLogger.error('Multiple adminforth_jwt cookies provided');
+    }
+    return jwts[0]?.value || null;
+  }
+
+  async runAdminUserAuthorizeHooks(adminUser: AdminUser, response: IAdminForthHttpResponse, extra: HttpExtra): Promise<{ allowed: boolean, error?: string }> {
+    const adminUserAuthorize = this.adminforth.config.auth.adminUserAuthorize as (AdminUserAuthorizeFunction[] | undefined);
+
+    for (const hook of listify(adminUserAuthorize)) {
+      const resp = await hook({
+        adminUser,
+        response,
+        adminforth: this.adminforth,
+        extra,
+      });
+      if (resp?.allowed === false || resp?.error) {
+        return { allowed: resp?.allowed, error: resp?.error };
+      }
+    }
+    return { allowed: true };
+  }
+
+  async authorizeByCookies({ cookies, response, extra }: {
+    cookies: {key: string, value: string}[],
+    response: IAdminForthHttpResponse,
+    extra: HttpExtra,
+  }): Promise<AdminUserAuthorizationResult> {
+    const jwt = this.getAuthCookie(cookies);
+    if (!jwt) {
+      return { status: 'noToken' };
+    }
+
+    let adminUser: AdminUser | null;
+    try {
+      adminUser = await this.verify(jwt, 'auth') as AdminUser | null;
+    } catch (error) {
+      return { status: 'verifyFailed', error };
+    }
+    if (!adminUser) {
+      return { status: 'invalidToken' };
+    }
+
+    const { allowed, error } = await this.runAdminUserAuthorizeHooks(adminUser, response, extra);
+    if (!allowed) {
+      return { status: 'notAllowed', error };
+    }
+    return { status: 'ok', adminUser };
+  }
+
   issueJWT(payload: Object, type: string, expiresIn: string | number = '24h'): string {
     // read ADMINFORH_SECRET from environment if not drop error
     const secret = process.env.ADMINFORTH_SECRET;

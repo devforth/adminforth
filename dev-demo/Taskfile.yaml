@@ -36,6 +36,7 @@ vars:
     - "adminforth-dashboard"
     - "adminforth-json-editor"
     - "adminforth-json-form"
+    - "af-crud-approve-plugin" 
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"

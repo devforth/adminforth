@@ -455,6 +455,21 @@ html[data-theme="dark"] .fakeScreen {
   gap: 10px;
 }
 
+/* DocSearch supports `/` natively; unlike Ctrl+K, Chrome does not intercept it. */
+.DocSearch-Button-Keys {
+  align-items: center;
+  display: flex;
+  min-width: 20px;
+}
+
+.DocSearch-Button-Keys kbd {
+  display: none;
+}
+
+.DocSearch-Button-Keys::after {
+  content: '/';
+}
+
 .hidden-sidebar {
   display: none
   ;

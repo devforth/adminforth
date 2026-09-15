@@ -18,7 +18,7 @@
                 width="calc(100% - 2px)"
                 height="calc(100% - 2px)"
                 :class="variantConfig.strokeClass"
-                rx="8"
+                rx="0.5rem"
                 fill="none"
                 stroke-width="2"
                 pathLength="100"

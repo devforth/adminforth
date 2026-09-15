@@ -12,20 +12,22 @@
 
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
-      <button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="af-cancel-button h-[2.125rem] af-button-shadow flex items-center py-1 px-3 me-2 text-sm font-medium rounded-default text-lightCreateViewButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover"
+      <Button @click="() => {cancelButtonClicked = true; $router.back()}"
+        class="af-cancel-button h-[2.125rem] px-3 mr-2"
+        variant="secondary"
       >
         {{ $t('Cancel') }}
-      </button>
-      <button  
+      </Button>
+      <Button  
         @click="() => saveRecord()"
-        class="af-save-button h-[2.125rem] af-button-shadow flex items-center py-1 px-3 text-sm font-medium rounded-default text-lightCreateViewSaveButtonText focus:outline-none bg-lightCreateViewButtonBackground rounded border border-lightCreateViewButtonBorder hover:bg-lightCreateViewButtonBackgroundHover hover:text-lightCreateViewSaveButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightCreateViewButtonFocusRing dark:focus:ring-darkCreateViewButtonFocusRing dark:bg-darkCreateViewButtonBackground dark:text-darkCreateViewSaveButtonText dark:border-darkCreateViewButtonBorder dark:hover:text-darkCreateViewSaveButtonTextHover dark:hover:bg-darkCreateViewButtonBackgroundHover disabled:opacity-50 gap-1"
+        class="af-save-button h-[2.125rem] px-3 text-lightCreateViewSaveButtonText hover:text-lightCreateViewSaveButtonTextHover dark:text-darkCreateViewSaveButtonText dark:hover:text-darkCreateViewSaveButtonTextHover"
+        variant="secondary"
         :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
       > 
         <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
         <IconFloppyDiskSolid v-else class="w-4 h-4" />
         {{ $t('Save') }}
-      </button>
+      </Button>
 
       <ThreeDotsMenu 
         :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.create?.threeDotsDropdownItems as [])"
@@ -87,7 +89,7 @@ import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 import { type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common.js';
 import { saveRecordPreparations } from '@/utils';
-import { Spinner } from '@/afcl'
+import { Spinner, Button } from '@/afcl'
 import CreateEditSkeleton from './CreateEditSkeleton.vue';
 
 const isValid = ref(false);

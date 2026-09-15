@@ -11,7 +11,7 @@ Used to send emails.
 ## AWS SES Email Adapter
 
 ```bash
-pnpm i @adminforth/email-adapter-aws-ses
+pnpm add @adminforth/email-adapter-aws-ses
 ```
 
 Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazon.com/ses/), suitable for high-volume, programmatic email sending.
@@ -19,7 +19,7 @@ Enables email delivery via [Amazon Simple Email Service (SES)](https://aws.amazo
 ## Mailgun Email Adapter
 
 ```bash
-pnpm i @adminforth/email-adapter-mailgun
+pnpm add @adminforth/email-adapter-mailgun
 ```
 
 Allows sending transactional or marketing emails using [Mailgun](https://www.mailgun.com/), a developer-friendly email service.

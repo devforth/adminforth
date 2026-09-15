@@ -2,6 +2,7 @@ import CompletionAdapterOpenAIResponses from '../adapters/adminforth-completion-
 import AdminForthAgent from '../plugins/adminforth-agent/index.js';
 import AdminForthPlugin from '../adminforth/basePlugin.js';
 import OpenAIAudioAdapter from '../adapters/adminforth-audio-adapter-openai/index.js';
+import DashboardPlugin from '../plugins/adminforth-dashboard/index.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 const ovhAiEndpointsAccessToken = process.env.OVH_AI_ENDPOINTS_ACCESS_TOKEN;
@@ -34,6 +35,9 @@ function createAgentCompletionAdapter(
 }
 
 export const globalPlugins = [
+  new DashboardPlugin({
+    dashboardConfigsResourceId: 'dashboard_configs',
+  }),
   new AdminForthAgent({
     placeholderMessages: async ({ adminUser, httpExtra }) => {
       return [

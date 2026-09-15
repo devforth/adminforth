@@ -98,6 +98,62 @@ Also you can add custom rules. For example to prevent popular words:
 
 All rules defined in password column will be also delivered to [password reset plugin](../09-Plugins/07-email-password-reset.md) if you are using it to ensure that password reset will also respect same rules.
 
+## Normalizing identity columns
+
+Use the optional column-level `normalize` callback to store an identity value in one canonical form. Email addresses are a common example:
+
+```ts title="./resources/adminuser.ts"
+{
+  name: 'email',
+  required: true,
+  isUnique: true,
+  type: AdminForthDataTypes.STRING,
+  normalize: (value: string) => value.trim().toLowerCase(),
+}
+```
+
+This is opt-in. It is especially important for the column configured as `auth.usernameField`: without it, password login compares the submitted username exactly as written. That makes login case-sensitive and lets `User@example.com` and `user@example.com` be created as separate accounts when the database treats them as distinct values.
+
+`normalize` is deliberately a write-time feature, except for the core password-login lookup:
+
+| Path | When `normalize` runs |
+| --- | --- |
+| AdminForth CRUD (`createResourceRecord`, `updateResourceRecord`) | Before validation and `beforeSave` hooks |
+| Data API (`admin.resource(...).create()` and `.update()`) | Before the record reaches the connector |
+| Core password login | On the submitted value of `auth.usernameField`, before the user lookup |
+| Reads and filters | Never — this includes `get`, `list`, `count`, search, and `Filters.EQ` |
+
+Plugins that create or update records through the Data API use the same normalization. Code that calls a data connector's `createRecord` or `updateRecord` directly bypasses it, so those callers must normalize the value themselves or use the Data API instead.
+
+### Enabling it on an existing table
+
+`normalize` affects **new writes only**. It never rewrites stored user data automatically. Existing rows keep their current casing, so migrating them is the operator's responsibility.
+
+> Warning: if a stored email is `User@example.com`, enabling this normalizer changes a submitted `User@example.com` to `user@example.com` before login looks it up. The existing row does not become lowercase on its own, so existing identity data must be migrated.
+
+Before enabling it, check for values that would collide after normalization. For an `adminuser.email` column, run this query with your normalizer's equivalent SQL expression:
+
+```sql
+SELECT LOWER(TRIM(email)) AS normalized_email, COUNT(*) AS account_count
+FROM adminuser
+GROUP BY LOWER(TRIM(email))
+HAVING COUNT(*) > 1;
+```
+
+Resolve every reported collision before continuing. For example, `User@example.com` and `user@example.com` remain different rows until you explicitly merge, rename, or remove one of them. Enabling the callback does not make reads case-insensitive; a future normalized lookup could match both rows and choose an arbitrary account.
+
+After taking a backup and confirming the query returns no rows, add `normalize` to the resource and run a database migration such as:
+
+```sql
+UPDATE adminuser
+SET email = LOWER(TRIM(email))
+WHERE email <> LOWER(TRIM(email));
+```
+
+Replace `adminuser`, `email`, and `LOWER(TRIM(...))` with the table, column, and database expression that match your configuration. Run this as a tested migration in a maintenance window when identity data is sensitive. The migration and the callback together ensure both existing records and future writes use the same canonical value.
+
+For the complete CRUD behavior, see [Normalize values before saving](./13-standardPagesTuning.md#normalize-values-before-saving).
+
 
 ## Trusting client IP addresses
 
@@ -239,6 +295,38 @@ So to completely hide the email field from all users apart superadmins, you shou
 ```
 
 So if you will configure the email column in user resource like this, only superadmin will be able to see emails, and only in the list view.
+
+## Blocking login attempts before credentials check
+
+`auth.beforeLoginAttempt` hooks are called on every request to the login endpoint, before AdminForth looks the user up in the database.
+Each hook gets the username which user tries to log in with and can reject the attempt:
+
+```ts title="./index.ts"
+export const admin = new AdminForth({
+
+  ...
+
+  auth: {
+    beforeLoginAttempt: [
+      async ({ username, adminforth, extra, tr }) => {
+        if (!await captchaIsValid(extra)) {
+          return { ok: false, error: await tr("Captcha verification failed", "errors") };
+        }
+        return { ok: true };
+      }
+    ]
+  }
+
+  ...
+
+})
+```
+
+When a hook returns `{ ok: false }`, AdminForth answers with status `401` and `{ error }`, and never touches the database.
+This is what makes the hook a right place for captcha and other anti-bruteforce checks: the response is the same for existing and
+non-existing users, so an attacker can't use it to find out whether credentials were correct.
+
+If your check needs the user record itself (like two-factor authentication does), use [auth.beforeLoginConfirmation](/docs/api/Back/type-aliases/BeforeLoginConfirmationFunction) instead: it is called after credentials are verified.
 
 ## Custom user authorization hook
 

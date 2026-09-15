@@ -12,8 +12,8 @@ Chat surface adapters connect external chat products to the [Agent plugin](/docs
 For Telegram you need both adapters:
 
 ```bash
-pnpm i @adminforth/chat-surface-adapter-telegram
-pnpm i @adminforth/oauth-adapter-telegram
+pnpm add @adminforth/chat-surface-adapter-telegram
+pnpm add @adminforth/oauth-adapter-telegram
 ```
 
 Create a Telegram bot with BotFather and copy the token:
@@ -147,7 +147,7 @@ All options for `new TelegramChatSurfaceAdapter(options)`:
 
 - `botToken` (string, required) — Telegram bot token from BotFather.
 - `botUsername` (string, optional) — bot username. OAuth connected accounts are used for user linking.
-- `webhookSecret` (string, optional) — secret token configured in Telegram `setWebhook`.
+- `webhookSecret` (string, required) — secret token configured in Telegram `setWebhook`.
 - `streamingMode` (`draft` | `typing` | `off`, optional) — streaming behavior for Telegram responses.
   - Default: `draft`.
   - Note: Telegram drafts work only in private chats. In non-private chats the adapter automatically falls back from `draft` to `typing`.

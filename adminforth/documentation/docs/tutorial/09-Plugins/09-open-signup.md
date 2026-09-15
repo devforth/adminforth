@@ -14,7 +14,7 @@ This is useful when you want to allow anyone to sign up and assign some low-leve
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/open-signup --save
+pnpm add @adminforth/open-signup --save
 ```
 
 
@@ -36,6 +36,7 @@ new OpenSignupPlugin({
     defaultFieldValues: {
       role: 'user',
     },
+    expectedOrigin: process.env.OPEN_SIGHNUP_ORIGIN || 'http://localhost:3500',
   }),
 ```
 
@@ -64,7 +65,7 @@ pnpm makemigration --name add-email-confirmed-to-adminuser ; pnpm migrate:local
 Next, install the `@adminforth/email-adapter-aws-ses` package:
 
 ```bash
-pnpm i @adminforth/email-adapter-aws-ses --save
+pnpm add @adminforth/email-adapter-aws-ses --save
 ```
 
 Also, update the resource configuration in `./resources/adminuser.ts`:

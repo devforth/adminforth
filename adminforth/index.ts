@@ -40,6 +40,7 @@ import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './mod
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
+import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
 export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
@@ -513,7 +514,7 @@ class AdminForth implements IAdminForth {
     // db types for which user supplied own connector class in config don't need npm package to be installed
     const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)]
       .filter((dbType) => !this.config.databaseConnectors?.[dbType]);
-    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector, DuckDBConnector;
     if (uniqueDbTypes.includes('sqlite')) {
       SQLiteConnector = await this.tryToImportConnector('sqlite', doesUserHavePnpmLock);
     }
@@ -532,6 +533,9 @@ class AdminForth implements IAdminForth {
     if (uniqueDbTypes.includes('qdrant')) {
       QdrantConnector = await this.tryToImportConnector('qdrant', doesUserHavePnpmLock);
     }
+    if (uniqueDbTypes.includes('duckdb')) {
+      DuckDBConnector = await this.tryToImportConnector('duckdb', doesUserHavePnpmLock);
+    }
 
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
@@ -541,6 +545,7 @@ class AdminForth implements IAdminForth {
       'clickhouse': ClickhouseConnector,
       'mysql': MysqlConnector,
       'qdrant': QdrantConnector,
+      'duckdb': DuckDBConnector,
     };
     this.config.databaseConnectors = {
       ...this.connectorClasses,
@@ -668,6 +673,11 @@ class AdminForth implements IAdminForth {
         ADMINFORTH_SECRET variable is used to sign JWT tokens
       `);
     }
+    if (adminforthSecret.length < 16) {
+      afLogger.warn(`ADMINFORTH_SECRET is too short (${adminforthSecret.length} characters). ` +
+        'It is the key that signs every auth cookie: a guessable value lets anyone forge a session for any user. ' +
+        'Generate one with: openssl rand -hex 32');
+    }
   }
 
   async getAllTables(): Promise<{ [dataSourceId: string]: string[] }> {
@@ -775,6 +785,8 @@ class AdminForth implements IAdminForth {
   ): Promise<CreateResourceRecordResult> {
     const { resource, record, adminUser, extra, response } = params;
 
+    normalizeRecordValues(resource, record);
+
     const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
@@ -867,6 +879,7 @@ class AdminForth implements IAdminForth {
   ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
     const dataToUse = updates || record;
+    normalizeRecordValues(resource, dataToUse);
     const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
       return { error: err };

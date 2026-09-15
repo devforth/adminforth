@@ -1,6 +1,9 @@
+import pLimit from 'p-limit';
 import { IAdminForth, IWebSocketBroker, IWebSocketClient } from "../types/Back.js";
 import { AdminUser } from "../types/Common.js";
 import { afLogger } from '../modules/logger.js';
+
+const PUBLISH_FILTER_CONCURRENCY = 10;
 
 export default class SocketBroker implements IWebSocketBroker {
   clients: IWebSocketClient[] = [];
@@ -158,16 +161,27 @@ export default class SocketBroker implements IWebSocketBroker {
       afLogger.trace(`No clients subscribed to topic ${topic}`);
       return;
     }
-    for (const client of this.topics[topic]) {
-      if (filterUsers) {
+    const message = JSON.stringify({ type: 'message', topic, data });
+
+    if (!filterUsers) {
+      for (const client of this.topics[topic]) {
+        afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
+        client.send(message);
+      }
+      return;
+    }
+
+    const limit = pLimit(PUBLISH_FILTER_CONCURRENCY);
+    await Promise.all(
+      this.topics[topic].map((client) => limit(async () => {
         if (! (await filterUsers(client.adminUser)) ) {
           afLogger.trace(`Client not authorized to receive message ${topic} ${client.adminUser}`);
-          continue;
+          return;
         }
-      }
-      afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
-      client.send(JSON.stringify({ type: 'message', topic, data }));
-    }
+        afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
+        client.send(message);
+      }))
+    );
   }
  
 }

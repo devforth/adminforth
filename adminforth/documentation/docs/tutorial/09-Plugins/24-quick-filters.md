@@ -11,7 +11,7 @@ Allows you to add search input or select with preseted filters at the list view
 
 First, install the plugin:
 ```bash
-pnpm i @adminforth/quick-filters
+pnpm add @adminforth/quick-filters
 ```
 Then add it to yours resource:
 
