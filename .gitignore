@@ -5,5 +5,8 @@ plugins/*
 adapters/*
 !adapters/README.md
 !adapters/AGENTS.md
+connectors/*
+!connectors/README.md
+!connectors/AGENTS.md
 background-jobs-dbs
 tests/jest_tests/db/

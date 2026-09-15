@@ -29,6 +29,7 @@ export default {
       } },
     { name: 'record_id', required: false },
     { name: 'ip_address', required: false },
+    { name: 'executed_by', required: false },
   ],
 options: {
     allowedActions: {
@@ -48,6 +49,7 @@ options: {
         resourceUserIdColumnName: 'user_id',
         resourceRecordIdColumnName: 'record_id',
         resourceCreatedColumnName: 'created_at',
+        resourceExecutedByColumnName: 'executed_by',
         resourceIpColumnName: "ip_address",
       }
     }),
