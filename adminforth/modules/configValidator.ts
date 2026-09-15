@@ -29,6 +29,7 @@ import {
   AdminForthResourcePages,
   AdminForthDataTypes,
   Predicate,
+  AdminUser,
 } from "../types/Common.js";
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
@@ -1223,6 +1224,21 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
+      if (!newConfig.auth.websocketTopicAuth) {
+        let websocketTopicAuthWarned = false;
+        newConfig.auth.websocketTopicAuth = async (topic: string, adminUser: AdminUser) => {
+          if (!websocketTopicAuthWarned) {
+            websocketTopicAuthWarned = true;
+            afLogger.warn('websocketTopicAuth is not provided. Public access to websocket topics (except /opentopic) is blocked.');
+          }
+          if (!adminUser) {
+            // don't allow anonymous users to subscribe
+            return false;
+          }
+          return true;
+        }
+      }
+
       newConfig.auth.rateLimit = newConfig.auth.rateLimit || [...DEFAULT_AUTH_RATE_LIMIT];
       if (!Array.isArray(newConfig.auth.rateLimit)) {
         errors.push(`auth.rateLimit must be an array of strings in format "500/5m"`);
@@ -1234,6 +1250,18 @@ export default class ConfigValidator implements IConfigValidator {
             errors.push(`auth.rateLimit ${e.message}`);
           }
         }
+      }
+
+      // normalize beforeLoginAttempt hooks
+      const bla = this.inputConfig.auth.beforeLoginAttempt;
+      if (!Array.isArray(bla)) {
+        if (bla) {
+          newConfig.auth.beforeLoginAttempt = [bla];
+        } else {
+          newConfig.auth.beforeLoginAttempt = [];
+        }
+      } else {
+        newConfig.auth.beforeLoginAttempt = bla;
       }
 
       // normalize beforeLoginConfirmation hooks

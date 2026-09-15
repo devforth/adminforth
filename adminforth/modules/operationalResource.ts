@@ -1,6 +1,7 @@
 import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAggregationRule, IGroupByRule } from '../types/Back.js';
 import { compositePkValues } from './recordId.js';
 import { AdminForthFilterOperators } from '../types/Common.js';
+import { normalizeRecordValues } from './columnValueNormalizer.js';
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
   return (Array.isArray(sort) ? sort : [sort]) as IAdminForthSort[];
@@ -31,7 +32,8 @@ export default class OperationalResource implements IOperationalResource {
       filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, 
       limit: number | null = null, 
       offset: number | null = null,
-      sort: IAdminForthSort | IAdminForthSort[] = []
+      sort: IAdminForthSort | IAdminForthSort[] = [],
+      columns?: string[]
   ): Promise<any[]> {
     // check if type of limit and offset is number
     if (limit !== null && typeof limit !== 'number') {
@@ -57,6 +59,7 @@ export default class OperationalResource implements IOperationalResource {
       offset: appliedOffset,
       sort: sortsIfSort(sort),
       getTotals: false,
+      columns: columns ? this.resourceConfig.dataSourceColumns.filter((column) => columns.includes(column.name)) : undefined,
     });
     return data;
   }
@@ -83,9 +86,11 @@ export default class OperationalResource implements IOperationalResource {
   }
 
   async create(recordValues: any): Promise<{ ok: boolean; createdRecord: any; error?: string; }> {
+    const normalizedRecord = { ...recordValues };
+    normalizeRecordValues(this.resourceConfig, normalizedRecord);
     const { ok, createdRecord, error } = await this.dataConnector.createRecord({ 
       resource: this.resourceConfig, 
-      record: recordValues, 
+      record: normalizedRecord,
       adminUser: null 
     });
     return { ok, createdRecord, error };
@@ -96,10 +101,13 @@ export default class OperationalResource implements IOperationalResource {
       return { ok: true };
     }
 
+    const normalizedRecord = { ...record };
+    normalizeRecordValues(this.resourceConfig, normalizedRecord);
+
     return await this.dataConnector.updateRecord({ 
       resource: this.resourceConfig,
       recordId: primaryKey,
-      newValues: record
+      newValues: normalizedRecord
     });
   }
 

@@ -11,11 +11,11 @@ Used to add captcha to the login screen.
 ## Cloudflare Adapter
 
 ```bash
-pnpm i @adminforth/login-captcha-adapter-cloudflare
+pnpm add @adminforth/login-captcha-adapter-cloudflare
 ```
 
 ## reCaptcha Adapter
 
 ```bash
-pnpm i @adminforth/login-captcha-adapter-recaptcha
+pnpm add @adminforth/login-captcha-adapter-recaptcha
 ```

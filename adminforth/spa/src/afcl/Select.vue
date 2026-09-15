@@ -14,7 +14,7 @@
         placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText text-base sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
         dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
-        autocomplete="off" data-custom="no-autofill"
+        autocomplete="off" data-custom="no-autofill" name="afcl-select-input" id="afcl-select-input"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
         "

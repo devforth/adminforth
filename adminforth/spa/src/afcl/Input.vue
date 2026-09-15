@@ -12,12 +12,12 @@
       ref="input"
       v-bind="$attrs"
       :type="type"
-      @input="$emit('update:modelValue', type === 'number' ? Number(($event.target as HTMLInputElement)?.value) : ($event.target as HTMLInputElement)?.value)"
+      @input="$emit('update:modelValue', type === 'number' ? numberInputValue(($event.target as HTMLInputElement)?.value) : ($event.target as HTMLInputElement)?.value)"
       :value="modelValue"
       aria-describedby="helper-text-explanation"
       class="afcl-input  inline-flex bg-lightInputBackground text-lightInputText dark:text-darkInputText border border-lightInputBorder rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
       blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder placeholder-lightInputPlaceholderText dark:placeholder-darkInputPlaceholderText dark:text-darkInputText translate-y-0"
-      :class="{'rounded-l-md': !$slots.prefix && !prefix, 'rounded-r-md': !$slots.suffix && !suffix, 'w-full': fullWidth, 'text-base': isIos, 'text-sm': !isIos }"
+      :class="{'rounded-l-md': !$slots.prefix && !prefix, 'rounded-r-md': !$slots.suffix && !suffix, 'w-full': fullWidth, 'text-base': isIos, 'text-sm': !isIos, 'pr-10': $slots.rightIcon }"
       :disabled="readonly"
     >
 
@@ -37,6 +37,7 @@
 
 import { ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
+import { numberInputValue } from './inputValue';
 
 const coreStore = useCoreStore();
 const isIos = coreStore.isIos;

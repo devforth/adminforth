@@ -11,7 +11,7 @@ This plugin allows you to upload files to Amazon S3 bucket.
 ## Installation
 
 ```
-pnpm i @adminforth/upload --save
+pnpm add @adminforth/upload --save
 ```
 
 Plugin needs some storage adapter to store files and serve them for preview.
@@ -21,7 +21,7 @@ Plugin needs some storage adapter to store files and serve them for preview.
 Amazon S3 is probably the most popular storage service.
 
 ```
-pnpm i @adminforth/storage-adapter-amazon-s3 --save
+pnpm add @adminforth/storage-adapter-amazon-s3 --save
 ```
 
 1. Go to https://aws.amazon.com and login.
@@ -288,7 +288,7 @@ Also you will have to enable static website hosting in your bucket settings and 
 The local storage adapter saves files directly on the server’s filesystem and serves them through Express routes. It supports both public and private modes (with presigned URLs).
 
 ```
-pnpm i @adminforth/storage-adapter-local --save
+pnpm add @adminforth/storage-adapter-local --save
 ```
 
 ```ts title="./index.ts"
@@ -312,13 +312,44 @@ new UploadPlugin({
 
 
 
+## Content types and who can upload
+
+The content type a file is stored with is derived from its extension on the backend, never taken from the browser. The storage replays that content type when the file is served back, so a client which asks for `text/html` would be able to store a page that executes scripts on your admin origin with the session of whoever opens it.
+
+The plugin knows the common image, video, audio, document, archive and font extensions. If an extension can't be resolved to a content type, no upload URL is issued, and `allowedFileExtensions` is validated at startup, so a typo or an unknown extension fails fast:
+
+```
+Upload plugin can't resolve content type for extension "jpgg". Provide contentTypeByExtension in plugin options
+```
+
+Use `contentTypeByExtension` to add extensions the plugin doesn't know, or to override the built-in mapping:
+
+```ts title="./index.ts"
+new UploadPlugin({
+  ...
+  allowedFileExtensions: ['jpg', 'png', 'dwg'],
+  //diff-add
+  contentTypeByExtension: {
+  //diff-add
+    dwg: 'application/acad',
+  //diff-add
+  },
+})
+```
+
+:::warning
+Mapping an extension to a content type which browsers execute (`text/html`, `image/svg+xml`, `application/xhtml+xml`, ...) allows anyone who can upload files to run scripts on your admin panel origin with the session of the user who opens the file. Only do it if your storage serves files from a separate origin or with `Content-Disposition: attachment`.
+:::
+
+Requesting an upload URL requires permission to write the record the file belongs to: `edit` on the target record when editing an existing one, `create` otherwise. Users who can only view the resource get `403` even if they call the API directly, and `maxFileSize` is enforced on the backend as well, not only in the browser.
+
 ## Image generation
 
 Upload plugin supports AI generation for images. Yo use it you need to install image generation adapter.
 For example for OpenAI models like `gpt-image-1.5` (or old `DALL-E` models):
 
 ```bash
-pnpm i @adminforth/image-generation-adapter-openai
+pnpm add @adminforth/image-generation-adapter-openai
 ```
 
 

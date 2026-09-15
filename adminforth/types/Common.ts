@@ -695,8 +695,9 @@ export type ShowInResolved = {
 }
 
 export interface AdminForthPolymorphicForeignResource {
-  resourceId: string,
+  resourceId: string | null,
   whenValue: string,
+  allowedActions?: AllowedActionsResolved,
 }
 export interface AdminForthForeignResourceCommon {
   resourceId?: string,
@@ -705,6 +706,7 @@ export interface AdminForthForeignResourceCommon {
   unsetLabel?: string,
   searchableFields?: string | string[],
   searchIsCaseSensitive?: boolean,
+  allowedActions?: AllowedActionsResolved,
 }
 
 export type FillOnCreateFunction = (params: {
@@ -724,6 +726,19 @@ export interface AdminForthResourceColumnInputCommon {
    * Column name in database.
    */
   name: string,
+
+  /**
+   * Normalizes a column value before AdminForth CRUD create and update operations and, when this column
+   * is configured as `auth.usernameField`, before the password-login lookup.
+   *
+   * Does not normalize filter values or existing stored records.
+   *
+   * @example
+   * ```ts
+   * normalize: (value: string) => value.trim().toLowerCase(),
+   * ```
+   */
+  normalize?: (value: any) => any,
 
   /**
    * How column can be labled in the admin panel.
@@ -1335,6 +1350,15 @@ export interface AdminForthConfigForFrontend {
   }[],
 }
 
+export type AdminForthPublicConfigForFrontend = Pick<
+  AdminForthConfigForFrontend,
+  'brandName' | 'usernameFieldName' | 'loginBackgroundImage' | 'loginBackgroundPosition' |
+  'removeBackgroundBlendMode' | 'title' | 'demoCredentials' | 'loginPageInjections' |
+  'rememberMeDuration' | 'singleTheme' | 'customHeadItems'
+> & {
+  globalInjections: Pick<AdminForthConfigForFrontend['globalInjections'], 'everyPageBottom'>,
+};
+
 export interface GetBaseConfigResponse {
   user: UserData,
   resources: ResourceVeryShort[],
@@ -1343,6 +1367,24 @@ export interface GetBaseConfigResponse {
   adminUser: AdminUser,
   version: string,
 }
+
+
+export interface GetConfigResponseAnonymous {
+  loggedIn: false,
+  config: AdminForthPublicConfigForFrontend,
+}
+
+export interface GetConfigResponseAuthorized {
+  loggedIn: true,
+  config: AdminForthConfigForFrontend,
+  user: UserData,
+  resources: ResourceVeryShort[],
+  menu: AdminForthConfigMenuItem[],
+  adminUser: AdminUser,
+  version: string,
+}
+
+export type GetConfigResponse = GetConfigResponseAnonymous | GetConfigResponseAuthorized;
 
 export interface ColumnMinMaxValue { 
   [key: string]: { min: any, max: any } 

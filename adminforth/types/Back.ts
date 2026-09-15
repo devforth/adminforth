@@ -516,8 +516,44 @@ export interface IAdminForthDataSourceConnectorConstructor {
   new (): IAdminForthDataSourceConnectorBase;
 }
 
+/**
+ * Result of {@link IAdminForthAuth.authorizeByCookies}.
+ * Statuses are separated because caller decides how to answer: authenticated endpoints answer 401 on any
+ * non-ok status except `verifyFailed` (which is a server side problem and must not logout user),
+ * while noAuth endpoints just treat caller as anonymous.
+ */
+export type AdminUserAuthorizationResult =
+  | { status: 'ok', adminUser: AdminUser }
+  /** no auth cookie in request at all */
+  | { status: 'noToken' }
+  /** jwt is expired, malformed or its user does not exist anymore */
+  | { status: 'invalidToken' }
+  /** verification itself failed, e.g. database is not ready yet */
+  | { status: 'verifyFailed', error: any }
+  /** one of `adminUserAuthorize` hooks denied the user */
+  | { status: 'notAllowed', error?: string };
+
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
+
+  /**
+   * Takes auth jwt from cookies, verifies it and runs `adminUserAuthorize` hooks.
+   */
+  authorizeByCookies({ cookies, response, extra }: {
+    cookies: {key: string, value: string}[],
+    response: IAdminForthHttpResponse,
+    extra: HttpExtra,
+  }): Promise<AdminUserAuthorizationResult>;
+
+  /**
+   * Runs `adminUserAuthorize` hooks for already authenticated user.
+   */
+  runAdminUserAuthorizeHooks(adminUser: AdminUser, response: IAdminForthHttpResponse, extra: HttpExtra): Promise<{ allowed: boolean, error?: string }>;
+
+  /**
+   * Returns auth jwt from cookies, or null if it is not there.
+   */
+  getAuthCookie(cookies: {key: string, value: string}[]): string | null;
 
   issueJWT(payload: Object, type: string, expiresIn?: string | number): string;
 
@@ -1268,6 +1304,31 @@ export type BeforeLoginConfirmationFunction = (params?: {
 }>;
 
 /**
+ * Allows to reject login attempt before AdminForth checks credentials in the database.
+ * Called on every call of login endpoint, even if username does not exist or password is wrong,
+ * so it is a right place for captcha and other anti-bruteforce checks: user gets the same response
+ * regardless of whether credentials were correct.
+ */
+export type BeforeLoginAttemptFunction = (params: {
+  /**
+   * Username which user tries to login with, normalized in same way as it is stored in database.
+   */
+  username: string,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information of login request. Use extra.response to set custom status or headers.
+   */
+  extra: HttpExtra,
+  /**
+   * Translate function, respects language of login request.
+   */
+  tr: ITranslateFunction,
+}) => Promise<{ ok: boolean, error?: string }>;
+
+/**
  * Allow to make extra authorization
  */
 export type AdminUserAuthorizeFunction = ((params?: { 
@@ -1748,6 +1809,27 @@ export interface AdminForthInputConfig {
       removeBackgroundBlendMode?: boolean,
 
       /**
+       * Function or functions which will be called before AdminForth checks credentials in the database.
+       * Each function receives username which user tries to login with and can reject the attempt by
+       * returning `{ ok: false, error: 'Some reason' }`.
+       * 
+       * Use it for captcha/anti-bruteforce checks: rejection happens before user lookup, so response does not
+       * depend on whether such user exists or password is correct.
+       * 
+       * Example:
+       * 
+       * ```ts
+       * beforeLoginAttempt: async ({ username, extra }) => {
+       *   if (!await captchaIsValid(extra)) {
+       *     return { ok: false, error: 'Captcha verification failed' };
+       *   }
+       *   return { ok: true };
+       * },
+       * ```
+       */
+      beforeLoginAttempt?: BeforeLoginAttemptFunction | Array<BeforeLoginAttemptFunction>,
+
+      /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */
@@ -2130,7 +2212,7 @@ export class Sorts {
 export interface IOperationalResource {
   get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
-  list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
+  list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[], columns?: string[]) => Promise<any[]>;
 
   count: (filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<number>;
 

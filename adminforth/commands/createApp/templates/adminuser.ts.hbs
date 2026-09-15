@@ -17,6 +17,7 @@ export default {
     allowedActions: {
       edit: allowedForSuperAdmin,
       delete: allowedForSuperAdmin,
+      create: allowedForSuperAdmin,
     },
   },
   columns: [
@@ -35,6 +36,7 @@ export default {
       required: true,
       isUnique: true,
       type: AdminForthDataTypes.STRING,
+      normalize: (value: string) => value.trim().toLowerCase(),
       validation: [
         // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object
         {
@@ -55,6 +57,7 @@ export default {
     {
       name: 'role',
       type: AdminForthDataTypes.STRING,
+      required: true,
       enum: [
         { value: 'superadmin', label: 'Super Admin' },
         { value: 'user', label: 'User' },

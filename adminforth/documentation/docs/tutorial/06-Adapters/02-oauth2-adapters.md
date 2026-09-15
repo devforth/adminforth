@@ -11,7 +11,7 @@ Used to authenticate users via OAuth 2.0 providers.
 ## Google OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-google
+pnpm add @adminforth/oauth-adapter-google
 ```
 
 Supports Google sign-in to allow users to authenticate using their Google or Google Workspaces accounts.
@@ -19,7 +19,7 @@ Supports Google sign-in to allow users to authenticate using their Google or Goo
 ## GitHub OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-github
+pnpm add @adminforth/oauth-adapter-github
 ```
 
 Enables authentication via GitHub accounts, useful for developer tools and open-source apps.
@@ -27,7 +27,7 @@ Enables authentication via GitHub accounts, useful for developer tools and open-
 ## Facebook OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-facebook
+pnpm add @adminforth/oauth-adapter-facebook
 ```
 
 Allows users to log in with Facebook credentials. Facebook OAuth is commonly used for social media integrations.
@@ -35,7 +35,7 @@ Allows users to log in with Facebook credentials. Facebook OAuth is commonly use
 ## Keycloak OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-keycloak
+pnpm add @adminforth/oauth-adapter-keycloak
 ```
 
 Connects AdminForth to an open-source [Keycloak](https://www.keycloak.org/) identity provider for enterprise-grade SSO (Single Sign-On).
@@ -43,7 +43,7 @@ Connects AdminForth to an open-source [Keycloak](https://www.keycloak.org/) iden
 ## Microsoft OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-microsoft
+pnpm add @adminforth/oauth-adapter-microsoft
 ```
 
 Supports login through Microsoft accounts including Azure AD, Office365, and Outlook.com.
@@ -51,7 +51,7 @@ Supports login through Microsoft accounts including Azure AD, Office365, and Out
 ## Twitch OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-twitch
+pnpm add @adminforth/oauth-adapter-twitch
 ```
 
 Adds support for Twitch authentication, useful for streaming or creator-oriented platforms.
@@ -59,7 +59,7 @@ Adds support for Twitch authentication, useful for streaming or creator-oriented
 ## Clerk OAuth Adapter
 
 ```bash
-pnpm i @adminforth/oauth-adapter-clerk
+pnpm add @adminforth/oauth-adapter-clerk
 ```
 
 Enables sign-in via [Clerk](https://clerk.com/) — a hosted authentication platform with built-in user management, MFA, and social logins.
