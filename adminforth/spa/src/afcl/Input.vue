@@ -3,7 +3,7 @@
   <div class="afcl-input-wrapper flex z-0 relative" :class="{'opacity-50' : readonly}">
     <span
         v-if="$slots.prefix || prefix"
-        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-s-md dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder">
+        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-s-default dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder">
       <slot name="prefix">{{ prefix }}</slot>
     </span>
 
@@ -17,7 +17,7 @@
       aria-describedby="helper-text-explanation"
       class="afcl-input  inline-flex bg-lightInputBackground text-lightInputText dark:text-darkInputText border border-lightInputBorder rounded-0 focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary 
       blue-500 focus:border-blue-500 block w-20 p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder placeholder-lightInputPlaceholderText dark:placeholder-darkInputPlaceholderText dark:text-darkInputText translate-y-0"
-      :class="{'rounded-l-md': !$slots.prefix && !prefix, 'rounded-r-md': !$slots.suffix && !suffix, 'w-full': fullWidth, 'text-base': isIos, 'text-sm': !isIos, 'pr-10': $slots.rightIcon }"
+      :class="{'rounded-l-default': !$slots.prefix && !prefix, 'rounded-r-default': !$slots.suffix && !suffix, 'w-full': fullWidth, 'text-base': isIos, 'text-sm': !isIos, 'pr-10': $slots.rightIcon }"
       :disabled="readonly"
     >
 
@@ -26,7 +26,7 @@
     </div>
     <span
         v-if="$slots.suffix || suffix"
-        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-e-md dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder ">
+        class="inline-flex items-center px-3 text-sm text-lightInputText bg-lightInputBackground border border-s-0 border-lightInputBorder rounded-e-default dark:bg-darkInputBackground dark:text-darkInputText dark:border-darkInputBorder ">
       <slot name="suffix">{{ suffix }}</slot>
     </span>
     
