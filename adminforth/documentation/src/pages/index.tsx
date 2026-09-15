@@ -10,6 +10,8 @@ import styles from './index.module.css';
 const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
 const YOUTUBE_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/4tB8uzY__uk';
 const HOME_TITLE = 'Agent-first open-source admin panel framework';
+const HERO_TITLE_PARTS = ['The back-office agents ', 'build', ', and agents ', 'run', '.'];
+const HERO_SUBTITLE = 'A back-office framework for the two people who already work with agents: the developer, who lets Claude Code or Codex write the panel, and the admin, who lets an agent work inside it. Same repo, same database, same permissions.';
 const HOME_DESCRIPTION = 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. AdminForth is a flexible, modern foundation for developer-owned back-end management systems.';
 const HOME_SUMMARY = 'You can use AdminForth to build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. It is designed for developers who need a flexible, modern foundation for back-end management systems.';
 const SCREENSHOT_PATH = '/img/adminforth_screenshot.png';
@@ -70,7 +72,7 @@ const images = [
   {
     original: require('@site/static/img/previews/auditlog.png').default,
     title: 'Audit log Plugin - know who did what',
-    link: '/docs/tutorial/Plugins/AuditLog/',
+    link: '/docs/tutorial/Plugins/audit-log/',
     description: 'Attach Audit log plugin with couple of lines, create table for logs and track full history of any data changes'
   },
   {
@@ -161,6 +163,155 @@ const images = [
 ];
 
 
+type PluginItem = {name: string; slug: string; description: string; standard?: string};
+type PluginGroup = {title: string; items: PluginItem[]};
+
+const AGENT_SURFACES = [
+  {
+    who: 'Developers who use agents',
+    title: 'Your coding agent already knows this repo',
+    body: 'Every generated app ships the files agents look for, and the config is a plain declarative object \u2014 so Claude Code, Codex, Gemini or Copilot can add a resource, a column or a plugin without being re-taught the project each session.',
+    chips: ['AGENTS.md', 'CLAUDE.md', 'llms.txt', 'skills/'],
+    points: [],
+    link: {label: 'Read the getting started guide', to: '/docs/tutorial/gettingStarted'},
+  },
+  {
+    who: 'Admins who use agents',
+    title: 'The panel is also a data surface',
+    body: 'Turn the same resources into tools an agent can call, so an operator can ask for the data instead of paging through it \u2014 and change it without a developer in the loop.',
+    chips: [],
+    points: [
+      'Read, filter and write the records your team sees',
+      'Runs as the user who issued the secret \u2014 permissions, validation and hooks apply',
+      'One secret per agent, revocable on its own',
+    ],
+    link: {label: 'Read the MCP docs', to: '/docs/tutorial/Plugins/mcp/'},
+  },
+];
+
+const PLUGIN_GROUPS: PluginGroup[] = [
+  {
+    title: 'For the agent',
+    items: [
+      {name: 'MCP server', slug: 'mcp', description: 'Your resources as remote MCP tools, one revocable secret per agent', standard: 'Model Context Protocol'},
+      {name: 'AI agent', slug: 'agent', description: 'Chat inside the panel that searches and edits data, with skills you define'},
+      {name: 'Bulk AI flow', slug: 'bulk-ai-flow', description: 'Fill, classify or read images across every selected record'},
+      {name: 'Text complete', slug: 'text-complete', description: 'Inline completion while an editor types'},
+      {name: 'LLM translation', slug: 'i18n', description: 'Translate the panel \u2014 and your own app \u2014 from the same catalogue'},
+      {name: 'Dashboards', slug: 'dashboard', description: 'Charts you build by asking the agent for them'},
+    ],
+  },
+  {
+    title: 'Auth & access',
+    items: [
+      {name: 'OAuth2 & SSO', slug: 'oauth', description: 'Google, GitHub, Microsoft, Keycloak, Clerk, Twitch, Facebook, Telegram', standard: 'RFC 6749'},
+      {name: 'Two-factor auth', slug: 'two-factors-auth', description: 'Authenticator apps and hardware-backed passkeys', standard: 'RFC 6238 \u00b7 WebAuthn'},
+      {name: 'Login captcha', slug: 'login-captcha', description: 'reCAPTCHA or Cloudflare Turnstile in front of the login form'},
+      {name: 'Email invite', slug: 'email-invite', description: 'Create a user without ever knowing their password'},
+      {name: 'Password reset', slug: 'email-password-reset', description: 'Reset links signed as tokens, over SES or Mailgun', standard: 'RFC 7519'},
+      {name: 'Open signup', slug: 'open-signup', description: 'Let people register themselves into a low-privilege role'},
+      {name: 'User soft delete', slug: 'user-soft-delete', description: 'Deactivate an account and keep everything it did'},
+    ],
+  },
+  {
+    title: 'Fields & editing',
+    items: [
+      {name: 'Rich editor', slug: 'rich-editor', description: 'Quill WYSIWYG on any text column'},
+      {name: 'Markdown', slug: 'markdown', description: 'Author and preview Markdown, stored as Markdown'},
+      {name: 'JSON form', slug: 'json-form', description: 'A real form for a JSON column, generated from your schema', standard: 'JSON Schema'},
+      {name: 'Uploads', slug: 'upload', description: 'S3, S3-compatible or local storage under your own keys', standard: 'S3 API'},
+      {name: 'Inline create', slug: 'inline-create', description: 'Add a row without leaving the list'},
+      {name: 'List in-place edit', slug: 'list-in-place-edit', description: 'Edit cells where you read them'},
+      {name: 'Clone row', slug: 'clone-row', description: 'Duplicate a record into a prefilled form'},
+      {name: 'Many-to-many', slug: 'many2many', description: 'Link tables managed as one ordinary field'},
+      {name: 'Foreign inline list', slug: 'foreign-inline-list', description: 'Related rows as a table inside the show page'},
+      {name: 'Foreign inline show', slug: 'foreign-inline-show', description: 'The linked record itself, expanded in place'},
+    ],
+  },
+  {
+    title: 'Data & operations',
+    items: [
+      {name: 'Import / export', slug: 'import-export', description: 'CSV and XLSX in and out, on any resource', standard: 'RFC 4180'},
+      {name: 'Background jobs', slug: 'background-jobs', description: 'Durable work that resumes after a restart'},
+      {name: 'Audit log', slug: 'audit-log', description: 'Every change, by whom, from where'},
+      {name: 'CRUD approve', slug: 'CRUDApprove', description: 'Queue create, edit and delete for review on a JSON diff'},
+      {name: 'Quick filters', slug: 'quick-filters', description: 'Preset filters and search pinned to the list'},
+      {name: 'Auto remove', slug: 'auto-remove', description: 'Retention rules by age or by row count'},
+      {name: 'Universal search', slug: 'universal-search', description: 'Legacy multi-column search \u2014 prefer Quick filters'},
+    ],
+  },
+];
+
+const PLUGIN_COUNT = PLUGIN_GROUPS.reduce((sum, group) => sum + group.items.length, 0);
+
+function AgentSurfaces(): JSX.Element {
+  return (
+    <section className={styles.agentSection}>
+      <div className="container">
+        <Heading as="h2" className={styles.sectionTitle}>
+          Developers use agents. So do admins.
+        </Heading>
+        <p className={styles.sectionLede}>
+          Most back-office tools are built for one of the two and leave the other clicking.
+          AdminForth treats both as the normal case, and gives each a first-class surface.
+        </p>
+        <div className={styles.agentGrid}>
+          {AGENT_SURFACES.map((surface) => (
+            <div className={styles.agentCard} key={surface.who}>
+              <span className={styles.agentWho}>{surface.who}</span>
+              <Heading as="h3" className={styles.agentCardTitle}>{surface.title}</Heading>
+              <p className={styles.agentCardBody}>{surface.body}</p>
+              {surface.chips.length > 0 && (
+                <ul className={styles.fileChips}>
+                  {surface.chips.map((chip) => <li key={chip}>{chip}</li>)}
+                </ul>
+              )}
+              {surface.points.length > 0 && (
+                <ul className={styles.arrowList}>
+                  {surface.points.map((point) => <li key={point}>{point}</li>)}
+                </ul>
+              )}
+              <Link className={styles.agentLink} to={surface.link.to}>{surface.link.label}</Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PluginCatalogue(): JSX.Element {
+  return (
+    <section className={styles.pluginSection}>
+      <div className="container">
+        <Heading as="h2" className={styles.sectionTitle}>
+          The parts you would otherwise write twice
+        </Heading>
+        <p className={styles.sectionLede}>
+          {PLUGIN_COUNT} plugins, installed as npm packages. Open protocols where a protocol
+          exists, and each one documented well enough that an agent can install it for you.
+        </p>
+        <div className={styles.pluginGroups}>
+          {PLUGIN_GROUPS.map((group) => (
+            <div className={styles.pluginGroup} key={group.title}>
+              <h3 className={styles.pluginGroupTitle}>{group.title}</h3>
+              <ul className={styles.pluginList}>
+                {group.items.map((item) => (
+                  <li key={item.slug}>
+                    <Link to={`/docs/tutorial/Plugins/${item.slug}/`}>{item.name}</Link>
+                    <span className={styles.pluginDescription}>{item.description}</span>
+                    {item.standard && <span className={styles.pluginStandard}>{item.standard}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
 
@@ -169,9 +320,13 @@ function HomepageHeader() {
       <header className={clsx('hero', styles.heroBanner)}>
         <div className="container" >
           <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            {HOME_TITLE}
+            {HERO_TITLE_PARTS[0]}
+            <span className={styles.heroAccent}>{HERO_TITLE_PARTS[1]}</span>
+            {HERO_TITLE_PARTS[2]}
+            <span className={styles.heroAccent}>{HERO_TITLE_PARTS[3]}</span>
+            {HERO_TITLE_PARTS[4]}
           </Heading>
-          <p className="hero__subtitle">{siteConfig.tagline}</p>
+          <p className={clsx('hero__subtitle', styles.heroSubtitle)}>{HERO_SUBTITLE}</p>
 
           <div className="heroRow">
             <div className={styles.buttons}>
@@ -198,6 +353,9 @@ function HomepageHeader() {
                 <p className="line1"><span
                   style={{userSelect: 'none', opacity:0.6 }}
                 >$&nbsp;</span><span style={{ opacity:0.9 }}>npx adminforth create-app</span></p>
+                <p className={clsx('line1', styles.terminalComment)}>
+                  # Postgres &middot; MySQL &middot; SQLite &middot; Mongo
+                </p>
               </div>
             </div>
           </div>
@@ -289,6 +447,8 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
       <main>
 
+        <AgentSurfaces />
+
         <div className={styles.videoSection}>
           <div className={styles.videoWrapper}>
             <iframe
@@ -343,6 +503,8 @@ export default function Home(): JSX.Element {
           ))}
         </div>
         
+        <PluginCatalogue />
+
         <HomepageFeatures />
 
         <section className={styles.featuredOnSection}>
