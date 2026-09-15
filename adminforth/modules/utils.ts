@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import crypto from 'crypto';
 import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
+import { encodeRecordId, isCompositePrimaryKey } from './recordId.js';
 import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
 
 // @ts-ignore-next-line
@@ -548,14 +549,17 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
     const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
 
     const childPk = childRes.columns.find(c => c.primaryKey)?.name;
+    const childRecordId = (childRecord: any) => isCompositePrimaryKey(childRes)
+      ? encodeRecordId(childRes, childRecord)
+      : childRecord[childPk];
 
     if (strategy === 'cascade') {
       for (const childRecord of childRecords) {
-        const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
+        const childResult = await cascadeChildrenDelete(childRes, childRecordId(childRecord), context, adminforth);
         if (childResult?.error) {
           return childResult;
         }
-        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
+        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), response});
         if (deleteChild.error) return { error: deleteChild.error };
         if (childResult?.error) {
           return childResult;
@@ -565,7 +569,7 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
 
     if (strategy === 'setNull') {
       for (const childRecord of childRecords) {
-        await adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
+        await adminforth.resource(childRes.resourceId).update(childRecordId(childRecord), {[foreignColumn.name]: null});
       }
     }
   }

@@ -16,6 +16,7 @@ import {
   ShowInModernInput,
   RateLimitString,
 } from "../types/Back.js";
+import { compositePkValues, isCompositePrimaryKey } from './recordId.js';
 
 import fs from 'fs';
 import path from 'path';
@@ -292,7 +293,11 @@ export default class ConfigValidator implements IConfigValidator {
             }
             
             await cascadeChildrenDelete(res as AdminForthResource, recordId, { adminUser, response}, this.adminforth);
-            await connector.deleteRecord({ resource: res as AdminForthResource, recordId });
+            await connector.deleteRecord({
+              resource: res as AdminForthResource,
+              recordId,
+              pkValues: compositePkValues(connector, res as AdminForthResource, recordId),
+            });
             
             await Promise.all(
               (res.hooks.delete.afterSave).map(
@@ -474,7 +479,9 @@ export default class ConfigValidator implements IConfigValidator {
       }
       if (!res.recordLabel) {
         res.recordLabel = (item) => {
-          const pkVal = item[res.columns.find((col) => col.primaryKey).name];
+          const pkVal = isCompositePrimaryKey(res as AdminForthResource)
+            ? res.columns.filter((col) => col.primaryKey).map((col) => item[col.name]).join(' ')
+            : item[res.columns.find((col) => col.primaryKey).name];
           return `${res.label} ${pkVal}`;
         }
       }
