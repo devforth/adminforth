@@ -406,15 +406,29 @@ export interface IAdminForthDataSourceConnector {
   createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string>;
 
   /**
-   * Update record in database. newValues might have not all fields in record, but only changed ones.
-   * recordId is value of field which is marked as {@link AdminForthResourceColumn.primaryKey}
+   * Set to true if connector is able to work with resources which have several columns marked as
+   * {@link AdminForthResourceColumn.primaryKey} (composite primary key).
+   * Such connector must build WHERE clause from `pkValues` argument of
+   * {@link IAdminForthDataSourceConnector.updateRecordOriginalValues} and
+   * {@link IAdminForthDataSourceConnector.deleteRecord} instead of using getPrimaryKey().
    */
-  updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void>;
+  supportsCompositePrimaryKey?: boolean;
+
+  /**
+   * Update record in database. newValues might have not all fields in record, but only changed ones.
+   * recordId is value of field which is marked as {@link AdminForthResourceColumn.primaryKey}, or,
+   * for resources with composite primary key, encoded value of all such columns.
+   * pkValues is map of primary key column name to its value, use it to build WHERE clause
+   * (it supports both single and composite primary keys).
+   */
+  updateRecordOriginalValues({ resource, recordId, newValues, pkValues }: { resource: AdminForthResource; recordId: string; newValues: any; pkValues?: Record<string, any>; }): Promise<void>;
 
   /**
    * Used to delete record in database.
+   * pkValues is map of primary key column name to its value, use it to build WHERE clause
+   * (it supports both single and composite primary keys).
    */
-  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean>;
+  deleteRecord({ resource, recordId, pkValues }: { resource: AdminForthResource, recordId: any, pkValues?: Record<string, any> }): Promise<boolean>;
 
   /**
    * Optional. Used to perform aggregation queries on a resource table.
@@ -436,7 +450,30 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
 
   validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter;
 
+  /**
+   * Returns name of first column marked as primaryKey.
+   * For resources with composite primary key use {@link getPrimaryKeys}.
+   */
   getPrimaryKey(resource: AdminForthResource): string;
+
+  /**
+   * Returns names of all columns marked as primaryKey (more then one for composite primary key).
+   * Optional: connectors which extend AdminForthBaseConnector get it for free, connectors which
+   * implement this interface on their own may not have it, so core always calls it optionally.
+   */
+  getPrimaryKeys?(resource: AdminForthResource): string[];
+
+  /**
+   * Splits recordId into values of primary key columns, casted to data source types.
+   * Optional for the same reason as {@link getPrimaryKeys}.
+   */
+  getPrimaryKeyValues?(resource: AdminForthResource, recordId: any): Record<string, any>;
+
+  /**
+   * Builds filters which select exactly one record with given recordId.
+   * Optional for the same reason as {@link getPrimaryKeys}.
+   */
+  getPrimaryKeyFilters?(resource: AdminForthResource, recordId: any): IAdminForthSingleFilter[];
 
   getData({ resource, limit, offset, sort, filters, columns }: {
     resource: AdminForthResource,

@@ -17,6 +17,7 @@ import {
 import type { AnySchemaObject } from 'ajv';
 
 import {cascadeChildrenDelete} from './utils.js'
+import { encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames } from './recordId.js';
 
 import { afLogger } from "./logger.js";
 
@@ -1331,7 +1332,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const meta = { requestBody: body, pk: undefined };
         if ((source === 'edit' || source === 'show') && body.filters) {
-          meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
+          if (isCompositePrimaryKey(resource)) {
+            const pkFieldNames = primaryKeyColumnNames(resource);
+            const pkValues = pkFieldNames.reduce((acc, name) => {
+              acc[name] = (body.filters as any[]).find((f) => f.field === name)?.value;
+              return acc;
+            }, {});
+            if (pkFieldNames.every((name) => pkValues[name] !== undefined)) {
+              meta.pk = encodeRecordId(resource, pkValues);
+            }
+          } else {
+            meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
+          }
         }
 
         const { allowedActions } = await interpretResource(
@@ -1409,6 +1421,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               selectedDataSourceColumnNameSet.add(col.foreignResource.polymorphicOn);
             }
           }
+          if (isCompositePrimaryKey(resource)) {
+            // all key columns are needed to build record id out of the row
+            for (const pkName of primaryKeyColumnNames(resource)) {
+              selectedDataSourceColumnNameSet.add(pkName);
+            }
+          }
         }
 
         const selectedDataSourceColumns = selectedDataSourceColumnNameSet && !shouldAddListHelpers
@@ -1460,6 +1478,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           getTotals: source === 'list',
           columns: selectedDataSourceColumns,
         });
+
+        if (shouldAddListHelpers && isCompositePrimaryKey(resource)) {
+          // single primary key rows keep exactly the shape they had before, frontend derives id itself
+          for (const item of data.data) {
+            item._primaryKeyValue = encodeRecordId(resource, item);
+          }
+        }
 
         // for foreign keys, add references
         await Promise.all(
@@ -1591,6 +1616,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         
           for (const item of data.data) {
             for (const key of Object.keys(item)) {
+              if (key === '_primaryKeyValue') {
+                continue;
+              }
               const col = resource.columns.find((c) => c.name === key);
               const bo = col ? await isBackendOnly(col, ctx) : true;
               if (!col || bo) {
@@ -1632,7 +1660,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (selectedColumnNameSet) {
           for (const item of data.data) {
             for (const key of Object.keys(item)) {
-              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl') {
+              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl' && key !== '_primaryKeyValue') {
                 delete item[key];
               }
             }
@@ -1640,8 +1668,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         if (source === 'list') {
-          const pkField = resource.columns.find((col) => col.primaryKey).name;
-          (data as any).recordIds = data.data.map((item) => item[pkField]);
+          if (isCompositePrimaryKey(resource)) {
+            (data as any).recordIds = data.data.map((item) => item._primaryKeyValue ?? encodeRecordId(resource, item));
+          } else {
+            const pkField = resource.columns.find((col) => col.primaryKey).name;
+            (data as any).recordIds = data.data.map((item) => item[pkField]);
+          }
         }
 
         return data;
@@ -2064,11 +2096,26 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-            if (record[primaryKeyColumn.name] !== undefined) {
-              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
-              if (existingRecord) {
-                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+            if (isCompositePrimaryKey(resource)) {
+              const createPkColumnNames = primaryKeyColumnNames(resource);
+              if (createPkColumnNames.every((name) => record[name] !== undefined)) {
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get(
+                  createPkColumnNames.map((name) => Filters.EQ(name, record[name]))
+                );
+                if (existingRecord) {
+                  return {
+                    error: `Record with ${createPkColumnNames.map((name) => `${name} '${record[name]}'`).join(', ')} already exists`,
+                    ok: false,
+                  };
+                }
+              }
+            } else {
+              const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+              if (record[primaryKeyColumn.name] !== undefined) {
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+                if (existingRecord) {
+                  return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+                }
               }
             }
 
@@ -2176,9 +2223,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
+            const newRecordId = isCompositePrimaryKey(resource)
+              ? encodeRecordId(resource, createRecordResponse.createdRecord)
+              : createRecordResponse.createdRecord[connector.getPrimaryKey(resource)];
+
             return {
-              newRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
-              redirectToRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
+              newRecordId,
+              redirectToRecordId: newRecordId,
               ok: true
             }
         }
@@ -2203,7 +2254,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
             if (!oldRecord) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-                return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
+                return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
             }
             const record = body['record'];
 
@@ -2220,11 +2271,33 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error: allowedError };
             }
 
-            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-            if (record[primaryKeyColumn.name] !== undefined) {
-              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
-              if (existingRecord) {
-                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+            if (isCompositePrimaryKey(resource)) {
+              const pkColumnNames = primaryKeyColumnNames(resource);
+              const pkIsChanged = pkColumnNames.some(
+                (name) => record[name] !== undefined && String(record[name]) !== String(oldRecord[name])
+              );
+              if (pkIsChanged) {
+                const newPkValues = pkColumnNames.reduce((acc, name) => {
+                  acc[name] = record[name] !== undefined ? record[name] : oldRecord[name];
+                  return acc;
+                }, {});
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get(
+                  pkColumnNames.map((name) => Filters.EQ(name, newPkValues[name]))
+                );
+                if (existingRecord) {
+                  return {
+                    error: `Record with ${pkColumnNames.map((name) => `${name} '${newPkValues[name]}'`).join(', ')} already exists`,
+                    ok: false,
+                  };
+                }
+              }
+            } else {
+              const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+              if (record[primaryKeyColumn.name] !== undefined) {
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+                if (existingRecord) {
+                  return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+                }
               }
             }
 
@@ -2326,7 +2399,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
             return {
-              recordId: record.id,
+              recordId: isCompositePrimaryKey(resource)
+                ? encodeRecordId(resource, { ...oldRecord, ...record })
+                : record.id,
               ok: true
             }
         }

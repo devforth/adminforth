@@ -227,6 +227,7 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceListTable from '@/components/ResourceListTable.vue';
 import { useCoreStore } from '@/stores/core';
+import { encodeRecordId, isCompositePrimaryKey, recordIdFilters } from '@/utils/recordId';
 import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery, formatComponent, executeCustomBulkAction } from '@/utils';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
@@ -327,11 +328,19 @@ async function refreshExistingList(pk?: any) {
       limit: pks.length,
       offset: 0,
       filters: [
-        {
-          field: coreStore.resource!.columns.find(c => c.primaryKey)!.name,
-          operator: 'in',
-          value: pks
-        }
+        isCompositePrimaryKey(coreStore.resource!)
+          ? {
+              operator: 'or',
+              subFilters: pks.map((rowPk: any) => ({
+                operator: 'and',
+                subFilters: recordIdFilters(coreStore.resource!, rowPk),
+              })),
+            }
+          : {
+              field: coreStore.resource!.columns.find(c => c.primaryKey)!.name,
+              operator: 'in',
+              value: pks
+            }
       ],
       sort: sort.value,
     }
@@ -340,9 +349,11 @@ async function refreshExistingList(pk?: any) {
     return data;
   }
   data.data.forEach((row: any) => {
-    const pkKeyName = coreStore.resource!.columns.find(c => c.primaryKey)!.name;
+    const rowPk = isCompositePrimaryKey(coreStore.resource!)
+      ? (row._primaryKeyValue ?? encodeRecordId(coreStore.resource!, row))
+      : row[coreStore.resource!.columns.find(c => c.primaryKey)!.name];
 
-    const existingRow = currentData.find(r => r._primaryKeyValue === row[pkKeyName]);
+    const existingRow = currentData.find(r => r._primaryKeyValue === rowPk);
     if (existingRow) {
       Object.assign(existingRow, row);
     }

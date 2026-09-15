@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { defineStore } from 'pinia'
 import { callAdminForthApi } from '@/utils';
+import { isCompositePrimaryKey, recordIdFilters } from '@/utils/recordId';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
 
@@ -168,9 +169,21 @@ export const useCoreStore = defineStore('core', () => {
     if (!resource.value) {
       throw new Error('Columns not fetched yet');
     }
-    const col = resource.value.columns.find((col: AdminForthResourceColumnCommon) => col.primaryKey);
-    if (!col) {
-      throw new Error(`Primary key not found in resource ${resourceId}`);
+    let filters;
+    if (isCompositePrimaryKey(resource.value)) {
+      filters = recordIdFilters(resource.value, primaryKey);
+    } else {
+      const col = resource.value.columns.find((col: AdminForthResourceColumnCommon) => col.primaryKey);
+      if (!col) {
+        throw new Error(`Primary key not found in resource ${resourceId}`);
+      }
+      filters = [
+        {
+          field: col.name,
+          operator: 'eq',
+          value: primaryKey
+        }
+      ];
     }
 
     const respData = await callAdminForthApi({
@@ -179,13 +192,7 @@ export const useCoreStore = defineStore('core', () => {
       body: {
         source: source,
         resourceId: resourceId,
-        filters: [
-          {
-            field: col.name,
-            operator: 'eq',
-            value: primaryKey
-          }
-        ],
+        filters,
         sort: [],
         limit: 1,
         offset: 0

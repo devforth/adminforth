@@ -1,4 +1,5 @@
 import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAggregationRule, IGroupByRule } from '../types/Back.js';
+import { compositePkValues } from './recordId.js';
 import { AdminForthFilterOperators } from '../types/Common.js';
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
@@ -103,7 +104,11 @@ export default class OperationalResource implements IOperationalResource {
   }
 
   async delete(primaryKey: any): Promise<boolean> {
-    return await this.dataConnector.deleteRecord({ resource: this.resourceConfig, recordId: primaryKey });
+    return await this.dataConnector.deleteRecord({
+      resource: this.resourceConfig,
+      recordId: primaryKey,
+      pkValues: compositePkValues(this.dataConnector, this.resourceConfig, primaryKey),
+    });
   }
 
 }
