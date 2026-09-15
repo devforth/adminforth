@@ -1,21 +1,19 @@
-import clsx from 'clsx';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
 const LIVE_DEMO_IFRAME_URL = `https://demo.adminforth.dev/overview?autologin=${encodeURIComponent('demo@adminfoth.dev:demo')}&embedZoom=0.7`;
 const YOUTUBE_VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/4tB8uzY__uk';
 const HOME_TITLE = 'Agent-first open-source admin panel framework';
-const HERO_TITLE_PARTS = ['The back-office agents ', 'build', ', and agents ', 'run', '.'];
-const HERO_SUBTITLE = 'A back-office framework for the two people who already work with agents: the developer, who lets Claude Code or Codex write the panel, and the admin, who lets an agent work inside it. Same repo, same database, same permissions.';
 const HOME_DESCRIPTION = 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. AdminForth is a flexible, modern foundation for developer-owned back-end management systems.';
 const HOME_SUMMARY = 'You can use AdminForth to build robust and powerful agentic back-office panels for your projects while maintaining full control over the code. It is designed for developers who need a flexible, modern foundation for back-end management systems.';
 const SCREENSHOT_PATH = '/img/adminforth_screenshot.png';
 const OG_IMAGE_PATH = '/img/og.jpg';
+const MCP_SHOT = require('@site/static/img/previews/mcp.png').default;
+const HERO_SUBTITLE = 'A back-office framework for the two people who already work with agents: the developer, who lets Claude Code or Codex write the panel, and the admin, who lets an agent work inside it. Same repo, same database, same permissions.';
 const FEATURE_LIST = [
   'Connect to existing Postgres, MySQL, SQLite, or MongoDB data, provide an OpenAI or Anthropic API key, and start using the internal agent in natural language with npx adminforth create-app.',
   'Ships assets for coding agents like Claude, Codex, Copilot, and Antigravity, including AGENTS.md, CLAUDE.md, llms.txt, and skills.',
@@ -25,6 +23,47 @@ const FEATURE_LIST = [
   'Rich component library for custom admin controls and pages.',
 ];
 
+const FEATURED_ON = [
+  {
+    href: 'https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework',
+    src: 'https://auraplusplus.com/images/badges/featured-on-light.svg',
+    alt: 'Featured on Aura++',
+    rel: 'noopener',
+  },
+  {
+    href: 'https://peerpush.net/p/adminforth',
+    src: 'https://peerpush.net/p/adminforth/badge.png',
+    alt: 'AdminForth on PeerPush',
+    rel: 'noopener',
+  },
+  {
+    href: 'https://openhunts.com',
+    src: 'https://cdn.openhunts.com/badges/club.webp',
+    alt: 'OpenHunts Club Member',
+    rel: 'noopener',
+  },
+  {
+    href: 'https://toolfio.com',
+    src: 'https://toolfio.com/toolfio-light-badge.png',
+    alt: 'Featured on Toolfio',
+    rel: 'dofollow',
+  },
+  {
+    href: 'https://earlyhunt.com/project/adminforth',
+    src: 'https://earlyhunt.com/badges/earlyhunt-badge-light.svg',
+    alt: 'Featured on EarlyHunt',
+    rel: 'noopener',
+  },
+  {
+    href: 'https://www.producthunt.com/products/adminforth/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-adminforth',
+    src: 'https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=598095&theme=light',
+    alt: 'AdminForth on Product Hunt',
+    rel: 'noopener noreferrer',
+  },
+];
+
+type PluginItem = {name: string; slug: string; description: string; standard?: string};
+type PluginGroup = {title: string; items: PluginItem[]};
 
 const images = [
   {
@@ -162,10 +201,6 @@ const images = [
   },
 ];
 
-
-type PluginItem = {name: string; slug: string; description: string; standard?: string};
-type PluginGroup = {title: string; items: PluginItem[]};
-
 const AGENT_SURFACES = [
   {
     who: 'Developers who use agents',
@@ -243,143 +278,285 @@ const PLUGIN_GROUPS: PluginGroup[] = [
 
 const PLUGIN_COUNT = PLUGIN_GROUPS.reduce((sum, group) => sum + group.items.length, 0);
 
-function AgentSurfaces(): JSX.Element {
+function Terminal({note}: {note?: string}): JSX.Element {
   return (
-    <section className={styles.agentSection}>
-      <div className="container">
-        <Heading as="h2" className={styles.sectionTitle}>
-          Developers use agents. So do admins.
-        </Heading>
-        <p className={styles.sectionLede}>
-          Most back-office tools are built for one of the two and leave the other clicking.
-          AdminForth treats both as the normal case, and gives each a first-class surface.
+    <div className={styles.term}>
+      <div className={styles.termBar}><i /><i /><i /></div>
+      <div className={styles.termBody}>
+        <p className={styles.termLine}>
+          <span className={styles.termPrompt}>$</span>
+          <span>npx adminforth create-app</span>
         </p>
-        <div className={styles.agentGrid}>
-          {AGENT_SURFACES.map((surface) => (
-            <div className={styles.agentCard} key={surface.who}>
-              <span className={styles.agentWho}>{surface.who}</span>
-              <Heading as="h3" className={styles.agentCardTitle}>{surface.title}</Heading>
-              <p className={styles.agentCardBody}>{surface.body}</p>
-              {surface.chips.length > 0 && (
-                <ul className={styles.fileChips}>
-                  {surface.chips.map((chip) => <li key={chip}>{chip}</li>)}
-                </ul>
-              )}
-              {surface.points.length > 0 && (
-                <ul className={styles.arrowList}>
-                  {surface.points.map((point) => <li key={point}>{point}</li>)}
-                </ul>
-              )}
-              <Link className={styles.agentLink} to={surface.link.to}>{surface.link.label}</Link>
-            </div>
-          ))}
+        {note && (
+          <p className={styles.termLine}>
+            <em className={styles.termNote}>{note}</em>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Hero(): JSX.Element {
+  return (
+    <header className={styles.hero}>
+      <div className={`${styles.wrap} ${styles.heroGrid}`}>
+        <div>
+          <span className={styles.eyebrow}>Open source &middot; MIT &middot; Self-hosted</span>
+          <Heading as="h1" className={styles.heroTitle}>
+            The back-office agents <em className={styles.accent}>build</em>, and agents{' '}
+            <em className={styles.accent}>run</em>.
+          </Heading>
+          <p className={styles.heroLede}>{HERO_SUBTITLE}</p>
+          <div className={styles.cta}>
+            <Link className={`${styles.btn} ${styles.btnPrimary}`} to="/docs/tutorial/gettingStarted">
+              Get started
+            </Link>
+            <Link className={`${styles.btn} ${styles.btnGhost}`} to="https://demo.adminforth.dev/">
+              Open live demo
+            </Link>
+          </div>
+          <Terminal note="# Postgres &middot; MySQL &middot; SQLite &middot; Mongo" />
+        </div>
+        <div className={styles.panel}>
+          <div className={styles.panelBar}>
+            <span className={styles.tl} />
+            <span className={styles.tl} />
+            <span className={styles.tl} />
+            <span className={styles.panelUrl}>demo.adminforth.dev/overview</span>
+          </div>
+          <iframe className={styles.demoFrame} src={LIVE_DEMO_IFRAME_URL} title="AdminForth live demo" />
         </div>
       </div>
+    </header>
+  );
+}
+
+function Section({
+  eyebrow,
+  note,
+  children,
+}: {
+  eyebrow: string;
+  note: string;
+  children: React.ReactNode;
+}): JSX.Element {
+  return (
+    <section className={styles.sec}>
+      <div className={`${styles.wrap} ${styles.secGrid}`}>
+        <div className={styles.secLabel}>
+          <span className={styles.eyebrow}>{eyebrow}</span>
+          <p>{note}</p>
+        </div>
+        <div>{children}</div>
+      </div>
     </section>
+  );
+}
+
+function AgentSurfaces(): JSX.Element {
+  return (
+    <Section eyebrow="Two sides" note="One panel, written with agents and then worked by them.">
+      <Heading as="h2" className={styles.h2}>Developers use agents. So do admins.</Heading>
+      <p className={styles.lede}>
+        Most back-office tools are built for one of the two and leave the other clicking.
+        AdminForth treats both as the normal case, and gives each a first-class surface.
+      </p>
+      <div className={styles.dual}>
+        {AGENT_SURFACES.map((surface) => (
+          <div className={styles.dcard} key={surface.who}>
+            <span className={styles.who}>{surface.who}</span>
+            <Heading as="h3" className={styles.h3}>{surface.title}</Heading>
+            <p>{surface.body}</p>
+            {surface.chips.length > 0 && (
+              <ul className={styles.files}>
+                {surface.chips.map((chip) => <li key={chip}>{chip}</li>)}
+              </ul>
+            )}
+            {surface.points.length > 0 && (
+              <ul className={styles.plain}>
+                {surface.points.map((point) => <li key={point}>{point}</li>)}
+              </ul>
+            )}
+            <Link className={styles.link} to={surface.link.to}>{surface.link.label}</Link>
+          </div>
+        ))}
+      </div>
+      <div className={styles.mcp}>
+        <div className={styles.mcpText}>
+          <span className={styles.flag}>New plugin</span>
+          <Heading as="h3" className={styles.h3}>MCP Server</Heading>
+          <p>
+            Expose AdminForth API methods as remote MCP tools. Every call runs as the user who
+            created the auth secret, so resource permissions, validation and hooks still apply &mdash;
+            and each secret is revocable on its own.
+          </p>
+          <Link className={styles.link} to="/docs/tutorial/Plugins/mcp/">Read the MCP docs</Link>
+        </div>
+        <div className={styles.mcpImage}>
+          <div
+            className={styles.mcpShot}
+            role="img"
+            aria-label="AdminForth MCP server connected to Claude Code, OpenAI Codex and Gemini CLI"
+            style={{backgroundImage: `url(${MCP_SHOT})`}}
+          />
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function HowItWorks(): JSX.Element {
+  return (
+    <Section eyebrow="How it works" note="Three steps, in order. No scaffolding to maintain after.">
+      <Heading as="h2" className={styles.h2}>Declare the resource. Keep the code.</Heading>
+      <p className={styles.lede}>
+        AdminForth reads the schema you already have &mdash; nothing is copied or locked into a
+        proprietary format. The panel is an ordinary Node app in your repo, which is also why an
+        agent can edit it and a reviewer can read the diff.
+      </p>
+      <pre className={styles.code}>{`{
+  `}<span className={styles.k}>dataSource</span>{`: `}<span className={styles.s}>'maindb'</span>{`,
+  `}<span className={styles.k}>table</span>{`: `}<span className={styles.s}>'users'</span>{`,
+  `}<span className={styles.k}>resourceId</span>{`: `}<span className={styles.s}>'users'</span>{`,
+  `}<span className={styles.k}>columns</span>{`: [
+    { `}<span className={styles.k}>name</span>{`: `}<span className={styles.s}>'id'</span>{`, `}<span className={styles.k}>primaryKey</span>{`: true, `}<span className={styles.k}>showIn</span>{`: { `}<span className={styles.k}>list</span>{`: false } },
+    { `}<span className={styles.k}>name</span>{`: `}<span className={styles.s}>'email'</span>{`, `}<span className={styles.k}>required</span>{`: true, `}<span className={styles.k}>isUnique</span>{`: true },
+    { `}<span className={styles.k}>name</span>{`: `}<span className={styles.s}>'role'</span>{`, `}<span className={styles.k}>enum</span>{`: [
+      { `}<span className={styles.k}>value</span>{`: `}<span className={styles.s}>'admin'</span>{`,  `}<span className={styles.k}>label</span>{`: `}<span className={styles.s}>'Admin'</span>{`  },
+      { `}<span className={styles.k}>value</span>{`: `}<span className={styles.s}>'editor'</span>{`, `}<span className={styles.k}>label</span>{`: `}<span className={styles.s}>'Editor'</span>{` },
+    ] },                                `}<span className={styles.c}>{`// renders as a select`}</span>{`
+    { `}<span className={styles.k}>name</span>{`: `}<span className={styles.s}>'created_at'</span>{`, `}<span className={styles.k}>showIn</span>{`: { `}<span className={styles.k}>create</span>{`: false } },
+  ],
+}`}</pre>
+    </Section>
+  );
+}
+
+function Watch(): JSX.Element {
+  return (
+    <Section eyebrow="Watch" note="Six minutes, from an empty folder to a working panel.">
+      <Heading as="h2" className={styles.h2}>See it built once.</Heading>
+      <p className={styles.lede}>
+        An existing database, one command, and the agent taking it from there.
+      </p>
+      <div className={styles.panel}>
+        <div className={styles.panelBar}>
+          <span className={styles.tl} />
+          <span className={styles.tl} />
+          <span className={styles.tl} />
+          <span className={styles.panelUrl}>youtube.com &middot; AdminForth overview</span>
+        </div>
+        <iframe
+          className={styles.videoFrame}
+          src={YOUTUBE_VIDEO_EMBED_URL}
+          title="AdminForth overview video"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    </Section>
+  );
+}
+
+function Gallery(): JSX.Element {
+  return (
+    <Section eyebrow="In the panel" note="What ships, and what a plugin adds on top.">
+      <Heading as="h2" className={styles.h2}>What it can do for you.</Heading>
+      <p className={styles.lede}>
+        Every screen below is the stock interface or a plugin you enable with a line of config.
+      </p>
+      <div className={styles.gallery}>
+        {images.map((item, index) => (
+          <div className={styles.gcard} key={`feature${index}`}>
+            <img src={item.original} alt={item.title} title={item.title} loading="lazy" />
+            <div className={styles.gcardBody}>
+              <Heading as="h3" className={styles.gcardTitle}>{item.title}</Heading>
+              <p>{item.description}</p>
+              <Link className={styles.link} to={item.link}>Learn how</Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 
 function PluginCatalogue(): JSX.Element {
   return (
-    <section className={styles.pluginSection}>
-      <div className="container">
-        <Heading as="h2" className={styles.sectionTitle}>
-          The parts you would otherwise write twice
+    <Section
+      eyebrow="Plugins"
+      note={`${PLUGIN_COUNT} of them, installed as npm packages. Open protocols where a protocol exists.`}
+    >
+      <Heading as="h2" className={styles.h2}>The parts you would otherwise write twice.</Heading>
+      <p className={styles.lede}>
+        Each one is a line of config and a package &mdash; and each is documented well enough that
+        an agent can install it for you.
+      </p>
+      <div className={styles.groups}>
+        {PLUGIN_GROUPS.map((group) => (
+          <div className={styles.group} key={group.title}>
+            <h3 className={styles.groupTitle}>{group.title}</h3>
+            <ul>
+              {group.items.map((item) => (
+                <li key={item.slug}>
+                  <Link to={`/docs/tutorial/Plugins/${item.slug}/`}>{item.name}</Link>
+                  <span className={styles.pluginDesc}>{item.description}</span>
+                  {item.standard && <span className={styles.rfc}>{item.standard}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function Closing(): JSX.Element {
+  return (
+    <section className={styles.close}>
+      <div className={styles.wrap}>
+        <span className={styles.eyebrow}>Free, and staying that way</span>
+        <Heading as="h2" className={styles.h2} style={{marginTop: '12px'}}>
+          One command for the developer. One secret for the admin.
         </Heading>
-        <p className={styles.sectionLede}>
-          {PLUGIN_COUNT} plugins, installed as npm packages. Open protocols where a protocol
-          exists, and each one documented well enough that an agent can install it for you.
-        </p>
-        <div className={styles.pluginGroups}>
-          {PLUGIN_GROUPS.map((group) => (
-            <div className={styles.pluginGroup} key={group.title}>
-              <h3 className={styles.pluginGroupTitle}>{group.title}</h3>
-              <ul className={styles.pluginList}>
-                {group.items.map((item) => (
-                  <li key={item.slug}>
-                    <Link to={`/docs/tutorial/Plugins/${item.slug}/`}>{item.name}</Link>
-                    <span className={styles.pluginDescription}>{item.description}</span>
-                    {item.standard && <span className={styles.pluginStandard}>{item.standard}</span>}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <Terminal />
+        <div className={styles.closeCta}>
+          <Link className={`${styles.btn} ${styles.btnPrimary}`} to="/docs/tutorial/gettingStarted">
+            Read the guide
+          </Link>
+          <Link className={`${styles.btn} ${styles.btnGhost}`} to="https://github.com/devforth/adminforth">
+            Star on GitHub
+          </Link>
         </div>
       </div>
     </section>
   );
 }
 
-function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
-
+function FeaturedOn(): JSX.Element {
   return (
-    <>
-      <header className={clsx('hero', styles.heroBanner)}>
-        <div className="container" >
-          <Heading as="h1" className={clsx('hero__title', styles.heroBannerTitle)} >
-            {HERO_TITLE_PARTS[0]}
-            <span className={styles.heroAccent}>{HERO_TITLE_PARTS[1]}</span>
-            {HERO_TITLE_PARTS[2]}
-            <span className={styles.heroAccent}>{HERO_TITLE_PARTS[3]}</span>
-            {HERO_TITLE_PARTS[4]}
-          </Heading>
-          <p className={clsx('hero__subtitle', styles.heroSubtitle)}>{HERO_SUBTITLE}</p>
-
-          <div className="heroRow">
-            <div className={styles.buttons}>
-              <Link
-                className="button button--secondary button--outline button--lg"
-                to="/docs/tutorial/gettingStarted">
-                Get started
-              </Link>
-
-              <Link
-                className="button button--primary button--lg"
-                to="https://demo.adminforth.dev/">
-                Live Demo
-              </Link>
-            </div>
-
-            <div className='terminalWrapper'>
-              <div className="fakeMenu">
-                <div className="fakeButtons fakeClose"></div>
-                <div className="fakeButtons fakeMinimize"></div>
-                <div className="fakeButtons fakeZoom"></div>
-              </div>
-              <div className="fakeScreen">
-                <p className="line1"><span
-                  style={{userSelect: 'none', opacity:0.6 }}
-                >$&nbsp;</span><span style={{ opacity:0.9 }}>npx adminforth create-app</span></p>
-                <p className={clsx('line1', styles.terminalComment)}>
-                  # Postgres &middot; MySQL &middot; SQLite &middot; Mongo
-                </p>
-              </div>
-            </div>
-          </div>
-
+    <section className={styles.featured}>
+      <div className={styles.wrap}>
+        <span className={styles.eyebrow}>Featured on</span>
+        <div className={styles.featuredBadges}>
+          {FEATURED_ON.map((badge) => (
+            <a
+              key={badge.href}
+              href={badge.href}
+              target="_blank"
+              rel={badge.rel}
+              className={styles.featuredLink}
+            >
+              <img className={styles.featuredBadgeImage} src={badge.src} alt={badge.alt} loading="lazy" />
+            </a>
+          ))}
         </div>
-      </header>
-
-
-        <div className="laptop_container">
-          <div className="laptop">
-            <div className="laptop__screen">
-              <iframe
-                className={styles.demoFrame}
-                src={LIVE_DEMO_IFRAME_URL}
-                title="AdminForth live demo"
-              />
-            </div>
-            <div className="laptop__bottom">
-              <div className="laptop__under"></div>
-            </div>
-            <div className="laptop__shadow"></div>
-          </div>
-        </div>
-
-    </>
+      </div>
+    </section>
   );
 }
 
@@ -427,9 +604,7 @@ export default function Home(): JSX.Element {
   };
 
   return (
-    <Layout
-      title={HOME_TITLE}
-      description={HOME_DESCRIPTION}>
+    <Layout title={HOME_TITLE} description={HOME_DESCRIPTION}>
       <Head>
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AdminForth" />
@@ -443,164 +618,18 @@ export default function Home(): JSX.Element {
         <meta name="twitter:data2" content="Tailwind, Vue, TypeScript" />
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
       </Head>
-      <HomepageHeader />
-      <main>
-
-        <AgentSurfaces />
-
-        <div className={styles.videoSection}>
-          <div className={styles.videoWrapper}>
-            <iframe
-              className={styles.videoFrame}
-              src={YOUTUBE_VIDEO_EMBED_URL}
-              title="AdminForth overview video"
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-        </div>
-
-
-      <Heading as="h2" className="hero__title text--center">
-        What it can do for you
-      </Heading>
-
-        <div className={styles.cardsWrapper}>
-          {images.map((item, index) => (
-            <div className="card-demo" key={`feature${index}`}>
-              <div className="card shadow--md" style={{
-                      maxWidth: '500px',
-                      height: '100%'
-                    }}> 
-                <div className="card__image">
-                  <img
-                    src={item.original}
-                    alt={item.title}
-                    title={item.title}
-                    
-                  />
-                </div>
-                <div className="card__body">
-                  <h3>{item.title}</h3>
-                  {
-                    item.description ?
-                    <small>
-                      {item.description}
-                    </small> :
-                    <small></small>
-                  }
-                </div>
-                <div className="card__footer">
-                  <a className="button button--primary button--block"
-                    href={item.link}
-                  >Learn how</a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <PluginCatalogue />
-
-        <HomepageFeatures />
-
-        <section className={styles.featuredOnSection}>
-          <div className="container">
-            <Heading as="h2" className={styles.featuredOnTitle}>
-              Featured on
-            </Heading>
-            <div className={styles.featuredOnBadges}>
-              <a
-                href="https://auraplusplus.com/projects/adminforth-agent-first-open-source-admin-panel-framework"
-                target="_blank"
-                rel="noopener"
-                className={styles.featuredOnLink}
-              >
-                <img
-                  className={styles.featuredOnBadgeImage}
-                  src="https://auraplusplus.com/images/badges/featured-on-light.svg"
-                  alt="Featured on Aura++"
-                  width="265"
-                  height="58"
-                />
-              </a>
-              <a
-                href="https://peerpush.net/p/adminforth"
-                target="_blank"
-                rel="noopener"
-                className={styles.featuredOnLink}
-              >
-                <img
-                  className={styles.featuredOnBadgeImage}
-                  src="https://peerpush.net/p/adminforth/badge.png"
-                  alt="AdminForth on PeerPush"
-                  width="230"
-                />
-              </a>
-              <a
-                href="https://openhunts.com"
-                target="_blank"
-                rel="noopener"
-                title="OpenHunts Club"
-                className={styles.featuredOnLink}
-              >
-                <img
-                  className={styles.featuredOnBadgeImage}
-                  src="https://cdn.openhunts.com/badges/club.webp"
-                  alt="OpenHunts Club Member"
-                  width="195"
-                />
-              </a>
-              <a
-                href="https://toolfio.com"
-                target="_blank"
-                rel="dofollow"
-                className={styles.featuredOnLink}
-              >
-                <img
-                  className={styles.featuredOnBadgeImage}
-                  src="https://toolfio.com/toolfio-light-badge.png"
-                  alt="Featured on Toolfio"
-                  width="200"
-                  height="54"
-                />
-              </a>
-              <a
-                href="https://earlyhunt.com/project/adminforth"
-                target="_blank"
-                rel="noopener"
-                className={styles.featuredOnLink}
-              >
-                <img
-                  className={styles.featuredOnBadgeImage}
-                  src="https://earlyhunt.com/badges/earlyhunt-badge-light.svg"
-                  alt="Featured on EarlyHunt"
-                  width="265"
-                  height="58"
-                />
-              </a>
-              <a
-                href="https://www.producthunt.com/products/adminforth/reviews/new?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-adminforth"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.featuredOnLink}
-              >
-                <img
-                  className={styles.featuredOnBadgeImage}
-                  src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=598095&theme=light"
-                  alt="AdminForth on Product Hunt"
-                  width="250"
-                  height="54"
-                />
-              </a>
-            </div>
-          </div>
-        </section>
-
-      </main>
-
+      <div className={styles.landing}>
+        <Hero />
+        <main>
+          <AgentSurfaces />
+          <HowItWorks />
+          <Watch />
+          <Gallery />
+          <PluginCatalogue />
+          <Closing />
+          <FeaturedOn />
+        </main>
+      </div>
     </Layout>
   );
 }
