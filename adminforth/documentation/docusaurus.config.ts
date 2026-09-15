@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Agent-first open-source admin panel framework',
-  tagline: 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code.',
+  tagline: 'A back-office framework for developers who build with agents, and admins who work with agents inside the panel.',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here

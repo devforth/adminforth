@@ -108,3 +108,198 @@
   height: 70px;
   object-fit: contain;
 }
+/* ---------------------------------------------------------------------------
+   Concept sections: agents build it, agents run it.
+   Colours come from Infima tokens, so light/dark follow the navbar toggle;
+   only the few surfaces Infima has no token for are restated for dark.
+   --------------------------------------------------------------------------- */
+
+.heroAccent {
+  color: var(--ifm-color-primary);
+  background: linear-gradient(transparent 68%, var(--af-accent-underline) 68%);
+}
+
+.heroSubtitle {
+  max-width: 58ch;
+  margin-inline: auto;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.sectionLede {
+  max-width: 62ch;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* --- two audiences --------------------------------------------------------- */
+
+.agentSection {
+  padding: 3.5rem 0 1rem;
+}
+
+.agentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.agentCard {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 14px;
+  background: var(--af-card-bg);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.agentWho {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+  background: var(--af-accent-underline);
+  padding: 0.25rem 0.55rem;
+  border-radius: 5px;
+  margin-bottom: 0.9rem;
+}
+
+.agentCardTitle {
+  font-size: 1.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.agentCardBody {
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 1rem;
+}
+
+.fileChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.fileChips li {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-800);
+  background: var(--af-card-soft);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 7px;
+  padding: 0.4rem 0.7rem;
+}
+
+.arrowList {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.arrowList li {
+  position: relative;
+  padding-left: 1.2rem;
+}
+
+.arrowList li::before {
+  content: '\2192';
+  position: absolute;
+  left: 0;
+  color: var(--ifm-color-primary);
+}
+
+.agentLink {
+  margin-top: auto;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+/* --- plugin catalogue ------------------------------------------------------ */
+
+.pluginSection {
+  padding: 3rem 0 2rem;
+}
+
+.pluginGroups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+  gap: 2rem 2.25rem;
+  max-width: 1160px;
+  margin-inline: auto;
+}
+
+.pluginGroupTitle {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ifm-color-emphasis-600);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  margin-bottom: 0.9rem;
+}
+
+.pluginList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.pluginList a {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.pluginDescription {
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.pluginStandard {
+  display: block;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.72rem;
+  color: var(--ifm-color-primary);
+  margin-top: 0.15rem;
+}
+
+@media screen and (max-width: 996px) {
+  .sectionTitle {
+    font-size: 1.6rem;
+  }
+
+  .agentSection,
+  .pluginSection {
+    padding: 2rem 0 1rem;
+  }
+}
+
+.terminalComment {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
