@@ -1,10 +1,22 @@
 ---
 title: CRUD Approve Plugin
-description: "Guide to the CRUD Approve plugin, including installation, approval storage resource setup, wiring protected resources, approval flow, reviewer access, and optional two-factor verification for approved changes."
+description: "Unsupported reference for the CRUD Approve plugin. Approval flows should be implemented in your own code."
 slug: /tutorial/Plugins/CRUDApprove
+unlisted: true
 ---
 
 # CRUD Approve Plugin
+
+:::danger Not officially supported
+
+This plugin is not officially supported and is not part of the AdminForth plugin lineup.
+For approvals, implement your own logic: hold the change in a resource of your own with
+`beforeSave` / `beforeDelete` hooks, and apply it once a reviewer allows it.
+
+The page below is kept only as a reference for projects that already installed the package.
+It receives no support, no fixes and no compatibility guarantees.
+
+:::
 
 The CRUD Approve plugin adds a manual approval step for changes made from the AdminForth back-office. Instead of applying `create`, `edit`, or `delete` operations immediately, selected resources can send these operations to an approval queue. A reviewer can then inspect the JSON diff and either approve or reject the pending change.
 

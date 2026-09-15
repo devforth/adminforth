@@ -234,7 +234,6 @@ const PLUGIN_GROUPS: PluginGroup[] = [
       {name: 'Import / export', slug: 'import-export', description: 'CSV and XLSX in and out, on any resource', standard: 'RFC 4180'},
       {name: 'Background jobs', slug: 'background-jobs', description: 'Durable work that resumes after a restart'},
       {name: 'Audit log', slug: 'audit-log', description: 'Every change, by whom, from where'},
-      {name: 'CRUD approve', slug: 'CRUDApprove', description: 'Queue create, edit and delete for review on a JSON diff'},
       {name: 'Quick filters', slug: 'quick-filters', description: 'Preset filters and search pinned to the list'},
       {name: 'Auto remove', slug: 'auto-remove', description: 'Retention rules by age or by row count'},
       {name: 'Universal search', slug: 'universal-search', description: 'Legacy multi-column search \u2014 prefer Quick filters'},
