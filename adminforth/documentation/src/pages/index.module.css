@@ -776,7 +776,7 @@
 
 @media (max-width: 920px) {
   .secGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
   }
 
