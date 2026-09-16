@@ -37,6 +37,8 @@ Why AdminForth:
 
 ## Project initialisation
 
+AdminForth supports Node.js 22.12+, 24, and 26. Node.js 20 and 21 are no longer supported. We recommend Node.js 24 LTS for production.
+
 AdminForth supports two setup paths:
 
 ### Path 1: Existing database
@@ -77,7 +79,7 @@ The most convenient way to add new features or fixes is to use `dev-demo`. It im
 
 ## Requirements
 
-- **Node.js 20**
+- **Node.js 22.12+, 24, or 26** (Node.js 20 and 21 are not supported)
 - **Docker**
 - **pnpm**
 - **Taskfile**

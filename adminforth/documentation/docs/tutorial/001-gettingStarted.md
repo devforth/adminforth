@@ -11,12 +11,12 @@ You will learn how to set up a new project using the `adminforth create-app` com
 
 ## Prerequisites
 
-AdminForth requires **Node v20** or higher. If you’re on a different version, you can switch or install using:
+AdminForth supports **Node.js 22.12+, 24, and 26**. Node.js 20 and 21 are no longer supported. We recommend Node.js 24 LTS:
 
 ```bash
-nvm install 20
-nvm alias default 20
-nvm use 20
+nvm install 24
+nvm alias default 24
+nvm use 24
 ```
 
 

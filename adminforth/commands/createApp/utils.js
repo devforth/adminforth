@@ -14,6 +14,7 @@ import crypto from 'crypto';
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
 import { resolveAdminforthVersionRange } from '../cli.js';
+import { checkNodeVersion } from '../nodeVersion.js';
 
 import { URL } from 'url'
 import net from 'net'
@@ -302,18 +303,6 @@ export async function promptForMissingOptions(options) {
   return resolvedOptions;
 }
 
-function checkNodeVersion(minRequiredVersion = 20) {
-  const current = process.versions.node.split('.');
-  const major = parseInt(current[0], 10);
-
-  if (isNaN(major) || major < minRequiredVersion) {
-    throw new Error(
-      `Node.js v${minRequiredVersion}+ is required. You have ${process.versions.node}. ` +
-      `Please upgrade Node.js. We recommend using nvm for managing multiple Node.js versions.`
-    );
-  }
-}
-
 function parseConnectionString(dbUrl) {
   return new ConnectionString(dbUrl);
 }
@@ -370,7 +359,7 @@ function initialChecks(options) {
   return [
     {
       title: '👀 Checking Node.js version...',
-      task: () => checkNodeVersion(20)
+      task: () => checkNodeVersion()
     },
     {
       title: '👀 Validating current working directory...',
@@ -464,14 +453,13 @@ async function scaffoldProject(ctx, options, cwd) {
     prismaDbUrlProd,
     appName,
     provider,
-    nodeMajor: parseInt(process.versions.node.split('.')[0], 10),
     sqliteFile: connectionString.protocol.startsWith('sqlite') ? connectionString.host : null,
   });
 
   return projectDir;  // Return the new directory path
 }
 
-function getPackageManagerTemplateData(useNpm, nodeMajor) {
+function getPackageManagerTemplateData(useNpm) {
   return {
     packageManager: useNpm ? 'npm' : 'pnpm',
     packageManagerRun: useNpm ? 'npm run' : 'pnpm',
@@ -479,7 +467,8 @@ function getPackageManagerTemplateData(useNpm, nodeMajor) {
     packageManagerExec: useNpm ? 'npx' : 'pnpm exec',
     packageManagerEnvDev: useNpm ? 'npm run _env:dev --' : 'pnpm _env:dev',
     packageManagerEnvProd: useNpm ? 'npm run _env:prod --' : 'pnpm _env:prod',
-    dockerBaseImage: useNpm ? `node:${nodeMajor}-slim` : 'devforth/node20-pnpm:latest',
+    dockerBaseImage: 'node:24-slim',
+    usePnpm: !useNpm,
     dockerAdditionalManifestFiles: useNpm ? 'package-lock.json' : 'pnpm-lock.yaml pnpm-workspace.yaml',
     dockerPackageInstallSubcommand: useNpm ? 'ci' : 'i',
   };
@@ -487,10 +476,10 @@ function getPackageManagerTemplateData(useNpm, nodeMajor) {
 
 export async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
   const {
-    dbUrl, prismaDbUrl, appName, provider, nodeMajor,
+    dbUrl, prismaDbUrl, appName, provider,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
-  const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
+  const packageManagerTemplateData = getPackageManagerTemplateData(useNpm);
   const adminforthVersion = await resolveAdminforthVersionRange();
   const resolvedPrismaDbUrl = includePrismaMigrations ? prismaDbUrl : null;
   const resolvedPrismaDbUrlProd = includePrismaMigrations ? prismaDbUrlProd : null;

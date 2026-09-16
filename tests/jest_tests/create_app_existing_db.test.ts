@@ -29,7 +29,7 @@ const utils = await (async () => {
 const { writeTemplateFiles, promptForMissingOptions, generateFinalInstructionsPnpm, generateFinalInstructionsNpm } = utils;
 
 // The existing-database case needs (a) the sqlite connector the CLI itself will load and (b) a way
-// to create a table in a sqlite file: better-sqlite3 through that connector (works on Node 20),
+// to create a table in a sqlite file: better-sqlite3 through that connector,
 // else the node:sqlite builtin (Node >= 22.13). Without both the case is skipped, not failed.
 const cliRequire = createRequire(path.join(createAppDir, 'utils.js'));
 const sqliteDrivers: Array<(file: string, sql: string) => void> = [];
