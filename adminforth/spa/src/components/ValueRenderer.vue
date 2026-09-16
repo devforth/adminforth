@@ -115,10 +115,7 @@
 
 <script setup lang="ts">
 
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import {checkEmptyValues} from '@/utils';
+import {checkEmptyValues, formatDate, formatDateTime, formatTime} from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import "vue3-json-viewer/dist/vue3-json-viewer.css";
 import { computed, defineAsyncComponent } from 'vue';
@@ -130,10 +127,6 @@ import type { any } from 'zod';
 
 const coreStore = useCoreStore();
 const route = useRoute();
-
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 const props = defineProps<{
   column: any,
@@ -149,21 +142,6 @@ const canShowForeignRecord = computed(() => {
     (resource: any) => resource.whenValue === props.record[props.column.foreignResource.polymorphicOn]
   )?.allowedActions?.show;
 });
-
-function formatDateTime(date: string) {
-  if (!date) return '';
-  return dayjs.utc(date).local().format(`${coreStore.config?.datesFormat} ${coreStore.config?.timeFormat}` || 'YYYY-MM-DD HH:mm:ss');
-}
-
-function formatDate(date: string) {
-  if (!date) return '';
-  return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD');
-}
-
-function formatTime(time: string) {
-  if (!time) return '';
-  return dayjs(`0000-00-00 ${time}`).format(coreStore.config?.timeFormat || 'HH:mm:ss');
-}
 
 function getArrayItemDisplayValue(value: any, column: AdminForthResourceColumnCommon) {
   if (column.isArray?.itemType === 'datetime') {

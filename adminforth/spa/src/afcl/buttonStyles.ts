@@ -1,11 +1,21 @@
-import { twMerge, type ClassNameValue } from 'tailwind-merge';
+import { extendTailwindMerge, type ClassNameValue } from 'tailwind-merge';
+
+// `rounded-default` comes from the themable borderRadius.default token, tailwind-merge does not
+// know it out of the box and would not treat it as conflicting with rounded-* passed from outside
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      rounded: [{ rounded: ['default'] }],
+    },
+  },
+});
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger';
 
 export const buttonBaseStyles = `
   flex items-center justify-center
   gap-1 border focus:ring-4 focus:outline-none
-  focus:ring-opacity-50 font-medium rounded-lg
+  focus:ring-opacity-50 font-medium rounded-default
   text-sm px-5 py-2.5 text-center transition-all duration-200
 `;
 

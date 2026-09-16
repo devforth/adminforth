@@ -10,7 +10,7 @@
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
+        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-default leading-5 bg-lightDropdownButtonsBackground 
         placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText text-base sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
         dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
@@ -51,7 +51,7 @@
     <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
       <div ref="dropdownEl" :id="dropdownId" role="listbox" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-30': teleportToBody, 'z-[1000]': teleportToTop}"
         class="fixed w-full bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
-          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+          dark:border-gray-600 rounded-default py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
         <div
           v-for="item in filteredItems"
@@ -77,7 +77,7 @@
 
     <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :id="dropdownId" role="listbox" :style="dropdownStyle" :class="{'shadow-none': isTop}"
       class="afcl-select-content absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
-        dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+        dark:border-gray-600 rounded-default py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
       <div
         v-for="item in filteredItems"

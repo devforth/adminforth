@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Agent-first open-source admin panel framework',
-  tagline: 'Build robust and powerful agentic back-office panels for your projects while maintaining full control over the code.',
+  tagline: 'A back-office framework for developers who build with agents, and admins who work with agents inside the panel.',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
@@ -27,6 +27,13 @@ const config: Config = {
       onBrokenMarkdownLinks: 'warn',
     },
   },
+
+  stylesheets: [
+    {
+      href: 'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap',
+      type: 'text/css',
+    },
+  ],
 
   scripts: [
     {

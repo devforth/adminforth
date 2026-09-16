@@ -58,6 +58,19 @@ model audit_logs {
   diff              String?
   record_id         String?
   ip_address        String? 
+  executed_by       String?
+}
+
+model mcp_auth_secrets {
+  id                 String   @id
+  name               String
+  secret_hash        String   @unique
+  user_id            String
+  created_at         DateTime
+  last_used_at       DateTime?
+  last_used_by_agent String?
+
+  @@index([user_id])
 }
 
   model passkeys {

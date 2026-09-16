@@ -17,10 +17,12 @@ steps:
       - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
 
   release:
-    image: devforth/node20-pnpm:latest
+    image: node:24-bookworm
     when:
       - event: push
     commands:
+      - corepack enable
+      - corepack install --global pnpm@11.24.0
       - export $(cat /woodpecker/deploy.vault.env | xargs)
       - cd adminforth
       - pnpm install
