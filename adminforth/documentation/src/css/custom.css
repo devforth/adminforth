@@ -516,3 +516,14 @@ html[data-theme="dark"] .fakeScreen {
 
  
 }
+
+/*
+ * Infima's mobile footer rule sets `.footer__link-item { width: max-content }`,
+ * so a long label (e.g. "We can develop admin panel for your project") makes the
+ * whole page scroll sideways on narrow phones. Cap it to the column width.
+ */
+@media screen and (max-width: 996px) {
+  .footer__link-item {
+    max-width: 100%;
+  }
+}
