@@ -14,6 +14,7 @@ import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
 import { reconnect } from '@/websocket';
 import { ADMINFORTH_CLIENT_ID_HEADER, getAdminForthClientId } from './clientId';
+import { sessionSurvives401 } from './session';
 
 
 
@@ -104,6 +105,10 @@ async function tryAutologin(autologin: string): Promise<boolean> {
 }
 
 export async function handleNotAuthorized() {
+  // one 401 during a restart must not throw away a session the server still honours
+  if (await sessionSurvives401()) {
+    return;
+  }
   useUserStore().unauthorize();
   useCoreStore().resetAdminUser();
   await redirectToLogin();
