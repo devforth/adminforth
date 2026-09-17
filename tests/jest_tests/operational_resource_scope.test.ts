@@ -234,6 +234,18 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ connectorAggregate: 1 });
   });
 
+  it('refuses to filter backendOnly columns through user-scoped reads', async () => {
+    const { calls, resource } = setup();
+    const scoped = resource.asUser({} as any, { meta: { allowed: true } });
+    const privateFilter = { field: 'private', operator: 'eq', value: 'hidden' } as any;
+
+    await expect(scoped.get(privateFilter)).rejects.toThrow('Filter: column "private" cannot be used');
+    await expect(scoped.list(privateFilter)).rejects.toThrow('Filter: column "private" cannot be used');
+    await expect(scoped.count(privateFilter)).rejects.toThrow('Filter: column "private" cannot be used');
+
+    expect(calls).toMatchObject({ connectorGetData: 0, connectorCount: 0, beforeList: 0 });
+  });
+
   it('row-scopes aggregate and count through the same read hooks as list', async () => {
     const { calls, seenFilters, resource } = setup();
     const scoped = resource.asUser({} as any, { meta: { allowed: true } });
