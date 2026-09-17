@@ -902,7 +902,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const usersResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const defaultUserExists = await this.adminforth
           .resource(usersResource.resourceId)
-          .asSystem({ hooks: false })
           .get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
 
         const loggedInPart = {
@@ -2029,7 +2028,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (isCompositePrimaryKey(resource)) {
               const createPkColumnNames = primaryKeyColumnNames(resource);
               if (createPkColumnNames.every((name) => record[name] !== undefined)) {
-                const existingRecord = await this.adminforth.resource(resource.resourceId).asSystem({ hooks: false }).get(
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get(
                   createPkColumnNames.map((name) => Filters.EQ(name, record[name]))
                 );
                 if (existingRecord) {
@@ -2043,7 +2042,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
               if (record[primaryKeyColumn.name] !== undefined) {
                 const existingRecord = await this.adminforth.resource(resource.resourceId)
-                  .asSystem({ hooks: false })
                   .get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
                 if (existingRecord) {
                   return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
@@ -2198,7 +2196,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   acc[name] = record[name] !== undefined ? record[name] : oldRecord[name];
                   return acc;
                 }, {});
-                const existingRecord = await this.adminforth.resource(resource.resourceId).asSystem({ hooks: false }).get(
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get(
                   pkColumnNames.map((name) => Filters.EQ(name, newPkValues[name]))
                 );
                 if (existingRecord) {
@@ -2212,7 +2210,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
               if (record[primaryKeyColumn.name] !== undefined) {
                 const existingRecord = await this.adminforth.resource(resource.resourceId)
-                  .asSystem({ hooks: false })
                   .get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
                 if (existingRecord) {
                   return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
