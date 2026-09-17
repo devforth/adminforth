@@ -300,10 +300,6 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async update(primaryKey: any, record: any): Promise<any> {
-    if (Object.keys(record).length === 0) {
-      return { ok: true };
-    }
-
     const oldRecord = await this.findScopedRecord(primaryKey);
     if (!oldRecord) {
       const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);

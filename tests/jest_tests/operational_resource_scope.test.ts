@@ -228,6 +228,20 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ beforeList: 2, updateExecutor: 0, connectorDelete: 0 });
   });
 
+  it('applies the full user-scoped update path to an empty update', async () => {
+    const denied = setup();
+    const deniedResult = await denied.resource.asUser({} as any, { meta: { allowed: false } }).update(1, {});
+
+    expect(deniedResult).toMatchObject({ ok: false, error: 'Action is not allowed' });
+    expect(denied.calls).toMatchObject({ beforeList: 1, updateExecutor: 0 });
+
+    const allowed = setup();
+    const allowedResult = await allowed.resource.asUser({} as any, { meta: { allowed: true } }).update(1, {});
+
+    expect(allowedResult).toMatchObject({ ok: true });
+    expect(allowed.calls).toMatchObject({ beforeList: 1, updateExecutor: 1 });
+  });
+
   it('requires list and show access for asUser() aggregations', async () => {
     const { calls, resource } = setup();
 
