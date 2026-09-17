@@ -286,7 +286,14 @@ async function loadConfig() {
   publicConfigLoaded.value = true;
 
   await initRouter();
-  if (resp && !resp.loggedIn && route.meta.sidebarAndHeader !== 'none') {
+  if (resp?.loggedIn) {
+    // the flag the login route guard reads is only ever set by a login, so a 401 can leave it
+    // saying "signed out" for a session the server still honours
+    userStore.authorize();
+    if (route.name === 'login') {
+      await router.replace({ name: 'home' });
+    }
+  } else if (resp && route.meta.sidebarAndHeader !== 'none') {
     // for custom layouts we don't force login, they are allowed to be rendered for anonymous user
     await handleNotAuthorized();
   }
