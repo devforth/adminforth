@@ -20,7 +20,7 @@ import { compositePkValues, isCompositePrimaryKey } from './recordId.js';
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString } from './utils.js';
+import { cascadeChildrenDelete, guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -261,17 +261,35 @@ export default class ConfigValidator implements IConfigValidator {
       dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
       action: async ({ selectedIds, adminUser, response }) => {
-        // one path for deletion: asUser() checks the permission per record, cascades to children
-        // and runs the delete hooks, so this action does not carry its own copy of any of that
+        // The bulk action's `allowed` callback is its ACL boundary. Keep that action-level
+        // contract instead of introducing a second, per-record `asUser()` permission check.
         let error = null;
+        const connector = this.adminforth.connectors[res.dataSource];
 
         await Promise.all(
           selectedIds.map(async (recordId) => {
             try {
-              await this.adminforth
-                .resource(res.resourceId)
-                .asUser(adminUser, { response })
-                .delete(recordId);
+              const record = await connector.getRecordByPrimaryKey(res as AdminForthResource, recordId);
+              const cascadeResult = await cascadeChildrenDelete(
+                res as AdminForthResource,
+                recordId,
+                { adminUser, response },
+                this.adminforth,
+                (params) => this.adminforth.deleteResourceRecord(params),
+              );
+              if (cascadeResult.error) {
+                throw new Error(cascadeResult.error);
+              }
+              const result = await this.adminforth.deleteResourceRecord({
+                resource: res as AdminForthResource,
+                recordId,
+                record,
+                adminUser,
+                response,
+              });
+              if (result.error) {
+                throw new Error(result.error);
+              }
             } catch (e) {
               if (!error) {
                 error = (e as Error).message;
