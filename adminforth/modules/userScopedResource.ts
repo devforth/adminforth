@@ -16,6 +16,7 @@ import type {
   UpdateResourceRecordParams,
   UpdateResourceRecordResult,
 } from '../types/Back.js';
+import { Filters } from '../types/Back.js';
 import { ActionCheckSource, AllowedActionsEnum, type AdminUser } from '../types/Common.js';
 import {
   columnsAggregatableError,
@@ -146,6 +147,22 @@ export default class UserScopedResource implements IScopedOperationalResource {
         throw new Error(error.error);
       }
     }
+  }
+
+  /**
+   * Finds a record through the list scope before a mutation. A primary-key connector lookup
+   * would bypass tenant filters installed by `beforeDatasourceRequest` hooks.
+   */
+  private async findScopedRecord(primaryKey: any): Promise<any | null> {
+    const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
+    const query = {
+      filters: [Filters.EQ(primaryKeyColumn.name, primaryKey)],
+      limit: 1,
+      offset: 0,
+      sort: [],
+    };
+    await this.runReadHooks('list', 'beforeDatasourceRequest', query);
+    return this.data.get(query.filters);
   }
 
   async get(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): Promise<any | null> {
@@ -287,8 +304,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
       return { ok: true };
     }
 
-    const oldRecord = this.options.oldRecord
-      ?? await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    const oldRecord = await this.findScopedRecord(primaryKey);
     if (!oldRecord) {
       const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
       return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
@@ -323,8 +339,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async delete(primaryKey: any): Promise<boolean> {
-    const record = this.options.record
-      ?? await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    const record = await this.findScopedRecord(primaryKey);
     if (!record) {
       return false;
     }

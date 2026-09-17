@@ -83,8 +83,12 @@ function setup(resourceId = 'users') {
       calls.connectorDelete++;
       return true;
     },
-    getData: async () => {
+    getData: async ({ filters }) => {
       calls.connectorGetData++;
+      seenFilters.getData = filters;
+      if (Array.isArray(filters) && filters.some((filter) => filter.field === 'tenant' && filter.value === 'not-owned')) {
+        return { data: [], total: 0 };
+      }
       return { data: [{ id: 1, name: 'John', private: 'hidden' }], total: 1 };
     },
     getCount: async ({ filters }) => {
@@ -202,7 +206,26 @@ describe('OperationalResource access tiers', () => {
       .update(1, { name: 'Jane' });
 
     expect(updated).toMatchObject({ ok: true });
-    expect(calls).toMatchObject({ connectorGetByPk: 0, updateExecutor: 1 });
+    expect(calls).toMatchObject({ connectorGetByPk: 0, updateExecutor: 1, beforeList: 1 });
+  });
+
+  it('row-scopes updates and deletes before loading the target record', async () => {
+    const { calls, seenFilters, resource } = setup();
+    resource.resourceConfig.hooks.list.beforeDatasourceRequest = [async ({ query }) => {
+      calls.beforeList++;
+      query.filtersTools.replaceOrAddTopFilter({ field: 'tenant', operator: 'eq', value: 'not-owned' });
+      return { ok: true };
+    }];
+    const scoped = resource.asUser({} as any, { meta: { allowed: true } });
+
+    await expect(scoped.update(1, { name: 'Jane' })).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining('not found'),
+    });
+    await expect(scoped.delete(1)).resolves.toBe(false);
+
+    expect(seenFilters.getData).toContainEqual({ field: 'tenant', operator: 'eq', value: 'not-owned' });
+    expect(calls).toMatchObject({ beforeList: 2, updateExecutor: 0, connectorDelete: 0 });
   });
 
   it('requires list and show access for asUser() aggregations', async () => {
