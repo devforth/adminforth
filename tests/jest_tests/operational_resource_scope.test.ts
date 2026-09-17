@@ -246,7 +246,7 @@ describe('OperationalResource access tiers', () => {
     const { calls, resource } = setup();
 
     await expect(
-      resource.asUser({} as any, { meta: { allowed: false } }).aggregate([], { total: { fn: 'count' } } as any),
+      resource.asUser({} as any, { meta: { allowed: false } }).aggregate([], { total: { operation: 'count' } } as any),
     ).rejects.toThrow('Action is not allowed');
     expect(calls).toMatchObject({ connectorAggregate: 0 });
   });
@@ -255,18 +255,18 @@ describe('OperationalResource access tiers', () => {
     const { calls, resource } = setup();
     const scoped = resource.asUser({} as any, { meta: { allowed: true } });
 
-    await expect(scoped.aggregate([], { max: { fn: 'max', field: 'private' } } as any))
+    await expect(scoped.aggregate([], { max: { operation: 'max', field: 'private' } } as any))
       .rejects.toThrow('cannot be aggregated (backendOnly is true)');
-    await expect(scoped.aggregate([], { total: { fn: 'count' } } as any, { field: 'private' } as any))
+    await expect(scoped.aggregate([], { total: { operation: 'count' } } as any, { field: 'private' } as any))
       .rejects.toThrow('cannot be aggregated (backendOnly is true)');
     await expect(scoped.aggregate(
       { field: 'private', operator: 'eq', value: 'hidden' } as any,
-      { total: { fn: 'count' } } as any,
+      { total: { operation: 'count' } } as any,
     )).rejects.toThrow('Filter: column "private" cannot be used');
 
     expect(calls).toMatchObject({ connectorAggregate: 0 });
 
-    const allowed = await scoped.aggregate([], { max: { fn: 'max', field: 'name' } } as any);
+    const allowed = await scoped.aggregate([], { max: { operation: 'max', field: 'name' } } as any);
     expect(allowed).toEqual([{ total: 1 }]);
     expect(calls).toMatchObject({ connectorAggregate: 1 });
   });
@@ -288,7 +288,7 @@ describe('OperationalResource access tiers', () => {
     const scoped = resource.asUser({} as any, { meta: { allowed: true } });
     const tenantFilter = { field: 'tenant', operator: 'eq', value: 't1' };
 
-    await scoped.aggregate([], { total: { fn: 'count' } } as any, { field: 'name' } as any);
+    await scoped.aggregate([], { total: { operation: 'count' } } as any, { field: 'name' } as any);
     await scoped.count([]);
 
     // without this an aggregation reports across every tenant's rows
@@ -299,7 +299,7 @@ describe('OperationalResource access tiers', () => {
 
   it('does not row-scope reads on the bare API', async () => {
     const { calls, seenFilters, resource } = setup();
-    await resource.aggregate([], { total: { fn: 'count' } } as any);
+    await resource.aggregate([], { total: { operation: 'count' } } as any);
     await resource.count([]);
 
     expect(seenFilters.aggregate).toEqual([]);
