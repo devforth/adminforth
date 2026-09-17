@@ -19,6 +19,7 @@ import type {
 import { ActionCheckSource, AllowedActionsEnum, type AdminUser } from '../types/Common.js';
 import {
   columnsAggregatableError,
+  filterColumnsReadableError,
   recordWriteError,
   stripReadForbiddenColumns,
   type ColumnAccessContext,
@@ -153,6 +154,14 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(accessError);
     }
 
+    const filterError = await filterColumnsReadableError(
+      this.columnCtx(ActionCheckSource.ShowRequest),
+      filter,
+    );
+    if (filterError) {
+      throw new Error(filterError);
+    }
+
     const query = { filters: filter, limit: 1, offset: 0, sort: [] };
     await this.runReadHooks('show', 'beforeDatasourceRequest', query);
     const record = await this.data.get(query.filters);
@@ -175,6 +184,14 @@ export default class UserScopedResource implements IScopedOperationalResource {
     const accessError = await this.accessError('list');
     if (accessError) {
       throw new Error(accessError);
+    }
+
+    const filterError = await filterColumnsReadableError(
+      this.columnCtx(ActionCheckSource.ListRequest),
+      filter,
+    );
+    if (filterError) {
+      throw new Error(filterError);
     }
 
     const query = { filters: filter, limit, offset, sort };
@@ -223,6 +240,14 @@ export default class UserScopedResource implements IScopedOperationalResource {
     const accessError = await this.accessError('count');
     if (accessError) {
       throw new Error(accessError);
+    }
+
+    const filterError = await filterColumnsReadableError(
+      this.columnCtx(ActionCheckSource.ListRequest),
+      filter,
+    );
+    if (filterError) {
+      throw new Error(filterError);
     }
 
     // a count is a list the caller only learns the size of, so it is row-scoped the same way
