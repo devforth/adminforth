@@ -96,7 +96,7 @@ it('the 401 handler checks before tearing the session down', async () => {
   const handler = source.slice(source.indexOf('export async function handleNotAuthorized'));
 
   // it has to act on the answer, not merely ask
-  expect(handler).toMatch(/if \(await sessionSurvives401\(\)\) \{\s*return;/);
+  expect(handler).toMatch(/if \(await sessionSurvives401\(\)\) \{\s*return false;/);
   expect(handler.indexOf('sessionSurvives401')).toBeLessThan(handler.indexOf('unauthorize()'));
 });
 
@@ -110,6 +110,10 @@ it('the app repairs the flag from the config it already fetches', async () => {
   // a live session must set the flag back, otherwise only a fresh login ever does
   expect(loadConfig).toMatch(/if \(resp\?\.loggedIn\) \{[\s\S]{0,400}?userStore\.authorize\(\)/);
   expect(loadConfig.indexOf('userStore.authorize()')).toBeLessThan(loadConfig.indexOf('handleNotAuthorized()'));
+  // and it has to leave the login page, which is the whole point of the report
+  expect(loadConfig).toMatch(/route\.name === 'login'[\s\S]{0,200}?router\.replace\(/);
+  // honouring ?next, the way the route guard does
+  expect(loadConfig).toMatch(/router\.replace\(route\.query\.next/);
 });
 
 it('asks once when a whole page of calls fails at the same moment', async () => {
@@ -120,4 +124,17 @@ it('asks once when a whole page of calls fails at the same moment', async () => 
 
   expect(answers).toEqual([true, true, true]);
   expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it('a 401 the session survived is still reported as a failed call', async () => {
+  const source = await fs.readFile(
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../adminforth/spa/src/utils/utils.ts'),
+    'utf8',
+  );
+  const branch = source.slice(source.indexOf('r.status == 401'), source.indexOf('return await r.json()'));
+
+  // no redirect is coming in that case, so silence would leave the panel mysteriously empty
+  expect(branch).toMatch(/!await handleNotAuthorized\(\)/);
+  expect(branch).toMatch(/adminforth\.alert/);
+  expect(branch).toMatch(/silentError/);
 });

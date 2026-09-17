@@ -291,7 +291,7 @@ async function loadConfig() {
     // saying "signed out" for a session the server still honours
     userStore.authorize();
     if (route.name === 'login') {
-      await router.replace({ name: 'home' });
+      await router.replace(route.query.next?.toString() || { name: 'home' });
     }
   } else if (resp && route.meta.sidebarAndHeader !== 'none') {
     // for custom layouts we don't force login, they are allowed to be rendered for anonymous user

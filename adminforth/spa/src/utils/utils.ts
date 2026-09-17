@@ -104,14 +104,16 @@ async function tryAutologin(autologin: string): Promise<boolean> {
   return !!coreStore.adminUser;
 }
 
-export async function handleNotAuthorized() {
+/** @returns false when the session turned out to be alive and nothing was signed out. */
+export async function handleNotAuthorized(): Promise<boolean> {
   // one 401 during a restart must not throw away a session the server still honours
   if (await sessionSurvives401()) {
-    return;
+    return false;
   }
   useUserStore().unauthorize();
   useCoreStore().resetAdminUser();
   await redirectToLogin();
+  return true;
 }
 
 export async function redirectToLogin() {
@@ -162,7 +164,10 @@ export async function callApi({path, method, body, headers, silentError = false,
   try {
     const r = await fetch(fullPath, options);
     if (r.status == 401 && !path.includes('/login')) {
-      await handleNotAuthorized();
+      // when the session survived there is no redirect coming, so the failure has to be visible
+      if (!await handleNotAuthorized() && !silentError) {
+        adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
+      }
       return null;
     }
     return await r.json();
