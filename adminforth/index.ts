@@ -38,6 +38,8 @@ import ConfigValidator from './modules/configValidator.js';
 import AdminForthRestAPI, { rejectApiRawFilters } from './modules/restApi.js';
 import { interpretResource } from './modules/resourceAccess.js';
 import OperationalResource from './modules/operationalResource.js';
+import UserScopedResource from './modules/userScopedResource.js';
+import { validateRecordValues } from './modules/recordValidator.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
@@ -417,59 +419,8 @@ class AdminForth implements IAdminForth {
     });
   }
 
-  validateRecordValues(resource: AdminForthResource, record: any,  mode: 'create' | 'edit'): any {
-    // check if record with validation is valid
-    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
-      const required = typeof column.required === 'object'
-      ? column.required[mode]
-      : true;
-
-      if (!required && !record[column.name]) continue;
-
-      let error = null;
-      if (column.isArray?.enabled) {
-        error = record[column.name].reduce((err, item) => {
-          return err || AdminForth.Utils.applyRegexValidation(item, column.validation);
-        }, null);
-      } else {
-        error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
-      }
-      if (error) {
-        return error;
-      }
-    }
-
-    // check if record with minValue or maxValue is within limits
-    for (const column of resource.columns.filter((col) => col.name in record
-      && ['integer', 'decimal', 'float'].includes(col.isArray?.enabled ? col.isArray.itemType : col.type)
-      && (col.minValue !== undefined || col.maxValue !== undefined))) {
-      if (column.isArray?.enabled) {
-        const error = record[column.name].reduce((err, item) => {
-          if (err) return err;
-
-          if (column.minValue !== undefined && item < column.minValue) {
-            return `Value in "${column.name}" must be greater than ${column.minValue}`;
-          }
-          if (column.maxValue !== undefined && item > column.maxValue) {
-            return `Value in "${column.name}" must be less than ${column.maxValue}`;
-          }
-
-          return null;
-        }, null);
-        if (error) {
-          return error;
-        }
-      } else {
-        if (column.minValue !== undefined && record[column.name] && record[column.name] < column.minValue) {
-          return `Value in "${column.name}" must be greater than ${column.minValue}`;
-        }
-        if (column.maxValue !== undefined && record[column.name] && record[column.name] > column.maxValue) {
-          return `Value in "${column.name}" must be less than ${column.maxValue}`;
-        }
-      }
-    }
-
-    return null;
+  validateRecordValues(resource: AdminForthResource, record: any, mode: 'create' | 'edit'): string | null {
+    return validateRecordValues(resource, record, mode);
   }
 
   async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
@@ -614,13 +565,17 @@ class AdminForth implements IAdminForth {
       this.operationalResources[resource.resourceId] = new OperationalResource(
         this.connectors[resource.dataSource],
         resource,
-        this,
-        {
-          create: (params) => this.executeCreateResourceRecord(params),
-          update: (params) => this.executeUpdateResourceRecord(params),
-          delete: (params) => this.executeDeleteResourceRecord(params),
-          validate: (targetResource, record, mode) => this.validateRecordValues(targetResource, record, mode),
-        },
+        (data, adminUser, options) => new UserScopedResource(
+          data,
+          this,
+          {
+            create: (params) => this.executeCreateResourceRecord(params),
+            update: (params) => this.executeUpdateResourceRecord(params),
+            delete: (params) => this.executeDeleteResourceRecord(params),
+          },
+          adminUser,
+          options,
+        ),
       );
     });
     
@@ -729,8 +684,10 @@ class AdminForth implements IAdminForth {
   }
 
   /**
-   * Create record and execute hooks
-   * @deprecated Will be removed in the next major version. Use the scoped resource API.
+   * Create record and execute hooks.
+   * @deprecated Being replaced by the Data API. Use
+   * `adminforth.resource(id).asUser(adminUser, { meta }).create(record)` for anything a user
+   * requested, or `adminforth.resource(id).create(record)` for plain data access.
    * @param params - Parameters for record creation. See CreateResourceRecordParams.
    * @returns Result of record creation. See CreateResourceRecordResult.
    */
@@ -748,7 +705,7 @@ class AdminForth implements IAdminForth {
 
     normalizeRecordValues(resource, record);
 
-    const err = this.validateRecordValues(resource, record, 'create');
+    const err = validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
     }
@@ -829,8 +786,10 @@ class AdminForth implements IAdminForth {
   /**
    * record is partial record with only changed fields
    * 
-   * Update record by id and execute hooks
-   * @deprecated Will be removed in the next major version. Use the scoped resource API.
+   * Update record by id and execute hooks.
+   * @deprecated Being replaced by the Data API. Use
+   * `adminforth.resource(id).asUser(adminUser, { meta }).update(pk, updates)` for anything a
+   * user requested, or `adminforth.resource(id).update(pk, updates)` for plain data access.
    * @param params - Parameters for record update. See UpdateResourceRecordParams.
    * @returns Result of record update. See UpdateResourceRecordResult.
    */
@@ -838,12 +797,6 @@ class AdminForth implements IAdminForth {
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult> {
     this.warnDeprecatedResourceMutation('updateResourceRecord', params.resource.resourceId, 'update');
-    const dataToUse = params.updates || params.record;
-    for (const column of params.resource.columns.filter((candidate) => candidate.editReadonly)) {
-      if (column.name in dataToUse) {
-        delete dataToUse[column.name];
-      }
-    }
     return this.executeUpdateResourceRecord(params);
   }
 
@@ -852,8 +805,17 @@ class AdminForth implements IAdminForth {
   ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
     const dataToUse = updates || record;
+
+    // a system update silently drops editReadonly columns, as it always has; a user update never
+    // reaches this point with one, it is rejected by the column access check inside asUser()
+    for (const column of resource.columns.filter((candidate) => candidate.editReadonly)) {
+      if (column.name in dataToUse) {
+        delete dataToUse[column.name];
+      }
+    }
+
     normalizeRecordValues(resource, dataToUse);
-    const err = this.validateRecordValues(resource, dataToUse, 'edit');
+    const err = validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
       return { error: err };
     }
@@ -925,8 +887,10 @@ class AdminForth implements IAdminForth {
   }
 
   /**
-   * Delete record by id and execute hooks
-   * @deprecated Will be removed in the next major version. Use the scoped resource API.
+   * Delete record by id and execute hooks.
+   * @deprecated Being replaced by the Data API. Use
+   * `adminforth.resource(id).asUser(adminUser, { meta }).delete(pk)` for anything a user
+   * requested, or `adminforth.resource(id).delete(pk)` for plain data access.
    * @param params - Parameters for record deletion. See DeleteResourceRecordParams.
    * @returns Result of record deletion. See DeleteResourceRecordResult.
    */
@@ -997,7 +961,8 @@ class AdminForth implements IAdminForth {
     afLogger.warn(
       `${method} is deprecated and will be removed in the next major version. `
       + `Use adminforth.resource('${resourceId}').asUser(adminUser, { meta }).${operation}(...) `
-      + `or adminforth.resource('${resourceId}').asSystem({ hooks: false }).${operation}(...) instead.`,
+      + `for anything a user requested, or adminforth.resource('${resourceId}').${operation}(...) `
+      + `for plain data access.`,
     );
   }
 

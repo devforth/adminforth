@@ -576,25 +576,24 @@ export interface IAdminForth {
   tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
   /**
-   * @deprecated Will be removed in the next major version. Use
-   * `resource(resourceId).asUser(adminUser, { meta }).create(record)` or
-   * `resource(resourceId).asSystem({ hooks: false }).create(record)`.
+   * Creates a record and runs the resource create hooks, without checking permissions.
+   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
    */
   createResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult>;
 
   /**
-   * @deprecated Will be removed in the next major version. Use the scoped
-   * resource API through `asUser()` or `asSystem()`.
+   * Updates a record and runs the resource edit hooks, without checking permissions.
+   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
    */
   updateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult>;
 
   /**
-   * @deprecated Will be removed in the next major version. Use the scoped
-   * resource API through `asUser()` or `asSystem()`.
+   * Deletes a record and runs the resource delete hooks, without checking permissions.
+   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
    */
   deleteResourceRecord(
     params: DeleteResourceRecordParams,
@@ -2140,8 +2139,9 @@ export class Sorts {
 }
 
 /**
- * Resource API scoped to a trust level by {@link IOperationalResource.asUser} or
- * {@link IOperationalResource.asSystem}.
+ * Resource API bound to an authenticated admin user by {@link IOperationalResource.asUser}.
+ * Every operation enforces the resource ACL and the column access rules, and runs the resource
+ * lifecycle hooks.
  *
  * Error contract: a denied or failed operation is always visible. `get`, `list`, `count`,
  * `aggregate` and `delete` throw, since their return value carries no room for an error;
@@ -2172,36 +2172,36 @@ export interface IScopedOperationalResource {
 
 export interface IOperationalResource {
   /**
-   * Returns a resource API scoped to an authenticated admin user. Operations enforce
-   * resource ACL and column access and run lifecycle hooks; mutations also validate records.
+   * Returns a resource API scoped to an authenticated admin user. Operations enforce the
+   * resource ACL and the column access rules, run lifecycle hooks, and validate records.
+   * Use it for everything a user asked for.
    */
   asUser: (adminUser: AdminUser, options?: OperationalResourceUserOptions) => IScopedOperationalResource;
 
   /**
-   * Returns a trusted resource API which skips ACL and column access. Hooks run by
-   * default and can be disabled explicitly for connector-level system operations.
+   * Plain data access: no permission checks, no column access rules, no lifecycle hooks.
+   * Writes are still normalized and validated. Use it for internal bookkeeping the user did not
+   * ask for; to run hooks without permission checks, use {@link IAdminForth.createResourceRecord}
+   * and its siblings.
    */
-  asSystem: (options?: OperationalResourceSystemOptions) => IScopedOperationalResource;
-
-  /** @deprecated Use `asUser(...).get(...)` or `asSystem({ hooks: false }).get(...)`. */
   get: IScopedOperationalResource['get'];
 
-  /** @deprecated Use `asUser(...).list(...)` or `asSystem({ hooks: false }).list(...)`. */
+  /** Plain data access — see {@link IOperationalResource.get}. */
   list: IScopedOperationalResource['list'];
 
-  /** @deprecated Use `asUser(...).count(...)` or `asSystem({ hooks: false }).count(...)`. */
+  /** Plain data access — see {@link IOperationalResource.get}. */
   count: IScopedOperationalResource['count'];
 
-  /** @deprecated Use `asUser(...).aggregate(...)` or `asSystem({ hooks: false }).aggregate(...)`. */
+  /** Plain data access — see {@link IOperationalResource.get}. */
   aggregate: IScopedOperationalResource['aggregate'];
 
-  /** @deprecated Use `asUser(...).create(...)` or `asSystem({ hooks: false }).create(...)`. */
+  /** Plain data access — see {@link IOperationalResource.get}. */
   create: IScopedOperationalResource['create'];
 
-  /** @deprecated Use `asUser(...).update(...)` or `asSystem({ hooks: false }).update(...)`. */
+  /** Plain data access — see {@link IOperationalResource.get}. */
   update: IScopedOperationalResource['update'];
 
-  /** @deprecated Use `asUser(...).delete(...)` or `asSystem({ hooks: false }).delete(...)`. */
+  /** Plain data access — see {@link IOperationalResource.get}. */
   delete: IScopedOperationalResource['delete'];
 
   dataConnector: IAdminForthDataSourceConnectorBase;
@@ -2228,11 +2228,6 @@ export interface OperationalResourceContextOptions {
 
 export type OperationalResourceUserOptions = OperationalResourceContextOptions;
 
-export interface OperationalResourceSystemOptions extends OperationalResourceContextOptions {
-  hooks?: boolean;
-  /** User attribution passed to hooks and fillOnCreate without enabling ACL checks. */
-  adminUser?: AdminUser;
-}
 
 
 

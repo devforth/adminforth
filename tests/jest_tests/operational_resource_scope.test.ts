@@ -1,4 +1,5 @@
 import OperationalResource from '../../adminforth/modules/operationalResource.js';
+import UserScopedResource from '../../adminforth/modules/userScopedResource.js';
 import { ActionCheckSource } from '../../adminforth/types/Common.js';
 
 function setup(resourceId = 'users') {
@@ -13,7 +14,6 @@ function setup(resourceId = 'users') {
     connectorGetByPk: 0,
     connectorCount: 0,
     connectorAggregate: 0,
-    validate: 0,
     beforeList: 0,
     afterList: 0,
   };
@@ -114,20 +114,20 @@ function setup(resourceId = 'users') {
       return { error: null };
     },
     delete: async () => ({ error: null }),
-    validate: () => {
-      calls.validate++;
-      return null;
-    },
   } as any;
 
   return {
     calls,
     seenFilters,
-    resource: new OperationalResource(connector, resource, adminforth, executors),
+    resource: new OperationalResource(
+      connector,
+      resource,
+      (data, adminUser, options) => new UserScopedResource(data, adminforth, executors, adminUser, options),
+    ),
   };
 }
 
-describe('OperationalResource access scopes', () => {
+describe('OperationalResource access tiers', () => {
   it('enforces ACL, column access, validation, and hooks for asUser()', async () => {
     const { calls, resource } = setup();
     const denied = await resource.asUser({} as any, { meta: { allowed: false } }).create({ name: 'John' });
@@ -142,63 +142,23 @@ describe('OperationalResource access scopes', () => {
     expect(calls).toMatchObject({ acl: 3, createExecutor: 1, connectorCreate: 0 });
   });
 
-  it('runs hooks by default for asSystem()', async () => {
+  it('runs no permission checks, no column checks and no hooks on the bare API', async () => {
     const { calls, resource } = setup();
-    const created = await resource.asSystem({ meta: { allowed: false } }).create({ secret: 'value' });
+    const created = await resource.create({ secret: 'value' });
 
     expect(created).toMatchObject({ ok: true, createdRecord: { id: 1, secret: 'value' } });
-    expect(calls).toMatchObject({ acl: 0, createExecutor: 1, connectorCreate: 0 });
+    expect(calls).toMatchObject({ acl: 0, createExecutor: 0, connectorCreate: 1 });
   });
 
-  it('uses validation and the connector when system hooks are disabled', async () => {
-    const { calls, resource } = setup();
-    const created = await resource.asSystem({ hooks: false }).create({ secret: 'value' });
-
-    expect(created).toMatchObject({ ok: true, createdRecord: { id: 1, secret: 'value' } });
-    expect(calls).toMatchObject({ acl: 0, createExecutor: 0, connectorCreate: 1, validate: 1 });
-  });
-
-  it('keeps the unscoped API equivalent to asSystem({ hooks: false })', async () => {
-    const unscoped = setup();
-    const scoped = setup();
-    const filter = { field: 'id', operator: 'eq', value: 1 } as any;
-    const aggregations = { total: { fn: 'count', field: 'id' } } as any;
-
-    const unscopedResults = [
-      await unscoped.resource.get(filter),
-      await unscoped.resource.list(filter),
-      await unscoped.resource.count(filter),
-      await unscoped.resource.aggregate(filter, aggregations),
-      await unscoped.resource.create({ name: 'John' }),
-      await unscoped.resource.update(1, { name: 'Jane' }),
-      await unscoped.resource.delete(1),
-    ];
-    const hooksFreeSystem = scoped.resource.asSystem({ hooks: false });
-    const scopedResults = [
-      await hooksFreeSystem.get(filter),
-      await hooksFreeSystem.list(filter),
-      await hooksFreeSystem.count(filter),
-      await hooksFreeSystem.aggregate(filter, aggregations),
-      await hooksFreeSystem.create({ name: 'John' }),
-      await hooksFreeSystem.update(1, { name: 'Jane' }),
-      await hooksFreeSystem.delete(1),
-    ];
-
-    expect(unscopedResults).toEqual(scopedResults);
-    expect(unscoped.calls).toEqual(scoped.calls);
-  });
-
-  it('allows system hooks to update editReadonly fields while asUser rejects them', async () => {
+  it('rejects editReadonly for asUser()', async () => {
     const { calls, resource } = setup();
 
     const forbidden = await resource
       .asUser({} as any, { meta: { allowed: true } })
       .update(1, { readonly: 'new' });
-    expect(forbidden.error).toContain('editReadonly is true');
 
-    const updated = await resource.asSystem().update(1, { readonly: 'new' });
-    expect(updated).toMatchObject({ ok: true, error: null });
-    expect(calls).toMatchObject({ acl: 1, updateExecutor: 1, connectorUpdate: 0 });
+    expect(forbidden.error).toContain('editReadonly is true');
+    expect(calls).toMatchObject({ acl: 1, updateExecutor: 0, connectorUpdate: 0 });
   });
 
   it('applies read ACL, column access, and hooks for asUser()', async () => {
@@ -213,17 +173,17 @@ describe('OperationalResource access scopes', () => {
     expect(calls).toMatchObject({ acl: 2, beforeList: 1, afterList: 1 });
   });
 
-  it('keeps system reads unrestricted while honoring the hooks option', async () => {
-    const withHooks = setup();
-    const withoutHooks = setup();
+  it('returns backendOnly columns on the bare API and strips them for asUser()', async () => {
+    const bare = setup();
+    const scoped = setup();
 
-    const systemRecords = await withHooks.resource.asSystem().list([]);
-    const hooksFreeRecords = await withoutHooks.resource.asSystem({ hooks: false }).list([]);
+    const bareRecords = await bare.resource.list([]);
+    const userRecords = await scoped.resource.asUser({} as any, { meta: { allowed: true } }).list([]);
 
-    expect(systemRecords).toEqual([{ id: 1, name: 'John', private: 'hidden' }]);
-    expect(hooksFreeRecords).toEqual(systemRecords);
-    expect(withHooks.calls).toMatchObject({ acl: 0, beforeList: 1, afterList: 1 });
-    expect(withoutHooks.calls).toMatchObject({ acl: 0, beforeList: 0, afterList: 0 });
+    expect(bareRecords).toEqual([{ id: 1, name: 'John', private: 'hidden' }]);
+    expect(userRecords).toEqual([{ id: 1, name: 'John' }]);
+    expect(bare.calls).toMatchObject({ acl: 0, beforeList: 0, afterList: 0 });
+    expect(scoped.calls).toMatchObject({ acl: 1, beforeList: 1, afterList: 1 });
   });
 
   it('rejects denied deletes and leaves the connector untouched', async () => {
@@ -274,16 +234,6 @@ describe('OperationalResource access scopes', () => {
     expect(calls).toMatchObject({ connectorAggregate: 1 });
   });
 
-  it('still delegates unscoped calls per resource, warning about each one separately', async () => {
-    const first = setup('warn-probe-a');
-    const second = setup('warn-probe-b');
-
-    expect(await first.resource.list([])).toEqual([{ id: 1, name: 'John', private: 'hidden' }]);
-    expect(await second.resource.count([])).toBe(1);
-    expect(first.calls).toMatchObject({ acl: 0, connectorGetData: 1 });
-    expect(second.calls).toMatchObject({ acl: 0, connectorCount: 1 });
-  });
-
   it('row-scopes aggregate and count through the same read hooks as list', async () => {
     const { calls, seenFilters, resource } = setup();
     const scoped = resource.asUser({} as any, { meta: { allowed: true } });
@@ -298,15 +248,14 @@ describe('OperationalResource access scopes', () => {
     expect(calls).toMatchObject({ beforeList: 2, connectorAggregate: 1, connectorCount: 1 });
   });
 
-  it('does not row-scope reads for a trusted system scope', async () => {
+  it('does not row-scope reads on the bare API', async () => {
     const { calls, seenFilters, resource } = setup();
-    const hooksFree = resource.asSystem({ hooks: false });
-
-    await hooksFree.aggregate([], { total: { fn: 'count' } } as any);
-    await hooksFree.count([]);
+    await resource.aggregate([], { total: { fn: 'count' } } as any);
+    await resource.count([]);
 
     expect(seenFilters.aggregate).toEqual([]);
     expect(seenFilters.count).toEqual([]);
     expect(calls).toMatchObject({ beforeList: 0 });
   });
+
 });
