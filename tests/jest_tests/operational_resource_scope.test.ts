@@ -452,6 +452,21 @@ describe('OperationalResource access tiers', () => {
       .update(1, { record_id: 'missing' });
 
     expect(seenWrites.update.updates).toEqual({ record_id: 'missing' });
+
+    resource.resourceConfig.columns.find((column) => column.name === 'record_id')
+      .foreignResource.polymorphicResources.unshift({ resourceId: 'removed-target', whenValue: 'removed' });
+    (resource.dataConnector as any).getData = async () => ({
+      data: [{ id: 1, record_id: 'old', resource_id: 'target' }],
+    });
+
+    await resource.asUser({} as any, { meta: { allowed: true } })
+      .update(1, { record_id: 'missing' });
+
+    expect(seenWrites.update.updates).toEqual({ record_id: 'missing', resource_id: null });
+
+    const created = await resource.asUser({} as any, { meta: { allowed: true } })
+      .create({ record_id: 'missing' });
+    expect(created.createdRecord).toHaveProperty('resource_id', undefined);
   });
 
   it('consumes a REST ACL grant only once for the same user, resource, and record', async () => {
@@ -526,6 +541,40 @@ describe('OperationalResource access tiers', () => {
     await expect(scoped.count(privateFilter)).rejects.toThrow('Filter: column "private" cannot be used');
 
     expect(calls).toMatchObject({ connectorGetData: 0, connectorCount: 0, beforeList: 0 });
+  });
+
+  it('refuses to sort by backendOnly columns through user-scoped lists', async () => {
+    const { calls, resource } = setup();
+
+    await expect(resource.asUser({} as any, { meta: { allowed: true } })
+      .list([], null, null, { field: 'private', direction: 'asc' } as any))
+      .rejects.toThrow('backendOnly is true');
+    expect(calls.connectorGetData).toBe(0);
+  });
+
+  it('refuses to sort by backendOnly columns through the REST list endpoint', async () => {
+    const { adminforth, calls, resource } = setup();
+    resource.resourceConfig.options.allowedActions.list = true;
+    adminforth.config.auth = { rateLimit: [] };
+    adminforth.activatedPlugins = [];
+    adminforth.statuses = { dbDiscover: 'done' };
+    adminforth.connectors = { main: resource.dataConnector };
+    const endpoints: Record<string, any> = {};
+    new AdminForthRestAPI(adminforth).registerEndpoints({
+      endpoint: (endpoint: any) => { endpoints[endpoint.path] = endpoint; },
+    } as any);
+
+    const result = await endpoints['/get_resource_data'].handler({
+      body: {
+        resourceId: 'users', source: 'list', filters: [], limit: 10, offset: 0,
+        sort: [{ field: 'private', direction: 'asc' }],
+      },
+      adminUser: {}, headers: {}, query: {}, cookies: [], requestUrl: '',
+      abortSignal: new AbortController().signal,
+    });
+
+    expect(result.error).toContain('backendOnly is true');
+    expect(calls.connectorGetData).toBe(0);
   });
 
   it('row-scopes aggregate and count through the same read hooks as list', async () => {

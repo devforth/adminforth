@@ -34,6 +34,7 @@ import { filtersTools } from "../modules/filtersTools.js";
 import { normalizeColumnValue } from './columnValueNormalizer.js';
 import {
   isShown,
+  sortColumnsReadableError,
   stripReadForbiddenColumns,
 } from './columnAccess.js';
 import { authorizeResourceOperation, interpretResource, RESOURCE_ACCESS_GRANT } from './resourceAccess.js';
@@ -1385,6 +1386,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const col = resource.columns.find((col) => col.name === sortItem.field);
           return col && !col.virtual;
         });
+        const sortError = await sortColumnsReadableError({
+          adminUser,
+          resource,
+          meta,
+          source: {
+            show: ActionCheckSource.ShowRequest,
+            list: ActionCheckSource.ListRequest,
+            edit: ActionCheckSource.EditLoadRequest,
+          }[source],
+          adminforth: this.adminforth,
+        }, sortFiltered);
+        if (sortError) {
+          return { error: sortError };
+        }
 
         // after beforeDatasourceRequest hook, filter can be anything
         // so, we need to turn it into AndOr filter
