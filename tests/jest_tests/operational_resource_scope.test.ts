@@ -1,6 +1,15 @@
 import OperationalResource from '../../adminforth/modules/operationalResource.js';
 import UserScopedResource from '../../adminforth/modules/userScopedResource.js';
-import { ActionCheckSource } from '../../adminforth/types/Common.js';
+import AdminForthRestAPI from '../../adminforth/modules/restApi.js';
+import { authorizeResourceOperation, RESOURCE_ACCESS_GRANT } from '../../adminforth/modules/resourceAccess.js';
+import { ActionCheckSource, AllowedActionsEnum } from '../../adminforth/types/Common.js';
+
+function singleFilters(filters: any): any[] {
+  if (Array.isArray(filters)) {
+    return filters.flatMap(singleFilters);
+  }
+  return filters.subFilters ? singleFilters(filters.subFilters) : [filters];
+}
 
 function setup(resourceId = 'users') {
   const calls = {
@@ -70,6 +79,7 @@ function setup(resourceId = 'users') {
   resource.dataSourceColumns = resource.columns;
 
   const seenFilters: Record<string, any> = {};
+  const seenWrites: Record<string, any> = {};
   const connector = {
     createRecord: async ({ record }) => {
       calls.connectorCreate++;
@@ -86,7 +96,9 @@ function setup(resourceId = 'users') {
     getData: async ({ filters }) => {
       calls.connectorGetData++;
       seenFilters.getData = filters;
-      if (Array.isArray(filters) && filters.some((filter) => filter.field === 'tenant' && filter.value === 'not-owned')) {
+      const requestedFilters = singleFilters(filters);
+      if (requestedFilters.some((filter) => filter.field === 'tenant' && filter.value === 'not-owned')
+        || requestedFilters.some((filter) => filter.field === 'id' && filter.value !== 1)) {
         return { data: [], total: 0 };
       }
       return { data: [{ id: 1, name: 'John', private: 'hidden' }], total: 1 };
@@ -106,6 +118,7 @@ function setup(resourceId = 'users') {
       calls.connectorGetByPk++;
       return { id: 1, name: 'Old name', readonly: 'old' };
     },
+    getPrimaryKey: () => 'id',
   } as any;
   const adminforth = { config: { resources: [resource] } } as any;
   const executors = {
@@ -113,21 +126,30 @@ function setup(resourceId = 'users') {
       calls.createExecutor++;
       return { createdRecord: { id: 1, ...record } };
     },
-    update: async () => {
+    update: async ({ oldRecord, updates }) => {
       calls.updateExecutor++;
+      seenWrites.update = { oldRecord, updates };
       return { error: null };
     },
-    delete: async () => ({ error: null }),
+    delete: async ({ record }, cascadeChildren) => {
+      seenWrites.delete = { record, cascadeChildren };
+      return { error: null };
+    },
   } as any;
+
+  const operationalResource = new OperationalResource(
+    connector,
+    resource,
+    (data, adminUser, options) => new UserScopedResource(data, adminforth, executors, adminUser, options),
+  );
+  adminforth.resource = () => operationalResource;
 
   return {
     calls,
     seenFilters,
-    resource: new OperationalResource(
-      connector,
-      resource,
-      (data, adminUser, options) => new UserScopedResource(data, adminforth, executors, adminUser, options),
-    ),
+    seenWrites,
+    adminforth,
+    resource: operationalResource,
   };
 }
 
@@ -198,14 +220,36 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ acl: 1, connectorDelete: 0 });
   });
 
-  it('reuses the record supplied by the caller instead of reading it again', async () => {
-    const { calls, resource } = setup();
+  it('passes the caller delete snapshot to hooks after the scoped lookup', async () => {
+    const { seenWrites, resource } = setup();
+    const record = { id: 1, name: 'Earlier snapshot' };
+    let aclRecord: any;
+    resource.resourceConfig.options.allowedActions.delete = ({ meta }) => {
+      aclRecord = meta.record;
+      return true;
+    };
+
+    await expect(resource.asUser({} as any, { meta: { allowed: true }, record }).delete(1))
+      .resolves.toBe(true);
+    expect(aclRecord.name).toBe('John');
+    expect(seenWrites.delete).toEqual({ record, cascadeChildren: true });
+  });
+
+  it('passes the caller snapshot to hooks after checking current row scope', async () => {
+    const { calls, seenWrites, resource } = setup();
+    let aclRecord: any;
+    resource.resourceConfig.options.allowedActions.edit = ({ meta }) => {
+      aclRecord = meta.oldRecord;
+      return true;
+    };
 
     const updated = await resource
-      .asUser({} as any, { meta: { allowed: true }, oldRecord: { id: 1, name: 'Old name' } })
+      .asUser({} as any, { meta: { allowed: true }, oldRecord: { id: 1, name: 'Earlier snapshot' } })
       .update(1, { name: 'Jane' });
 
     expect(updated).toMatchObject({ ok: true });
+    expect(aclRecord.name).toBe('John');
+    expect(seenWrites.update.oldRecord).toEqual({ id: 1, name: 'Earlier snapshot' });
     expect(calls).toMatchObject({ connectorGetByPk: 0, updateExecutor: 1, beforeList: 1 });
   });
 
@@ -224,8 +268,126 @@ describe('OperationalResource access tiers', () => {
     });
     await expect(scoped.delete(1)).resolves.toBe(false);
 
-    expect(seenFilters.getData).toContainEqual({ field: 'tenant', operator: 'eq', value: 'not-owned' });
+    expect(singleFilters(seenFilters.getData)).toContainEqual({ field: 'tenant', operator: 'eq', value: 'not-owned' });
     expect(calls).toMatchObject({ beforeList: 2, updateExecutor: 0, connectorDelete: 0 });
+  });
+
+  it('keeps the requested primary key when a scope hook replaces its filters', async () => {
+    const { calls, seenFilters, resource } = setup();
+    resource.resourceConfig.hooks.list.beforeDatasourceRequest = [async ({ query }) => {
+      query.filters = [{ field: 'tenant', operator: 'eq', value: 't1' }];
+      return { ok: true };
+    }];
+    const scoped = resource.asUser({} as any, { meta: { allowed: true } });
+
+    await expect(scoped.update(2, { name: 'Jane' })).resolves.toMatchObject({
+      ok: false,
+      error: expect.stringContaining('not found'),
+    });
+    await expect(scoped.delete(2)).resolves.toBe(false);
+
+    expect(singleFilters(seenFilters.getData)).toContainEqual({ field: 'id', operator: 'eq', value: 2 });
+    expect(calls).toMatchObject({ updateExecutor: 0 });
+  });
+
+  it('derives a hidden polymorphic discriminator after validating user fields', async () => {
+    const { calls, seenWrites, adminforth, resource } = setup();
+    resource.resourceConfig.columns.push(
+      { name: 'resource_id', showIn: { create: false, edit: false } },
+      {
+        name: 'record_id',
+        foreignResource: {
+          polymorphicOn: 'resource_id',
+          polymorphicResources: [
+            { resourceId: 'targets', whenValue: 'target' },
+            { resourceId: null, whenValue: 'system' },
+          ],
+        },
+      },
+    );
+    adminforth.config.resources.push({
+      resourceId: 'targets',
+      dataSource: 'targets',
+      columns: [{ name: 'id', primaryKey: true }],
+    });
+    adminforth.connectors = {
+      targets: { getData: async () => ({ data: [{ id: 'target-1' }] }) },
+    };
+    const scoped = resource.asUser({} as any, { meta: { allowed: true } });
+
+    const created = await scoped.create({ record_id: 'target-1' });
+    const updated = await scoped.update(1, { record_id: 'target-1' });
+    const forbidden = await scoped.create({ record_id: 'target-1', resource_id: 'target' });
+
+    expect(created.createdRecord.resource_id).toBe('target');
+    expect(updated).toMatchObject({ ok: true });
+    expect(seenWrites.update.updates.resource_id).toBe('target');
+    expect(forbidden).toMatchObject({ ok: false, error: expect.stringContaining('showIn.create is false') });
+    expect(calls).toMatchObject({ createExecutor: 1, updateExecutor: 1 });
+
+    let createChecks = 0;
+    resource.resourceConfig.options.allowedActions.create = () => ++createChecks === 1;
+    adminforth.config.auth = { rateLimit: [] };
+    adminforth.activatedPlugins = [];
+    adminforth.connectors.main = resource.dataConnector;
+    const endpoints: Record<string, any> = {};
+    new AdminForthRestAPI(adminforth).registerEndpoints({
+      endpoint: (endpoint: any) => { endpoints[endpoint.path] = endpoint; },
+    } as any);
+    const requestRecord = { record_id: 'target-1' } as any;
+    const restResult = await endpoints['/create_record'].handler({
+      body: { resourceId: 'users', record: requestRecord, requiredColumnsToSkip: [] },
+      adminUser: {},
+      query: {},
+      headers: {},
+      cookies: [],
+      requestUrl: '',
+      response: {},
+    });
+
+    expect(restResult).toMatchObject({ ok: true, newRecordId: 1 });
+    expect(requestRecord.resource_id).toBe('target');
+    expect(createChecks).toBe(1);
+
+    let editChecks = 0;
+    resource.resourceConfig.options.allowedActions.edit = () => ++editChecks === 1;
+    const editRecord = { record_id: 'target-1' } as any;
+    const editResult = await endpoints['/update_record'].handler({
+      body: { resourceId: 'users', recordId: 1, record: editRecord },
+      adminUser: {},
+      query: {},
+      headers: {},
+      cookies: [],
+      requestUrl: '',
+      response: {},
+    });
+
+    expect(editResult).toMatchObject({ ok: true });
+    expect(editRecord.resource_id).toBe('target');
+    expect(editChecks).toBe(1);
+
+    resource.resourceConfig.options.allowedActions.edit = true;
+    await scoped.update(1, { record_id: null });
+    expect(seenWrites.update.updates.resource_id).toBe('system');
+  });
+
+  it('consumes a REST ACL grant only once for the same user, resource, and record', async () => {
+    const { adminforth, calls, resource } = setup();
+    const adminUser = {} as any;
+    const record = { name: 'Jane' };
+    const meta = { allowed: true };
+    const access = await authorizeResourceOperation(
+      adminUser, resource.resourceConfig, meta, ActionCheckSource.CreateRequest,
+      AllowedActionsEnum.create, adminforth, record,
+    );
+    expect(access.error).toBeNull();
+
+    resource.resourceConfig.options.allowedActions.create = false;
+    const scopedOptions = { meta, [RESOURCE_ACCESS_GRANT]: access.grant };
+    const scoped = resource.asUser(adminUser, scopedOptions);
+    await expect(scoped.create(record)).resolves.toMatchObject({ ok: true });
+    await expect(scoped.create(record)).resolves.toMatchObject({ ok: false, error: 'Action is not allowed' });
+    expect(calls.createExecutor).toBe(1);
   });
 
   it('applies the full user-scoped update path to an empty update', async () => {

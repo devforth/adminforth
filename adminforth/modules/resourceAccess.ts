@@ -45,3 +45,58 @@ export async function interpretResource(
 
   return { allowedActions };
 }
+
+export const RESOURCE_ACCESS_GRANT = Symbol('resourceAccessGrant');
+
+type ResourceAccessGrant = object;
+
+const grantedOperations = new WeakMap<ResourceAccessGrant, {
+  adminUser: AdminUser;
+  resource: AdminForthResource;
+  action: AllowedActionsEnum;
+  record: any;
+  primaryKey: any;
+}>();
+
+/** The REST preflight checks access before returning field or existence errors. */
+export async function authorizeResourceOperation(
+  adminUser: AdminUser,
+  resource: AdminForthResource,
+  meta: any,
+  source: ActionCheckSource,
+  action: AllowedActionsEnum,
+  adminforth: IAdminForth,
+  record: any,
+  primaryKey?: any,
+): Promise<{ error: string | null; grant?: ResourceAccessGrant }> {
+  const { allowedActions } = await interpretResource(adminUser, resource, meta, source, adminforth);
+  const allowed = allowedActions[action] as boolean | string | undefined;
+  if (allowed !== true) {
+    return { error: typeof allowed === 'string' ? allowed : 'Action is not allowed' };
+  }
+
+  const grant = {};
+  grantedOperations.set(grant, { adminUser, resource, action, record, primaryKey });
+  return { error: null, grant };
+}
+
+/** A grant can only skip the matching scoped ACL check once; row scope still runs normally. */
+export function consumeResourceAccessGrant(
+  grant: ResourceAccessGrant | undefined,
+  adminUser: AdminUser,
+  resource: AdminForthResource,
+  action: AllowedActionsEnum,
+  record: any,
+  primaryKey?: any,
+): boolean {
+  if (!grant) {
+    return false;
+  }
+  const granted = grantedOperations.get(grant);
+  grantedOperations.delete(grant);
+  return granted?.adminUser === adminUser
+    && granted.resource === resource
+    && granted.action === action
+    && granted.record === record
+    && granted.primaryKey === primaryKey;
+}

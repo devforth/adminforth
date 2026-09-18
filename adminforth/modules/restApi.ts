@@ -36,7 +36,7 @@ import {
   isShown,
   stripReadForbiddenColumns,
 } from './columnAccess.js';
-import { interpretResource } from './resourceAccess.js';
+import { authorizeResourceOperation, interpretResource, RESOURCE_ACCESS_GRANT } from './resourceAccess.js';
 
 function stripResourceColumnFrontendMeta(column: Record<string, any>) {
   const { default: _default, _baseTypeDebug, ...sanitizedColumn } = column;
@@ -1997,16 +1997,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            // access is checked again inside the scoped create below, but it has to be answered
-            // before the handler reveals anything about existing records or required columns
-            const { allowedActions: createAllowedActions } = await interpretResource(
-              adminUser, resource, { requestBody: body }, ActionCheckSource.CreateRequest, this.adminforth
+            // Check before revealing existing records or required columns. The scoped write
+            // consumes this one-use grant, so the ACL callback is not invoked twice.
+            const createAccess = await authorizeResourceOperation(
+              adminUser, resource, { requestBody: body }, ActionCheckSource.CreateRequest,
+              AllowedActionsEnum.create, this.adminforth, body.record,
             );
-            const { allowed: createAllowed, error: createNotAllowedError } = checkAccess(
-              AllowedActionsEnum.create, createAllowedActions
-            );
-            if (!createAllowed) {
-              return { error: createNotAllowedError };
+            if (createAccess.error) {
+              return { error: createAccess.error };
             }
 
             const { record, requiredColumnsToSkip } = body;
@@ -2069,61 +2067,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
-            for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
-                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
-                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
-              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
-                const targetResources = {};
-                const targetConnectors = {};
-                const targetResourcePkFields = {};
-                column.foreignResource.polymorphicResources.forEach((pr) => {
-                  if (pr.resourceId === null) {
-                    return;
-                  }
-                  const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
-                  if (!targetResource) {
-                    return;
-                  }
-                  targetResources[pr.whenValue] = targetResource;
-                  targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
-                  targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
-                });
 
-                const targetData = (await Promise.all(Object.keys(targetResources).map((polymorphicOnValue) =>
-                  targetConnectors[polymorphicOnValue].getData({
-                    resource: targetResources[polymorphicOnValue],
-                    limit: 1,
-                    offset: 0,
-                    filters: { operator: AdminForthFilterOperators.AND, subFilters: [
-                      {
-                        field: targetResourcePkFields[polymorphicOnValue],
-                        operator: AdminForthFilterOperators.EQ,
-                        value: record[column.name],
-                      }
-                    ]},
-                    sort: [],
-                  })
-                ))).reduce((acc: any, td: any, tdi) => ({
-                  ...acc,
-                  [Object.keys(targetResources)[tdi]]: td.data,
-                }), {});
-                record[column.foreignResource.polymorphicOn] = Object.keys(targetData).find((tdk) => targetData[tdk].length);
-              }
-            }
             const jsonError = this.normalizeJsonColumns(resource, record);
             if (jsonError) {
               return { error: jsonError, ok: false };
             }
 
+            const scopedCreateOptions = {
+              meta: ctxCreate.meta,
+              response,
+              extra: { body, query, headers, cookies, requestUrl, response },
+              [RESOURCE_ACCESS_GRANT]: createAccess.grant,
+            };
             const createRecordResponse = await this.adminforth
               .resource(resource.resourceId)
-              .asUser(adminUser, {
-                meta: ctxCreate.meta,
-                response,
-                extra: { body, query, headers, cookies, requestUrl, response },
-              })
+              .asUser(adminUser, scopedCreateOptions)
               .create(record);
             if (createRecordResponse.error) {
               return { 
@@ -2170,20 +2128,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             const record = body['record'];
 
-            // access is checked again inside the scoped update below, but it has to be answered
-            // before the handler reveals whether another record with the same key exists
-            const { allowedActions: editAllowedActions } = await interpretResource(
+            // Check before revealing whether another record has the requested key.
+            const editAccess = await authorizeResourceOperation(
               adminUser,
               resource,
               { requestBody: body, newRecord: record, oldRecord, pk: recordId },
               ActionCheckSource.EditRequest,
-              this.adminforth
+              AllowedActionsEnum.edit,
+              this.adminforth,
+              record,
+              recordId,
             );
-            const { allowed: editAllowed, error: editNotAllowedError } = checkAccess(
-              AllowedActionsEnum.edit, editAllowedActions
-            );
-            if (!editAllowed) {
-              return { error: editNotAllowedError };
+            if (editAccess.error) {
+              return { error: editAccess.error };
             }
 
             if (isCompositePrimaryKey(resource)) {
@@ -2217,69 +2174,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
-            for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
-                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
-                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
-              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
-                let newPolymorphicOnValue = null;
-                if (record[column.name]) {
-                  const targetResources = {};
-                  const targetConnectors = {};
-                  const targetResourcePkFields = {};
-                  column.foreignResource.polymorphicResources.forEach((pr) => {
-                    if (pr.resourceId === null) {
-                      return;
-                    }
-                    const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
-                    if (!targetResource) {
-                      return;
-                    }
-                    targetResources[pr.whenValue] = targetResource;
-                    targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
-                    targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
-                  });
 
-                  const targetData = (await Promise.all(Object.keys(targetResources).map((polymorphicOnValue) =>
-                    targetConnectors[polymorphicOnValue].getData({
-                      resource: targetResources[polymorphicOnValue],
-                      limit: 1,
-                      offset: 0,
-                      filters: { operator: AdminForthFilterOperators.AND, subFilters: [
-                        {
-                          field: targetResourcePkFields[polymorphicOnValue],
-                          operator: AdminForthFilterOperators.EQ,
-                          value: record[column.name],
-                        }
-                      ]},
-                      sort: [],
-                    })
-                  ))).reduce((acc: any, td: any, tdi) => ({
-                    ...acc,
-                    [Object.keys(targetResources)[tdi]]: td.data,
-                  }), {});
-                  newPolymorphicOnValue = Object.keys(targetData).find((tdk) => targetData[tdk].length);
-                }
-                
-                if (oldRecord[column.foreignResource.polymorphicOn] !== newPolymorphicOnValue) {
-                  record[column.foreignResource.polymorphicOn] = newPolymorphicOnValue;
-                }
-              }
-            }
-            
             const jsonError = this.normalizeJsonColumns(resource, record);
             if (jsonError) {
               return { error: jsonError, ok: false };
             }
+            const scopedEditOptions = {
+              meta: { requestBody: body, newRecord: record, oldRecord, pk: recordId },
+              oldRecord,
+              response,
+              extra: { body, query, headers, cookies, requestUrl, response },
+              [RESOURCE_ACCESS_GRANT]: editAccess.grant,
+            };
             const { error } = await this.adminforth
               .resource(resource.resourceId)
-              .asUser(adminUser, {
-                meta: { requestBody: body, newRecord: record, oldRecord, pk: recordId },
-                oldRecord,
-                response,
-                extra: { body, query, headers, cookies, requestUrl, response },
-              })
+              .asUser(adminUser, scopedEditOptions)
               .update(recordId, record);
             if (error) {
               return { error };
@@ -2312,7 +2221,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
 
             try {
-              await this.adminforth
+              const deleted = await this.adminforth
                 .resource(resource.resourceId)
                 .asUser(adminUser, {
                   meta: { requestBody: body, record },
@@ -2321,6 +2230,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   extra: { body, query, headers, cookies, requestUrl, response },
                 })
                 .delete(body.primaryKey);
+              if (!deleted) {
+                return { error: `Record with ${body.primaryKey} not found` };
+              }
             } catch (error) {
               return { error: (error as Error).message };
             }

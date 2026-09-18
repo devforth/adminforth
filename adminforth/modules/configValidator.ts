@@ -20,7 +20,7 @@ import { compositePkValues, isCompositePrimaryKey } from './recordId.js';
 
 import fs from 'fs';
 import path from 'path';
-import { cascadeChildrenDelete, guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString } from './utils.js';
+import { guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -270,23 +270,13 @@ export default class ConfigValidator implements IConfigValidator {
           selectedIds.map(async (recordId) => {
             try {
               const record = await connector.getRecordByPrimaryKey(res as AdminForthResource, recordId);
-              const cascadeResult = await cascadeChildrenDelete(
-                res as AdminForthResource,
-                recordId,
-                { adminUser, response },
-                this.adminforth,
-                (params) => this.adminforth.deleteResourceRecord(params),
-              );
-              if (cascadeResult.error) {
-                throw new Error(cascadeResult.error);
-              }
               const result = await this.adminforth.deleteResourceRecord({
                 resource: res as AdminForthResource,
                 recordId,
                 record,
                 adminUser,
                 response,
-              });
+              }, true);
               if (result.error) {
                 throw new Error(result.error);
               }
