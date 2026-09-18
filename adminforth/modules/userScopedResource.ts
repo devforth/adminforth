@@ -25,9 +25,10 @@ import {
   stripReadForbiddenColumns,
   type ColumnAccessContext,
 } from './columnAccess.js';
-import { interpretResource } from './resourceAccess.js';
+import { consumeResourceAccessGrant, interpretResource, RESOURCE_ACCESS_GRANT } from './resourceAccess.js';
 import { filtersTools } from './filtersTools.js';
-import { cascadeChildrenDelete, hookResponseError, listify } from './utils.js';
+import { hookResponseError, listify } from './utils.js';
+import { resolvePolymorphicReferences } from './polymorphicReferences.js';
 import type OperationalResource from './operationalResource.js';
 
 /**
@@ -50,7 +51,7 @@ type GuardedOperation = keyof typeof OPERATION_ACCESS;
 export interface ResourceHookExecutors {
   create(params: CreateResourceRecordParams): Promise<CreateResourceRecordResult>;
   update(params: UpdateResourceRecordParams): Promise<UpdateResourceRecordResult>;
-  delete(params: DeleteResourceRecordParams): Promise<DeleteResourceRecordResult>;
+  delete(params: DeleteResourceRecordParams, cascadeChildren?: boolean): Promise<DeleteResourceRecordResult>;
 }
 
 
@@ -67,7 +68,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
     private readonly adminforth: IAdminForth,
     private readonly executors: ResourceHookExecutors,
     private readonly adminUser: AdminUser,
-    private readonly options: OperationalResourceUserOptions,
+    private readonly options: OperationalResourceUserOptions & { [RESOURCE_ACCESS_GRANT]?: object },
   ) {
     this.dataConnector = data.dataConnector;
     this.resourceConfig = data.resourceConfig;
@@ -162,7 +163,8 @@ export default class UserScopedResource implements IScopedOperationalResource {
       sort: [],
     };
     await this.runReadHooks('list', 'beforeDatasourceRequest', query);
-    return this.data.get(query.filters);
+    const scopedFilters = this.dataConnector.validateAndNormalizeInputFilters(query.filters);
+    return this.data.get(Filters.AND(Filters.EQ(primaryKeyColumn.name, primaryKey), scopedFilters));
   }
 
   async get(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): Promise<any | null> {
@@ -275,7 +277,10 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async create(recordValues: any): Promise<CreateResourceRecordResult & { ok: boolean; createdRecord: any }> {
-    const accessError = await this.accessError('create');
+    const accessError = consumeResourceAccessGrant(
+      this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
+      AllowedActionsEnum.create, recordValues,
+    ) ? null : await this.accessError('create');
     if (accessError) {
       return { ok: false, createdRecord: undefined, error: accessError };
     }
@@ -289,6 +294,8 @@ export default class UserScopedResource implements IScopedOperationalResource {
       return { ok: false, createdRecord: undefined, error: columnError };
     }
 
+    await resolvePolymorphicReferences(this.resourceConfig, recordValues, this.adminforth);
+
     const result = await this.executors.create({
       resource: this.resourceConfig,
       record: recordValues,
@@ -300,15 +307,17 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async update(primaryKey: any, record: any): Promise<any> {
-    const oldRecord = await this.findScopedRecord(primaryKey);
-    if (!oldRecord) {
+    const scopedRecord = await this.findScopedRecord(primaryKey);
+    if (!scopedRecord) {
       const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
       return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
     }
-
-    const meta = { ...this.meta, newRecord: record, oldRecord, pk: primaryKey };
-
-    const accessError = await this.accessError('update', meta);
+    const oldRecord = this.options.oldRecord ?? scopedRecord;
+    const meta = { ...this.meta, newRecord: record, oldRecord: scopedRecord, pk: primaryKey };
+    const accessError = consumeResourceAccessGrant(
+      this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
+      AllowedActionsEnum.edit, record, primaryKey,
+    ) ? null : await this.accessError('update', meta);
     if (accessError) {
       return { ok: false, error: accessError };
     }
@@ -321,6 +330,8 @@ export default class UserScopedResource implements IScopedOperationalResource {
     if (columnError) {
       return { ok: false, error: columnError };
     }
+
+    await resolvePolymorphicReferences(this.resourceConfig, record, this.adminforth, scopedRecord);
 
     const result = await this.executors.update({
       resource: this.resourceConfig,
@@ -335,25 +346,15 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async delete(primaryKey: any): Promise<boolean> {
-    const record = await this.findScopedRecord(primaryKey);
-    if (!record) {
+    const scopedRecord = await this.findScopedRecord(primaryKey);
+    if (!scopedRecord) {
       return false;
     }
+    const record = this.options.record ?? scopedRecord;
 
-    const accessError = await this.accessError('delete', { ...this.meta, record, pk: primaryKey });
+    const accessError = await this.accessError('delete', { ...this.meta, record: scopedRecord, pk: primaryKey });
     if (accessError) {
       throw new Error(accessError);
-    }
-
-    const { error: cascadeError } = await cascadeChildrenDelete(
-      this.resourceConfig,
-      primaryKey,
-      { adminUser: this.adminUser, response: this.options.response },
-      this.adminforth,
-      (params) => this.executors.delete(params),
-    );
-    if (cascadeError) {
-      throw new Error(cascadeError);
     }
 
     const { error } = await this.executors.delete({
@@ -363,7 +364,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
       adminUser: this.adminUser,
       extra: this.options.extra,
       response: this.options.response,
-    });
+    }, true);
     if (error) {
       throw new Error(error);
     }

@@ -594,9 +594,12 @@ export interface IAdminForth {
   /**
    * Deletes a record and runs the resource delete hooks, without checking permissions.
    * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   * Pass `true` as the second argument to apply configured child deletion after the parent
+   * `beforeSave` hooks have allowed the deletion.
    */
   deleteResourceRecord(
     params: DeleteResourceRecordParams,
+    cascadeChildren?: boolean,
   ): Promise<DeleteResourceRecordResult>;
 
   auth: IAdminForthAuth;
@@ -2213,15 +2216,14 @@ export interface OperationalResourceContextOptions {
   response?: IAdminForthHttpResponse;
 
   /**
-   * Record as it is stored before the mutation. Supply it when the caller has already loaded the
-   * record, so `update()` does not read it a second time and hooks see the same snapshot the
-   * caller worked from.
+   * Snapshot passed to edit save hooks when the caller has already loaded the record.
+   * `update()` still performs a scoped lookup to confirm access to the current row.
    */
   oldRecord?: any;
 
   /**
-   * Record to delete, when the caller has already loaded it. Same purpose as `oldRecord`, for
-   * `delete()`.
+   * Snapshot passed to delete save hooks when the caller has already loaded the record.
+   * `delete()` still performs a scoped lookup to confirm access to the current row.
    */
   record?: any;
 }

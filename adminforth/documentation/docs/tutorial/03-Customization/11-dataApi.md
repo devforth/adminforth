@@ -83,8 +83,9 @@ try {
 }
 ```
 
-When the caller has already loaded the record, pass it in so the call does not
-read it a second time and hooks see the same snapshot the caller worked from:
+When the caller has already loaded the record, pass its snapshot to the save
+hooks. ACL and row scope use the current record from a scoped lookup before
+mutating it:
 
 ```ts
 await users.asUser(adminUser, { meta, oldRecord }).update(recordId, updates);

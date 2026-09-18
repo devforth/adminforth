@@ -3,7 +3,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
+import { ADMINFORTH_VERSION, cascadeChildrenDelete, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -571,7 +571,7 @@ class AdminForth implements IAdminForth {
           {
             create: (params) => this.executeCreateResourceRecord(params),
             update: (params) => this.executeUpdateResourceRecord(params),
-            delete: (params) => this.executeDeleteResourceRecord(params),
+            delete: (params, cascadeChildren) => this.executeDeleteResourceRecord(params, cascadeChildren),
           },
           adminUser,
           options,
@@ -896,13 +896,17 @@ class AdminForth implements IAdminForth {
    */
   async deleteResourceRecord(
     params: DeleteResourceRecordParams,
+    cascadeChildren = false,
   ): Promise<DeleteResourceRecordResult> {
-    this.warnDeprecatedResourceMutation('deleteResourceRecord', params.resource.resourceId, 'delete');
-    return this.executeDeleteResourceRecord(params);
+    if (!cascadeChildren) {
+      this.warnDeprecatedResourceMutation('deleteResourceRecord', params.resource.resourceId, 'delete');
+    }
+    return this.executeDeleteResourceRecord(params, cascadeChildren);
   }
 
   private async executeDeleteResourceRecord(
     params: DeleteResourceRecordParams,
+    cascadeChildren = false,
   ): Promise<DeleteResourceRecordResult> {
     const { resource, recordId, adminUser, record, response, extra } = params;
     // execute hook if needed
@@ -919,6 +923,19 @@ class AdminForth implements IAdminForth {
       const hookRespError = hookResponseError(resp);
       if (hookRespError) {
         return hookRespError;
+      }
+    }
+
+    if (cascadeChildren) {
+      const cascadeResult = await cascadeChildrenDelete(
+        resource,
+        recordId,
+        { adminUser, response },
+        this,
+        (childParams) => this.executeDeleteResourceRecord(childParams),
+      );
+      if (cascadeResult.error) {
+        return cascadeResult;
       }
     }
 

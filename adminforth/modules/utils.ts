@@ -568,7 +568,6 @@ export async function cascadeChildrenDelete(
 
     if (strategy === 'cascade') {
       for (const childRecord of childRecords) {
-        // grandchildren first, then the child itself — deleteResourceRecord does not cascade
         // grandchildren first, then the child itself
         const childResult = await cascadeChildrenDelete(
           childRes, childRecord[childPk], context, adminforth, deleteWithHooks,
