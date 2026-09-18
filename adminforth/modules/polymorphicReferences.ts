@@ -14,7 +14,7 @@ export async function resolvePolymorphicReferences(
       continue;
     }
 
-    let discriminator: string;
+    let discriminator: string | null;
     if (record[column.name] === null) {
       record[foreignResource.polymorphicOn] = foreignResource.polymorphicResources.find((target) => target.resourceId === null).whenValue;
       continue;
@@ -40,6 +40,12 @@ export async function resolvePolymorphicReferences(
       }
     } else {
       continue;
+    }
+
+    // Keep an existing SQL NULL when a changed reference matches no configured target.
+    // Writing undefined here can make a connector store a different value.
+    if (discriminator === undefined && oldRecord?.[foreignResource.polymorphicOn] === null) {
+      discriminator = null;
     }
 
     if (!oldRecord || oldRecord[foreignResource.polymorphicOn] !== discriminator) {

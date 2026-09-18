@@ -13,7 +13,6 @@ import type {
 } from '../types/Back.js';
 import type { AdminUser } from '../types/Common.js';
 import { normalizeRecordValues } from './columnValueNormalizer.js';
-import { validateRecordValues } from './recordValidator.js';
 
 /**
  * Builds the user-scoped layer on top of a data-access resource. Injected by AdminForth so this
@@ -31,8 +30,8 @@ function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort
 }
 
 /**
- * Plain data access for one resource: talks to the connector, normalizes values and applies the
- * column-level value rules. It has no notion of who is asking — no permissions, no column access
+ * Plain data access for one resource: talks to the connector and normalizes values.
+ * It has no notion of who is asking — no permissions, no column access
  * rules, no lifecycle hooks.
  *
  * For anything a user asked for, take {@link asUser}, which adds those on top.
@@ -115,11 +114,6 @@ export default class OperationalResource implements IOperationalResource {
   async create(recordValues: any): Promise<CreateResourceRecordResult & { ok: boolean; createdRecord: any }> {
     const normalizedRecord = { ...recordValues };
     normalizeRecordValues(this.resourceConfig, normalizedRecord);
-    const validationError = validateRecordValues(this.resourceConfig, normalizedRecord, 'create');
-    if (validationError) {
-      return { ok: false, createdRecord: undefined, error: validationError };
-    }
-
     const { ok, createdRecord, error } = await this.dataConnector.createRecord({
       resource: this.resourceConfig,
       record: normalizedRecord,
@@ -135,11 +129,6 @@ export default class OperationalResource implements IOperationalResource {
 
     const normalizedRecord = { ...record };
     normalizeRecordValues(this.resourceConfig, normalizedRecord);
-    const validationError = validateRecordValues(this.resourceConfig, normalizedRecord, 'edit');
-    if (validationError) {
-      return { ok: false, error: validationError };
-    }
-
     return await this.dataConnector.updateRecord({
       resource: this.resourceConfig,
       recordId: primaryKey,

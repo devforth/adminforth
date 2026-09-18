@@ -3,6 +3,7 @@ import ConfigValidator from '../../adminforth/modules/configValidator.js';
 
 function setup(parentBeforeSave: () => Promise<{ ok: boolean; error?: string }>) {
   const events: string[] = [];
+  let scopedDeleteCalls = 0;
   const parent = {
     resourceId: 'parents',
     dataSource: 'main',
@@ -61,12 +62,37 @@ function setup(parentBeforeSave: () => Promise<{ ok: boolean; error?: string }>)
       },
     },
   };
+  admin.resource = (resourceId: string) => {
+    if (resourceId === 'children') {
+      return admin.operationalResources.children;
+    }
+    return {
+      asUser: (adminUser: any, { response, bulkDeleteHooks }: any) => ({
+        delete: async (recordId: string) => {
+          scopedDeleteCalls += 1;
+          const result = await admin.executeDeleteResourceRecord({
+            resource: parent,
+            recordId,
+            record: await admin.connectors.main.getRecordByPrimaryKey(parent, recordId),
+            adminUser,
+            response,
+          }, true, bulkDeleteHooks);
+          if (result.error) {
+            throw new Error(result.error);
+          }
+          return true;
+        },
+      }),
+    };
+  };
   const actions = new ConfigValidator(admin, {} as any)
     .validateAndNormalizeBulkActions({ options: { bulkActions: [] } } as any, parent, []);
   const deleteChecked = actions[actions.length - 1];
 
   return {
     events,
+    parent,
+    scopedDeleteCalls: () => scopedDeleteCalls,
     deleteChecked: () => deleteChecked.action({
       selectedIds: ['p1'],
       adminUser: {} as any,
@@ -77,16 +103,18 @@ function setup(parentBeforeSave: () => Promise<{ ok: boolean; error?: string }>)
 
 describe('default bulk delete', () => {
   it('does not cascade when the parent beforeSave hook vetoes deletion', async () => {
-    const { events, deleteChecked } = setup(async () => ({ ok: false, error: 'blocked' }));
+    const { events, scopedDeleteCalls, deleteChecked } = setup(async () => ({ ok: false, error: 'blocked' }));
 
     await expect(deleteChecked()).resolves.toMatchObject({ ok: false, error: 'blocked' });
+    expect(scopedDeleteCalls()).toBe(1);
     expect(events).toEqual(['parent-before']);
   });
 
   it('runs the parent veto hook before cascading and deletes each record once', async () => {
-    const { events, deleteChecked } = setup(async () => ({ ok: true }));
+    const { events, scopedDeleteCalls, deleteChecked } = setup(async () => ({ ok: true }));
 
     await expect(deleteChecked()).resolves.toMatchObject({ ok: true });
+    expect(scopedDeleteCalls()).toBe(1);
     expect(events).toEqual([
       'parent-before',
       'child-list',
@@ -96,5 +124,32 @@ describe('default bulk delete', () => {
       'parent-delete',
       'parent-after',
     ]);
+  });
+
+  it('runs every beforeSave hook when one vetoes deletion', async () => {
+    const { events, parent, deleteChecked } = setup(async () => ({ ok: false, error: 'blocked' }));
+    parent.hooks.delete.beforeSave.push(async () => {
+      events.push('parent-before-second');
+      return { ok: true };
+    });
+
+    await expect(deleteChecked()).resolves.toMatchObject({ ok: false, error: 'blocked' });
+    expect(events).toEqual(['parent-before', 'parent-before-second']);
+  });
+
+  it('runs every afterSave hook and ignores returned errors', async () => {
+    const { events, parent, deleteChecked } = setup(async () => ({ ok: true }));
+    parent.hooks.delete.afterSave[0] = async () => {
+      events.push('parent-after');
+      return { ok: false, error: 'after failed' };
+    };
+    parent.hooks.delete.afterSave.push(async () => {
+      events.push('parent-after-second');
+      return { ok: true };
+    });
+
+    await expect(deleteChecked()).resolves.toMatchObject({ ok: true });
+    expect(events).toContain('parent-after-second');
+    expect(events).toContain('parent-delete');
   });
 });

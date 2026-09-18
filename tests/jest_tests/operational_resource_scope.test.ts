@@ -131,8 +131,8 @@ function setup(resourceId = 'users') {
       seenWrites.update = { oldRecord, updates };
       return { error: null };
     },
-    delete: async ({ record }, cascadeChildren) => {
-      seenWrites.delete = { record, cascadeChildren };
+    delete: async ({ record }, cascadeChildren, bulkHooks) => {
+      seenWrites.delete = { record, cascadeChildren, bulkHooks };
       return { error: null };
     },
   } as any;
@@ -174,6 +174,15 @@ describe('OperationalResource access tiers', () => {
 
     expect(created).toMatchObject({ ok: true, createdRecord: { id: 1, secret: 'value' } });
     expect(calls).toMatchObject({ acl: 0, createExecutor: 0, connectorCreate: 1 });
+  });
+
+  it('keeps bare writes free of resource validation', async () => {
+    const { calls, resource } = setup();
+    resource.resourceConfig.columns.push({ name: 'score', type: 'integer', minValue: 10 } as any);
+
+    await expect(resource.create({ score: 1 })).resolves.toMatchObject({ ok: true });
+    await expect(resource.update(1, { score: 1 })).resolves.toMatchObject({ ok: true });
+    expect(calls).toMatchObject({ connectorCreate: 1, connectorUpdate: 1 });
   });
 
   it('rejects editReadonly for asUser()', async () => {
@@ -290,6 +299,54 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ updateExecutor: 0 });
   });
 
+  it('uses connector identity for composite keys and scopes every key column', async () => {
+    const { resource, seenWrites } = setup();
+    resource.resourceConfig.columns.push({ name: 'partition', primaryKey: true } as any);
+    resource.resourceConfig.hooks.list.beforeDatasourceRequest = [async ({ query }) => {
+      query.filters.splice(0);
+      return { ok: true };
+    }];
+    const connector = resource.dataConnector as any;
+    const recordId = { id: 1, partition: 'second' };
+    let lookedUpId: any;
+    let scopedFilters: any;
+    connector.getRecordByPrimaryKey = async (_resource, id) => {
+      lookedUpId = id;
+      return { ...recordId, name: 'Old name' };
+    };
+    connector.getData = async ({ filters }) => {
+      scopedFilters = filters;
+      const fields = singleFilters(filters);
+      const matches = fields.some(({ field, value }) => field === 'id' && value === 1)
+        && fields.some(({ field, value }) => field === 'partition' && value === 'second');
+      return { data: matches ? [{ ...recordId, name: 'Old name' }] : [] };
+    };
+
+    const result = await resource.asUser({} as any, { meta: { allowed: true } })
+      .update(recordId, { name: 'New name' });
+
+    expect(result).toMatchObject({ ok: true });
+    expect(lookedUpId).toBe(recordId);
+    expect(seenWrites.update.oldRecord).toMatchObject(recordId);
+    expect(singleFilters(scopedFilters))
+      .toEqual(expect.arrayContaining([
+        expect.objectContaining({ field: 'id', value: 1 }),
+        expect.objectContaining({ field: 'partition', value: 'second' }),
+      ]));
+
+    const deleted = await resource.asUser({} as any, { meta: { allowed: true } }).delete(recordId);
+    expect(deleted).toBe(true);
+    expect(seenWrites.delete.record).toMatchObject(recordId);
+  });
+
+  it('passes the legacy bulk hook mode through scoped delete', async () => {
+    const { resource, seenWrites } = setup();
+
+    await resource.asUser({} as any, { meta: { allowed: true }, bulkDeleteHooks: true }).delete(1);
+
+    expect(seenWrites.delete).toMatchObject({ cascadeChildren: true, bulkHooks: true });
+  });
+
   it('derives a hidden polymorphic discriminator after validating user fields', async () => {
     const { calls, seenWrites, adminforth, resource } = setup();
     resource.resourceConfig.columns.push(
@@ -369,6 +426,32 @@ describe('OperationalResource access tiers', () => {
     resource.resourceConfig.options.allowedActions.edit = true;
     await scoped.update(1, { record_id: null });
     expect(seenWrites.update.updates.resource_id).toBe('system');
+  });
+
+  it('keeps a null polymorphic discriminator when no target matches', async () => {
+    const { adminforth, resource, seenWrites } = setup();
+    resource.resourceConfig.columns.push(
+      { name: 'resource_id', showIn: { edit: false } },
+      {
+        name: 'record_id',
+        foreignResource: {
+          polymorphicOn: 'resource_id',
+          polymorphicResources: [{ resourceId: 'targets', whenValue: 'target' }],
+        },
+      },
+    );
+    adminforth.config.resources.push({
+      resourceId: 'targets', dataSource: 'targets', columns: [{ name: 'id', primaryKey: true }],
+    });
+    adminforth.connectors = { targets: { getData: async () => ({ data: [] }) } };
+    (resource.dataConnector as any).getData = async () => ({
+      data: [{ id: 1, record_id: null, resource_id: null }],
+    });
+
+    await resource.asUser({} as any, { meta: { allowed: true } })
+      .update(1, { record_id: 'missing' });
+
+    expect(seenWrites.update.updates).toEqual({ record_id: 'missing' });
   });
 
   it('consumes a REST ACL grant only once for the same user, resource, and record', async () => {

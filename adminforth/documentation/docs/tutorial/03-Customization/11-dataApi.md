@@ -58,8 +58,8 @@ multi-tenancy. Use it in plugin endpoints: you do not have to remember the
 individual checks, and you cannot forget one.
 
 The bare methods are plain data access for internal bookkeeping: no permission
-checks, no column access rules, no hooks. Writes are still normalized and
-validated.
+checks, no column access rules, no hooks. Writes are still normalized; the
+connector remains responsible for its own constraints.
 
 `admin.createResourceRecord`, `admin.updateResourceRecord` and
 `admin.deleteResourceRecord` are the older entry points which this API replaces.

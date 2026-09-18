@@ -260,24 +260,17 @@ export default class ConfigValidator implements IConfigValidator {
       dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
       action: async ({ selectedIds, adminUser, response }) => {
-        // The bulk action's `allowed` callback is its ACL boundary. Keep that action-level
-        // contract instead of introducing a second, per-record `asUser()` permission check.
         let error = null;
-        const connector = this.adminforth.connectors[res.dataSource];
 
         await Promise.all(
           selectedIds.map(async (recordId) => {
             try {
-              const record = await connector.getRecordByPrimaryKey(res as AdminForthResource, recordId);
-              const result = await this.adminforth.deleteResourceRecord({
-                resource: res as AdminForthResource,
-                recordId,
-                record,
-                adminUser,
-                response,
-              }, true);
-              if (result.error) {
-                throw new Error(result.error);
+              const deleted = await this.adminforth
+                .resource(res.resourceId)
+                .asUser(adminUser, { response, bulkDeleteHooks: true })
+                .delete(recordId);
+              if (!deleted) {
+                throw new Error(`Record with ${recordId} not found`);
               }
             } catch (e) {
               if (!error) {
