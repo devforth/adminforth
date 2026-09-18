@@ -51,7 +51,7 @@ type GuardedOperation = keyof typeof OPERATION_ACCESS;
 export interface ResourceHookExecutors {
   create(params: CreateResourceRecordParams): Promise<CreateResourceRecordResult>;
   update(params: UpdateResourceRecordParams): Promise<UpdateResourceRecordResult>;
-  delete(params: DeleteResourceRecordParams, cascadeChildren?: boolean): Promise<DeleteResourceRecordResult>;
+  delete(params: DeleteResourceRecordParams, cascadeChildren?: boolean, bulkHooks?: boolean): Promise<DeleteResourceRecordResult>;
 }
 
 
@@ -155,16 +155,27 @@ export default class UserScopedResource implements IScopedOperationalResource {
    * would bypass tenant filters installed by `beforeDatasourceRequest` hooks.
    */
   private async findScopedRecord(primaryKey: any): Promise<any | null> {
-    const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
+    const primaryKeyColumns = this.resourceConfig.columns.filter((column) => column.primaryKey);
+    // Connectors own composite recordId interpretation. A scalar key needs no extra lookup.
+    let identityFilters: ReturnType<typeof Filters.EQ>[];
+    if (primaryKeyColumns.length === 1) {
+      identityFilters = [Filters.EQ(primaryKeyColumns[0].name, primaryKey)];
+    } else {
+      const candidate = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+      if (!candidate) {
+        return null;
+      }
+      identityFilters = primaryKeyColumns.map((column) => Filters.EQ(column.name, candidate[column.name]));
+    }
     const query = {
-      filters: [Filters.EQ(primaryKeyColumn.name, primaryKey)],
+      filters: identityFilters.map((filter) => ({ ...filter })),
       limit: 1,
       offset: 0,
       sort: [],
     };
     await this.runReadHooks('list', 'beforeDatasourceRequest', query);
     const scopedFilters = this.dataConnector.validateAndNormalizeInputFilters(query.filters);
-    return this.data.get(Filters.AND(Filters.EQ(primaryKeyColumn.name, primaryKey), scopedFilters));
+    return this.data.get(Filters.AND(...identityFilters, scopedFilters));
   }
 
   async get(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): Promise<any | null> {
@@ -364,7 +375,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
       adminUser: this.adminUser,
       extra: this.options.extra,
       response: this.options.response,
-    }, true);
+    }, true, this.options.bulkDeleteHooks);
     if (error) {
       throw new Error(error);
     }

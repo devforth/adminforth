@@ -119,7 +119,7 @@ This is opt-in. It is especially important for the column configured as `auth.us
 | Path | When `normalize` runs |
 | --- | --- |
 | User-scoped Data API (`admin.resource(...).asUser(...)`) and `admin.createResourceRecord` | Before validation and `beforeSave` hooks |
-| Bare Data API (`admin.resource(...).create(...)` and siblings) | Before validation and the connector operation |
+| Bare Data API (`admin.resource(...).create(...)` and siblings) | Before the connector operation |
 | Deprecated AdminForth CRUD (`createResourceRecord`, `updateResourceRecord`) | Before validation and `beforeSave` hooks |
 | Core password login | On the submitted value of `auth.usernameField`, before the user lookup |
 | Reads and filters | Never — this includes `get`, `list`, `count`, search, and `Filters.EQ` |

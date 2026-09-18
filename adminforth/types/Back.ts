@@ -2266,7 +2266,7 @@ export interface IOperationalResource {
 
   /**
    * Plain data access: no permission checks, no column access rules, no lifecycle hooks.
-   * Writes are still normalized and validated. Use it for internal bookkeeping the user did not
+   * Writes are still normalized. Use it for internal bookkeeping the user did not
    * ask for; to run hooks without permission checks, use {@link IAdminForth.createResourceRecord}
    * and its siblings.
    */
@@ -2297,6 +2297,8 @@ export interface OperationalResourceContextOptions {
   meta?: any;
   extra?: HttpExtra;
   response?: IAdminForthHttpResponse;
+  /** Preserve the legacy default bulk action's hook result contract. */
+  bulkDeleteHooks?: boolean;
 
   /**
    * Snapshot passed to edit save hooks when the caller has already loaded the record.
