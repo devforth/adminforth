@@ -14,7 +14,7 @@ export async function resolvePolymorphicReferences(
       continue;
     }
 
-    let discriminator: string | null;
+    let discriminator: string | null | undefined = oldRecord ? null : undefined;
     if (record[column.name] === null) {
       record[foreignResource.polymorphicOn] = foreignResource.polymorphicResources.find((target) => target.resourceId === null).whenValue;
       continue;
@@ -25,6 +25,9 @@ export async function resolvePolymorphicReferences(
           continue;
         }
         const targetResource = adminforth.config.resources.find((candidate) => candidate.resourceId === target.resourceId);
+        if (!targetResource) {
+          continue;
+        }
         const targetPrimaryKey = targetResource.columns.find((candidate) => candidate.primaryKey).name;
         const { data } = await adminforth.connectors[targetResource.dataSource].getData({
           resource: targetResource,
@@ -40,12 +43,6 @@ export async function resolvePolymorphicReferences(
       }
     } else {
       continue;
-    }
-
-    // Keep an existing SQL NULL when a changed reference matches no configured target.
-    // Writing undefined here can make a connector store a different value.
-    if (discriminator === undefined && oldRecord?.[foreignResource.polymorphicOn] === null) {
-      discriminator = null;
     }
 
     if (!oldRecord || oldRecord[foreignResource.polymorphicOn] !== discriminator) {

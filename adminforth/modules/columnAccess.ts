@@ -3,6 +3,7 @@ import type {
   AllowedActionValue,
   BackendOnlyInput,
   IAdminForth,
+  IAdminForthSort,
 } from '../types/Back.js';
 import {
   ActionCheckSource,
@@ -164,6 +165,21 @@ export async function filterColumnsReadableError(
     }
   }
 
+  return null;
+}
+
+/** Sorting can reveal a hidden field through the order of otherwise readable rows. */
+export async function sortColumnsReadableError(
+  ctx: ColumnAccessContext,
+  sort: IAdminForthSort | IAdminForthSort[],
+): Promise<string | null> {
+  const rules = Array.isArray(sort) ? sort : [sort];
+  for (const rule of rules) {
+    const column = ctx.resource.columns.find((candidate) => candidate.name === rule.field);
+    if (column && await isBackendOnly(column, ctx)) {
+      return `Sort: column "${rule.field}" cannot be used (backendOnly is true).`;
+    }
+  }
   return null;
 }
 

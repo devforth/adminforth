@@ -22,6 +22,7 @@ import {
   columnsAggregatableError,
   filterColumnsReadableError,
   recordWriteError,
+  sortColumnsReadableError,
   stripReadForbiddenColumns,
   type ColumnAccessContext,
 } from './columnAccess.js';
@@ -155,17 +156,17 @@ export default class UserScopedResource implements IScopedOperationalResource {
    * would bypass tenant filters installed by `beforeDatasourceRequest` hooks.
    */
   private async findScopedRecord(primaryKey: any): Promise<any | null> {
-    const primaryKeyColumns = this.resourceConfig.columns.filter((column) => column.primaryKey);
+    const keyColumns = this.resourceConfig.columns.filter((column) => column.primaryKey);
     // Connectors own composite recordId interpretation. A scalar key needs no extra lookup.
     let identityFilters: ReturnType<typeof Filters.EQ>[];
-    if (primaryKeyColumns.length === 1) {
-      identityFilters = [Filters.EQ(primaryKeyColumns[0].name, primaryKey)];
+    if (keyColumns.length === 1) {
+      identityFilters = [Filters.EQ(keyColumns[0].name, primaryKey)];
     } else {
       const candidate = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
       if (!candidate) {
         return null;
       }
-      identityFilters = primaryKeyColumns.map((column) => Filters.EQ(column.name, candidate[column.name]));
+      identityFilters = keyColumns.map((column) => Filters.EQ(column.name, candidate[column.name]));
     }
     const query = {
       filters: identityFilters.map((filter) => ({ ...filter })),
@@ -222,6 +223,14 @@ export default class UserScopedResource implements IScopedOperationalResource {
     );
     if (filterError) {
       throw new Error(filterError);
+    }
+
+    const sortError = await sortColumnsReadableError(
+      this.columnCtx(ActionCheckSource.ListRequest),
+      sort,
+    );
+    if (sortError) {
+      throw new Error(sortError);
     }
 
     const query = { filters: filter, limit, offset, sort };
