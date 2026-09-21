@@ -13,7 +13,7 @@ This plugin lets you manage many-to-many relationships.
 Install the plugin:
 
 ```bash
-pnpm i @adminforth/many2many
+pnpm add @adminforth/many2many
 ```
 
 ## Setting up

@@ -14,13 +14,13 @@ This also supports vision tasks so you can ask it to e.g. detect dominant color 
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/bulk-ai-flow --save
+pnpm add @adminforth/bulk-ai-flow --save
 ```
 
 You'll also need an image vision adapter:
 
 ```bash
-pnpm install @adminforth/image-vision-adapter-openai --save
+pnpm add @adminforth/image-vision-adapter-openai --save
 ```
 
 

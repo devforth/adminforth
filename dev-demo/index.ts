@@ -6,6 +6,11 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import { Decimal } from 'decimal.js';
 import { initApi } from './api.js';
+import SQLiteConnector from '../connectors/adminforth-connector-sqlite/index.js';
+import PostgresConnector from '../connectors/adminforth-connector-postgres/index.js';
+import MongoConnector from '../connectors/adminforth-connector-mongo/index.js';
+import MysqlConnector from '../connectors/adminforth-connector-mysql/index.js';
+import ClickhouseConnector from '../connectors/adminforth-connector-clickhouse/index.js';
 
 import cars_SQLITE_resource from './resources/cars_resources/cars_SL.js';
 import cars_MyS_resource from './resources/cars_resources/cars_MyS.js';
@@ -33,6 +38,8 @@ import carsDescriptionImage from './resources/cars_description_image.js';
 import translations from "./resources/translations.js";
 import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
 import key_value_resource from './resources/key_value_resource.js';
+import crudManualApproveResource from './resources/crud_manual_approve.js';
+import mcpAuthSecretsResource from './resources/mcpAuthSecrets.js';
 
 import { logger } from '../adminforth/modules/logger.js';
 
@@ -42,8 +49,15 @@ const ADMIN_BASE_URL = '';
 
 export const admin = new AdminForth({
   baseUrl: ADMIN_BASE_URL,
+  databaseConnectors: {
+    sqlite: SQLiteConnector,
+    postgres: PostgresConnector,
+    mongodb: MongoConnector,
+    mysql: MysqlConnector,
+    clickhouse: ClickhouseConnector,
+  },
   auth: {
-    rateLimit: ['5/5m'],
+    rateLimit: ['500/5m'],
     usersResourceId: 'adminuser',
     usernameField: 'email',
     passwordHashField: 'password_hash',
@@ -78,6 +92,17 @@ export const admin = new AdminForth({
     showBrandNameInSidebar: true,
     showBrandLogoInSidebar: true,
     emptyFieldPlaceholder: '-',
+    customPages: [
+      {
+        path: '/public-page',
+        component: {
+          file: '@@/PublicPage.vue',
+          meta: {
+            sidebarAndHeader: 'none',
+          },
+        },
+      },
+    ],
     styles:{
       colors: {
         light: {
@@ -152,6 +177,8 @@ export const admin = new AdminForth({
     dashboardConfigsResource,
     adminExternalIdentitiesResource,
     key_value_resource,
+    crudManualApproveResource,
+    mcpAuthSecretsResource,
   ],
   menu: [
     { type: 'heading', label: 'SYSTEM' },
@@ -250,6 +277,11 @@ export const admin = new AdminForth({
       label: 'Key-Value Store',
       icon: 'material-symbols:key',
       resourceId: 'key_values',
+    },
+    {
+      label: 'Approvals',
+      icon: 'flowbite:clipboard-check-solid',
+      resourceId: 'crud_manual_approve',
     }
   ],
   globalPlugins: globalPlugins,

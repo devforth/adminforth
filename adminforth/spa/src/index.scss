@@ -28,6 +28,9 @@
 body {
   scrollbar-gutter: stable;
 }
+.af-button-shadow {
+  box-shadow: -0px 6px 6px rgb(0, 0, 0, 0.1);
+}
 
 *{
   -moz-user-select: none;

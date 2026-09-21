@@ -1,6 +1,9 @@
 packages:
   - spa
 
+overrides:
+  better-sqlite3: ^13.0.3
+
 allowBuilds:
   '@parcel/watcher': true
   adminforth: true

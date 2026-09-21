@@ -1,6 +1,6 @@
 ---
 name: adminforth-custom-vue
-description: "Use when implementing AdminForth custom Vue UI: field components, page injections, login or global injections, meta-driven component declarations, and frontend packages inside custom/."
+description: "Use when implementing AdminForth custom Vue UI: AFCL components, theme colors and dark mode, field components, page injections, login or global injections, meta-driven component declarations, and frontend packages inside custom/."
 user-invocable: true
 ---
 
@@ -13,6 +13,68 @@ user-invocable: true
 - Adding resource page injections, login injections, or global layout injections.
 - Passing `meta` into reusable Vue components.
 - Installing frontend packages used only by custom AdminForth Vue code.
+- Any task that produces visible UI in an AdminForth app, even when the task says nothing about how it should look.
+
+## Adminforth UI Defaults
+
+Apply all of these to every piece of UI you write under `custom/`, especially when the user gave no design
+instructions at all. These are the defaults, not options — do not ask whether the user wants them, and do
+not wait for a follow-up prompt about styling or dark mode.
+
+1. **Build from AFCL first.** AFCL (AdminForth Components Library) is imported from `@/afcl` and is always
+   available in `custom/` without installing anything. Reach for a raw HTML control only when no AFCL
+   component covers the case.
+2. **Buttons come from AFCL with an explicit intent.** Primary/confirming action is the default filled
+   accent `<Button>`. Secondary, cancel, and "back" actions are stroked `<Button variant="secondary">`.
+   Destructive actions are `<Button variant="danger">`.
+3. **Form controls come from AFCL.** `Input`, `Textarea`, `Select`, `Checkbox`, `Toggle`, `DatePicker`,
+   `Dropzone`. Preferably not a bare `<input>`, `<select>`, or `<textarea>` styled by hand — that is the main way
+   custom pages end up looking foreign.
+4. **Accents use `lightPrimary` / `darkPrimary`.** Anything that carries brand or "this is the important
+   one" meaning — accent fills, highlighted values, active states, links, focus emphasis, the main chart
+   series — should use `bg-lightPrimary dark:bg-darkPrimary`, `text-lightPrimary dark:text-darkPrimary`,
+   `text-lightPrimaryContrast dark:text-darkPrimaryContrast`.
+5. **Everything else may use Tailwind's stock palette.** `bg-white`, `bg-gray-50`, `text-gray-700`,
+   `text-red-600`, `border-gray-200`, `bg-pink-500`, and friends are all fine for neutrals, surfaces,
+   borders, and semantic colors. The theme tokens in the table below are still the better choice when a
+   block sits directly next to built-in AdminForth chrome and should match it exactly — but they are a
+   recommendation, not a restriction.
+6. **Dark theme is part of writing the class, not a later pass.** Every color utility must be written as a
+   light/dark pair: `bg-white dark:bg-gray-900`, `text-gray-700 dark:text-gray-300`.
+   This matters most with stock Tailwind colors, which have no built-in
+   dark behavior — a `bg-gray-50` with no `dark:` counterpart is a defect, fix it before finishing.
+   `light*`/`dark*` token pairs satisfy this by construction. Dark mode is class-based
+   (`darkMode: 'class'`), so `dark:` variants work everywhere in `custom/`.
+7. **Icons come from the prerendered Iconify packages** already present in the SPA:
+   `@iconify-prerendered/vue-flowbite` (default), plus `-heroicons`, `-humbleicons`, and `-flag`.
+   Do not add an icon dependency to `custom/package.json` for these.
+8. **Never build Tailwind class names dynamically.** `custom/` is copied into the SPA sources and scanned
+   statically by Tailwind, so `` `text-${color}-600` `` produces no CSS. Write full class strings and pick
+   between them.
+
+## Dark Theme Self-Check
+
+Run this over every file you touched before reporting the work as done:
+
+- Search the file for `bg-`, `text-`, `border-`, `ring-`, `fill-`, `stroke-`, `divide-`, `placeholder-`,
+  and `shadow-` color utilities.
+- Each one either has a `dark:` counterpart, comes from a `light*`/`dark*` token pair (which already is
+  one), or belongs to an AFCL component that handles theming itself. This is the check that actually
+  matters — a stock Tailwind color with no `dark:` twin is the single most common way custom UI breaks in
+  dark mode.
+- Accents are `lightPrimary`/`darkPrimary`, not a hardcoded blue or indigo.
+- No raw `#hex` or `rgb()` in templates or `<style>` blocks.
+
+```
+❌  <button class="bg-blue-600 text-white rounded px-4 py-2">Save</button>
+✅  <Button @click="save">Save</Button>
+
+❌  <div class="bg-white border border-gray-200 text-gray-800">
+✅  <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700
+               text-gray-800 dark:text-gray-200">
+❌  <p class="text-red-600">\{{ error }}</p>
+✅  <p class="text-red-600 dark:text-red-400">\{{ error }}</p>
+```
 
 ## `custom/` Directory and `@@/`
 
@@ -23,6 +85,10 @@ user-invocable: true
 
 ## Frontend Packages in `custom/`
 
+- First check whether you need a package at all. These are already available to `custom/` components with
+  no install step: `@/afcl` (AFCL components), `@/types/Common` (AdminForth types), `@/adminforth`
+  (`useAdminforth`), `@/stores/core` (`useCoreStore`), `@/websocket`, Vue, Tailwind, and the
+  `@iconify-prerendered/vue-*` icon sets. AFCL charts already wrap ApexCharts.
 - Install frontend-only dependencies inside `custom/`, not in the app root.
 
 ```bash
@@ -127,17 +193,19 @@ show: {
 <template>
   <div class="grid gap-2">
     <Input
+      type="text"
+      full-width
       :model-value="localValue"
       :readonly="readonly"
       :placeholder="meta?.placeholder || column.label"
       @update:model-value="onInput"
     />
 
-    <p v-if="errorMessage" class="text-sm text-red-600">
+    <p v-if="errorMessage" class="text-sm">
       \{{ errorMessage }}
     </p>
 
-    <p v-else-if="isEmpty" class="text-sm text-amber-600">
+    <p v-else-if="isEmpty" class="text-sm">
       Value is currently empty
     </p>
   </div>
@@ -145,7 +213,7 @@ show: {
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import Input from '@/afcl/Input.vue';
+import { Input } from '@/afcl';
 import type {
   AdminForthResourceColumnCommon,
   AdminForthResourceCommon,
@@ -338,3 +406,7 @@ options: {
 - Reuse one component with multiple full declarations instead of cloning similar files.
 - Keep page injections small unless the layout intentionally becomes page-scrolling.
 - Keep custom edit and create components explicit about validity and emptiness if the default input heuristics are not enough.
+- Reach for an AFCL component before writing markup; use `lightPrimary`/`darkPrimary` for accents; write
+  the `dark:` variant in the same edit as the light one. These are defaults for every UI task, not polish
+  to be added when someone asks for it.
+- When you are done, re-read your diff against the Dark Theme Self-Check above before reporting completion.

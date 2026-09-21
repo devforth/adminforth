@@ -15,7 +15,7 @@ This plugin allows you to use Quill editor in your AdminForth application.
 First, install the plugin:
 
 ```bash
-pnpm i @adminforth/rich-editor --save
+pnpm add @adminforth/rich-editor --save
 ```
 
 Import plugin:
@@ -112,7 +112,7 @@ If you need multiple fields in one resource which happens rarely, just add multi
 First, install the completion adapter:
 
 ```bash
-pnpm i @adminforth/completion-adapter-openai-responses --save
+pnpm add @adminforth/completion-adapter-openai-responses --save
 ```
 
 To get completion suggestions for the text in the editor, you can use the `completion` option. This option is an object with the following properties:
@@ -169,8 +169,8 @@ pnpm makemigration --name add_description_image ; pnpm migrate:local
 ```
 
 ```bash
-pnpm i @adminforth/upload --save
-pnpm i @adminforth/storage-adapter-local --save
+pnpm add @adminforth/upload --save
+pnpm add @adminforth/storage-adapter-local --save
 ```
 
 ```typescript title="./resources/description_images.ts"

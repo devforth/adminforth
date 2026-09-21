@@ -1,17 +1,23 @@
 <template>
   <div class="inline-flex items-center gap-1">
-    <Tooltip>
+    <Tooltip v-if="tooltipText">
       <div
-        class="overflow-hidden max-h-[20px] rounded-default"
-        :class="{ 'shrink-0 w-[90px]': compact }"
+        class="rounded-default me-2"
+        :class="{
+          'overflow-hidden max-h-[20px]': !isMultiline,
+          'shrink-0 w-[90px]': compact,
+        }"
         @click="toggle"
       >
         <span
           class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
           :class="{
             'block truncate': compact,
+            'block': isMultiline,
             'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
+            'pointer-events-none': isMultiline && !show,
           }"
+          @click="onValueClick"
         >
           <template v-if="compact">{{ visualValue }}</template>
           <ValueRenderer v-else :column="column" :record="record" />
@@ -21,10 +27,45 @@
         <span class="whitespace-nowrap">{{ tooltipText }}</span>
       </template>
     </Tooltip>
+    <div
+      v-else
+      class="rounded-default me-2"
+      :class="{
+        'overflow-hidden max-h-[20px]': !isMultiline,
+        'shrink-0 w-[90px]': compact,
+      }"
+      @click="toggle"
+    >
+      <span
+        class="cursor-pointer select-none transition-all duration-200 text-lightListTableText dark:text-darkListTableText"
+        :class="{
+          'block truncate': compact,
+          'block': isMultiline,
+          'blur-[7px] hover:blur-[5px] brightness-50 dark:brightness-150': !show,
+          'pointer-events-none': isMultiline && !show,
+        }"
+        @click="onValueClick"
+      >
+        <template v-if="compact">{{ visualValue }}</template>
+        <ValueRenderer v-else :column="column" :record="record" />
+      </span>
+    </div>
+
+    <span v-if="eyeButton" class="shrink-0 w-5 h-5">
+      <IconEyeSolid
+        v-if="!show"
+        @click.stop="toggle"
+        class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
+      />
+      <IconEyeSlashSolid
+        v-else
+        @click.stop="toggle"
+        class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
+      />
+    </span>
 
     <span v-if="showCopy && rawValue" class="shrink-0 w-5 h-5">
       <IconFileCopyAltSolid
-        v-if="show"
         @click.stop="copyToCB"
         class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
       />
@@ -35,7 +76,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { IconFileCopyAltSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconFileCopyAltSolid, IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import Tooltip from '@/afcl/Tooltip.vue';
 import { useAdminforth } from '@/adminforth';
@@ -44,7 +85,7 @@ import type { AdminForthResourceColumnCommon, AdminForthResourceCommon, AdminUse
 const props = defineProps<{
   column: AdminForthResourceColumnCommon;
   record: any;
-  meta: { compact?: boolean; copy?: boolean } | any;
+  meta: { compact?: boolean; copy?: boolean; eyeButton?: boolean } | any;
   resource: AdminForthResourceCommon;
   adminUser: AdminUser;
 }>();
@@ -54,15 +95,25 @@ const { alert } = useAdminforth();
 
 const show = ref(false);
 
-const rawValue = computed(() => props.record[props.column.name]);
+const rawValue = computed(() => {
+  const value = props.record[props.column.name];
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+});
 
 const compact = computed(() => props.meta?.compact);
-const showCopy = computed(() => compact.value && props.meta?.copy);
+const showCopy = computed(() => props.meta?.copy);
+
+const isMultiline = computed(
+  () => props.column.type === 'json' && !props.column.isArray?.enabled && !compact.value
+);
+const eyeButton = computed(() => props.meta?.eyeButton ?? isMultiline.value);
 const visualValue = computed(() => {
   const val = rawValue.value;
-  if (val && String(val).length > 8) {
-    const s = String(val);
-    return `${s.slice(0, 4)}...${s.slice(-4)}`;
+  if (val.length > 8) {
+    return `${val.slice(0, 4)}...${val.slice(-4)}`;
   }
   return val;
 });
@@ -71,12 +122,21 @@ const tooltipText = computed(() => {
   if (compact.value && show.value) {
     return rawValue.value;
   }
+  if (eyeButton.value) {
+    return '';
+  }
   return show.value ? t('Click to hide') : t('Click to show');
 });
 
 function toggle(event: MouseEvent) {
   show.value = !show.value;
   event.stopPropagation();
+}
+
+function onValueClick(event: MouseEvent) {
+  if (isMultiline.value && show.value && eyeButton.value) {
+    event.stopPropagation();
+  }
 }
 
 function copyToCB() {

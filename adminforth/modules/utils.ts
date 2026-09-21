@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import crypto from 'crypto';
 import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
+import { encodeRecordId, isCompositePrimaryKey } from './recordId.js';
 import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
 
 // @ts-ignore-next-line
@@ -548,14 +549,17 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
     const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
 
     const childPk = childRes.columns.find(c => c.primaryKey)?.name;
+    const childRecordId = (childRecord: any) => isCompositePrimaryKey(childRes)
+      ? encodeRecordId(childRes, childRecord)
+      : childRecord[childPk];
 
     if (strategy === 'cascade') {
       for (const childRecord of childRecords) {
-        const childResult = await cascadeChildrenDelete(childRes, childRecord[childPk], context, adminforth);
+        const childResult = await cascadeChildrenDelete(childRes, childRecordId(childRecord), context, adminforth);
         if (childResult?.error) {
           return childResult;
         }
-        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecord[childPk], response});
+        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), response});
         if (deleteChild.error) return { error: deleteChild.error };
         if (childResult?.error) {
           return childResult;
@@ -565,7 +569,7 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
 
     if (strategy === 'setNull') {
       for (const childRecord of childRecords) {
-        await adminforth.resource(childRes.resourceId).update(childRecord[childPk], {[foreignColumn.name]: null});
+        await adminforth.resource(childRes.resourceId).update(childRecordId(childRecord), {[foreignColumn.name]: null});
       }
     }
   }
@@ -573,9 +577,9 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
   return { error: null };
 }
 
-  export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}) {
+  export function hookResponseError(hookResponse: {ok: boolean, error?: string | null}, hookName: string = 'beforeSave') {
     if (!hookResponse || typeof hookResponse.ok !== 'boolean') {
-      throw new Error(`Hook beforeSave must return { ok: boolean, error?: string | null }`);
+      throw new Error(`Hook ${hookName} must return { ok: boolean, error?: string | null }`);
     }
     if (hookResponse.ok === false && !hookResponse.error) {
       return { error: hookResponse.error ?? 'Operation aborted by hook' };
@@ -625,24 +629,46 @@ export function applyRegexValidation(value, validation) {
   }
 }
 
- export function formatHugePluginError(message: string) {
-    const RED = '\x1b[31m';
-    const BG = '\x1b[41m';
-    const WHITE = '\x1b[97m';
-    const BOLD = '\x1b[1m';
-    const RESET = '\x1b[0m';
+export function formatHugePluginError(message: string) {
+  const RED = '\x1b[31m';
+  const BG = '\x1b[41m';
+  const WHITE = '\x1b[97m';
+  const BOLD = '\x1b[1m';
+  const RESET = '\x1b[0m';
 
-    const horizontal = '═'.repeat(100);
+  const horizontal = '═'.repeat(100);
 
-    return `
-  ${BG}${WHITE}${BOLD}
-  ╔${horizontal}╗
-  ║${' '.repeat(100)}║
-  ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
-  ║${' '.repeat(100)}║
-  ║  ${message.padEnd(98)}║
-  ║${' '.repeat(100)}║
-  ╚${horizontal}╝
-  ${RESET}
-`;
+  return `
+    ${BG}${WHITE}${BOLD}
+    ╔${horizontal}╗
+    ║${' '.repeat(100)}║
+    ║  🚨 PLUGIN CONFIGURATION ERROR${' '.repeat(69)}║
+    ║${' '.repeat(100)}║
+    ║  ${message.padEnd(98)}║
+    ║${' '.repeat(100)}║
+    ╚${horizontal}╝
+    ${RESET}
+  `;
+}
+
+export function checkIfLinkInAllowedHosts(url: string, allowedHosts: string[]) {
+  if (!allowedHosts?.length) {
+    return;
   }
+  let hostname: string;
+  try {
+    hostname = new URL(url).hostname.toLowerCase().replace(/\.$/, '');
+  } catch {
+    throw new Error(`Invalid attachment URL: ${url}`);
+  }
+  const allowed = allowedHosts.some((raw) => {
+    const entry = (raw || '').trim().toLowerCase().replace(/^\*/, '').replace(/\.$/, '');
+    if (!entry) {
+      return false;
+    }
+    return entry.startsWith('.') ? (hostname === entry.slice(1) || hostname.endsWith(entry)) : hostname === entry;
+  });
+  if (!allowed) {
+    throw new Error(`Attachment host "${hostname}" is not in attachImagesAllowedHosts`);
+  }
+}

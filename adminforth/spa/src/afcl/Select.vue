@@ -10,11 +10,18 @@
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-md leading-5 bg-lightDropdownButtonsBackground 
+        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-default leading-5 bg-lightDropdownButtonsBackground 
         placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText text-base sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
         dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
-        autocomplete="off" data-custom="no-autofill"
+        :id="inputId"
+        :name="inputId"
+        form="afcl-select-detached"
+        autocomplete="off"
+        data-1p-ignore
+        data-lpignore="true"
+        data-bwignore
+        data-form-type="other"
         :placeholder="
           selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
         "
@@ -40,7 +47,7 @@
     <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
       <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-30': teleportToBody, 'z-[1000]': teleportToTop}"
         class="fixed w-full bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
-          dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+          dark:border-gray-600 rounded-default py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
         <div
           v-for="item in filteredItems"
@@ -64,7 +71,7 @@
 
     <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
       class="afcl-select-content absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
-        dark:border-gray-600 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+        dark:border-gray-600 rounded-default py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
         @scroll="handleDropdownScroll">
       <div
         v-for="item in filteredItems"
@@ -115,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick,type PropType, type Ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, useId,type PropType, type Ref } from 'vue';
 import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
 import { useElementSize } from '@vueuse/core'
 
@@ -166,6 +173,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue', 'scroll-near-end', 'search']);
+
+// Chrome's password manager picks the nearest preceding text input as the "username" field of a form
+// containing <input type="password">, which made an enum Select sitting above a password column get
+// filled with the saved email. form="afcl-select-detached" points at no existing form, which per spec
+// leaves the input with no form owner, so it is no longer part of that password form. The unique
+// id/name additionally stops every Select on the page from sharing one field identity.
+const inputId = `afs-${useId()}`;
 
 const search = ref('');
 const showDropdown = ref(false);

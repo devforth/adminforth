@@ -12,7 +12,7 @@ BackgroundJobsPlugin adds a durable background job system to AdminForth. Jobs ar
 > ‼️ Note, that before deploying this plugin, you should create volume for the level db and pass is as `levelDbPath` param, so background jobs will be saved between redeploys
 First, install the plugin:
 ```bash
-pnpm i @adminforth/background-jobs
+pnpm add @adminforth/background-jobs
 ```
 
 Then create a resource for jobs:
@@ -124,7 +124,7 @@ export default {
       statusField: 'status',
       nameField: 'name',
       jobHandlerField: 'job_handler_name',
-      levelDbPath: process.env.NODE_ENV === production ? '/stores/background_job_plugin' : './background_jobs',
+      levelDbPath: process.env.NODE_ENV === 'production' ? '/stores/background_job_plugin' : './background_jobs',
     })
   ]
 } as AdminForthResourceInput;
@@ -410,7 +410,7 @@ const taskStatusLabels: Record<JobTask['status'], string> = {
 
 const props = defineProps<{
   meta: any;
-  getJobTasks: (limit?: number, offset?: number) => Promise<JobTask[]>;
+  getJobTasks: (limit?: number, offset?: number, fieldsToReturn?: string[]) => Promise<JobTask[]>;
   subscribeToJobStateFields: (fieldNames: string[]) => () => void;
   subscribeToJobTaskFields: (fieldNames: string[]) => () => void;
   job: {
@@ -556,7 +556,6 @@ in the open job. Both helpers return an unsubscribe function, though the plugin 
 remaining field subscriptions when the job dialog closes.
 
 
-
 ## Frontend API
 ### Job info popup
 If you want to immediately open the job info popup, return the job ID from the API that creates the job:
@@ -591,11 +590,107 @@ For example:
 
 ```
 
+### Filtering task fields you are getting on the frontend
+
+Sometimes task state fields can be very complex and big, so when you run such a task with a big dataset and then fetch the tasks on the frontend, it can overload the browser with information you are not using. For those cases you can use the `fieldsToReturn` param in your custom component on the frontend to receive only the fields that you need.
+
+```vue title="./custom/JobCustomComponent.vue"
+
+...
+
+async function loadTasks() {
+  /**
+   * props.getJobTasks will return only 'task_number' and 'task_counter',
+   * so if you have data you don't want to send to the frontend, you can use this param
+   */
+  tasks.value = await props.getJobTasks(100, 0, ['task_number', 'task_counter']);
+}
+
+...
+
+```
+
+## Queued jobs and concurrency limit
+
+Running several long jobs at the same time can overload the server, so jobs are queued instead of being started unconditionally.
+
+`startNewJob` counts the jobs of the same `jobHandlerName` which are already running. If the handler has a free concurrency slot the job starts immediately, exactly as before. If the limit is already reached the job and all its tasks are created in the `QUEUED` status, and the job is started automatically later, when a running job of the same handler finishes.
+
+Each **jobHandlerName** has one FIFO queue, shared by all its jobs regardless of their job names. So
+`'Export users'` and `'Export orders'` of one handler do not run at the same time: the second one waits until the first finishes, and queued jobs are always started oldest first.
+
+How many jobs of one handler may run at the same time is defined by `concurrencyLimit` of the handler.
+It defaults to `1`, so by default only one job per handler runs at a time:
+
+```ts title="./index.ts"
+  backgroundJobsPlugin.registerTaskHandler({
+    jobHandlerName: 'example_job_handler',
+    handler: async ({ jobId, setTaskStateField, getTaskStateField, getState }) => {
+      ...
+    },
+    // limit of tasks of one job that are running in parallel
+    parallelLimit: 2,
+    //diff-add
+    // limit of jobs of this handler that are running at the same time, default is 1
+    //diff-add
+    concurrencyLimit: 1,
+  })
+```
+
+With `concurrencyLimit: 1` the first call below starts processing right away and the second one, made while
+the first job is still running, creates a `QUEUED` job which starts when the first one finishes:
+
+```ts title="./index.ts"
+  const jobId = await backgroundJobsPlugin.startNewJob(
+    'Example Job', //job name
+    req.adminUser, // adminuser
+    [
+      { state: { task_number: 1, task_counter: 0 } },
+      { state: { task_number: 2, task_counter: 0 } },
+    ], //initial tasks
+    'example_job_handler', //job handler name
+    { counter: 0 }, //initial job state
+  )
+```
+
+Use `queueNewJob` when a job must always go through the queue, even if a slot is free. It has the same signature as `startNewJob` and always creates the job in the `QUEUED` status.
+
+When a job reaches a terminal status (`DONE`, `DONE_WITH_ERRORS` or `CANCELLED`) it frees its slot and the oldest queued job of the same handler is started automatically. The same happens after an application
+restart: jobs which were `IN_PROGRESS` are resumed first, and queued jobs are started only for handlers
+which still have a free slot.
+
+If you want full control over when a queued job starts, create it with `autoStart: false` and start it yourself later:
+
+```ts
+// job stays in QUEUED status, nothing is processed
+await backgroundJobsPlugin.queueNewJob(
+  'Example Job', req.adminUser, tasks, 'example_job_handler', {}, { autoStart: false },
+)
+
+// starts the oldest queued job of the handler if the concurrency limit allows it,
+// returns the started job id or null
+await backgroundJobsPlugin.startNextQueuedJob('example_job_handler')
+
+// starts as many queued jobs of the handler as the concurrency limit allows
+await backgroundJobsPlugin.startQueuedJobs('example_job_handler')
+```
+
+:::info
+A job never jumps the queue: `startNewJob` starts a job immediately only when the handler has a free slot
+**and** no other job is waiting in its queue. Otherwise the job is queued behind the ones created earlier.
+:::
+
 ## Backend API
 
 The plugin provides some handy methods that can be used in different situations:
 
 ```ts
+//always create a job in QUEUED status, it is started by the queue of the handler when it has a free slot
+queueNewJob(jobName: string, adminUser: AdminUser, tasks: taskType[], jobHandlerName: string, initialState?: Record<string, any>, options?: { autoStart?: boolean })
+//start the oldest queued job of the handler if concurrencyLimit allows, returns started job id or null
+startNextQueuedJob(jobHandlerName: string)
+//start as many queued jobs of the handler as concurrencyLimit allows, returns started job ids
+startQueuedJobs(jobHandlerName: string)
 //set key:value to the job state in the DB
 setJobStateField(jobId: string, key: string, value: any)
 //get job field from the state in db

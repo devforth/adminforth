@@ -1,10 +1,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { defineStore } from 'pinia'
-import { callAdminForthApi } from '@/utils';
+import { callAdminForthApi, handleNotAuthorized } from '@/utils';
+import { isCompositePrimaryKey, recordIdFilters } from '@/utils/recordId';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
 
-import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetBaseConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthResourceFrontend } from '@/types/Common';
+import type { AdminForthResourceCommon, AdminForthResourceColumnCommon, GetConfigResponse, ResourceVeryShort, AdminUser, UserData, AdminForthConfigMenuItem, AdminForthConfigForFrontend, AdminForthResourceFrontend } from '@/types/Common';
 import type { Ref } from 'vue'
 
 
@@ -75,25 +76,50 @@ export const useCoreStore = defineStore('core', () => {
     window.localStorage.setItem('af__theme', theme.value);
   }
 
-  async function fetchMenuAndResource() {
-    const resp: GetBaseConfigResponse = await callAdminForthApi({
-      path: '/get_base_config',
+
+  async function fetchConfig(
+    { redirectToLoginIfNotLoggedIn = true }: { redirectToLoginIfNotLoggedIn?: boolean } = {}
+  ): Promise<GetConfigResponse | null> {
+    const resp: GetConfigResponse | null = await callAdminForthApi({
+      path: '/get_config',
       method: 'GET',
     });
 
     if(!resp){
-      return
+      return null
     }
+
+    config.value = { ...config.value, ...resp.config } as AdminForthConfigForFrontend;
+
+    if (!resp.loggedIn) {
+      if (redirectToLoginIfNotLoggedIn) {
+        await handleNotAuthorized();
+      }
+      return resp;
+    }
+
     menu.value = resp.menu;
     resourceById.value = resp.resources.reduce((acc: Record<string, ResourceVeryShort>, resource: ResourceVeryShort) => {
       acc[resource.resourceId] = resource;
       return acc;
     }, {});
-    config.value = resp.config;
     adminUser.value = resp.adminUser;
     userData.value = resp.user;
     console.log('🌍 AdminForth v', resp.version);
     subscribeToMenuRefresh();
+    return resp;
+  }
+
+  async function fetchMenuAndResource() {
+    await fetchConfig();
+  }
+
+  /**
+   * @deprecated kept for plugins which were written when public config had own endpoint. Use fetchConfig instead.
+   * Old endpoint was noAuth and never redirected to login, so anonymous answer is not redirected here as well.
+   */
+  async function getPublicConfig() {
+    await fetchConfig({ redirectToLoginIfNotLoggedIn: false });
   }
 
   async function refreshMenu() {
@@ -168,9 +194,21 @@ export const useCoreStore = defineStore('core', () => {
     if (!resource.value) {
       throw new Error('Columns not fetched yet');
     }
-    const col = resource.value.columns.find((col: AdminForthResourceColumnCommon) => col.primaryKey);
-    if (!col) {
-      throw new Error(`Primary key not found in resource ${resourceId}`);
+    let filters;
+    if (isCompositePrimaryKey(resource.value)) {
+      filters = recordIdFilters(resource.value, primaryKey);
+    } else {
+      const col = resource.value.columns.find((col: AdminForthResourceColumnCommon) => col.primaryKey);
+      if (!col) {
+        throw new Error(`Primary key not found in resource ${resourceId}`);
+      }
+      filters = [
+        {
+          field: col.name,
+          operator: 'eq',
+          value: primaryKey
+        }
+      ];
     }
 
     const respData = await callAdminForthApi({
@@ -179,13 +217,7 @@ export const useCoreStore = defineStore('core', () => {
       body: {
         source: source,
         resourceId: resourceId,
-        filters: [
-          {
-            field: col.name,
-            operator: 'eq',
-            value: primaryKey
-          }
-        ],
+        filters,
         sort: [],
         limit: 1,
         offset: 0
@@ -234,14 +266,6 @@ export const useCoreStore = defineStore('core', () => {
     isResourceFetching.value = false;
   }
 
-  async function getPublicConfig() {
-    const res = await callAdminForthApi({
-      path: '/get_public_config',
-      method: 'GET',
-    });
-    config.value = {...config.value, ...res};
-  }
-
   async function getLoginFormConfig() {
     const res = await callAdminForthApi({
       path: '/get_login_form_config',
@@ -279,8 +303,9 @@ export const useCoreStore = defineStore('core', () => {
     username,
     userFullname,
     userAvatarUrl,
+    fetchConfig,
     getPublicConfig,
-    fetchMenuAndResource, 
+    fetchMenuAndResource,
     refreshMenu,
     getLoginFormConfig,
     fetchRecord, 

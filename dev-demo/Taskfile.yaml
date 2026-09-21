@@ -33,9 +33,11 @@ vars:
     - "adminforth-background-jobs"
     - "adminforth-auto-remove"
     - "adminforth-agent"
+    - "adminforth-mcp"
     - "adminforth-dashboard"
     - "adminforth-json-editor"
     - "adminforth-json-form"
+    - "af-crud-approve-plugin" 
 
   ADAPTERS:
     - "adminforth-email-adapter-aws-ses"

@@ -14,7 +14,7 @@ Foreign inline show plugin allows to display a show of items from a foreign tabl
 Import plugin:
 
 ```bash
-pnpm i @adminforth/foreign-inline-show --save
+pnpm add @adminforth/foreign-inline-show --save
 ```
 
 ```ts title="./resources/apartments.ts"

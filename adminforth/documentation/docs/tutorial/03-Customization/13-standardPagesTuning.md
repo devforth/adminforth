@@ -652,6 +652,33 @@ A difference between `fillOnCreate` and `suggestOnCreate`:
 * `fillOnCreate` should be used when `showIn.create` is a `false` value because if it is `true`, the input will be shown in the create form but then(during actual save to db) it will be overwritten by the value returned by `fillOnCreate`.
 * `suggestOnCreate` should be used with `showIn.create` set to true because if it is not set, the input will not be shown in the create form and default suggestion will not make sense.
 
+### Normalize values before saving
+
+Use the column-level `normalize` callback when a value must always be stored in a canonical form. For example, you can trim an email address and make it lowercase:
+
+```typescript title="./resources/adminuser.ts"
+export default {
+  resourceId: 'adminuser',
+  columns: [
+    // ...
+    {
+      name: 'email',
+      required: true,
+      isUnique: true,
+      type: AdminForthDataTypes.STRING,
+//diff-add
+      normalize: (value: string) => value.trim().toLowerCase(),
+    },
+  ],
+};
+```
+
+AdminForth applies `normalize` on the backend whenever the column is present in a create or update payload. This includes records saved from the admin UI and records written with the [Data API](/docs/tutorial/Customization/dataApi). Normalization happens before backend validation and `beforeSave` hooks, so both receive the normalized value.
+
+When `normalize` is configured on the column selected by `auth.usernameField`, AdminForth also normalizes the submitted username before looking up the user. The [Email Password Reset plugin](/docs/tutorial/Plugins/email-password-reset) applies the normalizer configured on its `emailField` throughout the reset flow as well. In the example above, a user saved as `admin@example.com` can therefore sign in or request a password reset with `  ADMIN@EXAMPLE.COM  `.
+
+`normalize` does not transform existing database records or general filter/search values. Migrate existing data first if it is not already stored in the same canonical form.
+
 ### Link to create form with preset values
 
 Sometimes you might need to create a link that will open the create form with some fields pre-filled. For example, you might want to create a link that will open the create form with the realtor_id field pre-filled with the current user's ID.

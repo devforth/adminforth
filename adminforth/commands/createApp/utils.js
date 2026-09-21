@@ -9,10 +9,12 @@ import { Listr } from 'listr2'
 import { fileURLToPath, pathToFileURL } from 'url';
 import {ConnectionString} from 'connection-string';
 import { exec } from 'child_process';
+import crypto from 'crypto';
 
 import Handlebars from 'handlebars';
 import { promisify } from 'util';
 import { resolveAdminforthVersionRange } from '../cli.js';
+import { checkNodeVersion } from '../nodeVersion.js';
 
 import { URL } from 'url'
 import net from 'net'
@@ -152,6 +154,10 @@ async function inspectDatabaseCleanState(options) {
   const provider = detectDbProvider(connectionString.protocol);
   const dbConnString = connectionString.toString();
 
+  // `dbInspected` records whether the answer below is a real observation or a fallback
+  // (connector unavailable), so the caller can avoid claiming the database is empty.
+  options.dbInspected = true;
+
   // Fast path for SQLite: a missing file is by definition a brand new database.
   // Avoid connecting (which would otherwise create the file) and avoid pulling the
   // connector for the common new-project case.
@@ -171,6 +177,7 @@ async function inspectDatabaseCleanState(options) {
     // the normal Prisma flow stays available instead of failing create-app.
     console.log(chalk.yellow(`\n⚠️  Could not load the database connector to inspect the database (${error.message}). Continuing as a new database.`));
     options.existingDb = false;
+    options.dbInspected = false;
     return;
   }
 
@@ -180,6 +187,7 @@ async function inspectDatabaseCleanState(options) {
     // Connector predates the isDatabaseEmpty() probe (version skew); cannot
     // determine emptiness, so assume a new database and keep the Prisma flow.
     options.existingDb = false;
+    options.dbInspected = false;
     return;
   }
 
@@ -247,6 +255,29 @@ export async function promptForMissingOptions(options) {
 
   await inspectDatabaseCleanState(resolvedOptions);
 
+  // Say which path was taken: the decision is made by inspecting the database, not by whether --db was passed
+  const prismaCapable = isPrismaMigrationDbUrl(resolvedOptions.db);
+  const adminUserSql = generateAdminUserTableInstructions(detectDbProvider(parseConnectionString(resolvedOptions.db).protocol));
+  const sqlNote = adminUserSql
+    ? 'The generated README and the instructions printed at the end include the SQL for the required adminuser table.'
+    : 'No table has to be created up front for this database.';
+  const willAskAboutPrisma = resolvedOptions.includePrismaMigrations === undefined && prismaCapable && !resolvedOptions.existingDb;
+
+  if (!resolvedOptions.dbInspected) {
+    console.log(chalk.yellow('\n🗄️  Continuing as a new database because it could not be inspected.' +
+      (prismaCapable ? ' Prisma migrations are therefore not offered by default; answer Yes below only if it is in fact empty.' : '') +
+      ` ${sqlNote}`));
+  } else if (resolvedOptions.existingDb) {
+    console.log(chalk.cyan(`\n🗄️  The database already contains data, so no Prisma migrations will be generated for it. ${sqlNote}`));
+  } else if (willAskAboutPrisma) {
+    console.log(chalk.cyan('\n🗄️  The database is empty. Answer Yes below to let AdminForth manage its schema with Prisma migrations, ' +
+      `or No to manage it yourself${adminUserSql ? ' (you will get the SQL for the required adminuser table instead)' : ''}.`));
+  } else if (prismaCapable && resolvedOptions.includePrismaMigrations) {
+    console.log(chalk.cyan('\n🗄️  The database is empty; AdminForth will manage its schema with Prisma migrations.'));
+  } else {
+    console.log(chalk.cyan(`\n🗄️  The database is empty and no Prisma migrations will be generated. ${sqlNote}`));
+  }
+
   if (
     resolvedOptions.includePrismaMigrations === undefined &&
     isPrismaMigrationDbUrl(resolvedOptions.db) &&
@@ -260,7 +291,9 @@ export async function promptForMissingOptions(options) {
         { name: 'Yes', value: true },
         { name: 'No', value: false },
       ],
-      default: true,
+      // only recommend Prisma when the database was actually observed to be empty: on a database
+      // we could not inspect, pressing Enter must not scaffold migrations over existing data
+      default: resolvedOptions.dbInspected,
     }]);
     resolvedOptions.includePrismaMigrations = prismaAnswer.includePrismaMigrations;
   } else {
@@ -268,18 +301,6 @@ export async function promptForMissingOptions(options) {
   }
 
   return resolvedOptions;
-}
-
-function checkNodeVersion(minRequiredVersion = 20) {
-  const current = process.versions.node.split('.');
-  const major = parseInt(current[0], 10);
-
-  if (isNaN(major) || major < minRequiredVersion) {
-    throw new Error(
-      `Node.js v${minRequiredVersion}+ is required. You have ${process.versions.node}. ` +
-      `Please upgrade Node.js. We recommend using nvm for managing multiple Node.js versions.`
-    );
-  }
 }
 
 function parseConnectionString(dbUrl) {
@@ -338,7 +359,7 @@ function initialChecks(options) {
   return [
     {
       title: '👀 Checking Node.js version...',
-      task: () => checkNodeVersion(20)
+      task: () => checkNodeVersion()
     },
     {
       title: '👀 Validating current working directory...',
@@ -432,15 +453,13 @@ async function scaffoldProject(ctx, options, cwd) {
     prismaDbUrlProd,
     appName,
     provider,
-    existingDb: options.existingDb,
-    nodeMajor: parseInt(process.versions.node.split('.')[0], 10),
     sqliteFile: connectionString.protocol.startsWith('sqlite') ? connectionString.host : null,
   });
 
   return projectDir;  // Return the new directory path
 }
 
-function getPackageManagerTemplateData(useNpm, nodeMajor) {
+function getPackageManagerTemplateData(useNpm) {
   return {
     packageManager: useNpm ? 'npm' : 'pnpm',
     packageManagerRun: useNpm ? 'npm run' : 'pnpm',
@@ -448,18 +467,19 @@ function getPackageManagerTemplateData(useNpm, nodeMajor) {
     packageManagerExec: useNpm ? 'npx' : 'pnpm exec',
     packageManagerEnvDev: useNpm ? 'npm run _env:dev --' : 'pnpm _env:dev',
     packageManagerEnvProd: useNpm ? 'npm run _env:prod --' : 'pnpm _env:prod',
-    dockerBaseImage: useNpm ? `node:${nodeMajor}-slim` : 'devforth/node20-pnpm:latest',
+    dockerBaseImage: 'node:24-slim',
+    usePnpm: !useNpm,
     dockerAdditionalManifestFiles: useNpm ? 'package-lock.json' : 'pnpm-lock.yaml pnpm-workspace.yaml',
     dockerPackageInstallSubcommand: useNpm ? 'ci' : 'i',
   };
 }
 
-async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
+export async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations, options) {
   const {
-    dbUrl, prismaDbUrl, appName, provider, existingDb, nodeMajor,
+    dbUrl, prismaDbUrl, appName, provider,
     dbUrlProd, prismaDbUrlProd, sqliteFile
    } = options;
-  const packageManagerTemplateData = getPackageManagerTemplateData(useNpm, nodeMajor);
+  const packageManagerTemplateData = getPackageManagerTemplateData(useNpm);
   const adminforthVersion = await resolveAdminforthVersionRange();
   const resolvedPrismaDbUrl = includePrismaMigrations ? prismaDbUrl : null;
   const resolvedPrismaDbUrlProd = includePrismaMigrations ? prismaDbUrlProd : null;
@@ -505,8 +525,9 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
         prismaDbUrl: resolvedPrismaDbUrl,
         appName,
         sqliteFile,
-        existingDb,
-        adminUserTableInstructions: existingDb ? generateAdminUserTableInstructions(provider) : null,
+        // whenever Prisma migrations will not manage the schema (same rule as skipPrismaSetup in scaffoldProject),
+        // the user has to create the adminuser table themselves
+        adminUserTableInstructions: (!includePrismaMigrations || !prismaDbUrl) ? generateAdminUserTableInstructions(provider) : null,
       },
     },
     {
@@ -540,10 +561,17 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
       data: {},
     },
     {
-      // We'll write .env using the same content as .env.sample
+      // gitignored: holds the JWT signing key, unique per developer and per deployment
       src: '.env.hbs',
       dest: '.env',
-      data: { dbUrl, prismaDbUrl: resolvedPrismaDbUrl },
+      data: { adminforthSecret: crypto.randomBytes(32).toString('hex') },
+      mode: 0o600,
+    },
+    {
+      // committed: tells the next developer which secrets to create locally
+      src: '.env.example.hbs',
+      dest: '.env.example',
+      data: {},
     },
     {
       src: 'adminuser.ts.hbs',
@@ -635,7 +663,11 @@ async function writeTemplateFiles(dirname, cwd, useNpm, includePrismaMigrations,
         ...packageManagerTemplateData,
         ...task.data,
       });
-      await fs.promises.writeFile(destPath, compiled);
+      await fs.promises.writeFile(destPath, compiled, task.mode ? { mode: task.mode } : undefined);
+      if (task.mode) {
+        // writeFile's mode is masked by the umask and ignored on overwrite; enforce it unconditionally
+        await fs.promises.chmod(destPath, task.mode);
+      }
     }
   }
 }
@@ -678,10 +710,10 @@ async function installDependenciesNpm(ctx, cwd) {
   }
 }
 
-function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
+export function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
   const provider = detectDbProvider(parseConnectionString(options.db).protocol);
-  const adminUserTableInstructions = options.existingDb ? generateAdminUserTableInstructions(provider) : null;
+  const adminUserTableInstructions = skipPrismaSetup ? generateAdminUserTableInstructions(provider) : null;
   instruction += `
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
@@ -706,10 +738,10 @@ function generateFinalInstructionsPnpm(skipPrismaSetup, options) {
   return instruction;
 }
 
-function generateFinalInstructionsNpm(skipPrismaSetup, options) {
+export function generateFinalInstructionsNpm(skipPrismaSetup, options) {
   let instruction = '⏭️  Run the following commands to get started:\n';
   const provider = detectDbProvider(parseConnectionString(options.db).protocol);
-  const adminUserTableInstructions = options.existingDb ? generateAdminUserTableInstructions(provider) : null;
+  const adminUserTableInstructions = skipPrismaSetup ? generateAdminUserTableInstructions(provider) : null;
   instruction += `
   ${chalk.dim('// Go to the project directory')}
   ${chalk.dim('$')}${chalk.cyan(` cd ${options.appName}`)}\n`;
