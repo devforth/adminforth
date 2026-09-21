@@ -54,7 +54,7 @@
 
      <div v-if="coreStore?.config?.defaultUserExists && !isLocalhost" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
       <IconExclamationCircleOutline class="inline-block align-text-bottom mr-0,5 w-5 h-5" />
-      Default user <strong>"adminforth"</strong> detected. Delete it and create your own account.
+      {{ $t('Default user') }} <strong>"adminforth"</strong> {{ $t('detected. Delete it and create your own account.') }}
     </div>
 
       <ul class="af-sidebar-container space-y-2 font-medium" >
@@ -329,10 +329,12 @@ import { Tooltip } from '@/afcl';
 import type { AnnouncementBadgeResponse } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import { IconExclamationCircleOutline} from '@iconify-prerendered/vue-flowbite';
+import { useI18n } from 'vue-i18n';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';
 
 const { menu } = useAdminforth();
+const { t } = useI18n();
 
 interface Props {
   sideBarOpen: boolean;

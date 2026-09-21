@@ -142,8 +142,11 @@
       :suffix="column.inputSuffix"
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
-      autocomplete="false"
+      :autocomplete="column.masked ? 'new-password' : 'off'"
+      data-1p-ignore
       data-lpignore="true"
+      data-bwignore
+      data-form-type="other"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
       @focus="onFocusHandler($event, column, source)"
     />

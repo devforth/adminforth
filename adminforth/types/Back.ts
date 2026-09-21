@@ -406,15 +406,29 @@ export interface IAdminForthDataSourceConnector {
   createRecordOriginalValues({ resource, record }: { resource: AdminForthResource, record: any }): Promise<string>;
 
   /**
-   * Update record in database. newValues might have not all fields in record, but only changed ones.
-   * recordId is value of field which is marked as {@link AdminForthResourceColumn.primaryKey}
+   * Set to true if connector is able to work with resources which have several columns marked as
+   * {@link AdminForthResourceColumn.primaryKey} (composite primary key).
+   * Such connector must build WHERE clause from `pkValues` argument of
+   * {@link IAdminForthDataSourceConnector.updateRecordOriginalValues} and
+   * {@link IAdminForthDataSourceConnector.deleteRecord} instead of using getPrimaryKey().
    */
-  updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void>;
+  supportsCompositePrimaryKey?: boolean;
+
+  /**
+   * Update record in database. newValues might have not all fields in record, but only changed ones.
+   * recordId is value of field which is marked as {@link AdminForthResourceColumn.primaryKey}, or,
+   * for resources with composite primary key, encoded value of all such columns.
+   * pkValues is map of primary key column name to its value, use it to build WHERE clause
+   * (it supports both single and composite primary keys).
+   */
+  updateRecordOriginalValues({ resource, recordId, newValues, pkValues }: { resource: AdminForthResource; recordId: string; newValues: any; pkValues?: Record<string, any>; }): Promise<void>;
 
   /**
    * Used to delete record in database.
+   * pkValues is map of primary key column name to its value, use it to build WHERE clause
+   * (it supports both single and composite primary keys).
    */
-  deleteRecord({ resource, recordId }: { resource: AdminForthResource, recordId: any }): Promise<boolean>;
+  deleteRecord({ resource, recordId, pkValues }: { resource: AdminForthResource, recordId: any, pkValues?: Record<string, any> }): Promise<boolean>;
 
   /**
    * Optional. Used to perform aggregation queries on a resource table.
@@ -436,7 +450,30 @@ export interface IAdminForthDataSourceConnectorBase extends IAdminForthDataSourc
 
   validateAndNormalizeInputFilters(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined): IAdminForthAndOrFilter;
 
+  /**
+   * Returns name of first column marked as primaryKey.
+   * For resources with composite primary key use {@link getPrimaryKeys}.
+   */
   getPrimaryKey(resource: AdminForthResource): string;
+
+  /**
+   * Returns names of all columns marked as primaryKey (more then one for composite primary key).
+   * Optional: connectors which extend AdminForthBaseConnector get it for free, connectors which
+   * implement this interface on their own may not have it, so core always calls it optionally.
+   */
+  getPrimaryKeys?(resource: AdminForthResource): string[];
+
+  /**
+   * Splits recordId into values of primary key columns, casted to data source types.
+   * Optional for the same reason as {@link getPrimaryKeys}.
+   */
+  getPrimaryKeyValues?(resource: AdminForthResource, recordId: any): Record<string, any>;
+
+  /**
+   * Builds filters which select exactly one record with given recordId.
+   * Optional for the same reason as {@link getPrimaryKeys}.
+   */
+  getPrimaryKeyFilters?(resource: AdminForthResource, recordId: any): IAdminForthSingleFilter[];
 
   getData({ resource, limit, offset, sort, filters, columns }: {
     resource: AdminForthResource,
@@ -479,8 +516,44 @@ export interface IAdminForthDataSourceConnectorConstructor {
   new (): IAdminForthDataSourceConnectorBase;
 }
 
+/**
+ * Result of {@link IAdminForthAuth.authorizeByCookies}.
+ * Statuses are separated because caller decides how to answer: authenticated endpoints answer 401 on any
+ * non-ok status except `verifyFailed` (which is a server side problem and must not logout user),
+ * while noAuth endpoints just treat caller as anonymous.
+ */
+export type AdminUserAuthorizationResult =
+  | { status: 'ok', adminUser: AdminUser }
+  /** no auth cookie in request at all */
+  | { status: 'noToken' }
+  /** jwt is expired, malformed or its user does not exist anymore */
+  | { status: 'invalidToken' }
+  /** verification itself failed, e.g. database is not ready yet */
+  | { status: 'verifyFailed', error: any }
+  /** one of `adminUserAuthorize` hooks denied the user */
+  | { status: 'notAllowed', error?: string };
+
 export interface IAdminForthAuth {
   verify(jwt : string, mustHaveType: string, decodeUser?: boolean): Promise<any>;
+
+  /**
+   * Takes auth jwt from cookies, verifies it and runs `adminUserAuthorize` hooks.
+   */
+  authorizeByCookies({ cookies, response, extra }: {
+    cookies: {key: string, value: string}[],
+    response: IAdminForthHttpResponse,
+    extra: HttpExtra,
+  }): Promise<AdminUserAuthorizationResult>;
+
+  /**
+   * Runs `adminUserAuthorize` hooks for already authenticated user.
+   */
+  runAdminUserAuthorizeHooks(adminUser: AdminUser, response: IAdminForthHttpResponse, extra: HttpExtra): Promise<{ allowed: boolean, error?: string }>;
+
+  /**
+   * Returns auth jwt from cookies, or null if it is not there.
+   */
+  getAuthCookie(cookies: {key: string, value: string}[]): string | null;
 
   issueJWT(payload: Object, type: string, expiresIn?: string | number): string;
 
@@ -1231,6 +1304,31 @@ export type BeforeLoginConfirmationFunction = (params?: {
 }>;
 
 /**
+ * Allows to reject login attempt before AdminForth checks credentials in the database.
+ * Called on every call of login endpoint, even if username does not exist or password is wrong,
+ * so it is a right place for captcha and other anti-bruteforce checks: user gets the same response
+ * regardless of whether credentials were correct.
+ */
+export type BeforeLoginAttemptFunction = (params: {
+  /**
+   * Username which user tries to login with, normalized in same way as it is stored in database.
+   */
+  username: string,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information of login request. Use extra.response to set custom status or headers.
+   */
+  extra: HttpExtra,
+  /**
+   * Translate function, respects language of login request.
+   */
+  tr: ITranslateFunction,
+}) => Promise<{ ok: boolean, error?: string }>;
+
+/**
  * Allow to make extra authorization
  */
 export type AdminUserAuthorizeFunction = ((params?: { 
@@ -1711,6 +1809,27 @@ export interface AdminForthInputConfig {
       removeBackgroundBlendMode?: boolean,
 
       /**
+       * Function or functions which will be called before AdminForth checks credentials in the database.
+       * Each function receives username which user tries to login with and can reject the attempt by
+       * returning `{ ok: false, error: 'Some reason' }`.
+       * 
+       * Use it for captcha/anti-bruteforce checks: rejection happens before user lookup, so response does not
+       * depend on whether such user exists or password is correct.
+       * 
+       * Example:
+       * 
+       * ```ts
+       * beforeLoginAttempt: async ({ username, extra }) => {
+       *   if (!await captchaIsValid(extra)) {
+       *     return { ok: false, error: 'Captcha verification failed' };
+       *   }
+       *   return { ok: true };
+       * },
+       * ```
+       */
+      beforeLoginAttempt?: BeforeLoginAttemptFunction | Array<BeforeLoginAttemptFunction>,
+
+      /**
        * Function or functions  which will be called before user try to login.
        * Each function will resive User object as an argument
        */
@@ -2093,7 +2212,7 @@ export class Sorts {
 export interface IOperationalResource {
   get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
-  list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[]) => Promise<any[]>;
+  list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[], columns?: string[]) => Promise<any[]>;
 
   count: (filter?: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<number>;
 

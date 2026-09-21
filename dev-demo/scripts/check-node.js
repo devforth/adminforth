@@ -1,9 +1,9 @@
-const [major] = process.versions.node.split('.').map(Number);
+import { isNodeVersionSupported, SUPPORTED_NODE_VERSIONS } from '../../adminforth/commands/nodeVersion.js';
 
-if (major < 20 || major > 24) {
+if (!isNodeVersionSupported()) {
   console.error(
     `❌ Node.js ${process.versions.node} detected.\n` +
-    `Please use Node.js version 20, 21, 22, 23, or 24.`,
+    `AdminForth does not support Node.js 20 or 21. Please use Node.js ${SUPPORTED_NODE_VERSIONS}.`,
   );
   process.exit(1);
 }

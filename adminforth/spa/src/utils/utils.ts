@@ -14,6 +14,7 @@ import { useI18n } from 'vue-i18n';
 import { onBeforeRouteLeave } from 'vue-router';
 import { reconnect } from '@/websocket';
 import { ADMINFORTH_CLIENT_ID_HEADER, getAdminForthClientId } from './clientId';
+import { sessionSurvives401 } from './session';
 
 
 
@@ -103,6 +104,18 @@ async function tryAutologin(autologin: string): Promise<boolean> {
   return !!coreStore.adminUser;
 }
 
+/** @returns false when the session turned out to be alive and nothing was signed out. */
+export async function handleNotAuthorized(): Promise<boolean> {
+  // one 401 during a restart must not throw away a session the server still honours
+  if (await sessionSurvives401()) {
+    return false;
+  }
+  useUserStore().unauthorize();
+  useCoreStore().resetAdminUser();
+  await redirectToLogin();
+  return true;
+}
+
 export async function redirectToLogin() {
   const currentPath = router.currentRoute.value.path;
   const homeRoute = router.getRoutes().find(route => route.name === 'home');
@@ -151,11 +164,12 @@ export async function callApi({path, method, body, headers, silentError = false,
   try {
     const r = await fetch(fullPath, options);
     if (r.status == 401 && !path.includes('/login')) {
-      useUserStore().unauthorize();
-      useCoreStore().resetAdminUser();
-      await redirectToLogin();
+      // when the session survived there is no redirect coming, so the failure has to be visible
+      if (!await handleNotAuthorized() && !silentError) {
+        adminforth.alert({variant:'danger', message: t('Something went wrong, please try again later'),})
+      }
       return null;
-    } 
+    }
     return await r.json();
   } catch(e) {
     if (e instanceof DOMException && e.name === 'AbortError') {

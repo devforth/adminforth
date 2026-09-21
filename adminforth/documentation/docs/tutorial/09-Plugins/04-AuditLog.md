@@ -12,7 +12,7 @@ Requires separate table in the database to store logs.
 
 
 ```bash
-pnpm i @adminforth/audit-log --save
+pnpm add @adminforth/audit-log --save
 ```
 
 Create `auditLogs.ts` in `resources` folder:
@@ -155,6 +155,36 @@ That's it! Now you can see the logs in the table
 ![alt text](AuditLog.png)
 
 <!-- See [API Reference](/docs/api/plugins/audit-log/types/type-aliases/PluginOptions.md) for more all options. -->
+
+## Logging actions executed by agents
+
+Audit Log can optionally store the software actor that performed an action on behalf of the user. This keeps the user relation unchanged while distinguishing AdminForth Agent and MCP activity.
+
+Add a nullable column to the table and resource:
+
+```prisma title='./schema.prisma'
+model audit_logs {
+  // existing fields...
+  executed_by String?
+}
+```
+
+```ts title='./resources/auditLogs.ts'
+columns: [
+  // existing columns...
+  { name: 'executed_by', required: false },
+],
+plugins: [
+  new AuditLogPlugin({
+    resourceColumns: {
+      // existing mappings...
+      resourceExecutedByColumnName: 'executed_by',
+    },
+  }),
+],
+```
+
+`@adminforth/agent` records `af-agent`. `@adminforth/mcp` records the detected client, its version, and the auth secret name, for example `codex@1.2.3 | Production Codex`. Regular user actions leave the column empty. Existing configurations without `resourceExecutedByColumnName` keep their current behavior.
 
 
 ## Logging custom actions

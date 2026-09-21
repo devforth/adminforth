@@ -19,12 +19,12 @@ When back-office user creates a new post it will be automatically assigned using
 
 ## Prerequisites
 
-We will use Node v20 for this demo. If you have other Node versions, we recommend using [NVM](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script) to switch them easily:
+AdminForth supports Node.js 22.12+, 24, and 26. Node.js 20 and 21 are no longer supported. This demo uses Node.js 24 LTS. You can use [NVM](https://github.com/nvm-sh/nvm?tab=readme-ov-file#install--update-script) to switch versions:
 
 ```bash
-nvm install 20
-nvm alias default 20
-nvm use 20
+nvm install 24
+nvm alias default 24
+nvm use 24
 ```
 
 ## Installation
@@ -47,10 +47,22 @@ Create two files in your project's root directory:
 Put the following content to the `.env.local` file:
 
 ```bash title="./.env.local"
-ADMINFORTH_SECRET=123
 NODE_ENV=development
 DATABASE_URL=sqlite://.db.sqlite
 PRISMA_DATABASE_URL=file:.db.sqlite
+```
+
+Generate a signing key into the gitignored `.env` file, readable by you only (AdminForth logs a warning at startup if the secret is shorter than 16 characters; on Windows without openssl use `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`):
+
+```bash
+(umask 077; echo "ADMINFORTH_SECRET=$(openssl rand -hex 32)" > .env)
+```
+
+Make sure `.env` never reaches the repository or a Docker image:
+
+```bash
+echo ".env" >> .gitignore
+echo ".env" >> .dockerignore
 ```
 
 > ☝️ Production best practices:
@@ -92,7 +104,7 @@ Open `package.json` and add the following scripts:
     //diff-add
     "author": "",
     //diff-add
-    "node": ">=20"
+    "node": "^22.12.0 || ^24.0.0 || ^26.0.0"
     //diff-add
   },
 }
@@ -311,6 +323,7 @@ export default {
       required: true,
       isUnique: true,
       type: AdminForthDataTypes.STRING,
+      normalize: (value: string) => value.trim().toLowerCase(),
       validation: [
         // you can also use AdminForth.Utils.EMAIL_VALIDATOR which is alias to this object
         {

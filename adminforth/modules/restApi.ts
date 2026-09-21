@@ -1,22 +1,27 @@
 import { 
   type IAdminForth, 
   type IHttpServer,
+  BeforeLoginAttemptFunction,
   BeforeLoginConfirmationFunction,
   AdminForthResource,
   AllowedActionValue,
   AllowedActions,
   AfterDataSourceResponseFunction,
   BeforeDataSourceRequestFunction,
+  IAdminForthEndpointHandlerInput,
+  ITranslateFunction,
   IAdminForthRestAPI,
   IAdminForthSort,
   HttpExtra,
   IAdminForthAndOrFilter,
+  IAggregationRule,
   BackendOnlyInput,
   Filters,
 } from "../types/Back.js";
 import type { AnySchemaObject } from 'ajv';
 
 import {cascadeChildrenDelete} from './utils.js'
+import { encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames } from './recordId.js';
 
 import { afLogger } from "./logger.js";
 
@@ -27,10 +32,10 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
   AdminForthSortDirections,
    AdminUser, AllowedActionsEnum, AllowedActionsResolved,
    AnnouncementBadgeResponse,
-   GetBaseConfigResponse,
+   GetConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
-import is_ip_private from 'private-ip'
+import { normalizeColumnValue } from './columnValueNormalizer.js';
 
 
 async function resolveBoolOrFn(
@@ -263,6 +268,33 @@ export function rejectApiRawFilters(filters: any): { error: string } | undefined
   if (hasApiRawFilter(filters)) {
     return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
   }
+}
+
+/**
+ * Collects every column name referenced anywhere in a (possibly nested) filter tree,
+ * so the caller can check those columns against the visibility rules.
+ */
+function collectFilterFields(filters: any, fields: Set<string> = new Set()): Set<string> {
+  if (!filters || typeof filters !== 'object') {
+    return fields;
+  }
+
+  if (Array.isArray(filters)) {
+    filters.forEach((filter) => collectFilterFields(filter, fields));
+    return fields;
+  }
+
+  if (typeof filters.field === 'string') {
+    fields.add(filters.field);
+  }
+  if (typeof filters.rightField === 'string') {
+    fields.add(filters.rightField);
+  }
+  if (Array.isArray(filters.subFilters)) {
+    filters.subFilters.forEach((filter) => collectFilterFields(filter, fields));
+  }
+
+  return fields;
 }
 
 function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
@@ -671,6 +703,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   constructor(adminforth: IAdminForth) {
     this.adminforth = adminforth;
   }
+  private async getAdminUserFromRequest(
+    { body, query, headers, cookies, requestUrl, response }: Pick<IAdminForthEndpointHandlerInput, 'body' | 'query' | 'headers' | 'cookies' | 'requestUrl' | 'response'>
+  ): Promise<AdminUser | null> {
+    const result = await this.adminforth.auth.authorizeByCookies({
+      cookies,
+      response,
+      extra: { body, query, headers, cookies, requestUrl, meta: {}, response },
+    });
+
+    if (result.status === 'verifyFailed') {
+      throw result.error;
+    }
+    return result.status === 'ok' ? result.adminUser : null;
+  }
 
   private normalizeJsonColumns(resource: AdminForthResource, record: any): string | null {
     for (const column of resource.columns) {
@@ -685,6 +731,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         } catch (e) {
           return `Field "${column.name}" contains invalid JSON: ${e.message}`;
         }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Runs beforeLoginAttempt hooks. Returns error to answer with, or null if login attempt is allowed to proceed.
+   */
+  async processBeforeLoginAttempt(username: string, extra: HttpExtra, tr: ITranslateFunction): Promise<{ error: string } | null> {
+    const beforeLoginAttempt = this.adminforth.config.auth.beforeLoginAttempt as (BeforeLoginAttemptFunction[] | undefined);
+
+    for (const hook of listify(beforeLoginAttempt)) {
+      const hookRespError = hookResponseError(await hook({ username, adminforth: this.adminforth, extra, tr }), 'beforeLoginAttempt');
+      if (hookRespError) {
+        return hookRespError;
       }
     }
     return null;
@@ -745,6 +806,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           throw new Error('No config.auth defined we need it to find user, please follow the docs');
         }
         const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+        const usernameColumn = userResource.columns.find((col) => col.name === this.adminforth.config.auth.usernameField);
+        const normalizedUsername = normalizeColumnValue(usernameColumn, username);
+
+        // hooks are called before any lookup in database, so rejected attempt looks the same
+        // for existing and non-existing users (e.g. captcha check should not leak valid credentials)
+        const loginAttemptError = await this.processBeforeLoginAttempt(normalizedUsername, {
+          body, headers, query, cookies, requestUrl, response
+        }, tr);
+        if (loginAttemptError) {
+          response.setStatus(401);
+          return loginAttemptError;
+        }
+
         // if there is no passwordHashField, in columns, add it, with backendOnly and showIn: []
         if (!userResource.dataSourceColumns.find((col) => col.name === this.adminforth.config.auth.passwordHashField)) {
           userResource.dataSourceColumns.push({
@@ -760,7 +834,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           await this.adminforth.connectors[userResource.dataSource].getData({
             resource: userResource,
             filters: { operator: AdminForthFilterOperators.AND, subFilters: [
-              { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: username },
+              { field: this.adminforth.config.auth.usernameField, operator: AdminForthFilterOperators.EQ, value: normalizedUsername },
             ]},
             limit: 1,
             offset: 0,
@@ -780,7 +854,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           adminUser = { 
             dbUser: userRecord,
             pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
-            username,
+            username: normalizedUsername,
           };
 
           const expireInDuration = rememberMe 
@@ -796,7 +870,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             this.adminforth.auth.setAuthCookie({ 
               expireInDuration,
               response, 
-              username, 
+              username: normalizedUsername,
               pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
             });
           } 
@@ -843,46 +917,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       noAuth: true,
       method: 'GET',
-      path: '/get_public_config',
-      handler: async ({ tr }) => {
-
-        // TODO we need to remove this method and make get_config to return public and private parts for logged in user and only public for not logged in
-
-        // find resource
-        if (!this.adminforth.config.auth) {
-          throw new Error('No config.auth defined');
-        }
-        const usernameField = this.adminforth.config.auth.usernameField;
-        const resource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        const usernameColumn = resource.columns.find((col) => col.name === usernameField);
-
-        return {
-          brandName: this.adminforth.config.customization.brandName,
-          usernameFieldName: usernameColumn.label,
-          loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
-          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
-          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
-          title: this.adminforth.config.customization?.title,
-          demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          globalInjections: {
-            everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
-            sidebarTop: this.adminforth.config.customization.globalInjections.sidebarTop,
-          },
-          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
-          singleTheme: this.adminforth.config.customization.singleTheme,
-          customHeadItems: this.adminforth.config.customization.customHeadItems,
-        };
-      },
-    });
-
-    server.endpoint({
-      method: 'GET',
-      path: '/get_base_config',
-      handler: async ({ adminUser, cookies, tr, response }): Promise<GetBaseConfigResponse>=> {
+      path: '/get_config',
+      handler: async ({ body, query, headers, cookies, requestUrl, tr, response }): Promise<GetConfigResponse>=> {
         let username = ''
         let userFullName = ''
-    
+
         // find resource
         if (!this.adminforth.config.auth) {
           throw new Error('No config.auth defined');
@@ -893,13 +932,39 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         response.setHeader('Expires', '0');
         response.setHeader('Surrogate-Control', 'no-store');
 
-        const dbUser = adminUser.dbUser;
-        username = dbUser[this.adminforth.config.auth.usernameField]; 
-        userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
         const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        
+
         const usernameField = this.adminforth.config.auth.usernameField;
         const usernameColumn = userResource.columns.find((col) => col.name === usernameField);
+
+        const public_config = {
+          brandName: this.adminforth.config.customization.brandName,
+          usernameFieldName: usernameColumn.label,
+          loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
+          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
+          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
+          title: this.adminforth.config.customization?.title,
+          demoCredentials: this.adminforth.config.auth.demoCredentials,
+          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
+          globalInjections: {
+            everyPageBottom: this.adminforth.config.customization.globalInjections.everyPageBottom,
+          },
+          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
+          singleTheme: this.adminforth.config.customization.singleTheme,
+          customHeadItems: this.adminforth.config.customization.customHeadItems,
+        };
+
+        // this endpoint is noAuth (login page needs public config), so here we repeat authorize flow
+        // of express server to understand whether caller is allowed to get base config as well
+        const adminUser = await this.getAdminUserFromRequest({ body, query, headers, cookies, requestUrl, response });
+
+        if (!adminUser) {
+          return { loggedIn: false, config: public_config };
+        }
+
+        const dbUser = adminUser.dbUser;
+        username = dbUser[this.adminforth.config.auth.usernameField];
+        userFullName = dbUser[this.adminforth.config.auth.userFullNameField];
 
         const userPk = dbUser[userResource.columns.find((col) => col.primaryKey).name];
 
@@ -955,24 +1020,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-      let defaultUserExists = false;
-        if (username === 'adminforth') {
-          defaultUserExists = true;
-        }
-        
-        const publicPart = {
-          brandName: this.adminforth.config.customization.brandName,
-          usernameFieldName: usernameColumn.label,
-          loginBackgroundImage: this.adminforth.config.auth.loginBackgroundImage,
-          loginBackgroundPosition: this.adminforth.config.auth.loginBackgroundPosition,
-          removeBackgroundBlendMode: this.adminforth.config.auth.removeBackgroundBlendMode,
-          title: this.adminforth.config.customization?.title,
-          demoCredentials: this.adminforth.config.auth.demoCredentials,
-          loginPageInjections: this.adminforth.config.customization.loginPageInjections,
-          rememberMeDuration: this.adminforth.config.auth.rememberMeDuration,
-          singleTheme: this.adminforth.config.customization.singleTheme,
-          customHeadItems: this.adminforth.config.customization.customHeadItems,
-        }
+        const usersResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
+        const defaultUserExists = await this.adminforth.resource(usersResource.resourceId).get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
+
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
           showBrandLogoInSidebar: this.adminforth.config.customization.showBrandLogoInSidebar,
@@ -1049,16 +1099,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         return {
+          loggedIn: true,
+          config: {
+            ...public_config,
+            ...loggedInPart,
+          },
           user: userData,
           resources: this.adminforth.config.resources.map((res) => ({
             resourceId: res.resourceId,
             label: res.label,
           })),
           menu: newMenu,
-          config: { 
-            ...publicPart,
-            ...loggedInPart,
-          },
           adminUser,
           version: ADMINFORTH_VERSION,
         };
@@ -1250,6 +1301,23 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     if (col.foreignResource?.unsetLabel) {
                       col.foreignResource.unsetLabel = await tr(col.foreignResource.unsetLabel, `resource.${resource.resourceId}.foreignResource.unsetLabel`);
                     }
+                    if (col.foreignResource) {
+                      if (col.foreignResource.resourceId) {
+                        const foreignResource = this.adminforth.config.resources.find((res) => res.resourceId === col.foreignResource.resourceId);
+                        const allowedActionsForForeignResource = await interpretResource(adminUser, foreignResource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
+                        col.foreignResource.allowedActions = allowedActionsForForeignResource.allowedActions;
+                      } else {
+                        await Promise.all(
+                          col.foreignResource.polymorphicResources
+                            .filter((polymorphicResource) => polymorphicResource.resourceId !== null)
+                            .map(async (polymorphicResource) => {
+                              const foreignResource = this.adminforth.config.resources.find((res) => res.resourceId === polymorphicResource.resourceId);
+                              const allowedActionsForForeignResource = await interpretResource(adminUser, foreignResource, {}, ActionCheckSource.DisplayButtons, this.adminforth);
+                              polymorphicResource.allowedActions = allowedActionsForForeignResource.allowedActions;
+                            })
+                        );
+                      }
+                    }
                     if (inCol.suggestOnCreate && typeof inCol.suggestOnCreate === 'function') {
                       col.suggestOnCreate = await inCol.suggestOnCreate({ adminUser });
                     }
@@ -1331,7 +1399,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const meta = { requestBody: body, pk: undefined };
         if ((source === 'edit' || source === 'show') && body.filters) {
-          meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
+          if (isCompositePrimaryKey(resource)) {
+            const pkFieldNames = primaryKeyColumnNames(resource);
+            const pkValues = pkFieldNames.reduce((acc, name) => {
+              acc[name] = (body.filters as any[]).find((f) => f.field === name)?.value;
+              return acc;
+            }, {});
+            if (pkFieldNames.every((name) => pkValues[name] !== undefined)) {
+              meta.pk = encodeRecordId(resource, pkValues);
+            }
+          } else {
+            meta.pk = body.filters.find((f) => f.field === resource.columns.find((col) => col.primaryKey).name)?.value;
+          }
         }
 
         const { allowedActions } = await interpretResource(
@@ -1409,6 +1488,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               selectedDataSourceColumnNameSet.add(col.foreignResource.polymorphicOn);
             }
           }
+          if (isCompositePrimaryKey(resource)) {
+            // all key columns are needed to build record id out of the row
+            for (const pkName of primaryKeyColumnNames(resource)) {
+              selectedDataSourceColumnNameSet.add(pkName);
+            }
+          }
         }
 
         const selectedDataSourceColumns = selectedDataSourceColumnNameSet && !shouldAddListHelpers
@@ -1460,6 +1545,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           getTotals: source === 'list',
           columns: selectedDataSourceColumns,
         });
+
+        if (shouldAddListHelpers && isCompositePrimaryKey(resource)) {
+          // single primary key rows keep exactly the shape they had before, frontend derives id itself
+          for (const item of data.data) {
+            item._primaryKeyValue = encodeRecordId(resource, item);
+          }
+        }
 
         // for foreign keys, add references
         await Promise.all(
@@ -1552,7 +1644,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }), {});
               targetDataMap = Object.keys(targetData).reduce((tdAcc, polymorphicOnValue) => ({
                 ...tdAcc,
-                ...targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
+                [polymorphicOnValue]: targetData[polymorphicOnValue].data.reduce((dAcc, item) => {
                   dAcc[item[targetResourcePkFields[polymorphicOnValue]]] = {
                     label: targetResources[polymorphicOnValue].recordLabel(item),
                     pk: item[targetResourcePkFields[polymorphicOnValue]],
@@ -1569,7 +1661,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                   item[col.name] = item[col.name].map((i) => targetDataMap[i]);
                 }
               } else {
-                item[col.name] = targetDataMap[item[col.name]];
+                const itemTargetDataMap = col.foreignResource.resourceId
+                  ? targetDataMap
+                  : targetDataMap[item[col.foreignResource.polymorphicOn]];
+                item[col.name] = itemTargetDataMap?.[item[col.name]];
               }
             });
           })
@@ -1591,6 +1686,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         
           for (const item of data.data) {
             for (const key of Object.keys(item)) {
+              if (key === '_primaryKeyValue') {
+                continue;
+              }
               const col = resource.columns.find((c) => c.name === key);
               const bo = col ? await isBackendOnly(col, ctx) : true;
               if (!col || bo) {
@@ -1632,7 +1730,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (selectedColumnNameSet) {
           for (const item of data.data) {
             for (const key of Object.keys(item)) {
-              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl') {
+              if (!selectedColumnNameSet.has(key) && key !== '_label' && key !== '_clickUrl' && key !== '_primaryKeyValue') {
                 delete item[key];
               }
             }
@@ -1640,8 +1738,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         if (source === 'list') {
-          const pkField = resource.columns.find((col) => col.primaryKey).name;
-          (data as any).recordIds = data.data.map((item) => item[pkField]);
+          if (isCompositePrimaryKey(resource)) {
+            (data as any).recordIds = data.data.map((item) => item._primaryKeyValue ?? encodeRecordId(resource, item));
+          } else {
+            const pkField = resource.columns.find((col) => col.primaryKey).name;
+            (data as any).recordIds = data.data.map((item) => item[pkField]);
+          }
         }
 
         return data;
@@ -1722,7 +1824,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/aggregate',
-      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation.',
+      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation. Requires list and show access to the resource, and only accepts columns the user can read on the show view: backend-only columns and columns hidden from the show view are rejected.',
       request_schema: aggregateRequestSchema,
       response_schema: aggregateResponseSchema,
       handler: async ({ body, adminUser, headers }) => {
@@ -1751,9 +1853,73 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           this.adminforth
         );
 
+        // aggregation reads a whole set of records at once, so it needs list access
         const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
         if (!allowed) {
           return { error };
+        }
+
+        // ...and min/max/groupBy return raw per-field values, which is what the show view does,
+        // so a resource with no reachable show view must not be aggregatable either
+        const { allowed: showAllowed, error: showError } = checkAccess(AllowedActionsEnum.show, allowedActions);
+        if (!showAllowed) {
+          return { error: showError };
+        }
+
+        const columnCtx = {
+          adminUser,
+          resource,
+          meta,
+          source: ActionCheckSource.ShowRequest,
+          adminforth: this.adminforth,
+        };
+
+        // a column may only take part in an aggregation if the user could have read the
+        // very same value from the show view
+        const columnExposureError = async (fieldName: string, context: string): Promise<string | null> => {
+          const column = resource.columns.find((col) => col.name === fieldName);
+          if (!column) {
+            return `${context}: unknown column "${fieldName}"`;
+          }
+          if (await isBackendOnly(column, columnCtx)) {
+            return `${context}: column "${fieldName}" cannot be aggregated (backendOnly is true).`;
+          }
+          if (!await isShown(column, 'show', columnCtx)) {
+            return `${context}: column "${fieldName}" cannot be aggregated (showIn.show is false).`;
+          }
+          return null;
+        };
+
+        for (const [alias, rule] of Object.entries((aggregations || {}) as { [alias: string]: IAggregationRule })) {
+          // plain count does not reference any column
+          if (!rule?.field) {
+            continue;
+          }
+          const fieldError = await columnExposureError(rule.field, `Aggregation "${alias}"`);
+          if (fieldError) {
+            return { error: fieldError };
+          }
+        }
+
+        const groupByRules = Array.isArray(groupBy) ? groupBy : (groupBy ? [groupBy] : []);
+        for (const groupByRule of groupByRules) {
+          if (!groupByRule?.field) {
+            continue;
+          }
+          const fieldError = await columnExposureError(groupByRule.field, 'GroupBy');
+          if (fieldError) {
+            return { error: fieldError };
+          }
+        }
+
+        // filters are not returned to the caller, but combined with an aggregation they turn
+        // into an oracle which reads a value out one comparison at a time, so backendOnly
+        // columns are off limits here as well
+        for (const fieldName of collectFilterFields(filters)) {
+          const column = resource.columns.find((col) => col.name === fieldName);
+          if (column && await isBackendOnly(column, columnCtx)) {
+            return { error: `Filter: column "${fieldName}" cannot be used (backendOnly is true).` };
+          }
         }
 
         // normalize filters same way as get_resource_data
@@ -2064,11 +2230,26 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               }
             }
 
-            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-            if (record[primaryKeyColumn.name] !== undefined) {
-              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
-              if (existingRecord) {
-                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+            if (isCompositePrimaryKey(resource)) {
+              const createPkColumnNames = primaryKeyColumnNames(resource);
+              if (createPkColumnNames.every((name) => record[name] !== undefined)) {
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get(
+                  createPkColumnNames.map((name) => Filters.EQ(name, record[name]))
+                );
+                if (existingRecord) {
+                  return {
+                    error: `Record with ${createPkColumnNames.map((name) => `${name} '${record[name]}'`).join(', ')} already exists`,
+                    ok: false,
+                  };
+                }
+              }
+            } else {
+              const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+              if (record[primaryKeyColumn.name] !== undefined) {
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+                if (existingRecord) {
+                  return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+                }
               }
             }
 
@@ -2176,9 +2357,13 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             }
             const connector = this.adminforth.connectors[resource.dataSource];
 
+            const newRecordId = isCompositePrimaryKey(resource)
+              ? encodeRecordId(resource, createRecordResponse.createdRecord)
+              : createRecordResponse.createdRecord[connector.getPrimaryKey(resource)];
+
             return {
-              newRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
-              redirectToRecordId: createRecordResponse.createdRecord[connector.getPrimaryKey(resource)],
+              newRecordId,
+              redirectToRecordId: newRecordId,
               ok: true
             }
         }
@@ -2203,7 +2388,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
             if (!oldRecord) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-                return { error: `Record with ${primaryKeyColumn.name} ${recordId} not found` };
+                return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
             }
             const record = body['record'];
 
@@ -2220,11 +2405,33 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error: allowedError };
             }
 
-            const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-            if (record[primaryKeyColumn.name] !== undefined) {
-              const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
-              if (existingRecord) {
-                return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+            if (isCompositePrimaryKey(resource)) {
+              const pkColumnNames = primaryKeyColumnNames(resource);
+              const pkIsChanged = pkColumnNames.some(
+                (name) => record[name] !== undefined && String(record[name]) !== String(oldRecord[name])
+              );
+              if (pkIsChanged) {
+                const newPkValues = pkColumnNames.reduce((acc, name) => {
+                  acc[name] = record[name] !== undefined ? record[name] : oldRecord[name];
+                  return acc;
+                }, {});
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get(
+                  pkColumnNames.map((name) => Filters.EQ(name, newPkValues[name]))
+                );
+                if (existingRecord) {
+                  return {
+                    error: `Record with ${pkColumnNames.map((name) => `${name} '${newPkValues[name]}'`).join(', ')} already exists`,
+                    ok: false,
+                  };
+                }
+              }
+            } else {
+              const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+              if (record[primaryKeyColumn.name] !== undefined) {
+                const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+                if (existingRecord) {
+                  return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
+                }
               }
             }
 
@@ -2326,7 +2533,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
             return {
-              recordId: record.id,
+              recordId: isCompositePrimaryKey(resource)
+                ? encodeRecordId(resource, { ...oldRecord, ...record })
+                : record.id,
               ok: true
             }
         }

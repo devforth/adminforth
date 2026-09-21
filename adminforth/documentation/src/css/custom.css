@@ -17,6 +17,11 @@
   /* --ifm-color-secondary: rgb(144 144 144);  */
 
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.05);
+
+  /* home page concept sections */
+  --af-accent-underline: rgba(26, 86, 219, 0.14);
+  --af-card-bg: #ffffff;
+  --af-card-soft: #f4f7fb;
 }
 
 [data-theme='dark'] {
@@ -30,6 +35,11 @@
   --ifm-color-primary-lighter: rgba(66, 143, 255, 1); /* Even Lighter */
   --ifm-color-primary-lightest: rgba(89, 167, 255, 1); /* Lightest Blue */
   --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
+
+  /* home page concept sections */
+  --af-accent-underline: rgba(36, 104, 255, 0.28);
+  --af-card-bg: #1b1d22;
+  --af-card-soft: #232630;
 }
 
 .code-block-diff-add-line {
@@ -455,6 +465,21 @@ html[data-theme="dark"] .fakeScreen {
   gap: 10px;
 }
 
+/* DocSearch supports `/` natively; unlike Ctrl+K, Chrome does not intercept it. */
+.DocSearch-Button-Keys {
+  align-items: center;
+  display: flex;
+  min-width: 20px;
+}
+
+.DocSearch-Button-Keys kbd {
+  display: none;
+}
+
+.DocSearch-Button-Keys::after {
+  content: '/';
+}
+
 .hidden-sidebar {
   display: none
   ;
@@ -490,4 +515,15 @@ html[data-theme="dark"] .fakeScreen {
   }
 
  
+}
+
+/*
+ * Infima's mobile footer rule sets `.footer__link-item { width: max-content }`,
+ * so a long label (e.g. "We can develop admin panel for your project") makes the
+ * whole page scroll sideways on narrow phones. Cap it to the column width.
+ */
+@media screen and (max-width: 996px) {
+  .footer__link-item {
+    max-width: 100%;
+  }
 }

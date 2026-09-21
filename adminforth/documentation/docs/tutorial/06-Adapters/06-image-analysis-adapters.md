@@ -13,7 +13,7 @@ These adapters can analyze image content, extract text from images, identify obj
 ## OpenAI Vision Adapter
 
 ```bash
-pnpm install @adminforth/image-vision-adapter-openai --save
+pnpm add @adminforth/image-vision-adapter-openai --save
 ```
 
 Integrates AdminForth with OpenAI to provide advanced AI-powered image analysis. It can describe image content, read and extract text from images, identify objects and people, and provide detailed visual insights.

@@ -3,13 +3,15 @@ import {
   AdminForthResourceColumn,
   IAdminForthSort, IAdminForthSingleFilter, IAdminForthAndOrFilter,
   AdminForthConfig,
-  IAggregationRule, IGroupByRule, IGroupByDateTrunc,
+  IAggregationRule, IGroupByRule, IGroupByDateTrunc
 } from "../types/Back.js";
 
-
+import type { AdminUser } from "../types/Common.js"
 
 import { suggestIfTypo } from "../modules/utils.js";
-import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections } from "../types/Common.js";
+import { decodeRecordId, encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames, primaryKeyColumns } from "../modules/recordId.js";
+import { interpretResource } from "../modules/restApi.js";
+import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum } from "../types/Common.js";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import { afLogger } from '../modules/logger.js';
@@ -24,11 +26,32 @@ type AdminForthFilterNormalizationResult = {
 };
 
 async function publishShowPageUpdate(resource: AdminForthResource, recordId: string, updates: Record<string, any>) {
-  await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, {
-    resourceId: resource.resourceId,
-    recordId,
-    updates,
-  });
+  await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, 
+    {
+      resourceId: resource.resourceId,
+      recordId,
+      updates,
+    },
+    async (adminUser: AdminUser): Promise<boolean> => {
+      if (!adminUser) {
+        // anonymous clients should never receive record updates
+        return false;
+      }
+      try {
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          { requestBody: null, pk: recordId },
+          ActionCheckSource.ShowRequest,
+          global.adminforth,
+        );
+        return allowedActions[AllowedActionsEnum.show] === true;
+      } catch (e) {
+        afLogger.error(`Error while checking show access for ${resource.resourceId} record ${recordId}, assuming update should not be sent: ${e}`);
+        return false;
+      }
+    }
+  );
 }
 
 
@@ -48,6 +71,16 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     throw new Error('Method not implemented.');
   }
 
+  /**
+   * Set to true in connector which is able to update/delete records of resources with composite primary key
+   * (i.e. which uses pkValues argument of updateRecordOriginalValues/deleteRecord instead of getPrimaryKey()).
+   */
+  supportsCompositePrimaryKey: boolean = false;
+
+  /**
+   * Returns name of first primary key column.
+   * For resources with composite primary key use {@link getPrimaryKeys} instead.
+   */
   getPrimaryKey(resource: AdminForthResource): string {
     for (const col of resource.dataSourceColumns) {
         if (col.primaryKey) {
@@ -56,13 +89,85 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
   }
 
+  /**
+   * Returns names of all primary key columns (more then one for resources with composite primary key)
+   */
+  getPrimaryKeys(resource: AdminForthResource): string[] {
+    return primaryKeyColumnNames(resource);
+  }
+
+  /**
+   * Splits recordId into values of primary key columns, casted to types which data source understands.
+   * For resource with single primary key returns object with one key.
+   */
+  getPrimaryKeyValues(resource: AdminForthResource, recordId: any): Record<string, any> {
+    const rawValues = decodeRecordId(resource, recordId);
+    return primaryKeyColumns(resource).reduce((acc, col) => {
+      acc[col.name] = this.validateAndSetFieldValue(col, this.castRecordIdPart(col, rawValues[col.name]));
+      return acc;
+    }, {} as Record<string, any>);
+  }
+
+  /**
+   * Parts of composite record id always come as strings (they are parsed out of url or API payload),
+   * so cast them to JS types which validateAndSetFieldValue expects for the column type.
+   */
+  castRecordIdPart(column: AdminForthResourceColumn, value: any): any {
+    if (typeof value !== 'string') {
+      return value;
+    }
+    if (
+      column.type === AdminForthDataTypes.INTEGER ||
+      column.type === AdminForthDataTypes.FLOAT ||
+      column.type === AdminForthDataTypes.DECIMAL
+    ) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) {
+        throw new Error(
+          `Part '${value}' of record id is not a valid ${column.type} value for primary key column '${column.name}'`
+        );
+      }
+      return num;
+    }
+    return value;
+  }
+
+  /**
+   * Filter which excludes record with given composite primary key:
+   * record differs from given one if at least one of primary key columns differs.
+   */
+  compositeOtherRecordFilter(resource: AdminForthResource, record: any): AdminForthFilterNode {
+    return {
+      operator: AdminForthFilterOperators.OR,
+      subFilters: this.getPrimaryKeys(resource).map((primaryKeyField) => ({
+        field: primaryKeyField,
+        operator: AdminForthFilterOperators.NE as AdminForthFilterOperators.NE,
+        value: record[primaryKeyField],
+      })),
+    };
+  }
+
+  /**
+   * Builds filters which select exactly one record by recordId
+   */
+  getPrimaryKeyFilters(resource: AdminForthResource, recordId: any): IAdminForthSingleFilter[] {
+    const rawValues = decodeRecordId(resource, recordId);
+    return primaryKeyColumnNames(resource).map((name) => ({
+      field: name,
+      operator: AdminForthFilterOperators.EQ,
+      value: rawValues[name],
+    }));
+  }
+
   async getRecordByPrimaryKeyWithOriginalTypes(resource: AdminForthResource, id: string): Promise<any> {
     const data = await this.getDataWithOriginalTypes({
       resource,
       limit: 1,
       offset: 0,
       sort: [],
-      filters: { operator: AdminForthFilterOperators.AND, subFilters: [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }]},
+      filters: { operator: AdminForthFilterOperators.AND, subFilters: isCompositePrimaryKey(resource)
+        ? this.getPrimaryKeyFilters(resource, id)
+        : [{ field: this.getPrimaryKey(resource), operator: AdminForthFilterOperators.EQ, value: id }]},
     });
     return data.length > 0 ? data[0] : null;
   }
@@ -511,7 +616,10 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         operator: AdminForthFilterOperators.AND, 
         subFilters: [
           { field: column.name, operator: AdminForthFilterOperators.EQ, value },
-          ...(record ? [{ field: primaryKeyField, operator: AdminForthFilterOperators.NE as AdminForthFilterOperators.NE, value: record[primaryKeyField] }] : [])
+          ...(record ? (isCompositePrimaryKey(resource)
+            // composite: record differs from given one if at least one of primary key columns differs
+            ? [this.compositeOtherRecordFilter(resource, record)]
+            : [{ field: primaryKeyField, operator: AdminForthFilterOperators.NE as AdminForthFilterOperators.NE, value: record[primaryKeyField] }]) : [])
         ]
       },
       limit: 1,
@@ -564,7 +672,17 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     afLogger.trace(`🪲🆕 creating record, ${JSON.stringify(recordWithOriginalValues)}`);
     let pkValue = await this.createRecordOriginalValues({ resource, record: recordWithOriginalValues });
-    if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
+    if (isCompositePrimaryKey(resource)) {
+      // composite key is never auto generated, so all its columns must be filled by caller
+      const missingPks = this.getPrimaryKeys(resource).filter((pk) => recordWithOriginalValues[pk] === undefined);
+      if (missingPks.length) {
+        throw new Error(
+          `Resource '${resource.resourceId}' has composite primary key (${this.getPrimaryKeys(resource).join(', ')}), ` +
+          `so all primary key columns must have values on record creation, got no value for: ${missingPks.join(', ')}`
+        );
+      }
+      pkValue = encodeRecordId(resource, recordWithOriginalValues);
+    } else if (recordWithOriginalValues[this.getPrimaryKey(resource)] !== undefined) {
       // some data sources always return some value for pk, even if it is was not auto generated
       // this check prevents wrong value from being used later in get request
       pkValue = recordWithOriginalValues[this.getPrimaryKey(resource)];
@@ -581,7 +699,7 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
     }
   }
 
-  updateRecordOriginalValues({ resource, recordId, newValues }: { resource: AdminForthResource; recordId: string; newValues: any; }): Promise<void> {
+  updateRecordOriginalValues({ resource, recordId, newValues, pkValues }: { resource: AdminForthResource; recordId: string; newValues: any; pkValues?: Record<string, any>; }): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
@@ -621,14 +739,37 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
 
     afLogger.trace(`🪲✏️ updating record id:${recordId}, values: ${JSON.stringify(recordWithOriginalValues)}`);
 
-    await this.updateRecordOriginalValues({ resource, recordId, newValues: recordWithOriginalValues });
+    if (isCompositePrimaryKey(resource)) {
+      this.assertCompositePrimaryKeySupported(resource);
+      await this.updateRecordOriginalValues({
+        resource,
+        recordId,
+        newValues: recordWithOriginalValues,
+        pkValues: this.getPrimaryKeyValues(resource, recordId),
+      });
+    } else {
+      await this.updateRecordOriginalValues({ resource, recordId, newValues: recordWithOriginalValues });
+    }
     await publishShowPageUpdate(resource, recordId, newValues);
 
     return { ok: true };
   }
 
-  deleteRecord({ resource, recordId }: { resource: AdminForthResource; recordId: string; }): Promise<boolean> {
+  deleteRecord({ resource, recordId, pkValues }: { resource: AdminForthResource; recordId: string; pkValues?: Record<string, any>; }): Promise<boolean> {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Throws readable error if resource uses composite primary key but connector can't handle it
+   */
+  assertCompositePrimaryKeySupported(resource: AdminForthResource): void {
+    if (isCompositePrimaryKey(resource) && !this.supportsCompositePrimaryKey) {
+      throw new Error(
+        `Resource '${resource.resourceId}' has composite primary key (${this.getPrimaryKeys(resource).join(', ')}), ` +
+        `but data source connector '${this.constructor.name}' does not support composite primary keys. ` +
+        `Please update connector package to version which sets supportsCompositePrimaryKey = true`
+      );
+    }
   }
 
   async getData({ resource, limit, offset, sort, filters, getTotals, columns }: { 

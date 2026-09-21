@@ -106,6 +106,12 @@ export interface AdminUser {
   dbUser: any,
 
   /**
+   * Optional software actor executing an action on behalf of this user.
+   * For example, `af-agent` or `codex@1.2.3 | Production Codex`.
+   */
+  executedBy?: string,
+
+  /**
    * Flag which indicates that this user is not real user from database, but external user from e.g. custom website.
    * True here is not possible in AdminForth built-in functions, auth middleware etc. 
    * True value is only possible in your need to tell AdminForth that this is not real "fake" admin user
@@ -695,8 +701,9 @@ export type ShowInResolved = {
 }
 
 export interface AdminForthPolymorphicForeignResource {
-  resourceId: string,
+  resourceId: string | null,
   whenValue: string,
+  allowedActions?: AllowedActionsResolved,
 }
 export interface AdminForthForeignResourceCommon {
   resourceId?: string,
@@ -705,6 +712,7 @@ export interface AdminForthForeignResourceCommon {
   unsetLabel?: string,
   searchableFields?: string | string[],
   searchIsCaseSensitive?: boolean,
+  allowedActions?: AllowedActionsResolved,
 }
 
 export type FillOnCreateFunction = (params: {
@@ -724,6 +732,19 @@ export interface AdminForthResourceColumnInputCommon {
    * Column name in database.
    */
   name: string,
+
+  /**
+   * Normalizes a column value before AdminForth CRUD create and update operations and, when this column
+   * is configured as `auth.usernameField`, before the password-login lookup.
+   *
+   * Does not normalize filter values or existing stored records.
+   *
+   * @example
+   * ```ts
+   * normalize: (value: string) => value.trim().toLowerCase(),
+   * ```
+   */
+  normalize?: (value: any) => any,
 
   /**
    * How column can be labled in the admin panel.
@@ -1335,6 +1356,15 @@ export interface AdminForthConfigForFrontend {
   }[],
 }
 
+export type AdminForthPublicConfigForFrontend = Pick<
+  AdminForthConfigForFrontend,
+  'brandName' | 'usernameFieldName' | 'loginBackgroundImage' | 'loginBackgroundPosition' |
+  'removeBackgroundBlendMode' | 'title' | 'demoCredentials' | 'loginPageInjections' |
+  'rememberMeDuration' | 'singleTheme' | 'customHeadItems'
+> & {
+  globalInjections: Pick<AdminForthConfigForFrontend['globalInjections'], 'everyPageBottom'>,
+};
+
 export interface GetBaseConfigResponse {
   user: UserData,
   resources: ResourceVeryShort[],
@@ -1343,6 +1373,24 @@ export interface GetBaseConfigResponse {
   adminUser: AdminUser,
   version: string,
 }
+
+
+export interface GetConfigResponseAnonymous {
+  loggedIn: false,
+  config: AdminForthPublicConfigForFrontend,
+}
+
+export interface GetConfigResponseAuthorized {
+  loggedIn: true,
+  config: AdminForthConfigForFrontend,
+  user: UserData,
+  resources: ResourceVeryShort[],
+  menu: AdminForthConfigMenuItem[],
+  adminUser: AdminUser,
+  version: string,
+}
+
+export type GetConfigResponse = GetConfigResponseAnonymous | GetConfigResponseAuthorized;
 
 export interface ColumnMinMaxValue { 
   [key: string]: { min: any, max: any } 

@@ -31,7 +31,7 @@
           {{ foreignResource.label }}
         </RouterLink>
       </span>
-      <RouterLink v-else-if="record[column.name]" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
+      <RouterLink v-else-if="record[column.name] && canShowForeignRecord" class="font-medium text-lightPrimary dark:text-darkPrimary hover:brightness-110 whitespace-nowrap"
           :to="{
             name: 'resource-show',
             params: {
@@ -49,6 +49,9 @@
         >
         {{ record[column.name].label }}
       </RouterLink>
+      <p v-else-if="record[column.name]" class="font-medium text-lightListTableText dark:text-darkListTableText whitespace-nowrap">
+        {{ record[column.name].label }}
+      </p>
       <div v-else>
         <span class="text-gray-400">-</span>
       </div>
@@ -86,7 +89,7 @@
       </template>
     </span>
     <span v-else-if="column.enum">
-      {{ checkEmptyValues(column.enum.find(e => e.value === record[column.name])?.label || record[column.name], route.meta.type as "show" | "list") }}
+      {{ checkEmptyValues(column.enum.find((e: any) => e.value === record[column.name])?.label || record[column.name], route.meta.type as "show" | "list") }}
     </span>
     <span v-else-if="column.type === 'datetime'" class="whitespace-nowrap">
       {{ checkEmptyValues(formatDateTime(record[column.name]), route.meta.type as "show" | "list") }}
@@ -112,44 +115,33 @@
 
 <script setup lang="ts">
 
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import {checkEmptyValues} from '@/utils';
+import {checkEmptyValues, formatDate, formatDateTime, formatTime} from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
 import "vue3-json-viewer/dist/vue3-json-viewer.css";
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
 const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => module.JsonViewer))
 
 import { useCoreStore } from '@/stores/core';
+import type { any } from 'zod';
 
 const coreStore = useCoreStore();
 const route = useRoute();
 
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
 const props = defineProps<{
-  column: AdminForthResourceColumnCommon,
+  column: any,
   record: any
 }>();
 
-function formatDateTime(date: string) {
-  if (!date) return '';
-  return dayjs.utc(date).local().format(`${coreStore.config?.datesFormat} ${coreStore.config?.timeFormat}` || 'YYYY-MM-DD HH:mm:ss');
-}
+const canShowForeignRecord = computed(() => {
+  if (props.column.foreignResource.resourceId) {
+    return props.column.foreignResource.allowedActions?.show;
+  }
 
-function formatDate(date: string) {
-  if (!date) return '';
-  return dayjs.utc(date).local().format(coreStore.config?.datesFormat || 'YYYY-MM-DD');
-}
-
-function formatTime(time: string) {
-  if (!time) return '';
-  return dayjs(`0000-00-00 ${time}`).format(coreStore.config?.timeFormat || 'HH:mm:ss');
-}
+  return props.column.foreignResource.polymorphicResources.find(
+    (resource: any) => resource.whenValue === props.record[props.column.foreignResource.polymorphicOn]
+  )?.allowedActions?.show;
+});
 
 function getArrayItemDisplayValue(value: any, column: AdminForthResourceColumnCommon) {
   if (column.isArray?.itemType === 'datetime') {

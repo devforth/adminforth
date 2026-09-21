@@ -3,6 +3,7 @@ import { callAdminForthApi } from '@/utils';
 import { type AdminForthResourceFrontend } from '../types/Common';
 import { useAdminforth } from '@/adminforth';
 import { showErrorTost } from '@/composables/useFrontendApi'
+import { encodeRecordId, isCompositePrimaryKey } from '@/utils/recordId';
 
 let getResourceDataLastAbortController: AbortController | null = null;
 export async function getList(resource: AdminForthResourceFrontend, isPageLoaded: boolean, page: number | null , pageSize: number, sort: any, checkboxes:{ value: any[] }, filters: any = [] ) {
@@ -39,7 +40,10 @@ export async function getList(resource: AdminForthResourceFrontend, isPageLoaded
     return {rows, totalRows, error: data.error};
   }
   rows = data.data?.map((row: any) => {
-    if (resource?.columns?.find(c => c.primaryKey)?.foreignResource) {
+    if (resource && isCompositePrimaryKey(resource)) {
+      // composite key: backend already sent ready record id, fall back to building it from the row
+      row._primaryKeyValue = row._primaryKeyValue ?? encodeRecordId(resource, row);
+    } else if (resource?.columns?.find(c => c.primaryKey)?.foreignResource) {
       row._primaryKeyValue = row[resource.columns.find(c => c.primaryKey)!.name].pk;
     } else if (resource) {
       row._primaryKeyValue = row[resource.columns.find(c => c.primaryKey)!.name];

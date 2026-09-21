@@ -14,7 +14,7 @@ Allows to create a copy of record quickly, by substituting default values to cre
 To install the plugin:
 
 ```bash
-pnpm install @adminforth/clone-row --save
+pnpm add @adminforth/clone-row --save
 ```
 
 ## Setting up

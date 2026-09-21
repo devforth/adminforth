@@ -33,8 +33,12 @@ docker build -t myadminapp .
 And run container with:
 
 ```bash
+# Generate a signing key once and keep it in your secret store (never commit it).
+# On Windows without openssl: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+export ADMINFORTH_SECRET="$(openssl rand -hex 32)"
+
 docker run -p 3500:3500 \
-  -e ADMINFORTH_SECRET=CHANGEME \
+  -e ADMINFORTH_SECRET="$ADMINFORTH_SECRET" \
   -v $(pwd)/db:/code/db \
   myadminapp
 ```
@@ -115,7 +119,7 @@ services:
     build: ./adminforth-app
     environment:
       - NODE_ENV=production
-      - ADMINFORTH_SECRET=!CHANGEME! # ☝️ replace with your secret
+      - ADMINFORTH_SECRET=${ADMINFORTH_SECRET:?generate one with openssl rand -hex 32} # ☝️ export it in the shell or put it in a gitignored .env next to this compose file; compose refuses to start when it is unset
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminforth.tls=true"

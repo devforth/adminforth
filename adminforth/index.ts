@@ -1,4 +1,5 @@
 import AdminForthAuth from './auth.js';
+import { compositePkValues, encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames } from './modules/recordId.js';
 import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
@@ -39,6 +40,7 @@ import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './mod
 import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
+import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
 export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
@@ -54,6 +56,14 @@ export { interpretResource, rejectApiRawFilters };
 export { AdminForthPlugin };
 export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
 export { default as AdminForthBaseConnector } from './dataConnectors/baseConnector.js';
+export {
+  COMPOSITE_RECORD_ID_SEPARATOR,
+  primaryKeyColumns,
+  primaryKeyColumnNames,
+  isCompositePrimaryKey,
+  encodeRecordId,
+  decodeRecordId,
+} from './modules/recordId.js';
 
 
 class AdminForth implements IAdminForth {
@@ -501,8 +511,10 @@ class AdminForth implements IAdminForth {
       const dbType = ds.url.split(':')[0];
       dataSourcesDatabasesTypes.push(dbType)
     });
-    const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)];
-    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector;
+    // db types for which user supplied own connector class in config don't need npm package to be installed
+    const uniqueDbTypes = [...new Set(dataSourcesDatabasesTypes)]
+      .filter((dbType) => !this.config.databaseConnectors?.[dbType]);
+    let SQLiteConnector, PostgresConnector, MongoConnector, ClickhouseConnector, MysqlConnector, QdrantConnector, DuckDBConnector;
     if (uniqueDbTypes.includes('sqlite')) {
       SQLiteConnector = await this.tryToImportConnector('sqlite', doesUserHavePnpmLock);
     }
@@ -521,6 +533,9 @@ class AdminForth implements IAdminForth {
     if (uniqueDbTypes.includes('qdrant')) {
       QdrantConnector = await this.tryToImportConnector('qdrant', doesUserHavePnpmLock);
     }
+    if (uniqueDbTypes.includes('duckdb')) {
+      DuckDBConnector = await this.tryToImportConnector('duckdb', doesUserHavePnpmLock);
+    }
 
     this.connectorClasses = {
       'sqlite': SQLiteConnector,
@@ -530,6 +545,7 @@ class AdminForth implements IAdminForth {
       'clickhouse': ClickhouseConnector,
       'mysql': MysqlConnector,
       'qdrant': QdrantConnector,
+      'duckdb': DuckDBConnector,
     };
     this.config.databaseConnectors = {
       ...this.connectorClasses,
@@ -595,9 +611,51 @@ class AdminForth implements IAdminForth {
         throw new Error(`Table '${res.table}' has no column defined or auto-discovered. Please set 'primaryKey: true' in a columns which has unique value for each record and index`);
       }
 
+      if (isCompositePrimaryKey(res as AdminForthResource)) {
+        const virtualPk = res.columns.find((col) => col.primaryKey && col.virtual);
+        if (virtualPk) {
+          throw new Error(`Resource '${res.resourceId}' has virtual column '${virtualPk.name}' marked as primaryKey, which is not allowed`);
+        }
+        if (!this.connectors[res.dataSource].supportsCompositePrimaryKey) {
+          throw new Error(
+            `Resource '${res.resourceId}' has composite primary key (${primaryKeyColumnNames(res as AdminForthResource).join(', ')}), ` +
+            `but data source '${res.dataSource}' connector does not support composite primary keys. ` +
+            `Please update connector package to version which supports them`
+          );
+        }
+      }
+
     }));
 
     this.statuses.dbDiscover = 'done';
+
+    for (const res of this.config.resources) {
+      if (!isCompositePrimaryKey(res)) {
+        continue;
+      }
+      if (this.config.auth?.usersResourceId === res.resourceId) {
+        throw new Error(
+          `Resource '${res.resourceId}' is used as auth.usersResourceId, so it must have single primaryKey column, ` +
+          `but it has composite primary key (${primaryKeyColumnNames(res).join(', ')})`
+        );
+      }
+      const referencingColumn = this.config.resources.reduce((found, otherRes) => found || (
+        otherRes.columns.find((col) => (
+          col.foreignResource?.resourceId === res.resourceId ||
+          col.foreignResource?.polymorphicResources?.some((pr) => pr.resourceId === res.resourceId)
+        )) && { resourceId: otherRes.resourceId, column: otherRes.columns.find((col) => (
+          col.foreignResource?.resourceId === res.resourceId ||
+          col.foreignResource?.polymorphicResources?.some((pr) => pr.resourceId === res.resourceId)
+        )).name }
+      ), null as null | { resourceId: string, column: string });
+      if (referencingColumn) {
+        throw new Error(
+          `Column '${referencingColumn.column}' of resource '${referencingColumn.resourceId}' has foreignResource pointing to ` +
+          `resource '${res.resourceId}' which has composite primary key (${primaryKeyColumnNames(res).join(', ')}). ` +
+          `foreignResource to resources with composite primary key is not supported yet`
+        );
+      }
+    }
 
     for (const res of this.config.resources) {
       this.configValidator.postProcessAfterDiscover(res);
@@ -614,6 +672,11 @@ class AdminForth implements IAdminForth {
         Please set ADMINFORTH_SECRET environment variable to a random string to secure your admin panel.
         ADMINFORTH_SECRET variable is used to sign JWT tokens
       `);
+    }
+    if (adminforthSecret.length < 16) {
+      afLogger.warn(`ADMINFORTH_SECRET is too short (${adminforthSecret.length} characters). ` +
+        'It is the key that signs every auth cookie: a guessable value lets anyone forge a session for any user. ' +
+        'Generate one with: openssl rand -hex 32');
     }
   }
 
@@ -722,6 +785,8 @@ class AdminForth implements IAdminForth {
   ): Promise<CreateResourceRecordResult> {
     const { resource, record, adminUser, extra, response } = params;
 
+    normalizeRecordValues(resource, record);
+
     const err = this.validateRecordValues(resource, record, 'create');
     if (err) {
       return { error: err };
@@ -775,7 +840,9 @@ class AdminForth implements IAdminForth {
       return { error };
     }
     
-    const primaryKey = createdRecord[resource.columns.find((col) => col.primaryKey).name];
+    const primaryKey = isCompositePrimaryKey(resource)
+      ? encodeRecordId(resource, createdRecord)
+      : createdRecord[resource.columns.find((col) => col.primaryKey).name];
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.create?.afterSave)) {
@@ -812,6 +879,7 @@ class AdminForth implements IAdminForth {
   ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
     const dataToUse = updates || record;
+    normalizeRecordValues(resource, dataToUse);
     const err = this.validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
       return { error: err };
@@ -916,7 +984,7 @@ class AdminForth implements IAdminForth {
     }
 
     const connector = this.connectors[resource.dataSource];
-    await connector.deleteRecord({ resource, recordId});
+    await connector.deleteRecord({ resource, recordId, pkValues: compositePkValues(connector, resource, recordId) });
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.delete?.afterSave)) {

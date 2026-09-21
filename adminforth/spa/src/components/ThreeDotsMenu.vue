@@ -1,14 +1,15 @@
 <template >
   <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionFront) => action.showInThreeDotsDropdown))">
-    <button 
+    <Button 
       ref="buttonTriggerRef"
       @click="toggleDropdownVisibility"
-      class="flex transition-all items-center af-button-shadow py-2.5 px-2.5 text-sm font-medium text-lightThreeDotsMenuIconDots focus:outline-none bg-lightThreeDotsMenuIconBackground rounded border border-lightThreeDotsMenuIconBackgroundBorder hover:bg-lightThreeDotsMenuIconBackgroundHover hover:text-lightThreeDotsMenuIconDotsHover focus:z-10 focus:ring-4 focus:ring-lightThreeDotsMenuIconFocus dark:focus:ring-darkThreeDotsMenuIconFocus dark:bg-darkThreeDotsMenuIconBackground dark:text-darkThreeDotsMenuIconDots dark:border-darkThreeDotsMenuIconBackgroundBorder dark:hover:text-darkThreeDotsMenuIconDotsHover dark:hover:bg-darkThreeDotsMenuIconBackgroundHover rounded-default"
+      class="py-2.5 px-2.5 text-lightThreeDotsMenuIconDots hover:text-lightThreeDotsMenuIconDotsHover dark:text-darkThreeDotsMenuIconDots  dark:hover:text-darkThreeDotsMenuIconDotsHover"
+      variant="secondary"
     >
       <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
         <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
       </svg>
-    </button>
+    </Button>
 
     <!-- Dropdown menu -->
     <div 
@@ -28,7 +29,7 @@
                 'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
                 'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
               }"
-              @click="injectedComponentClick(i)"
+              @click="injectedComponentClick(i, $event)"
             >
               <div class="wrapper" v-if="getCustomComponent(item)">
                 <component 
@@ -46,7 +47,7 @@
           <li v-for="(action, i) in customActions" :key="action.id">
             <div 
               class="wrapper"                 
-              @click="injectedComponentClick(threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i)"
+              @click="injectedComponentClick(threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i, $event)"
             > 
               <component
                 :ref="(el: any) => setComponentRef(el, threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i)"
@@ -103,7 +104,7 @@ import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
-import { Spinner } from '@/afcl';
+import { Spinner, Button } from '@/afcl';
 
 const { list, alert} = useAdminforth();
 const route = useRoute();
@@ -113,7 +114,7 @@ const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]
 const showDropdown = ref(false);
 const actionLoadingStates = ref<Record<string, boolean>>({});
 const dropdownRef = ref<HTMLElement | null>(null);
-const buttonTriggerRef = ref<HTMLElement | null>(null);
+const buttonTriggerRef = ref<ComponentPublicInstance | null>(null);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
@@ -175,8 +176,11 @@ function startBulkAction(actionId: string) {
   showDropdown.value = false;
 }
 
-async function injectedComponentClick(index: number) {
-  console.log('Injected component click triggered for index:', index);
+async function injectedComponentClick(index: number, event?: MouseEvent) {
+  if (event?.defaultPrevented) {
+    showDropdown.value = false;
+    return;
+  }
   const componentRef = threeDotsDropdownItemsRefs.value[index];
   if (componentRef && 'click' in componentRef) {
     (componentRef as any).click?.();
@@ -191,7 +195,9 @@ function toggleDropdownVisibility() {
 function handleClickOutside(e: MouseEvent) {
   if (!dropdownRef.value) return
 
-  if (!dropdownRef.value.contains(e.target as Node) && !buttonTriggerRef.value?.contains(e.target as Node)) {
+  const triggerEl = buttonTriggerRef.value?.$el as HTMLElement | undefined;
+
+  if (!dropdownRef.value.contains(e.target as Node) && !triggerEl?.contains(e.target as Node)) {
     showDropdown.value = false;
   }
 }

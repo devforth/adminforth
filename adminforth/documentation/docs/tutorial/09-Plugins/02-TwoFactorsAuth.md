@@ -23,7 +23,7 @@ Also it supports both:
 ## Installation
 
 ``` bash
-pnpm i @adminforth/two-factors-auth --save
+pnpm add @adminforth/two-factors-auth --save
 ```
 
 To import:
@@ -826,7 +826,11 @@ Next, you need to create a new resource for passkeys:
       }
     ],
     plugins: [],
-    options: {},
+    options: {
+      // The passkey table holds login credentials, not business data: the plugin manages every
+      // row through its own endpoints, so nobody should reach it through the resource API.
+      allowedActions: { all: false },
+    },
   } as AdminForthResourceInput;
 ```
 
@@ -847,7 +851,7 @@ Add the new resource to index.ts:
 ```
 To use passkey you need to use Key-Value adapter. For example:
 ```bash
-pnpm i @adminforth/key-value-adapter-ram
+pnpm add @adminforth/key-value-adapter-ram
 ```
 
 

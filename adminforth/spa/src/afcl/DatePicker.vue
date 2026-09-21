@@ -10,7 +10,7 @@
           </div>
 
           <input ref="datepickerStartEl"  type="text"
-                 class="af-pick-date-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
+                 class="af-pick-date-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-default block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                 :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
@@ -25,7 +25,7 @@
               <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
             <input v-model="startTime" type="time" id="start-time" step="1"
-                   class="af-pick-time-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-lg block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
+                   class="af-pick-time-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-default block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" :disabled="readonly" required/>
           </div>
         </div>
