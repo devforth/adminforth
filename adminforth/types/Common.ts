@@ -116,6 +116,13 @@ export interface AdminUser {
   sessionId?: string,
 
   /**
+   * Unix time (in seconds) when auth token of this session expires, as it is stored in auth JWT.
+   * Not defined for users which were not authorized by auth token, e.g. external users
+   * ({@link AdminUser.isExternalUser}).
+   */
+  exp?: number,
+
+  /**
    * Optional software actor executing an action on behalf of this user.
    * For example, `af-agent` or `codex@1.2.3 | Production Codex`.
    */
