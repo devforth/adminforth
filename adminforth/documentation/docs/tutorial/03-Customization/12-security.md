@@ -328,6 +328,28 @@ non-existing users, so an attacker can't use it to find out whether credentials 
 
 If your check needs the user record itself (like two-factor authentication does), use [auth.beforeLoginConfirmation](/docs/api/Back/type-aliases/BeforeLoginConfirmationFunction) instead: it is called after credentials are verified.
 
+## Doing cleanup on logout
+
+`auth.beforeLogout` hooks are called when user logs out, before AdminForth removes auth cookie:
+
+```ts title="./index.ts"
+export const admin = new AdminForth({
+
+  ...
+
+  auth: {
+    beforeLogout: [
+      async ({ adminUser, adminforth, extra }) => {
+        await revokeExternalSession(adminUser.pk);
+      }
+    ]
+  }
+
+  ...
+
+})
+```
+
 ## Custom user authorization hook
 
 Default user authorization checks that cookie with JWT token is valid, signed and not expired. 

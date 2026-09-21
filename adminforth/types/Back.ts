@@ -1329,6 +1329,30 @@ export type BeforeLoginAttemptFunction = (params: {
 }) => Promise<{ ok: boolean, error?: string }>;
 
 /**
+ * Called when user logs out, before AdminForth removes auth cookie.
+ * Useful for cleanup of things issued for the session (e.g. revoking tokens on external identity provider,
+ * removing custom cookies set by plugins) or for logging logout event.
+ */
+export type BeforeLogoutFunction = (params: {
+  /**
+   * User which is logging out. Is `null` when session was already expired or invalid at the moment of logout.
+   */
+  adminUser: AdminUser | null,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information of logout request. Use extra.response to set custom status, headers or cookies.
+   */
+  extra: HttpExtra,
+  /**
+   * Translate function, respects language of logout request.
+   */
+  tr: ITranslateFunction,
+}) => Promise<void>;
+
+/**
  * Allow to make extra authorization
  */
 export type AdminUserAuthorizeFunction = ((params?: { 
@@ -1834,6 +1858,20 @@ export interface AdminForthInputConfig {
        * Each function will resive User object as an argument
        */
       beforeLoginConfirmation?: BeforeLoginConfirmationFunction | Array<BeforeLoginConfirmationFunction>,
+
+      /**
+       * Function or functions which will be called when user logs out, before AdminForth removes auth cookie.
+       * Logout is never blocked by these hooks, so use them for cleanup or logging.
+       *
+       * Example:
+       *
+       * ```ts
+       * beforeLogout: async ({ adminUser, adminforth }) => {
+       *   await revokeExternalSession(adminUser.pk);
+       * },
+       * ```
+       */
+      beforeLogout?: BeforeLogoutFunction | Array<BeforeLogoutFunction>,
 
       /**
        * Array of functions which will be called before any request to AdminForth API.
