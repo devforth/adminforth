@@ -3,6 +3,7 @@ import {
   type IHttpServer,
   BeforeLoginAttemptFunction,
   BeforeLoginConfirmationFunction,
+  BeforeLogoutFunction,
   AdminForthResource,
   AllowedActionValue,
   AllowedActions,
@@ -773,6 +774,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     }
   }
 
+  /**
+   * Runs beforeLogout hooks. Hooks can't block logout, they are called for cleanup and logging only.
+   */
+  async processBeforeLogout(adminUser: AdminUser | null, extra: HttpExtra, tr: ITranslateFunction) {
+    const beforeLogout = this.adminforth.config.auth.beforeLogout as (BeforeLogoutFunction[] | undefined);
+
+    for (const hook of listify(beforeLogout)) {
+      await hook({ adminUser, adminforth: this.adminforth, extra, tr });
+    }
+  }
+
   checkAbortSignal(abortSignal: AbortSignal): boolean {
     if (abortSignal.aborted) {
       return true;
@@ -896,7 +908,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         noAuth: true,
         method: 'POST',
         path: '/logout',
-        handler: async ({ response }) => {
+        handler: async ({ body, headers, query, cookies, requestUrl, response, tr }) => {
+          // endpoint is noAuth (expired session should be able to log out as well), so user is resolved here
+          const jwt = this.adminforth.auth.getAuthCookie(cookies);
+          const adminUser = jwt ? await this.adminforth.auth.verify(jwt, 'auth') as AdminUser | null : null;
+
+          await this.processBeforeLogout(adminUser, {
+            body, headers, query, cookies, requestUrl, response
+          }, tr);
+
           this.adminforth.auth.removeAuthCookie( response );
           return { ok: true };
         },
