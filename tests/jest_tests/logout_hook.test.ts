@@ -15,6 +15,9 @@ const loginCookie = async (): Promise<string> => {
   return res.headers['set-cookie'][0].split(';')[0];
 };
 
+const sessionIdOf = (cookie: string) =>
+  JSON.parse(Buffer.from(cookie.split('.')[1], 'base64url').toString()).sessionId;
+
 afterAll(async () => {
   await closeApplication();
 });
@@ -42,6 +45,19 @@ describe('auth.beforeLogout', () => {
     expect(calls[0].username).toEqual('adminforth');
     expect(calls[0].headers['x-some-header']).toEqual('value');
     expect(calls[0].translated).toEqual('Invalid username or password');
+  });
+
+  it('receives session id of session being closed, so it can be revoked', async () => {
+    const seen: string[] = [];
+    hooks.push(async ({ adminUser }) => { seen.push(adminUser.sessionId); });
+
+    const firstCookie = await loginCookie();
+    const secondCookie = await loginCookie();
+    await logout(firstCookie);
+    await logout(secondCookie);
+
+    expect(seen).toEqual([sessionIdOf(firstCookie), sessionIdOf(secondCookie)]);
+    expect(seen[0]).not.toEqual(seen[1]);
   });
 
   it('is called before auth cookie is removed and does not block logout', async () => {

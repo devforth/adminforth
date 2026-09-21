@@ -563,7 +563,11 @@ export interface IAdminForthAuth {
 
   getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
 
-  setAuthCookie({expireInDuration, response, username, pk,}: {expireInDuration?: string, response: any, username: string, pk: string}): void;
+  /**
+   * Issues auth jwt and sets it as auth cookie. Returns session id which is put into the token,
+   * generated one if `sessionId` was not passed.
+   */
+  setAuthCookie({expireInDuration, response, username, pk, sessionId}: {expireInDuration?: string, response: any, username: string, pk: string, sessionId?: string}): string;
   
   removeAuthCookie(response: any): void;
 
