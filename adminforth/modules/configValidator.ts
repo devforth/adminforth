@@ -260,7 +260,7 @@ export default class ConfigValidator implements IConfigValidator {
       },
       dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-      action: async ({ selectedIds, adminUser, response }) => {
+      action: async ({ selectedIds, adminUser, response, extra }) => {
         let error = null;
 
         await Promise.all(
@@ -268,7 +268,12 @@ export default class ConfigValidator implements IConfigValidator {
             try {
               const deleted = await this.adminforth
                 .resource(res.resourceId)
-                .asUser(adminUser, { response, bulkDeleteHooks: true })
+                .asUser(adminUser, {
+                  meta: { requestBody: extra?.body },
+                  response,
+                  extra,
+                  bulkDeleteHooks: true,
+                })
                 .delete(recordId);
               if (!deleted) {
                 throw new Error(`Record with ${recordId} not found`);

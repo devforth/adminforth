@@ -113,6 +113,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
     phase: 'beforeDatasourceRequest' | 'afterDatasourceResponse',
     query: any,
     records?: any[],
+    extra = this.options.extra,
   ): Promise<void> {
     const hooks = listify(this.resourceConfig.hooks?.[page]?.[phase]);
     if (!hooks.length) {
@@ -124,7 +125,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
         resource: this.resourceConfig,
         query,
         adminUser: this.adminUser,
-        extra: this.options.extra ?? {
+        extra: extra ?? {
           body: query,
           query: {},
           headers: {},
@@ -155,26 +156,32 @@ export default class UserScopedResource implements IScopedOperationalResource {
    * Finds a record through the list scope before a mutation. A primary-key connector lookup
    * would bypass tenant filters installed by `beforeDatasourceRequest` hooks.
    */
-  private async findScopedRecord(primaryKey: any): Promise<any | null> {
+  private async findScopedRecord(primaryKey: any, candidate?: any): Promise<any | null> {
     const keyColumns = this.resourceConfig.columns.filter((column) => column.primaryKey);
     // Connectors own composite recordId interpretation. A scalar key needs no extra lookup.
     let identityFilters: ReturnType<typeof Filters.EQ>[];
     if (keyColumns.length === 1) {
       identityFilters = [Filters.EQ(keyColumns[0].name, primaryKey)];
     } else {
-      const candidate = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
-      if (!candidate) {
+      const compositeRecord = candidate
+        ?? await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+      if (!compositeRecord) {
         return null;
       }
-      identityFilters = keyColumns.map((column) => Filters.EQ(column.name, candidate[column.name]));
+      identityFilters = keyColumns.map((column) => Filters.EQ(column.name, compositeRecord[column.name]));
     }
     const query = {
+      resourceId: this.resourceConfig.resourceId,
+      source: 'list',
       filters: identityFilters.map((filter) => ({ ...filter })),
       limit: 1,
       offset: 0,
       sort: [],
     };
-    await this.runReadHooks('list', 'beforeDatasourceRequest', query);
+    const listExtra = this.options.extra
+      ? { ...this.options.extra, body: query }
+      : undefined;
+    await this.runReadHooks('list', 'beforeDatasourceRequest', query, undefined, listExtra);
     const scopedFilters = this.dataConnector.validateAndNormalizeInputFilters(query.filters);
     return this.data.get(Filters.AND(...identityFilters, scopedFilters));
   }
@@ -327,13 +334,8 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async update(primaryKey: any, record: any): Promise<any> {
-    const scopedRecord = await this.findScopedRecord(primaryKey);
-    if (!scopedRecord) {
-      const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
-      return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
-    }
-    const oldRecord = this.options.oldRecord ?? scopedRecord;
-    const meta = { ...this.meta, newRecord: record, oldRecord: scopedRecord, pk: primaryKey };
+    const currentRecord = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    const meta = { ...this.meta, newRecord: record, oldRecord: currentRecord, pk: primaryKey };
     const accessError = consumeResourceAccessGrant(
       this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
       AllowedActionsEnum.edit, record, primaryKey,
@@ -341,6 +343,17 @@ export default class UserScopedResource implements IScopedOperationalResource {
     if (accessError) {
       return { ok: false, error: accessError };
     }
+
+    if (!currentRecord) {
+      const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
+      return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
+    }
+    const scopedRecord = await this.findScopedRecord(primaryKey, currentRecord);
+    if (!scopedRecord) {
+      const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
+      return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
+    }
+    const oldRecord = this.options.oldRecord ?? scopedRecord;
 
     const columnError = await recordWriteError(
       this.columnCtx(ActionCheckSource.EditRequest, meta),
@@ -366,16 +379,23 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async delete(primaryKey: any): Promise<boolean> {
-    const scopedRecord = await this.findScopedRecord(primaryKey);
+    const currentRecord = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    const accessError = consumeResourceAccessGrant(
+      this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
+      AllowedActionsEnum.delete, this.options.record ?? currentRecord, primaryKey,
+    ) ? null : await this.accessError('delete', { ...this.meta, record: currentRecord, pk: primaryKey });
+    if (accessError) {
+      throw new Error(accessError);
+    }
+
+    if (!currentRecord) {
+      return false;
+    }
+    const scopedRecord = await this.findScopedRecord(primaryKey, currentRecord);
     if (!scopedRecord) {
       return false;
     }
     const record = this.options.record ?? scopedRecord;
-
-    const accessError = await this.accessError('delete', { ...this.meta, record: scopedRecord, pk: primaryKey });
-    if (accessError) {
-      throw new Error(accessError);
-    }
 
     const { error } = await this.executors.delete({
       resource: this.resourceConfig,

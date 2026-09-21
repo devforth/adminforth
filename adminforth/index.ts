@@ -865,15 +865,6 @@ class AdminForth implements IAdminForth {
   ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
     const dataToUse = updates || record;
-
-    // a system update silently drops editReadonly columns, as it always has; a user update never
-    // reaches this point with one, it is rejected by the column access check inside asUser()
-    for (const column of resource.columns.filter((candidate) => candidate.editReadonly)) {
-      if (column.name in dataToUse) {
-        delete dataToUse[column.name];
-      }
-    }
-
     normalizeRecordValues(resource, dataToUse);
     const err = validateRecordValues(resource, dataToUse, 'edit');
     if (err) {
@@ -882,6 +873,13 @@ class AdminForth implements IAdminForth {
 
     if (record) {
       afLogger.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
+    }
+
+    // remove editReadonly columns from record
+    for (const column of resource.columns.filter((candidate) => candidate.editReadonly)) {
+      if (column.name in dataToUse) {
+        delete dataToUse[column.name];
+      }
     }
 
     // execute hook if needed
@@ -1056,7 +1054,7 @@ class AdminForth implements IAdminForth {
       return;
     }
     this.warnedDeprecatedResourceMutations.add(warnKey);
-    afLogger.warn(
+    afLogger.trace(
       `${method} is deprecated and will be removed in the next major version. `
       + `Use adminforth.resource('${resourceId}').asUser(adminUser, { meta }).${operation}(...) `
       + `for anything a user requested, or adminforth.resource('${resourceId}').${operation}(...) `

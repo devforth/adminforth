@@ -2137,10 +2137,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const recordId = body['recordId'];
             const connector = this.adminforth.connectors[resource.dataSource];
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
-            if (!oldRecord) {
-                const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-                return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
-            }
             const record = body['record'];
 
             // Check before revealing whether another record has the requested key.
@@ -2156,6 +2152,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             );
             if (editAccess.error) {
               return { error: editAccess.error };
+            }
+            if (!oldRecord) {
+                const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+                return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
             }
 
             if (isCompositePrimaryKey(resource)) {
@@ -2231,19 +2231,34 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
             const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
-            if (!record){
-                return { error: `Record with ${body['primaryKey']} not found` };
+            const deleteAccess = await authorizeResourceOperation(
+              adminUser,
+              resource,
+              { requestBody: body, record },
+              ActionCheckSource.DeleteRequest,
+              AllowedActionsEnum.delete,
+              this.adminforth,
+              record,
+              body.primaryKey,
+            );
+            if (deleteAccess.error) {
+              return { error: deleteAccess.error };
+            }
+            if (!record) {
+              return { error: `Record with ${body['primaryKey']} not found` };
             }
 
             try {
+              const scopedDeleteOptions = {
+                meta: { requestBody: body, record },
+                record,
+                response,
+                extra: { body, query, headers, cookies, requestUrl, response },
+                [RESOURCE_ACCESS_GRANT]: deleteAccess.grant,
+              };
               const deleted = await this.adminforth
                 .resource(resource.resourceId)
-                .asUser(adminUser, {
-                  meta: { requestBody: body, record },
-                  record,
-                  response,
-                  extra: { body, query, headers, cookies, requestUrl, response },
-                })
+                .asUser(adminUser, scopedDeleteOptions)
                 .delete(body.primaryKey);
               if (!deleted) {
                 return { error: `Record with ${body.primaryKey} not found` };
@@ -2260,7 +2275,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/start_bulk_action',
-        handler: async ({ body, adminUser, tr, response }) => {
+        handler: async ({ body, adminUser, tr, response, query, headers, cookies, requestUrl }) => {
             const { resourceId, actionId, recordIds } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
@@ -2285,7 +2300,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
               }
             }
-            const bulkActionResponse = await action.action({selectedIds: recordIds, adminUser, resource, response, tr});
+            const bulkActionResponse = await action.action({
+              selectedIds: recordIds,
+              adminUser,
+              resource,
+              response,
+              tr,
+              extra: { body, query, headers, cookies, requestUrl, response },
+            });
             
             return {
               actionId,

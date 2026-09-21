@@ -1,6 +1,7 @@
 import OperationalResource from '../../adminforth/modules/operationalResource.js';
 import UserScopedResource from '../../adminforth/modules/userScopedResource.js';
 import AdminForthRestAPI from '../../adminforth/modules/restApi.js';
+import AdminForth from '../../adminforth/index.js';
 import { authorizeResourceOperation, RESOURCE_ACCESS_GRANT } from '../../adminforth/modules/resourceAccess.js';
 import { ActionCheckSource, AllowedActionsEnum } from '../../adminforth/types/Common.js';
 
@@ -114,8 +115,11 @@ function setup(resourceId = 'users') {
       return [{ total: 1 }];
     },
     validateAndNormalizeInputFilters: (filter) => filter,
-    getRecordByPrimaryKey: async () => {
+    getRecordByPrimaryKey: async (_resource, recordId) => {
       calls.connectorGetByPk++;
+      if (recordId === 'missing') {
+        return null;
+      }
       return { id: 1, name: 'Old name', readonly: 'old' };
     },
     getPrimaryKey: () => 'id',
@@ -185,6 +189,42 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ connectorCreate: 1, connectorUpdate: 1 });
   });
 
+  it('preserves validation before editReadonly stripping in the deprecated update executor', async () => {
+    let connectorUpdates = 0;
+    const admin = Object.create(AdminForth.prototype) as any;
+    admin.warnedDeprecatedResourceMutations = new Set();
+    admin.connectors = {
+      main: {
+        updateRecord: async () => {
+          connectorUpdates++;
+          return { ok: true };
+        },
+      },
+    };
+    const resource = {
+      resourceId: 'users',
+      dataSource: 'main',
+      columns: [{
+        name: 'readonly',
+        editReadonly: true,
+        validation: [{ regExp: '^valid$', message: 'readonly validation failed' }],
+      }],
+      hooks: {},
+    } as any;
+    const updates = { readonly: 'invalid' };
+
+    await expect(admin.updateResourceRecord({
+      resource,
+      recordId: 1,
+      updates,
+      oldRecord: { readonly: 'old' },
+      adminUser: {},
+    })).resolves.toEqual({ error: 'readonly validation failed' });
+
+    expect(updates).toEqual({ readonly: 'invalid' });
+    expect(connectorUpdates).toBe(0);
+  });
+
   it('rejects editReadonly for asUser()', async () => {
     const { calls, resource } = setup();
 
@@ -229,6 +269,16 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ acl: 1, connectorDelete: 0 });
   });
 
+  it('does not reveal whether a denied update or delete target exists', async () => {
+    const { calls, resource } = setup();
+    const scoped = resource.asUser({} as any, { meta: { allowed: false } });
+
+    await expect(scoped.update('missing', { name: 'Jane' }))
+      .resolves.toMatchObject({ ok: false, error: 'Action is not allowed' });
+    await expect(scoped.delete('missing')).rejects.toThrow('Action is not allowed');
+    expect(calls).toMatchObject({ acl: 2, beforeList: 0, updateExecutor: 0, connectorDelete: 0 });
+  });
+
   it('passes the caller delete snapshot to hooks after the scoped lookup', async () => {
     const { seenWrites, resource } = setup();
     const record = { id: 1, name: 'Earlier snapshot' };
@@ -240,7 +290,7 @@ describe('OperationalResource access tiers', () => {
 
     await expect(resource.asUser({} as any, { meta: { allowed: true }, record }).delete(1))
       .resolves.toBe(true);
-    expect(aclRecord.name).toBe('John');
+    expect(aclRecord.name).toBe('Old name');
     expect(seenWrites.delete).toEqual({ record, cascadeChildren: true });
   });
 
@@ -257,12 +307,12 @@ describe('OperationalResource access tiers', () => {
       .update(1, { name: 'Jane' });
 
     expect(updated).toMatchObject({ ok: true });
-    expect(aclRecord.name).toBe('John');
+    expect(aclRecord.name).toBe('Old name');
     expect(seenWrites.update.oldRecord).toEqual({ id: 1, name: 'Earlier snapshot' });
-    expect(calls).toMatchObject({ connectorGetByPk: 0, updateExecutor: 1, beforeList: 1 });
+    expect(calls).toMatchObject({ connectorGetByPk: 1, updateExecutor: 1, beforeList: 1 });
   });
 
-  it('row-scopes updates and deletes before loading the target record', async () => {
+  it('row-scopes updates and deletes before mutating the target record', async () => {
     const { calls, seenFilters, resource } = setup();
     resource.resourceConfig.hooks.list.beforeDatasourceRequest = [async ({ query }) => {
       calls.beforeList++;
@@ -279,6 +329,34 @@ describe('OperationalResource access tiers', () => {
 
     expect(singleFilters(seenFilters.getData)).toContainEqual({ field: 'tenant', operator: 'eq', value: 'not-owned' });
     expect(calls).toMatchObject({ beforeList: 2, updateExecutor: 0, connectorDelete: 0 });
+  });
+
+  it('gives mutation row-scope hooks list-shaped input with the original request context', async () => {
+    const { resource } = setup();
+    let hookPayload: any;
+    resource.resourceConfig.hooks.list.beforeDatasourceRequest = [async (payload) => {
+      hookPayload = payload;
+      return { ok: true };
+    }];
+    const requestBody = { resourceId: 'users', recordId: 1, record: { name: 'Jane' } };
+
+    await resource.asUser({} as any, {
+      meta: { allowed: true },
+      extra: {
+        body: requestBody,
+        query: { locale: 'en' },
+        headers: { 'x-tenant': 't1' },
+        cookies: [],
+        requestUrl: '/update_record',
+        response: {} as any,
+      },
+    }).update(1, { name: 'Jane' });
+
+    expect(hookPayload.extra.headers).toEqual({ 'x-tenant': 't1' });
+    expect(hookPayload.extra.query).toEqual({ locale: 'en' });
+    expect(hookPayload.extra.body).toBe(hookPayload.query);
+    expect(hookPayload.extra.body).toMatchObject({ limit: 1, offset: 0, sort: [] });
+    expect(hookPayload.extra.body).not.toBe(requestBody);
   });
 
   it('keeps the requested primary key when a scope hook replaces its filters', async () => {
@@ -493,7 +571,7 @@ describe('OperationalResource access tiers', () => {
     const deniedResult = await denied.resource.asUser({} as any, { meta: { allowed: false } }).update(1, {});
 
     expect(deniedResult).toMatchObject({ ok: false, error: 'Action is not allowed' });
-    expect(denied.calls).toMatchObject({ beforeList: 1, updateExecutor: 0 });
+    expect(denied.calls).toMatchObject({ beforeList: 0, updateExecutor: 0 });
 
     const allowed = setup();
     const allowedResult = await allowed.resource.asUser({} as any, { meta: { allowed: true } }).update(1, {});

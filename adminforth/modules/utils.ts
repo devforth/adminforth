@@ -546,11 +546,15 @@ export async function cascadeChildrenDelete(
   primaryKey: string,
   context: {adminUser: any, response: any},
   adminforth: IAdminForth,
-  deleteWithHooks: (params: {
+  deleteWithHooks?: (params: {
     resource: AdminForthResource, recordId: any, record: any, adminUser: any, response: any,
   }) => Promise<{ error?: string }>,
 ): Promise<{ error: string | null }> {
   const { adminUser, response } = context;
+  // Preserve the public four-argument contract. Core callers inject the non-deprecated executor;
+  // legacy external callers retain the hook-aware behavior they had before that executor existed.
+  const deleteChildWithHooks = deleteWithHooks
+    ?? ((params) => adminforth.deleteResourceRecord(params));
 
   const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
@@ -574,12 +578,12 @@ export async function cascadeChildrenDelete(
       for (const childRecord of childRecords) {
         // Grandchildren first, then the child itself.
         const childResult = await cascadeChildrenDelete(
-          childRes, childRecordId(childRecord), context, adminforth, deleteWithHooks,
+          childRes, childRecordId(childRecord), context, adminforth, deleteChildWithHooks,
         );
         if (childResult?.error) {
           return childResult;
         }
-        const deleteChild = await deleteWithHooks({
+        const deleteChild = await deleteChildWithHooks({
           resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), response,
         });
         if (deleteChild.error) {

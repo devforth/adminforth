@@ -2533,8 +2533,9 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser, response, tr }: { 
-    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: ITranslateFunction
+  action: ({ resource, selectedIds, adminUser, response, tr, extra }: {
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: ITranslateFunction,
+    extra?: HttpExtra,
   }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
