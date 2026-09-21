@@ -879,11 +879,12 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
           if (toReturn.allowedLogin) {
             
-            this.adminforth.auth.setAuthCookie({ 
+            await this.adminforth.auth.setAuthCookie({
               expireInDuration,
-              response, 
+              response,
               username: normalizedUsername,
-              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name] 
+              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name],
+              extra: { body, headers, query, cookies, requestUrl, response },
             });
           } 
         } else {

@@ -1288,6 +1288,18 @@ export default class ConfigValidator implements IConfigValidator {
         newConfig.auth.beforeLogout = blo;
       }
 
+      // normalize afterSessionCreated hooks
+      const asc = this.inputConfig.auth.afterSessionCreated;
+      if (!Array.isArray(asc)) {
+        if (asc) {
+          newConfig.auth.afterSessionCreated = [asc];
+        } else {
+          newConfig.auth.afterSessionCreated = [];
+        }
+      } else {
+        newConfig.auth.afterSessionCreated = asc;
+      }
+
       // normalize adminUserAuthorize hooks
       const aua = this.inputConfig.auth.adminUserAuthorize;
       if (!Array.isArray(aua)) {

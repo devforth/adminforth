@@ -2,7 +2,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import AdminForth from './index.js';
-import { AdminUserAuthorizationResult, AdminUserAuthorizeFunction, HttpExtra, IAdminForthAuth, IAdminForthHttpResponse } from './types/Back.js';
+import { AdminUserAuthorizationResult, AdminUserAuthorizeFunction, AfterSessionCreatedFunction, HttpExtra, IAdminForthAuth, IAdminForthHttpResponse } from './types/Back.js';
 import { AdminUser } from './types/Common.js';
 import { listify } from './modules/utils.js';
 import { afLogger } from './modules/logger.js';
@@ -86,13 +86,14 @@ class AdminForthAuth implements IAdminForthAuth {
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
-  setAuthCookie({ expireInDuration, response, username, pk, sessionId = crypto.randomUUID()}: {
+  async setAuthCookie({ expireInDuration, response, username, pk, sessionId = crypto.randomUUID(), extra }: {
     expireInDuration?: string,
-    response: any, 
-    username: string, 
+    response: any,
+    username: string,
     pk: string | null,
-    sessionId?: string
-  }): string {
+    sessionId?: string,
+    extra?: HttpExtra
+  }): Promise<string> {
     const expiresIn: string = expireInDuration || (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
     // might be h,m,d in string
     const expiresInSec = parseTimeToSeconds(expiresIn);
@@ -100,7 +101,14 @@ class AdminForthAuth implements IAdminForthAuth {
     const token = this.issueJWT({ username, pk, sessionId }, 'auth', expiresInSec);
     const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
+    // cookie is set before hooks are awaited, so callers which don't await still get it set
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
+
+    const afterSessionCreated = this.adminforth.config.auth.afterSessionCreated as (AfterSessionCreatedFunction[] | undefined);
+    for (const hook of listify(afterSessionCreated)) {
+      await hook({ pk, username, sessionId, expiresInSeconds: expiresInSec, adminforth: this.adminforth, extra });
+    }
+
     return sessionId;
   }
 
