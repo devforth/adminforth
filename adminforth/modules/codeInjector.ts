@@ -1,9 +1,9 @@
 import { exec, spawn } from 'child_process';
-import filewatcher from 'filewatcher';  // todo - replace this legacy (>8y old module) with chokidar
+import chokidar from 'chokidar';
 import fs from 'fs';
-import fsExtra from 'fs-extra';
 import os from 'os';
 import path from 'path';
+import pLimit from 'p-limit';
 import { promisify } from 'util';
 import yaml from 'yaml';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
@@ -29,6 +29,110 @@ try {
 function stripAnsiCodes(str) {
   // Regular expression to match ANSI escape codes
   return str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+}
+
+// how many files we copy into spa_tmp at the same time, to not exhaust file descriptors on big trees.
+// One limiter for the whole module, so several copyTreeAtomic calls in a row share the same budget
+// instead of each opening its own 32.
+const copyLimit = pLimit(32);
+
+let atomicCopySeq = 0;
+
+const ATOMIC_COPY_TMP_RE = /\.af-(\d+)-\d+\.tmp$/;
+
+function isAtomicCopyTempName(name: string): boolean {
+  return ATOMIC_COPY_TMP_RE.test(name);
+}
+
+// the pid baked into a copyFileAtomic temp name, so we can tell our own leftovers from someone else's
+function atomicCopyTempPid(name: string): number | null {
+  const match = name.match(ATOMIC_COPY_TMP_RE);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e: any) {
+    return e?.code === 'EPERM'; // exists but is not ours to signal
+  }
+}
+
+/**
+ * Copies a single file to dest atomically: the content goes to a unique temp file next to dest
+ * and is then renamed over it. rename(2) replaces the destination in one step (and MoveFileEx with
+ * MOVEFILE_REPLACE_EXISTING does the same on Windows), so dest is never missing or half-written.
+ *
+ * fsExtra.copy() cannot be used for this: for an existing destination it does
+ * unlink(dest) -> copyFile(src, dest) -> chmod(dest, mode) as three separate syscalls. Anything that
+ * writes the same destination in between - a second hot reload event, or another process bundling into
+ * the same spa_tmp - makes it fail with `ENOENT: ... unlink` or `ENOENT: ... chmod`, and readers
+ * (vite, computeSourcesHash) can observe a missing file.
+ */
+async function copyFileAtomic(src: string, dest: string, mode?: number): Promise<void> {
+  await fs.promises.mkdir(path.dirname(dest), { recursive: true });
+  const tmp = `${dest}.af-${process.pid}-${atomicCopySeq++}.tmp`;
+  try {
+    await fs.promises.copyFile(src, tmp);
+    if (mode !== undefined) {
+      // safe to chmod before the rename: tmp is private to this call, nobody else can see it
+      await fs.promises.chmod(tmp, mode);
+    }
+    await renameWithRetry(tmp, dest);
+  } catch (e) {
+    await fs.promises.rm(tmp, { force: true }).catch(() => {});
+    throw e;
+  }
+}
+
+/**
+ * On Windows a rename over an open destination fails with EPERM/EACCES/EBUSY until the other holder
+ * (vite, an editor, an antivirus scanner) lets go, so give it a few short tries before giving up.
+ * On POSIX the first attempt always succeeds.
+ */
+async function renameWithRetry(from: string, to: string, attempts = 5): Promise<void> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await fs.promises.rename(from, to);
+      return;
+    } catch (e: any) {
+      const retriable = e?.code === 'EPERM' || e?.code === 'EACCES' || e?.code === 'EBUSY';
+      if (!retriable || attempt >= attempts) {
+        throw e;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10 * attempt));
+    }
+  }
+}
+
+/**
+ * Recursive copy with the semantics prepareSources relies on: symlinks are dereferenced,
+ * `filter` prunes a source path together with its subtree. Every file lands atomically
+ * (see copyFileAtomic) and file copies go through the shared copyLimit.
+ */
+async function copyTreeAtomic(
+  src: string,
+  dest: string,
+  { filter }: { filter?: (src: string) => boolean } = {}
+): Promise<void> {
+  const walk = async (from: string, to: string) => {
+    if (filter && !filter(from)) {
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ copyTreeAtomic filtered out, ${from}`);
+      return;
+    }
+    // stat (not lstat) follows symlinks, same as fsExtra's dereference: true
+    const stat = await fs.promises.stat(from);
+    if (stat.isDirectory()) {
+      await fs.promises.mkdir(to, { recursive: true });
+      const entries = await fs.promises.readdir(from);
+      await Promise.all(entries.map((name) => walk(path.join(from, name), path.join(to, name))));
+    } else {
+      await copyLimit(() => copyFileAtomic(from, to, stat.mode));
+    }
+  };
+
+  await walk(src, dest);
 }
 
 function findHomePage(menuItem: AdminForthConfigMenuItem[]): AdminForthConfigMenuItem | undefined {
@@ -70,10 +174,28 @@ function isFulfilled<T>(result: PromiseSettledResult<T>): result is PromiseFulfi
   return result.status === 'fulfilled';
 }
 
-function notifyWatcherIssue(limit) {
-  console.log('Ran out of file handles after watching %s files.', limit);
-  console.log('Falling back to polling which uses more CPU.');
-  console.log('Run ulimit -n 10000 to increase the limit for open files.');
+/**
+ * chokidar options shared by both watchers.
+ *
+ * awaitWriteFinish is what makes a save safe to act on: chokidar waits for the size to stop changing
+ * before emitting, so we never copy a half-written .vue file. atomic (default true) collapses the
+ * unlink+add pair that editors produce when they save via a temp file and rename.
+ *
+ * Polling is deliberately not configured here: chokidar honours CHOKIDAR_USEPOLLING and
+ * CHOKIDAR_INTERVAL on its own, and that is the same switch vite's watcher reads.
+ */
+function watcherOptions() {
+  return {
+    ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 60,
+      pollInterval: 20,
+    },
+    ignored: (checkedPath: string) => {
+      const base = path.basename(checkedPath);
+      return base === 'node_modules' || base === 'dist' || isAtomicCopyTempName(base);
+    },
+  };
 }
 
 class CodeInjector implements ICodeInjector {
@@ -91,6 +213,30 @@ class CodeInjector implements ICodeInjector {
       throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
     }
     return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
+  }
+
+  /**
+   * spa_tmp is named after the brand slug only, so every run of the same project shares one folder.
+   * We record who owns it next to it (not inside, so it stays out of the sources hash) purely to make
+   * a second process visible: two of them copy over each other's files, which surfaces later as a
+   * random fs error in an unrelated place. Investigation notes are in AdminForth/1519.
+   */
+  private async claimSpaTmp(): Promise<void> {
+    const ownerFile = path.join(path.dirname(this.spaTmpPath()), '.owner');
+    const previous = await this.tryReadFile(ownerFile);
+    if (previous) {
+      const [pidText, ...command] = previous.trim().split(' ');
+      const pid = parseInt(pidText, 10);
+      if (pid && pid !== process.pid && isProcessAlive(pid)) {
+        afLogger.warn(
+          `Another AdminForth process is already using ${this.spaTmpPath()}: pid ${pid}` +
+          `${command.length ? ` (${command.join(' ')})` : ''}. They share this folder because it is named ` +
+          `after the brand only, so their file copies overwrite each other. If you did not start a second ` +
+          `dev server or "npx adminforth bundle" on purpose, please report this on AdminForth/1519.`
+        );
+      }
+    }
+    await fs.promises.writeFile(ownerFile, `${process.pid} ${process.argv.slice(1).join(' ')}`).catch(() => {});
   }
 
   async checkIconNames(icons: string[]) {
@@ -162,7 +308,13 @@ class CodeInjector implements ICodeInjector {
   cleanup() {
     console.log('Cleaning up...');
     this.allWatchers.forEach((watcher) => {
-      watcher.removeAll();
+      // close() is async, but the signal handler exits right after us - firing it is all we can do,
+      // and an already-closed watcher must not throw out of a signal handler
+      try {
+        watcher.close();
+      } catch (e) {
+        process.env.HEAVY_DEBUG && console.log(`🪲 Failed to close a watcher: ${e}`);
+      }
     });
   }
   constructor(adminforth) {
@@ -455,12 +607,9 @@ class CodeInjector implements ICodeInjector {
       const src = path.join(spaDir, file);
       const dest = path.join(this.spaTmpPath(), file);
 
-      // overwrite:true can't be used to not destroy cache
-      await fsExtra.copy(src, dest, {
-        dereference: true, // needed to dereference types
-        // preserveTimestamps: true, // needed to not invalidate any caches
-      });
-      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ fsExtra.copy copy single file, ${src}, ${dest}`);
+      // atomic: a hot reload copy must never leave dest missing for a reader (vite / computeSourcesHash)
+      await copyFileAtomic(src, dest);
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ copyFileAtomic copy single file, ${src}, ${dest}`);
     }));
   }
   async migrateLegacyCustomLayout(oldMeta) {
@@ -478,6 +627,8 @@ class CodeInjector implements ICodeInjector {
     } catch (e) {
       await fs.promises.mkdir(this.spaTmpPath(), { recursive: true });
     }
+
+    await this.claimSpaTmp();
 
     const icons = [];
     let routes = '';
@@ -566,7 +717,7 @@ class CodeInjector implements ICodeInjector {
     registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
-    process.env.HEAVY_DEBUG && console.log(`🪲⚙️ fsExtra.copy from ${spaDir} -> ${this.spaTmpPath()}`);
+    process.env.HEAVY_DEBUG && console.log(`🪲⚙️ copyTreeAtomic from ${spaDir} -> ${this.spaTmpPath()}`);
 
     // try to rm <spa tmp path>/src/types directory 
     try {
@@ -577,18 +728,13 @@ class CodeInjector implements ICodeInjector {
 
     // overwrite can't be used to not destroy cache
   
-    await fsExtra.copy(spaDir, this.spaTmpPath(), {
+    await copyTreeAtomic(spaDir, this.spaTmpPath(), {
       filter: (src) => {
         // /adminforth/* used for local development and /dist/* used for production
         const filterPasses = !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}adminforth${path.sep}spa${path.sep}dist`) 
                           && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}node_modules`) && !src.includes(`${path.sep}dist${path.sep}spa${path.sep}dist`);
-        if (!filterPasses) {
-          process.env.HEAVY_DEBUG && console.log(`🪲⚙️ fsExtra.copy filtered out, ${src}`);
-        }
-
         return filterPasses
       },
-      dereference: true, // needed to dereference types
     });
 
     // copy whole custom directory
@@ -606,19 +752,15 @@ class CodeInjector implements ICodeInjector {
 
       const faviconPath = path.join(this.adminforth.config.customization?.customComponentsDir, customFav.replace('@@/', ''));
       const dest = path.join(this.spaTmpPath(), 'public', 'assets', customFav.replace('@@/', ''));
-      // make sure all folders in dest exist
-      await fsExtra.ensureDir(path.dirname(dest));
-
-      await fsExtra.copy(faviconPath, dest);
+      // copyFileAtomic creates all folders in dest itself
+      await copyFileAtomic(faviconPath, dest);
     }
 
     for (const [src, dest] of Object.entries(this.srcFoldersToSync)) {
       const to = path.join(this.spaTmpPath(), 'src', 'custom', dest);
-      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ srcFoldersToSync: fsExtra.copy from ${src}, ${to}`);  
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ srcFoldersToSync: copyTreeAtomic from ${src}, ${to}`);
 
-      await fsExtra.copy(src, to, {
-        recursive: true,
-        dereference: true,
+      await copyTreeAtomic(src, to, {
         // exclude if node_modules comes after /custom/ in path
         filter: (src) => !src.includes(path.join('custom', 'node_modules')),
       });
@@ -626,12 +768,9 @@ class CodeInjector implements ICodeInjector {
 
     for (const [src, dest] of Object.entries(this.publicFoldersToSync)) {
       const to = path.join(this.spaTmpPath(), 'public', dest);
-      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ publicFoldersToSync: fsExtra.copy from ${src}, ${to}`);
+      process.env.HEAVY_DEBUG && console.log(`🪲⚙️ publicFoldersToSync: copyTreeAtomic from ${src}, ${to}`);
 
-      await fsExtra.copy(src, to, {
-        recursive: true,
-        dereference: true,
-      });
+      await copyTreeAtomic(src, to);
     }
 
     //collect all 'icon' fields from resources bulkActions
@@ -957,45 +1096,76 @@ class CodeInjector implements ICodeInjector {
   async watchForReprepare({}) {
     const spaPath = this.getSpaDir();
     // get list of all subdirectories in spa recursively (for SPA development)
-    const directories = [];
-    const collectDirectories = async (dir) => {
-      const files = await fs.promises.readdir(dir, { withFileTypes: true });
-      for (const file of files) {
-        if (['node_modules', 'dist'].includes(file.name)) {
-          continue;
-        }
-        if (file.isDirectory()) {
-          directories.push(path.join(dir, file.name));
-          await collectDirectories(path.join(dir, file.name));
-        }
-      }
+    process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for: ${spaPath}`);
+
+    // one recursive watcher for the whole tree, instead of one fs.watch handle per file:
+    // files created after startup are picked up too, which the per-file registration never did
+    const watcher = chokidar.watch(spaPath, watcherOptions());
+
+    const onAddOrChange = (file: string) => {
+      process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
+      this.onWatchedFileChange(file, async () => {
+        await this.updatePartials({ filesUpdated: [path.relative(spaPath, file)] });
+      });
     };
-    await collectDirectories(spaPath);
 
-    process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for: ${directories.join(',')}`);
+    watcher.on('add', onAddOrChange);
+    watcher.on('change', onAddOrChange);
+    watcher.on('unlink', (file: string) => {
+      // keep spa_tmp in sync with removals, it used to only ever grow
+      this.onWatchedFileRemove(path.join(this.spaTmpPath(), path.relative(spaPath, file)));
+    });
+    watcher.on('error', (e: any) => afLogger.warn(`Hot reload watcher error for ${spaPath}: ${e?.message}`));
+    this.allWatchers.push(watcher);
+  }
 
-    const watcher = filewatcher({ debounce: 30 });
-    directories.forEach((dir) => {
-      // read directory files and add to watcher, only files not directories
-      const files = fs.readdirSync(dir);
-      files.forEach((file) => {
-        const fullPath = path.join(dir, file);
-        if (fs.lstatSync(fullPath).isFile()) {
-          process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${fullPath}`);
-          watcher.add(fullPath);
-        }
-      })
+  // one promise chain per watched path, so two events for the same file can never have their
+  // copies interleaved (which is what makes fs copies race each other), and a burst of saves
+  // queues up instead of piling on top of each other
+  private fileChangeChains: Map<string, Promise<void>> = new Map();
+
+  /**
+   * Runs `task` for a changed watched file, serialized per path and fully guarded.
+   *
+   * Both guards matter. A watcher event only says that something happened, not that the file is still
+   * there - a rename, a git checkout or an editor writing through a temp file is enough for it to be
+   * gone by the time we act on it. And any throw here would land in a listener whose promise nobody
+   * awaits, i.e. an unhandled rejection, which node kills the process for.
+   */
+  private onWatchedFileChange(file: string, task: () => Promise<void>): void {
+    this.queuePerPath(file, async () => {
+      const stat = await fs.promises.stat(file).catch(() => null);
+      if (!stat?.isFile()) {
+        process.env.HEAVY_DEBUG && console.log(`🪲🔎 ${file} is gone or is not a file, skipping hot reload copy`);
+        return;
+      }
+      await task();
+    });
+  }
+
+  // removes a file from spa_tmp after it was deleted from the sources, on the same queue as copies
+  // so a delete can never overtake a copy of the same path
+  private onWatchedFileRemove(destPath: string): void {
+    this.queuePerPath(destPath, async () => {
+      process.env.HEAVY_DEBUG && console.log(`🪲🔎 Removing ${destPath} from spa_tmp, source is gone`);
+      await fs.promises.rm(destPath, { force: true });
+    });
+  }
+
+  private queuePerPath(key: string, task: () => Promise<void>): void {
+    const previous = this.fileChangeChains.get(key) ?? Promise.resolve();
+
+    const current = previous.then(task).catch((e) => {
+      afLogger.warn(`Hot reload failed to sync ${key}: ${e.message}`);
     });
 
-    watcher.on(
-      'change',
-      async (file) => {
-        process.env.HEAVY_DEBUG && console.log(`🐛 File ${file} changed (SPA), preparing sources...`);
-        await this.updatePartials({ filesUpdated: [file.replace(spaPath + path.sep, '')] });
+    this.fileChangeChains.set(key, current);
+    current.then(() => {
+      // keep the map from growing for the lifetime of the dev server
+      if (this.fileChangeChains.get(key) === current) {
+        this.fileChangeChains.delete(key);
       }
-    )
-    watcher.on('fallback', notifyWatcherIssue);
-    this.allWatchers.push(watcher);
+    });
   }
 
   async watchCustomComponentsForCopy({ customComponentsDir, destination, targetRoot = path.join('src', 'custom') }: {
@@ -1014,62 +1184,28 @@ class CodeInjector implements ICodeInjector {
       return;
     }
 
-    // get all subdirs
-    const directories = [];
-    const files = []
-    const collectDirectories = async (dir) => {
-      if (['node_modules', 'dist'].includes(path.basename(dir))) {
-        return;
-      }
-      directories.push(dir);
+    process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for: ${customComponentsDir}`);
 
-      const filesAndDirs = await fs.promises.readdir(dir, { withFileTypes: true });
-      await Promise.all(
-        filesAndDirs.map(
-          async (file) => {
-            const isDir = fs.lstatSync(path.join(dir, file.name)).isDirectory();
-            if (isDir) {
-              await collectDirectories(path.join(dir, file.name));
-            } else {
-              files.push(path.join(dir, file.name));
-            }
-          }
-        )
-      )
+    const watcher = chokidar.watch(customComponentsDir, watcherOptions());
+
+    const destinationOf = (fileOrDir: string) =>
+      path.join(this.spaTmpPath(), targetRoot, destination, path.relative(customComponentsDir, fileOrDir));
+
+    const onAddOrChange = (fileOrDir: string) => {
+      process.env.HEAVY_DEBUG && console.log(`🔎 fileOrDir ${fileOrDir} changed`);
+      process.env.HEAVY_DEBUG && console.log(`🔎 customComponentsDir ${customComponentsDir}`);
+      process.env.HEAVY_DEBUG && console.log(`🔎 destination ${destination}`);
+      this.onWatchedFileChange(fileOrDir, async () => {
+        const destPath = destinationOf(fileOrDir);
+        process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
+        await copyFileAtomic(fileOrDir, destPath);
+      });
     };
 
-    await collectDirectories(customComponentsDir);
-
-    const watcher = filewatcher({ debounce: 30 });
-    files.forEach((file) => {
-      process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for file ${file}`);
-      watcher.add(file);
-    });
-
-    process.env.HEAVY_DEBUG && console.log(`🪲🔎 Watch for: ${directories.join(',')}`);
-    
-    watcher.on(
-      'change',
-      async (fileOrDir) => {
-        // copy one file
-        const relativeFilename = fileOrDir.replace(customComponentsDir + path.sep, '');
-        process.env.HEAVY_DEBUG && console.log(`🔎 fileOrDir ${fileOrDir} changed`);
-        process.env.HEAVY_DEBUG && console.log(`🔎 relativeFilename ${relativeFilename}`);
-        process.env.HEAVY_DEBUG && console.log(`🔎 customComponentsDir ${customComponentsDir}`);
-        process.env.HEAVY_DEBUG && console.log(`🔎 destination ${destination}`);
-        const isFile = fs.lstatSync(fileOrDir).isFile();
-        if (isFile) {
-          const destPath = path.join(this.spaTmpPath(), targetRoot, destination, relativeFilename);
-          process.env.HEAVY_DEBUG && console.log(`🔎 Copying file ${fileOrDir} to ${destPath}`);
-          await fsExtra.copy(fileOrDir, destPath);
-          return;
-        } else {
-          // for now do nothing
-        }
-      }
-    );
-
-    watcher.on('fallback', notifyWatcherIssue);
+    watcher.on('add', onAddOrChange);
+    watcher.on('change', onAddOrChange);
+    watcher.on('unlink', (file: string) => this.onWatchedFileRemove(destinationOf(file)));
+    watcher.on('error', (e: any) => afLogger.warn(`Hot reload watcher error for ${customComponentsDir}: ${e?.message}`));
 
     this.allWatchers.push(watcher);
   }
@@ -1093,9 +1229,27 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big files or files which might be dynamic
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
-            file.name === 'hashes.json' || file.name === 'package.json' || 
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' ||
+            file.name === 'hashes.json' || file.name === 'package.json' ||
             file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
+          return '';
+        }
+
+        // a copyFileAtomic temp file survives only if the process was killed mid-copy (SIGKILL);
+        // drop it so it neither poisons the build cache hash nor accumulates in spa_tmp.
+        // If it belongs to a process that is still running, it is not a leftover at all - somebody
+        // else is copying into our spa_tmp right now, which is the situation behind AdminForth/1519.
+        if (isAtomicCopyTempName(file.name)) {
+          const ownerPid = atomicCopyTempPid(file.name);
+          if (ownerPid && ownerPid !== process.pid && isProcessAlive(ownerPid)) {
+            afLogger.warn(
+              `Caught another live process (pid ${ownerPid}) copying into ${this.spaTmpPath()} right now ` +
+              `(${filePath}). Two processes sharing one spa_tmp overwrite each other's files - ` +
+              `please report this on AdminForth/1519.`
+            );
+          } else {
+            await fs.promises.rm(filePath, { force: true }).catch(() => {});
+          }
           return '';
         }
 
@@ -1123,9 +1277,10 @@ class CodeInjector implements ICodeInjector {
 
         // 🚫 Skip big/dynamic folders or files
         if (file.name === 'node_modules' || file.name === 'dist' ||
-            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' || 
-            file.name === 'hashes.json' || file.name === 'package.json' || 
-            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json') {
+            file.name === 'i18n-messages.json' || file.name === 'i18n-empty.json' ||
+            file.name === 'hashes.json' || file.name === 'package.json' ||
+            file.name === 'pnpm-lock.yaml' || file.name === 'package-lock.json' ||
+            isAtomicCopyTempName(file.name)) {
           return;
         }
 
@@ -1218,7 +1373,7 @@ class CodeInjector implements ICodeInjector {
       await fs.promises.mkdir(serveDir, { recursive: true });
 
       // copy i18n messages to serve dir
-      await fsExtra.copy(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
+      await copyFileAtomic(path.join(cwd, 'i18n-messages.json'), path.join(serveDir, 'i18n-messages.json'));
 
       // save hash
       await fs.promises.writeFile(path.join(serveDir, '.adminforth_messages_hash'), sourcesHash);
@@ -1279,7 +1434,7 @@ class CodeInjector implements ICodeInjector {
         await this.runPackageManagerShell({command: 'run build-only', cwd});
         
         // coy dist to serveDir
-        await fsExtra.copy(path.join(cwd, 'dist'), serveDir, { recursive: true });
+        await copyTreeAtomic(path.join(cwd, 'dist'), serveDir);
 
         // save hash
         await fs.promises.writeFile(path.join(serveDir, '.adminforth_build_hash'), sourcesHash);
