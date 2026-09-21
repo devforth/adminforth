@@ -566,8 +566,11 @@ export interface IAdminForthAuth {
   /**
    * Issues auth jwt and sets it as auth cookie. Returns session id which is put into the token,
    * generated one if `sessionId` was not passed.
+   *
+   * Cookie header is set before returned promise is awaited, awaiting is needed only to let
+   * `auth.afterSessionCreated` hooks finish before answering to the client.
    */
-  setAuthCookie({expireInDuration, response, username, pk, sessionId}: {expireInDuration?: string, response: any, username: string, pk: string, sessionId?: string}): string;
+  setAuthCookie({expireInDuration, response, username, pk, sessionId, extra}: {expireInDuration?: string, response: any, username: string, pk: string, sessionId?: string, extra?: HttpExtra}): Promise<string>;
   
   removeAuthCookie(response: any): void;
 
@@ -1357,6 +1360,42 @@ export type BeforeLogoutFunction = (params: {
 }) => Promise<void>;
 
 /**
+ * Called right after auth cookie with new session was issued, no matter which login method issued it
+ * (password login, OAuth, passkey, two-factor confirmation or any plugin which calls `auth.setAuthCookie`).
+ * Useful to persist sessions to revoke them later, or to log logins.
+ *
+ * Thrown error is not caught, so it aborts response of the login request.
+ */
+export type AfterSessionCreatedFunction = (params: {
+  /**
+   * Primary key of user the session was issued for.
+   */
+  pk: string | null,
+  /**
+   * Username of user the session was issued for.
+   */
+  username: string,
+  /**
+   * Unique id of created session. Same value is put into auth JWT and is available
+   * as {@link AdminUser.sessionId} on every request done with this session.
+   */
+  sessionId: string,
+  /**
+   * How long the session (auth token) will live, in seconds.
+   */
+  expiresInSeconds: number,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information of request which issued the session, e.g. to get client IP or user agent.
+   * Not passed when session is issued outside of request handling.
+   */
+  extra?: HttpExtra,
+}) => Promise<void>;
+
+/**
  * Allow to make extra authorization
  */
 export type AdminUserAuthorizeFunction = ((params?: { 
@@ -1876,6 +1915,22 @@ export interface AdminForthInputConfig {
        * ```
        */
       beforeLogout?: BeforeLogoutFunction | Array<BeforeLogoutFunction>,
+
+      /**
+       * Function or functions which will be called right after auth cookie with new session was issued,
+       * for any login method. Use them to store sessions (e.g. to revoke them later) or to log logins.
+       *
+       * Example:
+       *
+       * ```ts
+       * afterSessionCreated: async ({ pk, sessionId, expiresInSeconds, extra, adminforth }) => {
+       *   await sessions.set(`${pk}:${sessionId}`, JSON.stringify({
+       *     ip: adminforth.auth.getClientIp(extra.headers),
+       *   }), expiresInSeconds);
+       * },
+       * ```
+       */
+      afterSessionCreated?: AfterSessionCreatedFunction | Array<AfterSessionCreatedFunction>,
 
       /**
        * Array of functions which will be called before any request to AdminForth API.

@@ -328,6 +328,52 @@ non-existing users, so an attacker can't use it to find out whether credentials 
 
 If your check needs the user record itself (like two-factor authentication does), use [auth.beforeLoginConfirmation](/docs/api/Back/type-aliases/BeforeLoginConfirmationFunction) instead: it is called after credentials are verified.
 
+## Tracking created sessions
+
+`auth.afterSessionCreated` hooks are called right after auth cookie with a new session was issued. They are called for
+every login method: password login, OAuth, passkey, two-factor confirmation, and any plugin which issues auth cookie itself.
+
+Together with [auth.beforeLogout](/docs/api/Back/type-aliases/BeforeLogoutFunction) and
+[auth.adminUserAuthorize](/docs/api/Back/type-aliases/AdminUserAuthorizeFunction) this allows to store list of active sessions
+and revoke them before their tokens expire:
+
+```ts title="./index.ts"
+export const admin = new AdminForth({
+
+  ...
+
+  auth: {
+    afterSessionCreated: [
+      async ({ pk, sessionId, expiresInSeconds, adminforth, extra }) => {
+        await sessionsStore.set(
+          `${pk}:${sessionId}`,
+          JSON.stringify({ ip: adminforth.auth.getClientIp(extra.headers), loggedInAt: new Date().toISOString() }),
+          expiresInSeconds,
+        );
+      }
+    ],
+
+    adminUserAuthorize: [
+      async ({ adminUser }) => {
+        if (await sessionsStore.get(`${adminUser.pk}:${adminUser.sessionId}`)) {
+          return { allowed: true };
+        }
+        return { allowed: false, error: "Session was revoked" };
+      }
+    ],
+  }
+
+  ...
+
+})
+```
+
+`sessionId` is the same value which is put into auth JWT, so it is available as `adminUser.sessionId` on every request
+done with this session.
+
+Error thrown from the hook is not caught and aborts response of the login request, so login fails loudly when the session
+can't be stored.
+
 ## Doing cleanup on logout
 
 `auth.beforeLogout` hooks are called when user logs out, before AdminForth removes auth cookie:
