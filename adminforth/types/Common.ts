@@ -106,6 +106,16 @@ export interface AdminUser {
   dbUser: any,
 
   /**
+   * Unique id of login session, generated when auth cookie is issued and stored in auth JWT.
+   * Same for all requests done with one login, changes on next login.
+   * Use it to track or revoke individual sessions, e.g. in {@link AdminForthConfig.auth.beforeLogout} hook.
+   *
+   * Not defined for sessions which were issued before session ids were introduced, and for
+   * external users ({@link AdminUser.isExternalUser}).
+   */
+  sessionId?: string,
+
+  /**
    * Optional software actor executing an action on behalf of this user.
    * For example, `af-agent` or `codex@1.2.3 | Production Codex`.
    */

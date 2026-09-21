@@ -86,20 +86,22 @@ class AdminForthAuth implements IAdminForthAuth {
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 GMT`);
   }
 
-  setAuthCookie({ expireInDuration, response, username, pk}: {
+  setAuthCookie({ expireInDuration, response, username, pk, sessionId = crypto.randomUUID()}: {
     expireInDuration?: string,
     response: any, 
     username: string, 
-    pk: string | null
-  }) {
+    pk: string | null,
+    sessionId?: string
+  }): string {
     const expiresIn: string = expireInDuration || (process.env.ADMINFORTH_AUTH_EXPIRESIN || '24h');
     // might be h,m,d in string
     const expiresInSec = parseTimeToSeconds(expiresIn);
 
-    const token = this.issueJWT({ username, pk}, 'auth', expiresInSec);
+    const token = this.issueJWT({ username, pk, sessionId }, 'auth', expiresInSec);
     const expiresCookieFormat = new Date(Date.now() + expiresInSec * 1000).toUTCString();
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', `adminforth_${brandSlug}_jwt=${token}; Path=${this.adminforth.config.baseUrl || '/'}; HttpOnly; SameSite=Strict; Expires=${expiresCookieFormat}`);
+    return sessionId;
   }
 
   removeCustomCookie({response, name}) {

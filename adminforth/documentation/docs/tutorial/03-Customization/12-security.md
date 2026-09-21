@@ -340,7 +340,7 @@ export const admin = new AdminForth({
   auth: {
     beforeLogout: [
       async ({ adminUser, adminforth, extra }) => {
-        await revokeExternalSession(adminUser.pk);
+        await revokeExternalSession(adminUser.sessionId);
       }
     ]
   }
