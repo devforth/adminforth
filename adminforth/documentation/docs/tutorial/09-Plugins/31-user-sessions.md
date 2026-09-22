@@ -13,6 +13,8 @@ This plugin stores every issued session in a key-value adapter, shows them to th
 settings page, and lets them revoke any session. Logout revokes the session too, so its token stops
 working right away.
 
+![Active sessions page](/img/previews/user_sessions.png)
+
 ## Installation
 
 ```bash
