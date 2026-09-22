@@ -13,7 +13,7 @@ import checkpointsResource from './resources/agent_resources/checkpoints';
 import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
-import { adminForthAgent } from './globalPlugins';
+import { adminForthAgent, userSessionsPlugin } from './globalPlugins';
 
 let db;
 
@@ -130,7 +130,8 @@ new AdminForth({
     },
   ],
   globalPlugins: [
-    adminForthAgent
+    adminForthAgent,
+    userSessionsPlugin,
   ]
 });
 
