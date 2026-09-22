@@ -1,9 +1,20 @@
 import AdminForthAgent from '@adminforth/agent';
+import UserSessionsPlugin from '@adminforth/user-sessions';
+import LevelDBKeyValueAdapter from '@adminforth/key-value-adapter-leveldb';
 import { getLocalizedPlaceholderMessages } from './resources/agent_resources/placeholderMessages';
 import OpenAIAudioAdapter from '@adminforth/audio-adapter-openai'
 import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
 
 const openAiApiKey = process.env.OPENAI_API_KEY as string;
+
+export const userSessionsPlugin = new UserSessionsPlugin({
+  // db folder is a docker volume, so sessions survive restarts and redeploys
+  keyValueAdapter: new LevelDBKeyValueAdapter({
+    dbPath: './db/user-sessions',
+  }),
+  // demo visitors share one account, so only real admins may look into sessions of other users
+  canManageOtherUsersSessions: async (adminUser) => adminUser.dbUser.role === 'superadmin',
+});
 
 const createCompletionAdapter = (
   model: string,
