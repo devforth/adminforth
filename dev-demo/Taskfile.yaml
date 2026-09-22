@@ -37,6 +37,7 @@ vars:
     - "adminforth-dashboard"
     - "adminforth-json-editor"
     - "adminforth-json-form"
+    - "adminforth-user-sessions"
     - "af-crud-approve-plugin" 
 
   ADAPTERS:

@@ -240,6 +240,7 @@ const PLUGIN_GROUPS: PluginGroup[] = [
     items: [
       {name: 'OAuth2 & SSO', slug: 'oauth', description: 'Google, GitHub, Microsoft, Keycloak, Clerk, Twitch, Facebook, Telegram', standard: 'RFC 6749'},
       {name: 'Two-factor auth', slug: 'two-factors-auth', description: 'Authenticator apps and hardware-backed passkeys', standard: 'RFC 6238 \u00b7 WebAuthn'},
+      {name: 'User sessions', slug: 'user-sessions', description: 'Every signed-in device listed and revocable, and logout that really ends the session'},
       {name: 'Login captcha', slug: 'login-captcha', description: 'reCAPTCHA or Cloudflare Turnstile in front of the login form'},
       {name: 'Email invite', slug: 'email-invite', description: 'Create a user without ever knowing their password'},
       {name: 'Password reset', slug: 'email-password-reset', description: 'Reset links signed as tokens, over SES or Mailgun', standard: 'RFC 7519'},
