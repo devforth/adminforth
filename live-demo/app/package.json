@@ -36,6 +36,7 @@
     "@adminforth/image-generation-adapter-openai": "^1.0.19",
     "@adminforth/image-vision-adapter-openai": "^1.1.6",
     "@adminforth/import-export": "^1.11.0",
+    "@adminforth/key-value-adapter-leveldb": "^1.2.2",
     "@adminforth/login-captcha": "^1.3.3",
     "@adminforth/login-captcha-adapter-cloudflare": "^1.1.5",
     "@adminforth/rich-editor": "^2.1.2",
@@ -43,8 +44,9 @@
     "@adminforth/text-complete": "^2.1.1",
     "@adminforth/two-factors-auth": "^4.4.6",
     "@adminforth/upload": "^2.18.0",
+    "@adminforth/user-sessions": "^1.1.0",
     "@prisma/client": "^6.19.3",
-    "adminforth": "^3.24.7",
+    "adminforth": "^3.27.1",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"
   },
