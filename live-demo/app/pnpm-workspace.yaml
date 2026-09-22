@@ -11,5 +11,3 @@ minimumReleaseAgeExclude:
   - adminforth
   - '@adminforth/agent'
   - '@adminforth/background-jobs@1.20.9'
-  - '@adminforth/user-sessions@1.1.0'
-  - '@adminforth/user-sessions@1.1.1'
