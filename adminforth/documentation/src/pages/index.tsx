@@ -84,6 +84,12 @@ const images = [
     description: 'RFC 6238-Compliant TOTP-Based & WebAuthn PassKeys 2FA will add additional security layer (login and preferred actions)'
   },
   {
+    original: require('@site/static/img/previews/user_sessions.png').default,
+    title: 'User Sessions Plugin - revoke access from any device',
+    link: '/docs/tutorial/Plugins/user-sessions/',
+    description: 'Every browser signed into the panel, with IP, country and last use, revocable in one click and really signed out on logout'
+  },
+  {
     original: require('@site/static/img/previews/branding.png').default,
     title: 'Branding and theming',
     link: '/docs/tutorial/Customization/branding/',
