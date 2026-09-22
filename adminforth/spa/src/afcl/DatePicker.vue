@@ -51,6 +51,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
 import {useCoreStore} from '@/stores/core';
+import {FLEXIBLE_DATEPICKER_FORMAT} from '@/utils';
 
 import IconCalendar from "@/components/icons/IconCalendar.vue";
 import IconTime from "@/components/icons/IconTime.vue";
@@ -138,7 +139,7 @@ watch(start, () => {
 
 async function initDatepickers() {
   const LS_LANG_KEY = `afLanguage`;
-  const options = {format: 'dd M yyyy', language: localStorage.getItem(LS_LANG_KEY)};
+  const options = {format: FLEXIBLE_DATEPICKER_FORMAT, language: localStorage.getItem(LS_LANG_KEY)};
 
   if (props.autoHide) {
     options.autohide = true;
