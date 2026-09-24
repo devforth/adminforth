@@ -6,7 +6,18 @@ import { AdminUserAuthorizationResult, AdminUserAuthorizeFunction, AfterSessionC
 import { AdminUser } from './types/Common.js';
 import { listify } from './modules/utils.js';
 import { afLogger } from './modules/logger.js';
-import is_ip_private from 'private-ip'
+import { Address4, Address6 } from 'ip-address';
+
+// Returns true for valid IPs which are not globally reachable (private, loopback, link-local, CGNAT, reserved, etc.)
+function isIpPrivate(ip: string | null): boolean {
+  if (Address4.isValid(ip)) {
+    return !new Address4(ip).isGlobal();
+  }
+  if (Address6.isValid(ip)) {
+    return !new Address6(ip).isGlobal();
+  }
+  return false;
+}
 
 // Function to generate a password hash using PBKDF2
 function calcPasswordHash(password, salt, iterations = 100000, keyLength = 64, digest = 'sha512') {
@@ -74,8 +85,7 @@ class AdminForthAuth implements IAdminForthAuth {
        headersLower['x-host'] ||
        null;
     }
-    const isIpPrivate = is_ip_private(ip)
-    if (isIpPrivate) {
+    if (isIpPrivate(ip)) {
       return null;
     }
     return ip;
