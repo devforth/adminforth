@@ -1591,6 +1591,25 @@ interface AdminForthInputConfigCustomization {
   customComponentsDir?: string,
 
   /**
+   * Relative or absolute path to directory where AdminForth prepares SPA sources, installs SPA dependencies and builds SPA.
+   * AdminForth creates `spa_tmp` folder inside of it.
+   * By default equals `<os.tmpdir()>/adminforth/<brandNameSlug>`.
+   *
+   * Keep it available at runtime as well: on start `bundleNow()` prepares sources here to compare them with build in `spaServeDir`,
+   * so if this directory is lost, SPA dependencies are installed again during startup.
+   */
+  spaBuildDir?: string,
+
+  /**
+   * Relative or absolute path to directory from which built SPA is served.
+   * By default equals `dist` folder inside of installed AdminForth package.
+   *
+   * Use dedicated directory: its content is removed on every rebuild.
+   * AdminForth refuses to use non-empty directory which it did not create.
+   */
+  spaServeDir?: string,
+
+  /**
    * Path to custom .ts file which allows to inject custom Vue uses in SPA or add custom imports.
    * 
    * Example: Create file: `./custom/vue-uses.ts` with next content:

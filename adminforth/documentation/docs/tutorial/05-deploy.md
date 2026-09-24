@@ -73,6 +73,28 @@ To verify build performance locally you can do next:
 
 First we recommend repeat steps 1-4 without `--mount=type=cache` on your docker daemon to see how much time it takes to build without cache and then add `--mount=type=cache` and repeat steps 1-4 again to see the difference in build times. Then experiment with your CI caching solution to achieve similar build times.
 
+## Custom SPA build and serve directories
+
+By default AdminForth builds SPA in `<os.tmpdir()>/adminforth/<brandNameSlug>` and serves built SPA from `dist` folder inside of installed `adminforth` package. You can move both directories, e.g. when `/tmp` is cleaned between releases, build and runtime do not share `/tmp`, or `node_modules` is read-only:
+
+```ts title='./index.ts'
+export const admin = new AdminForth({
+  ...
+  customization: {
+    ...
+    spaBuildDir: '/var/cache/myapp/adminforth',
+    spaServeDir: '/var/lib/myapp/adminforth/dist',
+  },
+});
+```
+
+- `spaBuildDir` - directory where AdminForth copies SPA sources, installs SPA dependencies and runs the build. AdminForth creates `spa_tmp` folder inside of it.
+- `spaServeDir` - directory to which built SPA is copied and from which it is served. Its content is removed on every rebuild, so use a dedicated directory: AdminForth refuses to use a non-empty directory which it did not create.
+
+Relative paths are resolved against the current working directory. Neither directory can be inside of `customComponentsDir`. `npx adminforth bundle` reads the same config as your application, so when it runs in the same working directory, build time and runtime use identical paths.
+
+> ☝️ On start `bundleNow()` still prepares sources in `spaBuildDir` to check whether build in `spaServeDir` is up to date. Keep both directories available at runtime, otherwise SPA dependencies will be installed again on startup.
+
 
 
 ## Automating deployments with CI
