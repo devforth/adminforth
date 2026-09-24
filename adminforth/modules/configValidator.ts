@@ -192,6 +192,19 @@ export default class ConfigValidator implements IConfigValidator {
     // slug should have only lowercase letters, dashes and numbers
     customization.brandNameSlug = slugifyString(customization.brandName);
 
+    for (const option of ['spaBuildDir', 'spaServeDir'] as const) {
+      if (!customization[option]) {
+        continue;
+      }
+      customization[option] = path.resolve(customization[option]);
+      if (this.customComponentsDir) {
+        const relativeToCustom = path.relative(path.resolve(this.customComponentsDir), customization[option]);
+        if (!relativeToCustom.startsWith('..') && !path.isAbsolute(relativeToCustom)) {
+          errors.push(`customization.${option} "${customization[option]}" must not be inside customComponentsDir "${this.customComponentsDir}", because customComponentsDir is copied into SPA sources`);
+        }
+      }
+    }
+
     if (customization.brandLogo) {
       errors.push(...this.checkCustomFileExists(customization.brandLogo));
     }

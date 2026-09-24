@@ -36,6 +36,9 @@ function stripAnsiCodes(str) {
 // instead of each opening its own 32.
 const copyLimit = pLimit(32);
 
+// marks serveDir as created by AdminForth, so it is safe to remove it before a rebuild
+const SERVE_DIR_MARKER = '.adminforth_serve_dir';
+
 let atomicCopySeq = 0;
 
 const ATOMIC_COPY_TMP_RE = /\.af-(\d+)-\d+\.tmp$/;
@@ -208,11 +211,14 @@ class CodeInjector implements ICodeInjector {
   devServerPort: number = null;
 
   spaTmpPath(): string {
-    const brandSlug = this.adminforth.config.customization.brandNameSlug
-    if (!brandSlug) {
+    const { spaBuildDir, brandNameSlug } = this.adminforth.config.customization;
+    if (spaBuildDir) {
+      return path.join(spaBuildDir, 'spa_tmp');
+    }
+    if (!brandNameSlug) {
       throw new Error('brandSlug is empty, but it should be populated at least by config Validator ');
     }
-    return path.join(TMP_DIR, 'adminforth', brandSlug, 'spa_tmp');
+    return path.join(TMP_DIR, 'adminforth', brandNameSlug, 'spa_tmp');
   }
 
   /**
@@ -424,7 +430,33 @@ class CodeInjector implements ICodeInjector {
   }
 
   getServeDir() {
-    return path.join(this.getSpaDir(), 'dist');
+    return this.adminforth.config.customization.spaServeDir || path.join(this.getSpaDir(), 'dist');
+  }
+
+  /**
+   * serveDir is removed before every rebuild, so a user-configured spaServeDir which points to a folder with
+   * other files must not be wiped: only an empty folder or one created by AdminForth (it has the marker) is cleared.
+   * The default serveDir lives inside the AdminForth package, so it is always ours.
+   */
+  private async assertServeDirCanBeCleared(serveDir: string): Promise<void> {
+    if (!this.adminforth.config.customization.spaServeDir) {
+      return;
+    }
+    let entries: string[];
+    try {
+      entries = await fs.promises.readdir(serveDir);
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        return;
+      }
+      throw e;
+    }
+    if (entries.length && !entries.includes(SERVE_DIR_MARKER)) {
+      throw new Error(
+        `customization.spaServeDir "${serveDir}" is not empty and was not created by AdminForth. ` +
+        `Its content is removed on every SPA rebuild, so please point spaServeDir to a dedicated directory.`
+      );
+    }
   }
 
   async parsePackageLockPackages(dir: string, packageContent: { dependencies: any, devDependencies: any }): Promise<[string, string[]]> {
@@ -1357,6 +1389,7 @@ class CodeInjector implements ICodeInjector {
     process.env.HEAVY_DEBUG && console.log(`🪲 SPA messages hash: ${messagesHash}`);
 
     if (!skipBuild) {
+      await this.assertServeDirCanBeCleared(serveDir);
       // remove serveDir if exists
       try {
         await fs.promises.rm(serveDir, { recursive: true });
@@ -1364,6 +1397,7 @@ class CodeInjector implements ICodeInjector {
         // ignore
       }
       await fs.promises.mkdir(serveDir, { recursive: true });
+      await fs.promises.writeFile(path.join(serveDir, SERVE_DIR_MARKER), '');
     }
 
     if (!skipExtract) {
