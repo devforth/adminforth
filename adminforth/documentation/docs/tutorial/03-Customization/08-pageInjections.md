@@ -255,6 +255,53 @@ watch(() => props.failedLoginAttempts, () => {
 </script>
 ```
 
+### Passing custom parameters to login hooks
+
+Any login page injection can add a parameter to the built-in `/login` request by emitting
+`update:setLoginParam` with a name and value. Emit `undefined` as the value to remove the parameter.
+For example, a custom CAPTCHA component can pass its token from the provider callbacks:
+
+```vue title="./custom/CustomCaptcha.vue"
+<script setup lang="ts">
+const emit = defineEmits<{
+  (event: 'update:setLoginParam', name: string, value: string | undefined): void;
+}>();
+
+// Call these from your CAPTCHA provider's success and expiry callbacks.
+function onCaptchaVerified(token: string) {
+  emit('update:setLoginParam', 'captchaToken', token);
+}
+
+function onCaptchaExpired() {
+  emit('update:setLoginParam', 'captchaToken', undefined);
+}
+</script>
+```
+
+The parameter is sent alongside `username`, `password`, and `rememberMe`. The built-in form
+owns those three fields, so custom parameters cannot replace them. Login hooks that receive `extra`
+can read the custom value from `extra.body`:
+
+```ts title="./index.ts"
+auth: {
+  beforeLoginAttempt: async ({ extra }) => {
+    const captchaToken = extra.body.captchaToken;
+    if (!captchaToken || !await verifyCaptchaToken(captchaToken)) {
+      return { ok: false, error: 'CAPTCHA verification failed' };
+    }
+    return { ok: true };
+  },
+}
+```
+
+Wire the component callbacks to your CAPTCHA widget and implement `verifyCaptchaToken` with
+server-side verification from your CAPTCHA provider. The [Login Captcha plugin](/docs/tutorial/Plugins/login-captcha/)
+provides a ready-made integration.
+
+`beforeLoginConfirmation` and `afterSessionCreated` also receive the login request body through
+`extra.body`. These parameters belong to the login request; AdminForth does not automatically use
+them to look up users or store them in the session.
+
 ## List view page injections shrinking: thin enough to shrink?
 
 
