@@ -43,6 +43,7 @@
                         :key="index"
                         :is="getCustomComponent(formatComponent(c))"
                         :meta="formatComponent(c).meta"
+                        @update:setLoginParam="setLoginParam"
                       />
                     </template>
                     <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
@@ -99,6 +100,7 @@
                           :meta="formatComponent(c).meta"
                           :failedLoginAttempts="failedLoginAttempts"
                           @update:disableLoginButton="setDisableLoginButton($event)"
+                          @update:setLoginParam="setLoginParam"
                         />
                         
                         <div v-if="coreStore.config?.loginPromptHTML"
@@ -120,6 +122,7 @@
                           :meta="formatComponent(c).meta"
                           :failedLoginAttempts="failedLoginAttempts"
                           @update:disableLoginButton="setDisableLoginButton($event)"
+                          @update:setLoginParam="setLoginParam"
                           @update:oauthRedirecting="oauthRedirecting = $event"
                         />
                     </form>
@@ -150,6 +153,7 @@ const usernameInput = ref<InstanceType<typeof Input> | null>(null);
 const rememberMeValue= ref(false);
 const username = ref('');
 const password = ref('');
+const loginParams = new Map<string, unknown>();
 
 const router = useRouter();
 const route = useRoute();
@@ -191,6 +195,7 @@ async function login() {
     path: '/login',
     method: 'POST',
     body: {
+      ...Object.fromEntries(loginParams),
       username: username.value,
       password: password.value,
       rememberMe: rememberMeValue.value,
@@ -216,6 +221,14 @@ async function login() {
 
 function setDisableLoginButton(value: boolean) {
   disableLoginButton.value = value;
+}
+
+function setLoginParam(name: string, value: unknown) {
+  if (value === undefined) {
+    loginParams.delete(name);
+  } else {
+    loginParams.set(name, value);
+  }
 }
 
 </script>
