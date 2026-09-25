@@ -1595,8 +1595,8 @@ interface AdminForthInputConfigCustomization {
    * AdminForth creates `spa_tmp` folder inside of it.
    * By default equals `<os.tmpdir()>/adminforth/<brandNameSlug>`.
    *
-   * Keep it available at runtime as well: on start `bundleNow()` prepares sources here to compare them with build in `spaServeDir`,
-   * so if this directory is lost, SPA dependencies are installed again during startup.
+   * Keep it writable at runtime as well: on start `bundleNow()` prepares sources here to compare them with build in `spaServeDir`.
+   * It may be empty at runtime: SPA dependencies are installed here only when build in `spaServeDir` is outdated.
    */
   spaBuildDir?: string,
 

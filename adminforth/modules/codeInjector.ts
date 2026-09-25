@@ -39,6 +39,17 @@ const copyLimit = pLimit(32);
 // marks serveDir as created by AdminForth, so it is safe to remove it before a rebuild
 const SERVE_DIR_MARKER = '.adminforth_serve_dir';
 
+// the only spa_tmp entries which survive prepareSources: node_modules is the install cache and hashes.json
+// explains the next build cache miss. Everything else is copied from the sources again.
+const SPA_TMP_KEPT_ENTRIES = ['node_modules', 'hashes.json'];
+
+// what prepareSources found out about SPA dependencies, installSpaDependencies installs them when they are needed
+type SpaDependencies = {
+  hash: string,
+  icons: string[],
+  packages: string[],
+};
+
 let atomicCopySeq = 0;
 
 const ATOMIC_COPY_TMP_RE = /\.af-(\d+)-\d+\.tmp$/;
@@ -650,7 +661,7 @@ class CodeInjector implements ICodeInjector {
     }
     return oldMeta;
   }
-  async prepareSources() {
+  async prepareSources(): Promise<SpaDependencies> {
     // collects all files and folders into SPA_TMP_DIR
 
     // check spa tmp folder exists and create if not
@@ -661,6 +672,14 @@ class CodeInjector implements ICodeInjector {
     }
 
     await this.claimSpaTmp();
+
+    // leftovers of deleted sources would stay in the sources hash, so a build made in a reused spa_tmp
+    // (e.g. docker build with a cache mount) would never match a clean spa_tmp of the same sources at runtime
+    const spaTmpEntries = await fs.promises.readdir(this.spaTmpPath());
+    await Promise.all(spaTmpEntries
+      .filter((entry) => !SPA_TMP_KEPT_ENTRIES.includes(entry))
+      .map((entry) => fs.promises.rm(path.join(this.spaTmpPath(), entry), { recursive: true, force: true }))
+    );
 
     const icons = [];
     let routes = '';
@@ -750,13 +769,6 @@ class CodeInjector implements ICodeInjector {
     const spaDir = this.getSpaDir();
 
     process.env.HEAVY_DEBUG && console.log(`🪲⚙️ copyTreeAtomic from ${spaDir} -> ${this.spaTmpPath()}`);
-
-    // try to rm <spa tmp path>/src/types directory 
-    try {
-      await fs.promises.rm(path.join(this.spaTmpPath(), 'src', 'types'), { recursive: true });
-    } catch (e) {
-      // ignore
-    }
 
     // overwrite can't be used to not destroy cache
   
@@ -1076,30 +1088,10 @@ class CodeInjector implements ICodeInjector {
     await this.syncAllowBuildsToSpaTmp();
 
     const fullHash = `spa>${spaLockHash}::icons>${iconPackagesNamesHash}::user/custom>${usersLockHash}::${pluginsLockHash}`;
-    const hashPath = path.join(this.spaTmpPath(), 'node_modules', '.adminforth_hash');
-
-    try {
-      const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
-      await this.checkIconNames(icons);
-      if (existingHash === fullHash) {
-        process.env.HEAVY_DEBUG && console.log(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${fullHash}`);
-        return;
-      } else {
-        process.env.HEAVY_DEBUG && console.log(`🪲 Hashes do not match: from file: ${existingHash} actual: ${fullHash}, proceeding with pnpm install`);
-      }
-    } catch (e) {
-      // ignore
-      process.env.HEAVY_DEBUG && console.log(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
-    }
-
-    // install --frozen-lockfile works for npm and pnpm
-    await this.runPackageManagerShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: { 
-      NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
-    }}); 
 
     const allPacks = [
       ...iconPackageNames,
-      ...usersPackages, 
+      ...usersPackages,
       ...pluginPackages.reduce((acc, { packages }) => {
         acc.push(...packages);
         return acc;
@@ -1112,17 +1104,47 @@ class CodeInjector implements ICodeInjector {
     })
     const allPacksUnique = Array.from(new Set(allPacksFiltered));
 
-    if (allPacks.length) {
-      const packageManagerInstallCommand = `install ${allPacksUnique.join(' ')}`;
+    return { hash: fullHash, icons, packages: allPacksUnique };
+  }
+
+  /**
+   * node_modules of spa_tmp are needed only to build SPA, extract i18n messages or run dev server, so bundleNow
+   * calls it only then: a runtime whose spa_tmp did not survive (e.g. it was a docker cache mount at build time)
+   * still starts without installing anything when serveDir already has the build of the same sources.
+   */
+  async installSpaDependencies({ hash, icons, packages }: SpaDependencies) {
+    const hashPath = path.join(this.spaTmpPath(), 'node_modules', '.adminforth_hash');
+
+    try {
+      const existingHash = await fs.promises.readFile(hashPath, 'utf-8');
+      await this.checkIconNames(icons);
+      if (existingHash === hash) {
+        process.env.HEAVY_DEBUG && console.log(`🪲Hashes match, skipping pnpm install, from file: ${existingHash}, actual: ${hash}`);
+        return;
+      } else {
+        process.env.HEAVY_DEBUG && console.log(`🪲 Hashes do not match: from file: ${existingHash} actual: ${hash}, proceeding with pnpm install`);
+      }
+    } catch (e) {
+      // ignore
+      process.env.HEAVY_DEBUG && console.log(`🪲Hash file does not exist, proceeding with pnpm install, ${e}`);
+    }
+
+    // install --frozen-lockfile works for npm and pnpm
+    await this.runPackageManagerShell({command: 'install --frozen-lockfile', cwd: this.spaTmpPath(), envOverrides: {
+      NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
+    }});
+
+    if (packages.length) {
+      const packageManagerInstallCommand = `install ${packages.join(' ')}`;
       await this.runPackageManagerShell({
-        command: packageManagerInstallCommand, cwd: this.spaTmpPath(), 
-        envOverrides: { 
+        command: packageManagerInstallCommand, cwd: this.spaTmpPath(),
+        envOverrides: {
           NODE_ENV: 'development' // otherwise it will not install devDependencies which we still need, e.g for extract
         }
       });
     }
     await this.checkIconNames(icons);
-    await fs.promises.writeFile(hashPath, fullHash);
+    await fs.promises.writeFile(hashPath, hash);
   }
 
   async watchForReprepare({}) {
@@ -1350,7 +1372,7 @@ class CodeInjector implements ICodeInjector {
     console.log(`${this.adminforth.formatAdminForth()} Bundling ${hotReload ? 'and listening for changes (🔥 Hotreload)' : ' (no hot reload)'}`);
     this.adminforth.runningHotReload = hotReload;
 
-    await this.prepareSources();
+    const spaDependencies = await this.prepareSources();
 
     if (hotReload) {
       await Promise.all([
@@ -1376,7 +1398,8 @@ class CodeInjector implements ICodeInjector {
     const serveDir = this.getServeDir();
 
     const allFiles = [];
-    const sourcesHash = await this.computeSourcesHash(this.spaTmpPath(), allFiles);
+    // computeSourcesHash skips lock files, so dependencies are added to it: a changed lock must rebuild SPA too
+    const sourcesHash = `${await this.computeSourcesHash(this.spaTmpPath(), allFiles)}::${spaDependencies.hash}`;
     process.env.HEAVY_DEBUG && console.log(`🪲🪲 allFiles:, ${JSON.stringify(
       allFiles.sort((a,b) => a.localeCompare(b)), null, 1)}`);
     
@@ -1387,6 +1410,10 @@ class CodeInjector implements ICodeInjector {
     const skipExtract = messagesHash === sourcesHash;
 
     process.env.HEAVY_DEBUG && console.log(`🪲 SPA messages hash: ${messagesHash}`);
+
+    if (hotReload || !skipBuild || !skipExtract) {
+      await this.installSpaDependencies(spaDependencies);
+    }
 
     if (!skipBuild) {
       await this.assertServeDirCanBeCleared(serveDir);
