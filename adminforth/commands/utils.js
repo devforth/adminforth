@@ -162,3 +162,26 @@ export async function getInstance(file, currentDirectory) {
   }
   return null;
 }
+
+/**
+ * Tells whether a package manager binary is a JS script which has to be launched with node,
+ * or a self-contained native executable which has to be launched directly.
+ * pnpm up to 11 shipped a JS entrypoint (bin/pnpm.mjs), pnpm 12 ships a native binary instead,
+ * and passing a native binary to node fails with "SyntaxError: Invalid or unexpected token".
+ */
+export function isNodeScriptBin(binPath) {
+  try {
+    const fd = fs.openSync(binPath, "r");
+    try {
+      const header = Buffer.alloc(2);
+      // JS entrypoints of npm/pnpm always start with a "#!/usr/bin/env node" shebang,
+      // native executables start with a binary magic number (0x7f "ELF" on Linux)
+      return fs.readSync(fd, header, 0, 2, 0) === 2 && header.toString("latin1") === "#!";
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch (e) {
+    // unreadable bin: keep launching it with node like we always did, so the error stays the same
+    return true;
+  }
+}

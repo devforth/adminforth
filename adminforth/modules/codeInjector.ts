@@ -7,7 +7,7 @@ import pLimit from 'p-limit';
 import { promisify } from 'util';
 import yaml from 'yaml';
 import AdminForth, { AdminForthConfigMenuItem } from '../index.js';
-import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString } from './utils.js';
+import { ADMIN_FORTH_ABSOLUTE_PATH, getComponentNameFromPath, transformObject, deepMerge, md5hash, slugifyString, isNodeScriptBin } from './utils.js';
 import { ICodeInjector } from '../types/Back.js';
 import { StylesGenerator } from './styleGenerator.js';
 import { afLogger } from '../modules/logger.js';
@@ -399,7 +399,9 @@ class CodeInjector implements ICodeInjector {
       // Quote paths that contain spaces (for Unix systems)
       const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
       const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
-      execCommand = `${quotedNodeBinary} ${quotedPackagePath} ${command}`;
+      execCommand = isNodeScriptBin(packagePath) ?
+        `${quotedNodeBinary} ${quotedPackagePath} ${command}` :
+        `${quotedPackagePath} ${command}`;
     }
     
     const execOptions: any = {
@@ -1498,7 +1500,9 @@ class CodeInjector implements ICodeInjector {
       if (process.platform === 'win32') {
         devServer = spawn(usersPackageManager, command.split(' '), { cwd, env, shell: true });
       } else {
-        devServer = spawn(`${nodeBinary}`, [`${packageManagerPath}`, ...command.split(' ')], { cwd, env });
+        devServer = isNodeScriptBin(packageManagerPath) ?
+          spawn(`${nodeBinary}`, [`${packageManagerPath}`, ...command.split(' ')], { cwd, env }) :
+          spawn(`${packageManagerPath}`, command.split(' '), { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {
