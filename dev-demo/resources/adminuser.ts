@@ -12,6 +12,9 @@ import TwoFactorsAuthPlugin from './configs/twoFactorAuthPluginConfig.js';
 import EmailInvitePlugin from '../../plugins/adminforth-email-invite/index.js';
 import EmailPasswordResetPlugin from '../../plugins/adminforth-email-password-reset/index.js';
 import { crudApprovePlugin } from './crud_manual_approve.js';
+import CaptchaPlugin from '../../plugins/adminforth-login-captcha/index.js';
+import CaptchaAdapterCloudflare from '../../adapters/adminforth-login-captcha-adapter-cloudflare/index.js';
+import { levelDbAdapter } from '../utils.js';
 
 async function allowedForSuperAdmin({ adminUser }: { adminUser: AdminUser }): Promise<boolean> {
   return adminUser.dbUser.role === 'superadmin';
@@ -215,6 +218,15 @@ export default {
       }
     }),
     OAuthPlugin,
+    ...(process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY ? [
+      new CaptchaPlugin({
+        captchaAdapter: new CaptchaAdapterCloudflare({
+          siteKey: process.env.CLOUDFLARE_TURNSTILE_SITE_KEY as string,
+          secretKey: process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY,
+        }),
+        keyValueAdapter: levelDbAdapter,
+      }),
+    ] : []),
     new UserSoftDelete({
       activeFieldName: "is_active",
       //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
