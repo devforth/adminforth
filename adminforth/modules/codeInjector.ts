@@ -53,6 +53,7 @@ type SpaDependencies = {
 let atomicCopySeq = 0;
 
 const ATOMIC_COPY_TMP_RE = /\.af-(\d+)-\d+\.tmp$/;
+const LOGIN_PAGE_ROUTE_PART_RE = /\/\* IMPORTANT:ADMINFORTH LOGIN PAGE START \*\/[\s\S]*?\/\* IMPORTANT:ADMINFORTH LOGIN PAGE END \*\//;
 
 function isAtomicCopyTempName(name: string): boolean {
   return ATOMIC_COPY_TMP_RE.test(name);
@@ -985,6 +986,13 @@ class CodeInjector implements ICodeInjector {
 
     let routerVueContent = await fs.promises.readFile(routerVuePath, 'utf-8');
     routerVueContent = routerVueContent.replace('/* IMPORTANT:ADMINFORTH ROUTES IMPORTS */', routerComponents);
+
+    const loginPage = this.adminforth.config.customization.loginPage;
+    if (loginPage) {
+      // path, name and beforeEnter of the built-in route are kept, so all redirects to { name: 'login' } still work
+      routerVueContent = routerVueContent.replace(LOGIN_PAGE_ROUTE_PART_RE, `component: () => import('${loginPage.file}'),
+      meta: ${JSON.stringify({ title: 'Login', ...loginPage.meta })},`);
+    }
 
     // inject title to index.html
     const indexHtmlPath = path.join(this.spaTmpPath(), 'index.html');

@@ -165,9 +165,12 @@ export default class ConfigValidator implements IConfigValidator {
       });
     }
 
+    const loginPage = this.inputConfig.customization?.loginPage;
+
     const customization: Partial<AdminForthConfigCustomization> =  {
       ...(this.inputConfig.customization || {}),
       customComponentsDir: this.customComponentsDir,
+      loginPage: loginPage && this.validateComponent(loginPage, errors),
       loginPageInjections,
       globalInjections,
     };

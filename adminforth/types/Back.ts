@@ -1668,6 +1668,16 @@ interface AdminForthInputConfigCustomization {
   }
 
   /**
+   * Custom component which replaces the built-in login page. The route keeps path `/login` and name `login`.
+   * `meta` is merged into the route meta, same as for `customPages`.
+   *
+   * Not recommended for layout or styling changes: prefer CSS customization and `loginPageInjections`,
+   * a replaced page does not receive fixes and new integration points added to the built-in one.
+   * See https://adminforth.dev/docs/tutorial/Customization/pageInjections/#replacing-the-login-page
+   */
+  loginPage?: AdminForthComponentDeclaration,
+
+  /**
    * Custom panel components or array of components which will be displayed in different parts of the admin panel.
    */
   globalInjections?: {
@@ -2121,7 +2131,7 @@ export interface AdminForthInputConfig {
 }
 
 
-export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfigCustomization, 'loginPageInjections' | 'globalInjections'> {
+export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfigCustomization, 'loginPage' | 'loginPageInjections' | 'globalInjections'> {
   brandName: string,
 
   dateFormats: string,
@@ -2134,6 +2144,8 @@ export interface AdminForthConfigCustomization extends Omit<AdminForthInputConfi
   brandNameSlug: string,
   showBrandNameInSidebar: boolean,
   customPages: Array<AdminForthPageDeclaration>,
+
+  loginPage?: AdminForthComponentDeclarationFull,
 
   loginPageInjections: {
     underInputs: Array<AdminForthComponentDeclarationFull>,
