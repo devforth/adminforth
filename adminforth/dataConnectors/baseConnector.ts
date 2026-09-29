@@ -10,7 +10,7 @@ import type { AdminUser } from "../types/Common.js"
 
 import { suggestIfTypo } from "../modules/utils.js";
 import { decodeRecordId, encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames, primaryKeyColumns } from "../modules/recordId.js";
-import { interpretResource } from "../modules/restApi.js";
+import { interpretResource } from "../modules/resourceAccess.js";
 import { ActionCheckSource, AdminForthDataTypes, AdminForthFilterOperators, AdminForthSortDirections, AllowedActionsEnum } from "../types/Common.js";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";

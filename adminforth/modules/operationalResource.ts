@@ -1,19 +1,57 @@
-import { IAdminForthSingleFilter, IAdminForthAndOrFilter, IAdminForthSort, IOperationalResource, IAdminForthDataSourceConnectorBase, AdminForthResource, IAggregationRule, IGroupByRule } from '../types/Back.js';
+import type {
+  AdminForthResource,
+  CreateResourceRecordResult,
+  IAdminForthAndOrFilter,
+  IAdminForthDataSourceConnectorBase,
+  IAdminForthSingleFilter,
+  IAdminForthSort,
+  IAggregationRule,
+  IGroupByRule,
+  IOperationalResource,
+  IScopedOperationalResource,
+  OperationalResourceUserOptions,
+} from '../types/Back.js';
+import type { AdminUser } from '../types/Common.js';
 import { compositePkValues } from './recordId.js';
-import { AdminForthFilterOperators } from '../types/Common.js';
 import { normalizeRecordValues } from './columnValueNormalizer.js';
+
+/**
+ * Builds the user-scoped layer on top of a data-access resource. Injected by AdminForth so this
+ * module stays at the bottom of the stack: it knows the connector and the resource columns, and
+ * nothing about permissions, actions or lifecycle hooks.
+ */
+export type UserScopeFactory = (
+  data: OperationalResource,
+  adminUser: AdminUser,
+  options: OperationalResourceUserOptions,
+) => IScopedOperationalResource;
 
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
   return (Array.isArray(sort) ? sort : [sort]) as IAdminForthSort[];
 }
 
+/**
+ * Plain data access for one resource: talks to the connector and normalizes values.
+ * It has no notion of who is asking — no permissions, no column access
+ * rules, no lifecycle hooks.
+ *
+ * For anything a user asked for, take {@link asUser}, which adds those on top.
+ */
 export default class OperationalResource implements IOperationalResource {
   dataConnector: IAdminForthDataSourceConnectorBase;
   resourceConfig: AdminForthResource;
 
-  constructor(dataConnector: IAdminForthDataSourceConnectorBase, resourceConfig: AdminForthResource) {
+  constructor(
+    dataConnector: IAdminForthDataSourceConnectorBase,
+    resourceConfig: AdminForthResource,
+    private readonly scopeForUser: UserScopeFactory,
+  ) {
     this.dataConnector = dataConnector;
     this.resourceConfig = resourceConfig;
+  }
+
+  asUser(adminUser: AdminUser, options: OperationalResourceUserOptions = {}): IScopedOperationalResource {
+    return this.scopeForUser(this, adminUser, options);
   }
 
   async get(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): Promise<any | null> {
@@ -29,13 +67,12 @@ export default class OperationalResource implements IOperationalResource {
   }
 
   async list(
-      filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, 
-      limit: number | null = null, 
+      filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
+      limit: number | null = null,
       offset: number | null = null,
       sort: IAdminForthSort | IAdminForthSort[] = [],
       columns?: string[]
   ): Promise<any[]> {
-    // check if type of limit and offset is number
     if (limit !== null && typeof limit !== 'number') {
       throw new Error('Limit must be a number');
     }
@@ -43,27 +80,17 @@ export default class OperationalResource implements IOperationalResource {
       throw new Error('Offset must be a number');
     }
 
-    let appliedLimit = limit;
-    if (limit === null) {
-      appliedLimit = 1000000000;
-    }
-    let appliedOffset = offset;
-    if (offset === null) {
-      appliedOffset = 0;
-    }
-
     const { data } = await this.dataConnector.getData({
       resource: this.resourceConfig,
       filters: this.dataConnector.validateAndNormalizeInputFilters(filter),
-      limit: appliedLimit,
-      offset: appliedOffset,
+      limit: limit === null ? 1000000000 : limit,
+      offset: offset === null ? 0 : offset,
       sort: sortsIfSort(sort),
       getTotals: false,
       columns: columns ? this.resourceConfig.dataSourceColumns.filter((column) => columns.includes(column.name)) : undefined,
     });
     return data;
   }
-
 
   async aggregate(
     filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>,
@@ -85,13 +112,13 @@ export default class OperationalResource implements IOperationalResource {
     });
   }
 
-  async create(recordValues: any): Promise<{ ok: boolean; createdRecord: any; error?: string; }> {
+  async create(recordValues: any): Promise<CreateResourceRecordResult & { ok: boolean; createdRecord: any }> {
     const normalizedRecord = { ...recordValues };
     normalizeRecordValues(this.resourceConfig, normalizedRecord);
-    const { ok, createdRecord, error } = await this.dataConnector.createRecord({ 
-      resource: this.resourceConfig, 
+    const { ok, createdRecord, error } = await this.dataConnector.createRecord({
+      resource: this.resourceConfig,
       record: normalizedRecord,
-      adminUser: null 
+      adminUser: null,
     });
     return { ok, createdRecord, error };
   }
@@ -103,11 +130,10 @@ export default class OperationalResource implements IOperationalResource {
 
     const normalizedRecord = { ...record };
     normalizeRecordValues(this.resourceConfig, normalizedRecord);
-
-    return await this.dataConnector.updateRecord({ 
+    return await this.dataConnector.updateRecord({
       resource: this.resourceConfig,
       recordId: primaryKey,
-      newValues: normalizedRecord
+      newValues: normalizedRecord,
     });
   }
 
@@ -118,5 +144,4 @@ export default class OperationalResource implements IOperationalResource {
       pkValues: compositePkValues(this.dataConnector, this.resourceConfig, primaryKey),
     });
   }
-
 }

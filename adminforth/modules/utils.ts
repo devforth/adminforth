@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Fuse from 'fuse.js';
 import crypto from 'crypto';
-import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
+import { Filters, type AdminForthResource, type IAdminForth } from '../types/Back.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
 import { encodeRecordId, isCompositePrimaryKey } from './recordId.js';
 import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
@@ -534,8 +534,27 @@ export function slugifyString(str: string): string {
     .replace(/[^a-z0-9-_]/g, '-');
 }
 
-export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth): Promise<{ error: string | null }> {
+/**
+ * Applies the configured onDelete strategy to every child record pointing at `primaryKey`.
+ *
+ * Deleting a child has to run that resource's delete hooks — upload releases its S3 objects,
+ * many2many drops junction rows, audit-log records the deletion from there. `deleteWithHooks`
+ * supplies that, so this does not depend on any particular public entry point.
+ */
+export async function cascadeChildrenDelete(
+  resource: AdminForthResource,
+  primaryKey: string,
+  context: {adminUser: any, response: any},
+  adminforth: IAdminForth,
+  deleteWithHooks?: (params: {
+    resource: AdminForthResource, recordId: any, record: any, adminUser: any, response: any,
+  }) => Promise<{ error?: string }>,
+): Promise<{ error: string | null }> {
   const { adminUser, response } = context;
+  // Preserve the public four-argument contract. Core callers inject the non-deprecated executor;
+  // legacy external callers retain the hook-aware behavior they had before that executor existed.
+  const deleteChildWithHooks = deleteWithHooks
+    ?? ((params) => adminforth.deleteResourceRecord(params));
 
   const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
@@ -546,7 +565,9 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
 
     const strategy = foreignColumn.foreignResource.onDelete;
 
-    const childRecords = await adminforth.resource(childRes.resourceId).list(Filters.EQ(foreignColumn.name, primaryKey));
+    const childRecords = await adminforth
+      .resource(childRes.resourceId)
+      .list(Filters.EQ(foreignColumn.name, primaryKey));
 
     const childPk = childRes.columns.find(c => c.primaryKey)?.name;
     const childRecordId = (childRecord: any) => isCompositePrimaryKey(childRes)
@@ -555,21 +576,31 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
 
     if (strategy === 'cascade') {
       for (const childRecord of childRecords) {
-        const childResult = await cascadeChildrenDelete(childRes, childRecordId(childRecord), context, adminforth);
+        // Grandchildren first, then the child itself.
+        const childResult = await cascadeChildrenDelete(
+          childRes, childRecordId(childRecord), context, adminforth, deleteChildWithHooks,
+        );
         if (childResult?.error) {
           return childResult;
         }
-        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), response});
-        if (deleteChild.error) return { error: deleteChild.error };
-        if (childResult?.error) {
-          return childResult;
+        const deleteChild = await deleteChildWithHooks({
+          resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), response,
+        });
+        if (deleteChild.error) {
+          return { error: deleteChild.error };
         }
       }
     }
 
     if (strategy === 'setNull') {
       for (const childRecord of childRecords) {
-        await adminforth.resource(childRes.resourceId).update(childRecordId(childRecord), {[foreignColumn.name]: null});
+        const result = await adminforth.resource(childRes.resourceId).update(
+          childRecordId(childRecord),
+          { [foreignColumn.name]: null },
+        );
+        if (result.error) {
+          return { error: result.error };
+        }
       }
     }
   }

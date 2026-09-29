@@ -34,6 +34,65 @@ await admin.resource('adminuser').get(Filters.EQ('id', '1234'));
 
 Here we will show you how to use the Data API with simple examples.
 
+## Access levels
+
+Resource data can be reached at two levels, and the difference is who asked for
+the operation.
+
+```ts
+const users = admin.resource('adminuser');
+
+// a user asked for this
+await users.asUser(adminUser, { meta }).create(record);
+
+// plain data access the user did not ask for
+await users.create(record);
+```
+
+`asUser()` is the level for anything that came from a request. It enforces the
+resource ACL, applies the column access rules (`backendOnly`, `editReadonly`,
+`showIn` and its `allowModifyWhenNotShowIn*` / `fillOnCreate` escapes), strips
+columns the user may not read out of results, and runs the resource lifecycle
+hooks — including the row-scoping `beforeDatasourceRequest` hooks that express
+multi-tenancy. Use it in plugin endpoints: you do not have to remember the
+individual checks, and you cannot forget one.
+
+The bare methods are plain data access for internal bookkeeping: no permission
+checks, no column access rules, no hooks. Writes are still normalized; the
+connector remains responsible for its own constraints.
+
+`admin.createResourceRecord`, `admin.updateResourceRecord` and
+`admin.deleteResourceRecord` are the older entry points which this API replaces.
+They still work and still run hooks, but they are deprecated: move calls to
+`asUser()` when a user asked for the operation, and to the bare methods when
+nothing did.
+
+A denied or failed operation is always visible. `get`, `list`, `count`,
+`aggregate` and `delete` throw, since their return value carries no room for an
+error; `create` and `update` resolve to `{ ok: false, error }`. `delete` returns
+`false` when the record simply did not exist:
+
+```ts
+const { ok, error } = await users.asUser(adminUser, { meta }).update(id, updates);
+
+try {
+  const deleted = await users.asUser(adminUser, { meta }).delete('1234');
+  // deleted === false means there was no such record
+} catch (e) {
+  // ACL denial, cascade failure, or a hook rejection
+}
+```
+
+When the caller has already loaded the record, pass its snapshot to the save
+hooks. ACL and row scope use the current record from a scoped lookup before
+mutating it:
+
+```ts
+await users.asUser(adminUser, { meta, oldRecord }).update(recordId, updates);
+await users.asUser(adminUser, { meta, record }).delete(recordId);
+```
+
+
 ## Get one item from database
 
 
