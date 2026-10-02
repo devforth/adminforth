@@ -13,10 +13,10 @@ import {
   IAdminForthNoAuthEndpointOptions,
   IExpressHttpServer,
   HttpExtra,
+  IAdminForthHttpResponse,
 } from '../types/Back.js';
 import { WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
-import { AdminUser } from '../types/Common.js';
 import http from 'http';
 import type { AddressInfo } from 'net';
 import { randomUUID } from 'crypto';
@@ -57,6 +57,15 @@ function parseCookiesString(cookiesString: string): Array<{
   });
   return result;
 }
+
+// 101 upgrade response is already sent when websocket connection is established, so auth hooks can't change it
+const WS_HANDSHAKE_RESPONSE: IAdminForthHttpResponse = {
+  setHeader: () => {},
+  setStatus: () => {},
+  blobStream: () => {
+    throw new Error('Websocket handshake response has no body');
+  },
+};
 
 function getHeaderString(headers: Record<string, any>, name: string): string | undefined {
   const value = headers[name];
@@ -284,21 +293,32 @@ class ExpressServer implements IExpressHttpServer {
     // Handle WebSocket connections
     wss.on('connection', async (ws, req) => {
       try {
-        // get cookies and parse
-        let adminUser: AdminUser | null = null;
-        const cookies = req.headers.cookie;
-        if (cookies) {
-          const jwt = this.adminforth.auth.getAuthCookie(parseCookiesString(cookies));
-          if (jwt) {
-            adminUser = await this.adminforth.auth.verify(jwt, 'auth');
-          }
+        const cookies = await parseExpressCookie(req);
+        const url = new URL(req.url, 'http://localhost');
+        const extra: HttpExtra = {
+          body: {},
+          query: Object.fromEntries(url.searchParams),
+          headers: req.headers as Record<string, string>,
+          cookies,
+          requestUrl: req.url,
+          meta: {},
+          response: WS_HANDSHAKE_RESPONSE,
+        };
+        const authorize = () => this.adminforth.auth.authorizeByCookies({ cookies, response: WS_HANDSHAKE_RESPONSE, extra });
+
+        const result = await authorize();
+        if (result.status === 'verifyFailed') {
+          throw result.error;
         }
 
         this.adminforth.websocket.registerWsClient(
           new WebSocketClient({
             id: randomUUID(),
-            clientId: typeof req.url === 'string' ? new URL(req.url, 'http://localhost').searchParams.get('clientId') || undefined : undefined,
-            adminUser,
+            clientId: url.searchParams.get('clientId') || undefined,
+            // user denied by adminUserAuthorize connects as anonymous, same as without auth cookie. Closing the socket
+            // instead would make frontend reconnect instantly, over and over
+            adminUser: result.status === 'ok' ? result.adminUser : null,
+            authorize,
             send: (data) => ws.send(data),
             close: () => ws.close(),
             onMessage: (handler) => ws.on('message', handler),

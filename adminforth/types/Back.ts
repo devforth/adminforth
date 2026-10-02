@@ -2700,7 +2700,13 @@ export interface IWebSocketClient {
   lastPing: number;
   topics: Set<string>;
   adminUser: AdminUser;
-  
+
+  /**
+   * Authorizes handshake request of this connection again: verifies its auth jwt and runs `adminUserAuthorize` hooks,
+   * so access which was revoked after connection was established is noticed.
+   */
+  authorize: () => Promise<AdminUserAuthorizationResult>;
+
   send: (message: string) => void;
   close: () => void;
   onMessage: (handler: (message: string) => void) => void;
