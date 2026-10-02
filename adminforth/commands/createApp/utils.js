@@ -15,6 +15,7 @@ import Handlebars from 'handlebars';
 import { promisify } from 'util';
 import { resolveAdminforthVersionRange } from '../cli.js';
 import { checkNodeVersion } from '../nodeVersion.js';
+import { isNodeScriptBin } from '../utils.js';
 
 import { URL } from 'url'
 import net from 'net'
@@ -684,9 +685,11 @@ async function installDependenciesPnpm(ctx, cwd) {
       execAsync(`pnpm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
+    // pnpm 12 bin is a native executable, only older JS entrypoints can be passed to node
+    const pnpmCommand = isNodeScriptBin(pnpmPath) ? `${nodeBinary} ${pnpmPath}` : pnpmPath;
     const res = await Promise.all([
-      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-      execAsync(`${nodeBinary} ${pnpmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`${pnpmCommand} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${pnpmCommand} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
 }
@@ -703,9 +706,10 @@ async function installDependenciesNpm(ctx, cwd) {
       execAsync(`npm install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   } else {
+    const npmCommand = isNodeScriptBin(npmPath) ? `${nodeBinary} ${npmPath}` : npmPath;
     const res = await Promise.all([
-      execAsync(`${nodeBinary} ${npmPath} install`, { cwd, env: { PATH: process.env.PATH } }),
-      execAsync(`${nodeBinary} ${npmPath} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
+      execAsync(`${npmCommand} install`, { cwd, env: { PATH: process.env.PATH } }),
+      execAsync(`${npmCommand} install`, { cwd: customDir, env: { PATH: process.env.PATH } }),
     ]);
   }
 }
