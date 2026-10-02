@@ -781,7 +781,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     const beforeLogout = this.adminforth.config.auth.beforeLogout as (BeforeLogoutFunction[] | undefined);
 
     for (const hook of listify(beforeLogout)) {
-      await hook({ adminUser, adminforth: this.adminforth, extra, tr });
+      try {
+        await hook({ adminUser, adminforth: this.adminforth, extra, tr });
+      } catch (e) {
+        afLogger.error(`Error in beforeLogout hook, continuing logout: ${e}`);
+      }
     }
   }
 
