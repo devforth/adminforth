@@ -75,6 +75,21 @@ describe('auth.beforeLogout', () => {
     expect(res.headers['set-cookie'][0]).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
   });
 
+  it('clears auth cookie and runs remaining hooks when a hook throws', async () => {
+    const called: string[] = [];
+    hooks.push(
+      async () => { throw new Error('key-value store is unavailable'); },
+      async () => { called.push('second'); },
+    );
+
+    const res = await logout(await loginCookie());
+
+    expect(res.status).toEqual(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(called).toEqual(['second']);
+    expect(res.headers['set-cookie'][0]).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+  });
+
   it('passes null user when session is missing or invalid', async () => {
     const users: (any | null)[] = [];
     hooks.push(async ({ adminUser }) => { users.push(adminUser); });
