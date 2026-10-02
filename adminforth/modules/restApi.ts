@@ -1578,6 +1578,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
+        // recordLabel should get raw foreign key values, not { label, pk } references added below
+        const rawItems = data.data.map((item) => ({ ...item }));
+
         // for foreign keys, add references
         await Promise.all(
           resource.columns.filter((col) => (
@@ -1709,7 +1712,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             adminforth: this.adminforth,
           };
         
-          for (const item of data.data) {
+          for (const [i, item] of data.data.entries()) {
+            const rawItem = rawItems[i];
             for (const key of Object.keys(item)) {
               if (key === '_primaryKeyValue') {
                 continue;
@@ -1718,10 +1722,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const bo = col ? await isBackendOnly(col, ctx) : true;
               if (!col || bo) {
                 delete item[key];
+                delete rawItem[key];
               }
             }
             if (!selectedColumnNameSet || shouldAddListHelpers) {
-              item._label = resource.recordLabel(item);
+              item._label = resource.recordLabel(rawItem);
             }
           }
         }
