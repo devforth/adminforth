@@ -15,7 +15,7 @@ import {
   HttpExtra,
   IAdminForthHttpResponse,
 } from '../types/Back.js';
-import { WebSocketServer } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
 import { WebSocketClient } from './common.js';
 import http from 'http';
 import type { AddressInfo } from 'net';
@@ -309,6 +309,9 @@ class ExpressServer implements IExpressHttpServer {
         const result = await authorize();
         if (result.status === 'verifyFailed') {
           throw result.error;
+        }
+        if (ws.readyState !== WebSocket.OPEN) {
+          return;
         }
 
         this.adminforth.websocket.registerWsClient(
