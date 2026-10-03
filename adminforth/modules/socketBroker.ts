@@ -88,7 +88,11 @@ export default class SocketBroker implements IWebSocketBroker {
     this.startChecker();
 
     this.clients.set(client.id, client);
+    const pendingSubscriptions = new Map<string, object>();
     client.onMessage(async (message) => {
+      if (this.clients.get(client.id) !== client) {
+        return;
+      }
       const messageText = message.toString();
 
       if (!messageText.trim()) {
@@ -130,19 +134,27 @@ export default class SocketBroker implements IWebSocketBroker {
       const topic = payload.topic;
 
       if (payload.type === 'subscribe') {
+        // Only the latest subscribe intent may commit after asynchronous authorization.
+        const subscription = {};
+        pendingSubscriptions.set(topic, subscription);
+        let authResult = true;
         if (!topic.startsWith('/opentopic/')) {
           if (this.adminforth.config.auth.websocketTopicAuth) {
-            let authResult = false;
+            authResult = false;
             try {
               authResult = await this.adminforth.config.auth.websocketTopicAuth(topic, client.adminUser);
             } catch (e) {
               afLogger.error(`Error in websocketTopicAuth, assuming connection not allowed ${e}`);
             }
-            if (!authResult) {
-              client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
-              return;
-            }
           }
+        }
+        if (this.clients.get(client.id) !== client || pendingSubscriptions.get(topic) !== subscription) {
+          return;
+        }
+        pendingSubscriptions.delete(topic);
+        if (!authResult) {
+          client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+          return;
         }
         if (!this.topics[topic]) {
           this.topics[topic] = [];
@@ -163,16 +175,19 @@ export default class SocketBroker implements IWebSocketBroker {
         return;
       }
 
+      pendingSubscriptions.delete(topic);
       this.deleteClientFromTopic(client, topic);
       this.cleanupTopicIfEmpty(topic);
       client.topics.delete(topic);
     });
     
     client.onClose(() => {
+      pendingSubscriptions.clear();
       for (const topic of client.topics) {
         this.deleteClientFromTopic(client, topic);
         this.cleanupTopicIfEmpty(topic);
       }
+      client.topics.clear();
       this.clients.delete(client.id);
     });
 
