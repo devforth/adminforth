@@ -69,6 +69,7 @@ model mcp_auth_secrets {
   created_at         DateTime
   last_used_at       DateTime?
   last_used_by_agent String?
+  oauth_client_id    String?
 
   @@index([user_id])
 }
