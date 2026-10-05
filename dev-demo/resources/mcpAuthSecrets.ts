@@ -14,6 +14,7 @@ export default {
     { name: 'created_at', type: AdminForthDataTypes.DATETIME },
     { name: 'last_used_at', type: AdminForthDataTypes.DATETIME, required: false },
     { name: 'last_used_by_agent', type: AdminForthDataTypes.STRING, required: false },
+    { name: 'oauth_client_id', type: AdminForthDataTypes.STRING, required: false },
   ],
   options: {
     allowedActions: {
