@@ -75,6 +75,20 @@ describe('auth.beforeLogout', () => {
     expect(res.headers['set-cookie'][0]).toContain('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
   });
 
+  it('can remove custom cookies together with auth cookie', async () => {
+    hooks.push(async ({ adminforth, extra }) => {
+      adminforth.auth.removeCustomCookie({ response: extra.response, name: 'plugin_state' });
+    });
+
+    const res = await logout(await loginCookie());
+
+    const brandSlug = admin.config.customization.brandNameSlug;
+    expect(res.headers['set-cookie']).toEqual([
+      expect.stringContaining(`adminforth_${brandSlug}_plugin_state=;`),
+      expect.stringContaining(`adminforth_${brandSlug}_jwt=;`),
+    ]);
+  });
+
   it('clears auth cookie and runs remaining hooks when a hook throws', async () => {
     const called: string[] = [];
     hooks.push(
