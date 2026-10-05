@@ -52,9 +52,15 @@
         </div>
       </div>
 
-     <div v-if="coreStore?.config?.defaultUserExists && !isLocalhost" class="p-4 mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"> 
-      <IconExclamationCircleOutline class="inline-block align-text-bottom mr-0,5 w-5 h-5" />
-      {{ $t('Default user') }} <strong>"adminforth"</strong> {{ $t('detected. Delete it and create your own account.') }}
+     <div
+      v-if="coreStore?.config?.defaultUserExists && !isLocalhost"
+      class="mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"
+      :class="iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering ? 'flex h-10 items-center justify-center' : 'p-4'"
+    >
+      <IconExclamationCircleOutline class="inline-block align-text-bottom w-5 h-5 shrink-0" />
+      <template v-if="!iconOnlySidebarEnabled || !isSidebarIconOnly || isSidebarHovering">
+        {{ $t('Default user') }} <strong>"adminforth"</strong> {{ $t('detected. Delete it and create your own account.') }}
+      </template>
     </div>
 
       <ul class="af-sidebar-container space-y-2 font-medium" >
