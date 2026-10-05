@@ -763,7 +763,12 @@ class ExpressServer implements IExpressHttpServer {
       }
 
       response.headers.forEach(([name, value]) => {
-        res.setHeader(name, value);
+        // setHeader replaces previous value, so cookies set by hooks would be lost behind auth cookie
+        if (name.toLowerCase() === 'set-cookie') {
+          res.append(name, value);
+        } else {
+          res.setHeader(name, value);
+        }
       });
       res.status(response.status);
       if (response.message) {
