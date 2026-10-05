@@ -46,6 +46,7 @@ export const globalPlugins = [
     dashboardConfigsResourceId: 'dashboard_configs',
   }),
   new AdminForthMcpPlugin({
+    adminPanelOrigin: 'http://localhost:3123',
     authSecretResource: {
       resourceId: 'mcp_auth_secrets',
       idField: 'id',
@@ -55,7 +56,11 @@ export const globalPlugins = [
       createdAtField: 'created_at',
       lastUsedAtField: 'last_used_at',
       lastUsedByAgentField: 'last_used_by_agent',
+      oauthClientIdField: 'oauth_client_id',
     },
+    devOAuthClients: [
+      { clientId: 'local-test', clientName: 'Local test', redirectUris: ['http://127.0.0.1/callback'] },
+    ],
   }),
   new AdminForthAgent({
     placeholderMessages: async ({ adminUser, httpExtra }) => {
