@@ -10,17 +10,16 @@ type Subscription = {
 const subscriptions: { [topic: string]: Subscription[] } = {};
 let nextSubscriptionId = 1;
 
-interface ExtendedWebSocket extends WebSocket {
-  connected?: boolean;
-}
-
 const state: {
   status: 'connecting' | 'connected' | 'disconnected';
-  ws: ExtendedWebSocket | null;
+  ws: WebSocket | null;
+  ready: boolean;
 } = {
   status: 'connecting',
-  ws: null
+  ws: null,
+  ready: false,
 };
+let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
 function doPhysicalSubscribe(topic: string) {
   state.ws!.send(JSON.stringify({ type: 'subscribe', topic }));
@@ -37,7 +36,7 @@ async function connect () {
     console.error('Websocket not supported by this browser');
     return;
   }
-  if (state.ws?.connected) {
+  if (state.ws && state.ws.readyState !== WebSocket.CLOSED) {
     console.error('🔌 AFWS already connected');
     return;
   }
@@ -48,16 +47,20 @@ async function connect () {
   }
 
   const clientId = encodeURIComponent(getAdminForthClientId());
-  state.ws = new WebSocket(`${
+  const ws = new WebSocket(`${
     window.location.protocol === 'http:' ? 'ws' : 'wss'
   }://${window.location.host}${base}/afws?clientId=${clientId}`);
+  state.ws = ws;
   state.status = 'connecting';
-  state.ws.addEventListener('open', () => {
+  state.ready = false;
+  ws.addEventListener('open', () => {
+    if (state.ws !== ws) return;
     console.log('🔌 AFWS connected');
     state.status = 'connected';
 
   });
-  state.ws.addEventListener('message', (event) => {
+  ws.addEventListener('message', (event) => {
+    if (state.ws !== ws) return;
     const data = event.data.toString();
     if (data === 'pong') {
       return;
@@ -66,6 +69,7 @@ async function connect () {
     
     const message = JSON.parse(data);
     if (message.type === 'ready') {
+      state.ready = true;
       Object.keys(subscriptions).forEach((topic) => {
         doPhysicalSubscribe(topic);
       });
@@ -81,14 +85,18 @@ async function connect () {
       }
     }
   });
-  state.ws.addEventListener('close', () => {
+  ws.addEventListener('close', () => {
+    if (state.ws !== ws) return;
     console.log('🔌 AFWS disconnected');
-    setTimeout(() => {
+    reconnectTimer = setTimeout(() => {
+      if (state.ws !== ws) return;
+      reconnectTimer = undefined;
       console.log('🔌 AFWS reconnecting after close');
       connect();
       // if it is first time, reconnect instantly
     }, state.status === 'connected' ? 0 : 2_000);
     state.status = 'disconnected';
+    state.ready = false;
   });
 }
 
@@ -100,11 +108,14 @@ try {
 
 export function reconnect() {
   console.log('🔌 AFWS reconnect initiated');
-  // disconnect if already connected
-  if (state.status === 'connected') {
-    state.ws!.close();
-  }
-  
+  clearTimeout(reconnectTimer);
+  reconnectTimer = undefined;
+  const ws = state.ws;
+  state.ws = null;
+  state.status = 'disconnected';
+  state.ready = false;
+  ws?.close();
+  connect();
 }
 
 setInterval(() => {
@@ -125,7 +136,7 @@ function unsubscribeSubscription(topic: string, subscriptionId: number): void {
   }
 
   delete subscriptions[topic];
-  if (state.status === 'connected') {
+  if (state.ready) {
     doPhysicalUnsubscribe(topic);
   }
 }
@@ -141,7 +152,7 @@ export default {
       id: subscriptionId,
       callback,
     });
-    if (isFirstSubscription && state.status === 'connected') {
+    if (isFirstSubscription && state.ready) {
       doPhysicalSubscribe(topic);
     }
 
@@ -161,7 +172,7 @@ export default {
       return;
     }
     delete subscriptions[topic];
-    if (state.status === 'connected') {
+    if (state.ready) {
       doPhysicalUnsubscribe(topic);
     }
   },
@@ -171,7 +182,7 @@ export default {
       .filter((topic) => topic.startsWith(prefix))
       .forEach((topic) => {
         delete subscriptions[topic];
-        if (state.status === 'connected') {
+        if (state.ready) {
           doPhysicalUnsubscribe(topic);
         }
       });
@@ -180,7 +191,7 @@ export default {
   unsubscribeAll(): void {
     Object.keys(subscriptions).forEach((topic) => {
       delete subscriptions[topic];
-      if (state.status === 'connected') {
+      if (state.ready) {
         doPhysicalUnsubscribe(topic);
       }
     });
