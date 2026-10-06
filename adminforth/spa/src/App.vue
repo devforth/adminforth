@@ -41,7 +41,7 @@
           <div>
             <button 
               ref="dropdownUserButton"
-              type="button" class=" hover:scale-110 transition-transform duration-200 flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+              type="button" class=" hover:scale-110 transition-transform duration-200 flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false">
               <span class="sr-only">{{ $t('Open user menu') }}</span>
                 <img 
                   v-if="coreStore.userAvatarUrl"
@@ -55,7 +55,7 @@
             </button>
           </div>
           <Teleport to="body">
-            <div class="af-settings-popup z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
+            <div class="af-settings-popup z-50 hidden my-4 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
               <div class="px-4 py-3" role="none">
                 <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                   {{ coreStore.userFullname }}
@@ -350,11 +350,17 @@ watch(dropdownUserButton, async (dropdownUserButton) => {
   if (dropdownUserButton) {
     await nextTick();
     const dropdownUser = document.querySelector('#dropdown-user') as HTMLElement;
-    const dropdownUserTrigger = document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement;
+    // trigger is passed by ref without data-dropdown-toggle: flowbite auto-inits such triggers on window load
+    // with default 'bottom' placement, and that second popper overrides our positioning
     const dd = new Dropdown(
       dropdownUser,
-      dropdownUserTrigger,
+      dropdownUserButton,
+      { placement: 'bottom-end' },
     );
+    // trigger lives in the fixed header, so fixed strategy keeps popup in place while the page scrolls
+    dd._popperInstance.setOptions({ strategy: 'fixed' });
+    // keep popup anchored to the right edge when its content width changes (e.g. settings submenu expands)
+    new ResizeObserver(() => dd._popperInstance.update()).observe(dropdownUser);
     closeUserMenuDropdown = () => {
       dd.hide();
     }
