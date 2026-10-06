@@ -42,10 +42,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // dayjs locales are imported on demand, keep them out of the eagerly loaded dayjs chunk
-          if (id.includes('dayjs/locale/')) {
-            return;
-          }
           // reduce the size of the vendor chunk
           // to only include the package name
           // helps to reduce consumption of memory
