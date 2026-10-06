@@ -37,7 +37,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@@': fileURLToPath(new URL('./src/custom', import.meta.url)),
     }
-  },
+  }, 
   css: {
     preprocessorOptions: {
       scss: {
