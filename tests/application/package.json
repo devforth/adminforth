@@ -17,6 +17,7 @@
     "node": "^22.12.0 || ^24.0.0 || ^26.0.0"
   },
   "dependencies": {
+    "@adminforth/connector-sqlite": "^1.0.7",
     "@dotenvx/dotenvx": "^1.34.0",
     "adminforth": "link:../../adminforth",
     "express": "latest-4"
