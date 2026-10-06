@@ -26,9 +26,6 @@ importers:
       '@adminforth/connector-sqlite':
         specifier: ^1.0.7
         version: 1.0.7(adminforth@adminforth)
-      '@prisma/client':
-        specifier: ^7.10.0
-        version: 7.10.0(prisma@7.10.0(@types/react@19.2.14)(better-sqlite3@13.0.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
       adminforth:
         specifier: link:../adminforth
         version: link:../adminforth
@@ -1490,15 +1487,6 @@ snapshots:
       '@noble/hashes': 1.8.0
 
   '@noble/hashes@1.8.0': {}
-
-  '@prisma/client-runtime-utils@7.10.0': {}
-
-  '@prisma/client@7.10.0(prisma@7.10.0(@types/react@19.2.14)(better-sqlite3@13.0.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)':
-    dependencies:
-      '@prisma/client-runtime-utils': 7.10.0
-    optionalDependencies:
-      prisma: 7.10.0(@types/react@19.2.14)(better-sqlite3@13.0.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
-      typescript: 5.9.3
 
   '@prisma/config@7.10.0':
     dependencies:
