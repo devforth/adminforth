@@ -34,7 +34,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^7.10.0",
     "adminforth": "link:../adminforth",
     "clickhouse-migrations": "^1.2.0",
     "decimal.js": "^10.6.0",
