@@ -99,7 +99,7 @@ importers:
         specifier: ^10.1.0
         version: 10.3.1
       pino-pretty:
-        specifier: ^13.1.3
+        specifier: 13.1.3
         version: 13.1.3
       rate-limiter-flexible:
         specifier: ^8.1.0
