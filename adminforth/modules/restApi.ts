@@ -781,7 +781,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     const beforeLogout = this.adminforth.config.auth.beforeLogout as (BeforeLogoutFunction[] | undefined);
 
     for (const hook of listify(beforeLogout)) {
-      await hook({ adminUser, adminforth: this.adminforth, extra, tr });
+      try {
+        await hook({ adminUser, adminforth: this.adminforth, extra, tr });
+      } catch (e) {
+        afLogger.error(`Error in beforeLogout hook, continuing logout: ${e}`);
+      }
     }
   }
 
@@ -1574,6 +1578,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
+        // recordLabel should get raw foreign key values, not { label, pk } references added below
+        const rawItems = data.data.map((item) => ({ ...item }));
+
         // for foreign keys, add references
         await Promise.all(
           resource.columns.filter((col) => (
@@ -1705,7 +1712,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             adminforth: this.adminforth,
           };
         
-          for (const item of data.data) {
+          for (const [i, item] of data.data.entries()) {
+            const rawItem = rawItems[i];
             for (const key of Object.keys(item)) {
               if (key === '_primaryKeyValue') {
                 continue;
@@ -1714,10 +1722,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               const bo = col ? await isBackendOnly(col, ctx) : true;
               if (!col || bo) {
                 delete item[key];
+                delete rawItem[key];
               }
             }
             if (!selectedColumnNameSet || shouldAddListHelpers) {
-              item._label = resource.recordLabel(item);
+              item._label = resource.recordLabel(rawItem);
             }
           }
         }

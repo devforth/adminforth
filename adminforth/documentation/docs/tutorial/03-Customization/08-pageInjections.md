@@ -255,6 +255,237 @@ watch(() => props.failedLoginAttempts, () => {
 </script>
 ```
 
+### Passing custom parameters to login hooks
+
+Any login page injection can add a parameter to the built-in `/login` request by emitting
+`update:setLoginParam` with a name and value. Emit `undefined` as the value to remove the parameter.
+For example, a custom CAPTCHA component can pass its token from the provider callbacks:
+
+```vue title="./custom/CustomCaptcha.vue"
+<script setup lang="ts">
+const emit = defineEmits<{
+  (event: 'update:setLoginParam', name: string, value: string | undefined): void;
+}>();
+
+// Call these from your CAPTCHA provider's success and expiry callbacks.
+function onCaptchaVerified(token: string) {
+  emit('update:setLoginParam', 'captchaToken', token);
+}
+
+function onCaptchaExpired() {
+  emit('update:setLoginParam', 'captchaToken', undefined);
+}
+</script>
+```
+
+The parameter is sent alongside `username`, `password`, and `rememberMe`. The built-in form
+owns those three fields, so custom parameters cannot replace them. Login hooks that receive `extra`
+can read the custom value from `extra.body`:
+
+```ts title="./index.ts"
+auth: {
+  beforeLoginAttempt: async ({ extra }) => {
+    const captchaToken = extra.body.captchaToken;
+    if (!captchaToken || !await verifyCaptchaToken(captchaToken)) {
+      return { ok: false, error: 'CAPTCHA verification failed' };
+    }
+    return { ok: true };
+  },
+}
+```
+
+Wire the component callbacks to your CAPTCHA widget and implement `verifyCaptchaToken` with
+server-side verification from your CAPTCHA provider. The [Login Captcha plugin](/docs/tutorial/Plugins/login-captcha/)
+provides a ready-made integration.
+
+`beforeLoginConfirmation` and `afterSessionCreated` also receive the login request body through
+`extra.body`. These parameters belong to the login request; AdminForth does not automatically use
+them to look up users or store them in the session.
+
+### Replacing the login page
+
+:::warning
+Replacing the login page requires ongoing maintenance.
+
+Prefer CSS customization and login page injections over replacing the entire login page. These extension points let you customize the page while retaining the behavior and compatibility maintained by AdminForth.
+
+When replacing the page, you are responsible for preserving the correct form field types and autocomplete attributes, required plugin injection points, and layouts that accommodate additional authentication methods. Missing or modified elements can interfere with password managers, prevent authentication plugins from working correctly, or cause layout issues when new plugins are installed.
+
+Your custom page will not automatically inherit security-related fixes, compatibility improvements, or new integration points added to the default page. You must review and incorporate relevant changes when upgrading AdminForth.
+
+If the existing injection points do not cover your use case, please [open an issue](https://github.com/devforth/adminforth/issues) describing the customization you need before maintaining a separate login page.
+:::
+
+`customization.loginPage` replaces the built-in login page with your own component:
+
+```ts title="/index.ts"
+new AdminForth({
+  ...
+  customization: {
+    loginPage: '@@/CustomLoginPage.vue',
+  }
+  ...
+})
+```
+
+The route keeps the `/login` path and the `login` name, so redirects to the login page (after logout,
+on an expired session, from pages that require authentication) open your component. Like for
+[custom pages](/docs/tutorial/Customization/customPages/#passing-meta-attributes-to-the-page), you can pass
+`{ file, meta }` instead of a path. `meta` is merged into the route meta, e.g. `meta: { title: 'Sign in' }`
+changes the browser tab title.
+
+#### Wrapping the built-in login page
+
+If you only need to add something around the login form, wrap the built-in page instead of re-implementing it.
+The form, the injections and the `auth` options (`loginPromptHTML`, `loginBackgroundImage`, `demoCredentials` and others) keep working:
+
+```html title="./custom/CustomLoginPage.vue"
+<template>
+  <div class="relative">
+    <LoginView />
+    <a href="https://example.com" class="absolute top-4 left-4 z-50 text-sm text-lightPrimary dark:text-darkPrimary">
+      ← {{ $t('Back to website') }}
+    </a>
+  </div>
+</template>
+
+<script setup lang="ts">
+import LoginView from '@/views/LoginView.vue';
+</script>
+```
+
+#### Writing a login page from scratch
+
+A login page written from scratch has to implement the following contract:
+
+1. Send credentials to the `/login` endpoint with `callAdminForthApi`:
+   `{ username, password, rememberMe }`, plus parameters emitted by injections via `update:setLoginParam`
+   (hooks read them from `extra.body`). Show the "Remember me" checkbox only when `coreStore.config.rememberMeDuration` is set.
+2. Handle the response:
+   - `error` — the attempt was rejected, show the message and increment `failedLoginAttempts`;
+   - `redirectTo` — one more step is required, e.g. a two-factor code: call `userStore.authorize()`,
+     `await coreStore.fetchMenuAndResource()` and `router.push(resp.redirectTo)`;
+   - otherwise — call `await userStore.finishLogin()`, it opens the page from the `next` query parameter or the home page.
+3. Keep `name="username" autocomplete="username"` and `type="password" autocomplete="current-password"` on the inputs,
+   otherwise password managers will not fill them.
+4. Render `coreStore.config.loginPageInjections` (`panelHeader`, `underInputs`, `underLoginButton`) with the
+   `meta` and `failedLoginAttempts` props and the `update:setLoginParam`, `update:disableLoginButton` and
+   `update:oauthRedirecting` events. Plugins such as [OAuth](/docs/tutorial/Plugins/oauth/),
+   [Two-Factor Authentication](/docs/tutorial/Plugins/two-factors-auth/) passkeys and
+   [Login Captcha](/docs/tutorial/Plugins/login-captcha/) add their buttons and widgets through these injections.
+5. `loginPromptHTML`, `loginBackgroundImage`, `loginBackgroundPosition`, `removeBackgroundBlendMode` and `demoCredentials`
+   are rendered by the built-in page only. Read them from `coreStore.config` if your page should support them
+   (`loginPromptHTML` is loaded by `coreStore.getLoginFormConfig()`).
+
+A minimal page which implements the contract:
+
+```html title="./custom/CustomLoginPage.vue"
+<template>
+  <div class="flex items-center justify-center min-h-screen bg-lightHtml dark:bg-darkHtml">
+    <Spinner v-if="oauthRedirecting" class="w-10 h-10" />
+    <div v-show="!oauthRedirecting" class="w-full max-w-[400px] p-6 bg-lightLoginViewBackground dark:bg-darkLoginViewBackground rounded-default shadow">
+      <component
+        v-for="(c, index) in coreStore.config?.loginPageInjections.panelHeader"
+        :key="`panel-header-${index}`"
+        :is="getCustomComponent(formatComponent(c))"
+        :meta="formatComponent(c).meta"
+        @update:setLoginParam="setLoginParam"
+      />
+      <form class="flex flex-col gap-4" @submit.prevent>
+        <Input v-model="username" type="text" name="username" autocomplete="username" class="w-full"
+          :placeholder="coreStore.config?.usernameFieldName" required />
+        <Input v-model="password" type="password" name="password" autocomplete="current-password" class="w-full"
+          placeholder="••••••••" required @keydown.enter="login" />
+        <Checkbox v-if="coreStore.config?.rememberMeDuration" v-model="rememberMe">
+          {{ $t('Remember me') }}
+        </Checkbox>
+        <component
+          v-for="(c, index) in coreStore.config?.loginPageInjections.underInputs"
+          :key="`under-inputs-${index}`"
+          :is="getCustomComponent(formatComponent(c))"
+          :meta="formatComponent(c).meta"
+          :failedLoginAttempts="failedLoginAttempts"
+          @update:disableLoginButton="disableLoginButton = $event"
+          @update:setLoginParam="setLoginParam"
+        />
+        <Button @click="login" :loader="inProgress" :disabled="inProgress || disableLoginButton">
+          {{ $t('Login to your account') }}
+        </Button>
+        <component
+          v-for="(c, index) in coreStore.config?.loginPageInjections.underLoginButton"
+          :key="`under-login-button-${index}`"
+          :is="getCustomComponent(formatComponent(c))"
+          :meta="formatComponent(c).meta"
+          :failedLoginAttempts="failedLoginAttempts"
+          @update:disableLoginButton="disableLoginButton = $event"
+          @update:setLoginParam="setLoginParam"
+          @update:oauthRedirecting="oauthRedirecting = $event"
+        />
+        <p v-if="error" class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { Button, Checkbox, Input, Spinner } from '@/afcl';
+import { useCoreStore } from '@/stores/core';
+import { useUserStore } from '@/stores/user';
+import { callAdminForthApi, formatComponent, getCustomComponent } from '@/utils';
+
+const coreStore = useCoreStore();
+const userStore = useUserStore();
+const router = useRouter();
+
+const username = ref('');
+const password = ref('');
+const rememberMe = ref(false);
+const error = ref<string | null>(null);
+const inProgress = ref(false);
+const disableLoginButton = ref(false);
+const failedLoginAttempts = ref(0);
+// the OAuth plugin hides the form while it redirects to the provider
+const oauthRedirecting = ref('start_oauth' in useRoute().query);
+const loginParams = new Map<string, unknown>();
+
+function setLoginParam(name: string, value: unknown) {
+  if (value === undefined) {
+    loginParams.delete(name);
+  } else {
+    loginParams.set(name, value);
+  }
+}
+
+async function login() {
+  inProgress.value = true;
+  const resp = await callAdminForthApi({
+    path: '/login',
+    method: 'POST',
+    body: {
+      ...Object.fromEntries(loginParams),
+      username: username.value,
+      password: password.value,
+      rememberMe: rememberMe.value,
+    },
+  });
+  if (resp.error) {
+    error.value = resp.error;
+    failedLoginAttempts.value++;
+    inProgress.value = false;
+  } else if (resp.redirectTo) {
+    // one more step is required, e.g. a two-factor code
+    userStore.authorize();
+    await coreStore.fetchMenuAndResource();
+    await router.push(resp.redirectTo);
+  } else {
+    await userStore.finishLogin();
+  }
+}
+</script>
+```
+
 ## List view page injections shrinking: thin enough to shrink?
 
 

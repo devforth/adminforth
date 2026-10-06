@@ -10,11 +10,13 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
+      /* IMPORTANT:ADMINFORTH LOGIN PAGE START */
       component: () => import('@/views/LoginView.vue'),
-      meta: { 
-        title: 'Login', 
-        customLayout: true 
+      meta: {
+        title: 'Login',
+        customLayout: true
       },
+      /* IMPORTANT:ADMINFORTH LOGIN PAGE END */
       beforeEnter: (to) => {
         if (localStorage.getItem('isAuthorized') === 'true') {
           return to.query.next ? to.query.next.toString() : { name: 'home' };
