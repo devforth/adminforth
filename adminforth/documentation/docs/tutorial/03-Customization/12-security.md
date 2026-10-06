@@ -296,6 +296,8 @@ So to completely hide the email field from all users apart superadmins, you shou
 
 So if you will configure the email column in user resource like this, only superadmin will be able to see emails, and only in the list view.
 
+> ☝️ `backendOnly` cannot be set on a primary key column (neither `true` nor a function): frontend needs primary key values to build record links, so AdminForth refuses such config on startup.
+
 ## Blocking login attempts before credentials check
 
 `auth.beforeLoginAttempt` hooks are called on every request to the login endpoint, before AdminForth looks the user up in the database.

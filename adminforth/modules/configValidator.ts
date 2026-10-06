@@ -527,6 +527,12 @@ export default class ConfigValidator implements IConfigValidator {
           errors.push(`Resource "${res.resourceId}" has duplicate column name "${col.name}"`);
         }
 
+        // frontend builds record links from primary key values, so they must always reach it.
+        // a backendOnly function is rejected too: it can hide the key only for some users
+        if (col.primaryKey && col.backendOnly) {
+          errors.push(`Resource "${res.resourceId}" column "${col.name}" is a primary key and cannot be backendOnly`);
+        }
+
         col.label = col.label || guessLabelFromName(col.name);
         //define default sortable
         if (!Object.keys(col).includes('sortable')) { col.sortable = !col.virtual; }
