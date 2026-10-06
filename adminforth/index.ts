@@ -41,6 +41,9 @@ import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
+import { createRequire } from 'module';
+import path from 'path';
+import { pathToFileURL } from 'url';
 export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
@@ -482,7 +485,10 @@ class AdminForth implements IAdminForth {
 
   async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
     try {
-      const connectorModule = await import(`@adminforth/connector-${connectorName}`);
+      // connectors are installed by the user's app, so resolve them from the app root, not from adminforth's own location
+      const userRequire = createRequire(path.join(process.cwd(), 'package.json'));
+      const connectorPath = userRequire.resolve(`@adminforth/connector-${connectorName}`);
+      const connectorModule = await import(pathToFileURL(connectorPath).href);
       return connectorModule.default;
     } catch (e) {
       throw new Error(`

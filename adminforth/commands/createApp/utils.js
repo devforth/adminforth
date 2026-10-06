@@ -117,8 +117,8 @@ function providerToConnectorName(provider) {
 }
 
 // Returns the default-exported connector class for the given connector name.
-// Connectors are optional peer dependencies, so they are not present during a
-// fresh `npx adminforth create-app`. We first try to import an already-installed
+// Connectors are installed by the user's app, not by adminforth, so they are not
+// present during a fresh `npx adminforth create-app`. We first try to import an already-installed
 // one (local development / monorepo), then fall back to installing it on demand.
 async function loadConnectorClass(connectorName) {
   const pkg = `@adminforth/connector-${connectorName}`;
