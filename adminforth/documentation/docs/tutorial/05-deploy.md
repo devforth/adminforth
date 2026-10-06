@@ -60,10 +60,12 @@ RUN pnpm/npm adminforth bundle
 If you want to speed up your build, you can use Docker cache for /tmp folder and change this line to:
 
 ```
-RUN --mount=type=cache,target=/tmp pnpm/npm adminforth bundle
+RUN --mount=type=cache,target=/tmp,sharing=locked pnpm/npm adminforth bundle
 ```
 
 This will cache all /tmp folder between builds and speed up the build process significantly. However you need to ensure that your build daemon persists cache from `--mount=type=cache` mounts. Most of vendor CI build daemons like Github actions Default runner will not persist cache between builds so adding `--mount=type=cache` will not help in such case and you need to use dedicated caching solutions.
+
+Content of a cache mount does not get into the image, so /tmp is empty when container starts. This is fine: on start AdminForth prepares SPA sources in /tmp again, finds out that the bundled SPA was built from the same sources and dependencies and neither installs SPA dependencies nor builds SPA. `sharing=locked` makes parallel builds on the same daemon wait for each other instead of preparing SPA in the same cached folder at the same time.
 
 To verify build performance locally you can do next:
 1) Modify any custom vue file
@@ -93,7 +95,7 @@ export const admin = new AdminForth({
 
 Relative paths are resolved against the current working directory. Neither directory can be inside of `customComponentsDir`. `npx adminforth bundle` reads the same config as your application, so when it runs in the same working directory, build time and runtime use identical paths.
 
-> ☝️ On start `bundleNow()` still prepares sources in `spaBuildDir` to check whether build in `spaServeDir` is up to date. Keep both directories available at runtime, otherwise SPA dependencies will be installed again on startup.
+> ☝️ On start `bundleNow()` prepares sources in `spaBuildDir` again to check whether build in `spaServeDir` is up to date, so `spaBuildDir` must be writable at runtime, but it may be empty: SPA dependencies are installed there only when the build is outdated. Keep `spaServeDir` with the build made by `adminforth bundle` available at runtime, otherwise SPA is built again on startup.
 
 
 

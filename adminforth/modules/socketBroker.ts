@@ -4,9 +4,10 @@ import { AdminUser } from "../types/Common.js";
 import { afLogger } from '../modules/logger.js';
 
 const PUBLISH_FILTER_CONCURRENCY = 10;
+const REAUTHORIZE_CONCURRENCY = 10;
 
 export default class SocketBroker implements IWebSocketBroker {
-  clients: IWebSocketClient[] = [];
+  clients = new Map<string, IWebSocketClient>();
   topics: { [key: string]: IWebSocketClient[] } = {};
   adminforth: IAdminForth;
   deadCheckerRunning = false;
@@ -23,22 +24,47 @@ export default class SocketBroker implements IWebSocketBroker {
     
     while (true) {
       await this.checkDeadClients();
+      await this.reauthorizeClients();
       await new Promise((resolve) => setTimeout(resolve, 10_000));
     }
   }
 
   async checkDeadClients() {
     const now = Date.now();
-    const deadClients = [];
-    for (const client of this.clients) {
+    for (const client of this.clients.values()) {
       if (now - client.lastPing > 30_000) {
-        deadClients.push(client);
+        client.close();
+        this.clients.delete(client.id);
       }
     }
-    deadClients.forEach(client => {
-      client.close();
-      delete this.clients[client.id];
-    });
+  }
+
+  /**
+   * Closes connections of users who lost access after the handshake (revoked session, deactivated or deleted user,
+   * expired jwt), so they stop receiving topic messages. Frontend reconnects and passes handshake as anonymous.
+   */
+  async reauthorizeClients() {
+    const limit = pLimit(REAUTHORIZE_CONCURRENCY);
+    await Promise.all(
+      [...this.clients.values()]
+        .filter((client) => client.adminUser)
+        .map((client) => limit(async () => {
+          try {
+            const result = await client.authorize();
+            if (result.status === 'ok') {
+              // keeps dbUser fresh for websocketTopicAuth and publish filters
+              client.adminUser = result.adminUser;
+            } else if (result.status === 'verifyFailed') {
+              // server side problem, e.g. database is not available, so keep the connection and retry on next check
+              afLogger.error(`Failed to verify websocket client ${client.id}: ${result.error}`);
+            } else {
+              client.close();
+            }
+          } catch (e) {
+            afLogger.error(`Failed to authorize websocket client ${client.id}: ${e}`);
+          }
+        }))
+    );
   }
 
   deleteClientFromTopic(client: IWebSocketClient, topic: string) {
@@ -58,12 +84,15 @@ export default class SocketBroker implements IWebSocketBroker {
   }
   
   registerWsClient(client: IWebSocketClient): void {
+    afLogger.info(`Registering new WebSocket client ${client.id}`);
     this.startChecker();
 
-    if (!this.clients[client.id]) {
-      this.clients[client.id] = client;
-    }
+    this.clients.set(client.id, client);
+    const pendingSubscriptions = new Map<string, object>();
     client.onMessage(async (message) => {
+      if (this.clients.get(client.id) !== client) {
+        return;
+      }
       const messageText = message.toString();
 
       if (!messageText.trim()) {
@@ -105,19 +134,27 @@ export default class SocketBroker implements IWebSocketBroker {
       const topic = payload.topic;
 
       if (payload.type === 'subscribe') {
+        // Only the latest subscribe intent may commit after asynchronous authorization.
+        const subscription = {};
+        pendingSubscriptions.set(topic, subscription);
+        let authResult = true;
         if (!topic.startsWith('/opentopic/')) {
           if (this.adminforth.config.auth.websocketTopicAuth) {
-            let authResult = false;
+            authResult = false;
             try {
               authResult = await this.adminforth.config.auth.websocketTopicAuth(topic, client.adminUser);
             } catch (e) {
               afLogger.error(`Error in websocketTopicAuth, assuming connection not allowed ${e}`);
             }
-            if (!authResult) {
-              client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
-              return;
-            }
           }
+        }
+        if (this.clients.get(client.id) !== client || pendingSubscriptions.get(topic) !== subscription) {
+          return;
+        }
+        pendingSubscriptions.delete(topic);
+        if (!authResult) {
+          client.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+          return;
         }
         if (!this.topics[topic]) {
           this.topics[topic] = [];
@@ -138,17 +175,20 @@ export default class SocketBroker implements IWebSocketBroker {
         return;
       }
 
+      pendingSubscriptions.delete(topic);
       this.deleteClientFromTopic(client, topic);
       this.cleanupTopicIfEmpty(topic);
       client.topics.delete(topic);
     });
     
     client.onClose(() => {
+      pendingSubscriptions.clear();
       for (const topic of client.topics) {
         this.deleteClientFromTopic(client, topic);
         this.cleanupTopicIfEmpty(topic);
       }
-      delete this.clients[client.id];
+      client.topics.clear();
+      this.clients.delete(client.id);
     });
 
     // send ready message

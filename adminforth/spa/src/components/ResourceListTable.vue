@@ -1,6 +1,6 @@
 <template>
   <!-- table -->
-  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto border dark:border-gray-700"
+  <div class="relative shadow-listTableShadow dark:shadow-darkListTableShadow	overflow-auto overscroll-x-contain border dark:border-gray-700"
     :class="{'rounded-default': !noRoundings}"
     :style="isVirtualScrollEnabled ? { maxHeight: `${containerHeight}px` } : {}"
     @scroll="handleScroll"

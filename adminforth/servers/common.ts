@@ -1,4 +1,4 @@
-import { IWebSocketClient } from "../types/Back.js";
+import { AdminUserAuthorizationResult, IWebSocketClient } from "../types/Back.js";
 import { AdminUser } from "../types/Common.js";
 
 
@@ -10,14 +10,16 @@ export class WebSocketClient implements IWebSocketClient {
   topics: Set<string>;
   adminUser: AdminUser;
 
+  authorize: () => Promise<AdminUserAuthorizationResult>;
   send: (message: string) => void;
   close: () => void;
   onMessage: (handler: (message: string) => void) => void;
   onClose: (handler: () => void) => void;
 
-  constructor({ id, clientId, send, close, onMessage, onClose, adminUser }) {
+  constructor({ id, clientId, authorize, send, close, onMessage, onClose, adminUser }) {
     this.id = id;
     this.clientId = clientId;
+    this.authorize = authorize;
     this.send = send;
     this.close = close;
     this.onMessage = onMessage;

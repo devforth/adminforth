@@ -235,6 +235,9 @@ const admin = new AdminForth({
 There is still method to bypass this websocketTopicAuth check by using special topic `/opentopic/`. In other words if topic starts with `/opentopic/` it will be allowed to subscribe by any user bypassing `websocketTopicAuth` call at all.
 Internally AdminForth uses `/opentopic/` for menu badges and possibly for other internal purposes.
 
+`adminUser` passed to `websocketTopicAuth` is authorized in the same way as for HTTP requests: auth cookie is verified and [auth.adminUserAuthorize](/docs/api/Back/type-aliases/AdminUserAuthorizeFunction) hooks are called. If some hook denies the user, the connection is anonymous, same as without auth cookie, and `adminUser` is `null`.
+Established connections are authorized again every 10 seconds, so connection of a user who lost access (e.g. session was revoked, user was deactivated or deleted, or auth token expired) is closed and stops receiving messages.
+
 ### Publish authorization
 
 Best way to secure the data published to websoket is use websocketTopicAuth method. It will be called once on subscription and if it will not allow access it will completely prevent user from subscribing to the topic.
