@@ -43,7 +43,6 @@
     "@adminforth/text-complete": "^2.1.1",
     "@adminforth/two-factors-auth": "^4.4.6",
     "@adminforth/upload": "^2.18.0",
-    "@prisma/client": "^6.19.3",
     "adminforth": "^3.30.1",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"

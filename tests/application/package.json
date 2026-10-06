@@ -23,7 +23,6 @@
     "express": "latest-4"
   },
   "devDependencies": {
-    "@prisma/client": "latest",
     "@types/express": "latest",
     "@types/node": "latest",
     "prisma": "^7.5.0",
