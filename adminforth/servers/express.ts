@@ -283,7 +283,7 @@ class ExpressServer implements IExpressHttpServer {
   setupWsServer() {
     let base = this.adminforth.config.baseUrl || '';
     if (base.endsWith('/')) {
-      base = base.slice(0, -1);
+      base = base.slice(0, -1); 
     }
 
     this.server = http.createServer(this.expressApp);
