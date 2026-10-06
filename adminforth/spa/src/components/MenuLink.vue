@@ -5,12 +5,13 @@
         ? { href: item.url }
         : { to: item.url || { name: item.resourceId ? 'resource-list' : item.path, params: item.resourceId ? { resourceId: item.resourceId }: {} } }"
       :target="item.isOpenInNewTab ? '_blank' : '_self'"
-      class="af-menu-link flex group relative items-center w-full py-2 text-lightSidebarText dark:text-darkSidebarText rounded-default transition-all duration-200 ease-in-out"
+      class="af-menu-link flex group relative items-center py-2 text-lightSidebarText dark:text-darkSidebarText rounded-default transition-all duration-200 ease-in-out"
       :class="{
         'hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover active:bg-lightSidebarActive dark:active:bg-darkSidebarHover': !['divider', 'gap', 'heading'].includes(item.type),
         'pl-6 pr-3.5': (isChild && !isSidebarIconOnly && !isSidebarHovering) || (isChild && isSidebarIconOnly && isSidebarHovering),
-        'px-3.5 ': !isChild || (isSidebarIconOnly && !isSidebarHovering),
-        'max-w-12': isSidebarIconOnly && !isSidebarHovering,
+        'w-full': !isSidebarIconOnly || isSidebarHovering,
+        'px-3.5': !isChild && (!isSidebarIconOnly || isSidebarHovering),
+        'w-10 h-10 ml-1 px-2.5': isSidebarIconOnly && !isSidebarHovering,
         'bg-lightSidebarItemActive dark:bg-darkSidebarItemActive': isItemActive(item)
       }"
   >
