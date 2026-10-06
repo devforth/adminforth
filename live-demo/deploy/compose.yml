@@ -16,7 +16,7 @@ services:
       - af-db:/code/db/
  
   glacierizer-live-demo:
-    image: devforth/docker-database-glacierizer:sqlite
+    image: devforth/docker-database-glacierizer:1.14
     network_mode: host
     restart: always
     environment:

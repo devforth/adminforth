@@ -1,5 +1,4 @@
 allowBuilds:
-  '@prisma/client': true
   '@prisma/engines': true
   adminforth: true
   better-sqlite3: true
