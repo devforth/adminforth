@@ -16,7 +16,7 @@ const createCompletionAdapter = (
       effort,
     },
   },
-});
+}); 
 
 const balancedCompletionAdapter = createCompletionAdapter('gpt-5.4-mini', 'medium');
 const fastCompletionAdapter = createCompletionAdapter('gpt-5.4-mini', 'low');
