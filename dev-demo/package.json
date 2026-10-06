@@ -39,7 +39,6 @@
     "@adminforth/connector-mysql": "^1.0.9",
     "@adminforth/connector-postgres": "^1.1.0",
     "@adminforth/connector-sqlite": "^1.0.7",
-    "@prisma/client": "^7.10.0",
     "adminforth": "link:../adminforth",
     "clickhouse-migrations": "^1.2.0",
     "decimal.js": "^10.6.0",
