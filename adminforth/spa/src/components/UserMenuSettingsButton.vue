@@ -13,8 +13,9 @@
       />
     </div>
 
-    <div v-if="showDropdown" >
-      
+    <!-- collapsed submenu stays in layout with zero height, so popup width already fits its widest item and does not jump on expand -->
+    <div :class="{ 'h-0 overflow-hidden invisible': !showDropdown }">
+
       <router-link class="cursor-pointer flex items-center gap-1 block px-4 py-1 text-sm 
         bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText 
         hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover 
