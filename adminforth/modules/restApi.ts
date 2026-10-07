@@ -1902,7 +1902,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const meta = { requestBody: body, pk: undefined };
-        const { allowedActions } = await interpretResource(
+        const { allowedActions: listActions } = await interpretResource(
           adminUser,
           resource,
           meta,
@@ -1911,14 +1911,22 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         );
 
         // aggregation reads a whole set of records at once, so it needs list access
-        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, listActions);
         if (!allowed) {
           return { error };
         }
 
         // ...and min/max/groupBy return raw per-field values, which is what the show view does,
-        // so a resource with no reachable show view must not be aggregatable either
-        const { allowed: showAllowed, error: showError } = checkAccess(AllowedActionsEnum.show, allowedActions);
+        // so a resource with no reachable show view must not be aggregatable either.
+        // ListRequest resolves only 'list', so 'show' is resolved with its own source
+        const { allowedActions: showActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          ActionCheckSource.ShowRequest,
+          this.adminforth
+        );
+        const { allowed: showAllowed, error: showError } = checkAccess(AllowedActionsEnum.show, showActions);
         if (!showAllowed) {
           return { error: showError };
         }

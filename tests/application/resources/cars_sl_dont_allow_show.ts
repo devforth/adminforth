@@ -7,7 +7,7 @@ export default {
     ...carsResourseTemplate("cars_sl_no_show", "sqlite", "id").options,
     allowedActions: {
       show: false,
-      list: false
+      list: true
     }
   }
 };
