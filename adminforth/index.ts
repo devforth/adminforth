@@ -647,7 +647,7 @@ class AdminForth implements IAdminForth {
         continue;
       }
       if (this.config.auth?.usersResourceId === res.resourceId) {
-        throw new Error(
+        afLogger.error(
           `Resource '${res.resourceId}' is used as auth.usersResourceId, so it must have single primaryKey column, ` +
           `but it has composite primary key (${primaryKeyColumnNames(res).join(', ')})`
         );
