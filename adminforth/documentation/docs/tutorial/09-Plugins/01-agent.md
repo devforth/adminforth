@@ -668,28 +668,19 @@ To define a custom tool, register an API endpoint with `admin.express.endpoint`.
 
 By default, `admin.express.endpoint` applies AdminForth authorization. The endpoint handler receives `adminUser` from the user who is controlling the agent. In other words, all permissions and access rights of the agent are defined by that admin user. At the same time, actions done by the agent are automatically attributed in the audit log to the admin user who is controlling the agent.
 
-If a tool is risky, you can attach AdminForth agent metadata directly to the endpoint with the `agent` field.
+You can attach AdminForth agent metadata directly to the endpoint with the `agent` field.
 
 ```ts
-type AgentRiskLevel = 'safe' | 'danger';
-
 type AgentToolMeta = {
-  riskLevel?: AgentRiskLevel;
-  confirmation?: {
-    title?: string;
-    message?: string;
-    confirmLabel?: string;
-  };
+  requiresHumanApproval?: boolean;
+  hiddenFromAgents?: boolean;
+  onlyReadsData?: boolean;
 };
 ```
 
-Use it in `.endpoint(...)` like this:
-
-- `riskLevel: 'safe'` marks the tool as low-risk.
-- `riskLevel: 'danger'` marks the tool as dangerous.
-- `confirmation` customizes the confirmation dialog shown before the tool is executed.
-
-This metadata is rendered into the generated OpenAPI document, so the agent can understand that a tool is dangerous and requires an explicit confirmation UI before execution.
+- `requiresHumanApproval: true` makes the agent ask the user for approval before it runs the tool. MCP clients receive the `destructiveHint` annotation.
+- `hiddenFromAgents: true` keeps the endpoint out of agent tools, both in the agent and in the [MCP server](/docs/tutorial/Plugins/mcp/). Use it for endpoints that serve your admin panel UI and must not be called by agents.
+- `onlyReadsData: true` declares that the endpoint does not change any data. MCP clients receive the `readOnlyHint` annotation, and a [read-only MCP server](/docs/tutorial/Plugins/mcp/#read-only-mode) exposes only such endpoints.
 
 This example uses the same email adapter pattern shown in the Email Invite and Email Password Reset plugins. The transport below uses Mailgun only to keep the snippet short; you can replace it with SES or any other adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
 
@@ -728,12 +719,7 @@ export function initApi(app: Express, admin: IAdminForth) {
     path: '/send_email_to_user',
     description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
     agent: {
-      riskLevel: 'danger',
-      confirmation: {
-        title: 'Send email to user',
-        message: 'This action will send a real email to the selected user.',
-        confirmLabel: 'Send email',
-      },
+      requiresHumanApproval: true,
     },
     request_schema: {
       type: 'object',

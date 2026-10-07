@@ -8,6 +8,8 @@ slug: /tutorial/Plugins/mcp
 
 The MCP plugin exposes AdminForth API methods as remote MCP tools. Every request runs as the AdminForth user who created the auth secret, so the same resource permissions, validation, and hooks apply.
 
+Endpoints marked with `agent: { hiddenFromAgents: true }` are not exposed. AdminForth and its plugins mark the endpoints the admin panel uses internally, such as login, two-factor authentication, passkeys, and agent chat. Mark your own endpoints the same way to keep them away from agents.
+
 ## Installation
 
 ```bash
@@ -27,6 +29,7 @@ model mcp_auth_secrets {
   created_at         DateTime
   last_used_at       DateTime?
   last_used_by_agent String?
+  read_only          Boolean   @default(false)
 
   @@index([user_id])
 }
@@ -58,6 +61,7 @@ export default {
     { name: 'created_at', type: AdminForthDataTypes.DATETIME },
     { name: 'last_used_at', type: AdminForthDataTypes.DATETIME, required: false },
     { name: 'last_used_by_agent', type: AdminForthDataTypes.STRING, required: false },
+    { name: 'read_only', type: AdminForthDataTypes.BOOLEAN },
   ],
   options: {
     allowedActions: {
@@ -94,6 +98,7 @@ new AdminForth({
         createdAtField: 'created_at',
         lastUsedAtField: 'last_used_at',
         lastUsedByAgentField: 'last_used_by_agent',
+        readOnlyField: 'read_only',
       },
     }),
   ],
@@ -117,6 +122,21 @@ Authorization: Bearer afmcp_...
 ```
 
 `last_used_at` and `last_used_by_agent` are updated in the background without running resource hooks. Client identity comes from per-request `io.modelcontextprotocol/clientInfo` metadata in MCP `2026-07-28`, with legacy `initialize` and `User-Agent` fallbacks.
+
+## Read-only mode
+
+A read-only auth secret lets an agent only read data. Check **Read only** when you create the auth secret in **MCP Settings**. The mode is stored in `read_only` and cannot be changed later: create a new auth secret instead.
+
+To make every auth secret read-only, set `readOnly: true` in the plugin options. The **Read only** checkbox is then hidden, and new auth secrets are stored as read-only, so they stay read-only if you remove the option later:
+
+```ts
+new AdminForthMcpPlugin({
+  readOnly: true,
+  // ...
+}),
+```
+
+In read-only mode the server exposes only endpoints marked with `agent: { onlyReadsData: true }`, such as `get_resource`, `get_resource_data`, and `aggregate`. Creating, updating, and deleting records and running actions are not available. To make your own endpoint available in read-only mode, mark it with `onlyReadsData: true`.
 
 ## Audit attribution
 

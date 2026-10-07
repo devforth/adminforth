@@ -803,6 +803,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'POST',
       path: '/login',
+      agent: {
+        hiddenFromAgents: true,
+      },
       handler: async ({ body, response, headers, query, cookies, requestUrl, tr }) => {
        
         const INVALID_MESSAGE = await tr('Invalid username or password', 'errors');
@@ -904,6 +907,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/check_auth',
+      agent: {
+        hiddenFromAgents: true,
+      },
       handler: async ({ adminUser }) => {
         return { ok: true };
       },
@@ -913,6 +919,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         noAuth: true,
         method: 'POST',
         path: '/logout',
+        agent: {
+          hiddenFromAgents: true,
+        },
         handler: async ({ body, headers, query, cookies, requestUrl, response, tr }) => {
           // endpoint is noAuth (expired session should be able to log out as well), so user is resolved here
           const jwt = this.adminforth.auth.getAuthCookie(cookies);
@@ -931,6 +940,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'GET',
       path: '/get_login_form_config',
+      agent: {
+        hiddenFromAgents: true,
+      },
       handler: async ({ tr }) => {
         const loginPromptHTML = await getLoginPromptHTML(this.adminforth.config.auth.loginPromptHTML);
         return {
@@ -943,6 +955,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       noAuth: true,
       method: 'GET',
       path: '/get_config',
+      agent: {
+        hiddenFromAgents: true,
+      },
       handler: async ({ body, query, headers, cookies, requestUrl, tr, response }): Promise<GetConfigResponse>=> {
         let username = ''
         let userFullName = ''
@@ -1145,6 +1160,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'GET', 
       path: '/get_menu_badges',
       description: 'Computes the current menu badge values for the authenticated admin user. Static badges are returned directly, and dynamic badge callbacks are resolved for all configured menu items, including nested items.',
+      agent: {
+        onlyReadsData: true,
+      },
       response_schema: getMenuBadgesResponseSchema,
       handler: async ({ adminUser }) => {
         const badges = {};
@@ -1189,6 +1207,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource',
       description: 'Returns the definition of a single resource. The response includes translated labels, column metadata, allowed actions, visible bulk actions, frontend action metadata, and resource options after permission checks and removal of backend-only internals.',
+      agent: {
+        onlyReadsData: true,
+      },
       request_schema: getResourceRequestSchema,
       response_schema: getResourceResponseSchema,
       handler: async ({ body, adminUser, tr }): Promise<{ resource?: AdminForthResourceFrontend, error?: string }> => {
@@ -1400,6 +1421,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_data',
       description: 'Loads resource rows for list, show, or edit views. The endpoint validates access, applies request hooks, filters, sorting, pagination, record labels, and row click URLs, then returns the final dataset with resource options.',
+      agent: {
+        onlyReadsData: true,
+      },
       request_schema: getResourceDataRequestSchema,
       response_schema: getResourceDataResponseSchema,
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl, abortSignal }) => {
@@ -1855,6 +1879,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/aggregate',
       description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation. Requires list and show access to the resource, and only accepts columns the user can read on the show view: backend-only columns and columns hidden from the show view are rejected.',
+      agent: {
+        onlyReadsData: true,
+      },
       request_schema: aggregateRequestSchema,
       response_schema: aggregateResponseSchema,
       handler: async ({ body, adminUser, headers }) => {
@@ -1996,6 +2023,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_resource_foreign_data',
       description: 'Loads dropdown options for a foreign-key column. It resolves the referenced resource or polymorphic resources, applies optional search text, hook-injected filters, pagination, and per-record labels, then returns sanitized option items.',
+      agent: {
+        onlyReadsData: true,
+      },
       request_schema: getResourceForeignDataRequestSchema,
       response_schema: getResourceForeignDataResponseSchema,
       handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
@@ -2193,6 +2223,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       method: 'POST',
       path: '/get_min_max_for_columns',
       description: 'Returns min and max values for resource columns that explicitly opt in to min/max queries. This is used to build range-based filter controls without exposing columns that do not allow the query.',
+      agent: {
+        onlyReadsData: true,
+      },
       request_schema: getMinMaxForColumnsRequestSchema,
       response_schema: getMinMaxForColumnsResponseSchema,
       handler: async ({ body }) => {
@@ -2226,7 +2259,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         path: '/create_record',
       description: 'Creates a new record in the specified resource. The endpoint validates create permissions, required fields, hidden or backend-only field rules, polymorphic foreign keys, and resource hooks before persisting and returning the created primary key.',
       agent: {
-        isDangerous: true,
+        requiresHumanApproval: true,
       },
       request_schema: createRecordRequestSchema,
       response_schema: createRecordResponseSchema,
@@ -2403,7 +2436,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       path: '/update_record',
       description: 'Updates an existing record by primary key. The endpoint validates edit permissions, current record existence, hidden, backend-only, and read-only field rules, polymorphic foreign keys, and resource hooks before saving changes.',
       agent: {
-        isDangerous: true,
+        requiresHumanApproval: true,
       },
       request_schema: updateRecordRequestSchema,
       response_schema: updateRecordResponseSchema,
@@ -2575,7 +2608,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       path: '/delete_record',
       description: 'Deletes an existing record by primary key. The endpoint validates delete permissions, loads the current record, executes configured cascade child deletion, and then removes the record.',
       agent: {
-        isDangerous: true,
+        requiresHumanApproval: true,
       },
       request_schema: deleteRecordRequestSchema,
       response_schema: deleteRecordResponseSchema,
@@ -2664,7 +2697,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       path: '/start_custom_action',
       description: 'Executes a custom resource action for a single record. The endpoint validates the resource, action existence, and action permissions, then either returns a redirect URL or executes the action handler and returns its result together with action context.',
       agent: {
-        isDangerous: true,
+        requiresHumanApproval: true,
       },
       request_schema: startCustomActionRequestSchema,
       response_schema: startCustomActionResponseSchema,
@@ -2723,7 +2756,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       path: '/start_custom_bulk_action',
       description: 'Executes a custom resource action in bulk mode for multiple records. The endpoint validates the resource, action existence, bulk handler availability, and permissions, then runs the bulk handler and returns its result together with action context.',
       agent: {
-        isDangerous: true,
+        requiresHumanApproval: true,
       },
       request_schema: startCustomBulkActionRequestSchema,
       response_schema: startCustomBulkActionResponseSchema,
