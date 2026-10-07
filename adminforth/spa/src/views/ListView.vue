@@ -147,8 +147,8 @@
       :adminUser="coreStore.adminUser"
     />
     <ResourceListTable
-      v-if="!coreStore.isResourceFetching"
-      :resource="coreStore.resource"
+      v-if="!coreStore.resourceColumnsError"
+      :resource="listResource"
       :rows="rows"
       :page="page"
       @update:page="page = $event"
@@ -267,6 +267,9 @@ const syncPageSize = () => {
     pageSize.value = DEFAULT_PAGE_SIZE;
   }
 };
+
+// store keeps previous resource until /get_resource for this route resolves, table shows skeleton meanwhile
+const listResource = computed(() => coreStore.resource?.resourceId === route.params.resourceId ? coreStore.resource : null);
 
 const isVirtualScrollEnabled = computed(() => coreStore.resource?.options?.listVirtualScrollEnabled || false);
 const listBufferSize = computed(() => coreStore.resource?.options?.listBufferSize || 30);

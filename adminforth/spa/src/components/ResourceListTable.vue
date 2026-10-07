@@ -6,21 +6,25 @@
     @scroll="handleScroll"
     ref="containerRef"
   >
-    <!-- skelet loader -->
-    <div 
-      role="status" v-if="!resource || !resource.columns"
-      class="max-w p-4 space-y-4 divide-y divide-gray-200 rounded shadow animate-pulse dark:divide-gray-700 md:p-6 dark:border-gray-700"
-    >
-      <div role="status" class="max-w-sm animate-pulse">
-        <div class="h-2 bg-lightListSkeletLoader rounded-full dark:bg-darkListSkeletLoader max-w-[360px]"></div>
-      </div>      
-    </div>
+    <!-- skelet loader: resource is not loaded yet, so its columns are unknown -->
+    <table v-if="!resource" :class="TABLE_CLASSES">
+      <tbody>
+        <tr :class="HEADER_ROW_CLASSES">
+          <td v-for="i in SKELETON_COLUMNS_COUNT" :key="i" class="list-table-header-cell px-2 md:px-3 lg:px-6 py-3">
+            <div role="status" class="h-4 flex items-center animate-pulse">
+              <div class="h-2 w-full max-w-[120px] bg-lightSkeletonBackgroundColor rounded-full dark:bg-darkSkeletonBackgroundColor"></div>
+            </div>
+          </td>
+        </tr>
+        <SkeleteLoader :columns="SKELETON_COLUMNS_COUNT" :rows="3" />
+      </tbody>
+    </table>
 
-    <table v-else class="w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default">
+    <table v-else :class="TABLE_CLASSES">
 
       <tbody>
         <!-- table header -->
-        <tr class="border-b dark:border-gray-700 t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText">
+        <tr :class="HEADER_ROW_CLASSES">
           <td scope="col" class="list-table-header-cell p-4 sticky-column bg-lightListTableHeading dark:bg-darkListTableHeading">
             <Checkbox
               :modelValue="allFromThisPageChecked"
@@ -401,6 +405,10 @@ import Checkbox from '@/afcl/Checkbox.vue';
 import ListActionsThreeDots from '@/components/ListActionsThreeDots.vue';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
 import { Select } from '@/afcl';
+
+const TABLE_CLASSES = 'w-full text-sm text-left rtl:text-right text-lightListTableText dark:text-darkListTableText rounded-default';
+const HEADER_ROW_CLASSES = 'border-b dark:border-gray-700 t-header sticky z-20 top-0 text-xs text-lightListTableHeadingText bg-lightListTableHeading dark:bg-darkListTableHeading dark:text-darkListTableHeadingText';
+const SKELETON_COLUMNS_COUNT = 5;
 
 const coreStore = useCoreStore();
 const { t } = useI18n();
