@@ -37,22 +37,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@@': fileURLToPath(new URL('./src/custom', import.meta.url)),
     }
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          // reduce the size of the vendor chunk
-          // to only include the package name
-          // helps to reduce consumption of memory
-          if (id.includes('node_modules/')) {
-            // take the last node_modules segment: pnpm nests packages as node_modules/.pnpm/<pkg>@<version>/node_modules/<pkg>
-            return id.split('node_modules/').pop()!.split('/')[0];
-          }
-        },
-      },
-    },
-  },
+  }, 
   css: {
     preprocessorOptions: {
       scss: {
