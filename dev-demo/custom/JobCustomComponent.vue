@@ -33,7 +33,7 @@ type JobTask = {
     task_number: number;
     task_counter: number;
   };
-  status: 'SCHEDULED' | 'IN_PROGRESS' | 'DONE' | 'FAILED';
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'DONE' | 'FAILED' | 'DELETED';
 };
 
 const tasks = ref<JobTask[]>([]);
@@ -52,6 +52,7 @@ const taskStatusLabels: Record<JobTask['status'], string> = {
   IN_PROGRESS: 'running',
   DONE: 'done',
   FAILED: 'failed',
+  DELETED: 'deleted',
 };
 
 const props = defineProps<{
