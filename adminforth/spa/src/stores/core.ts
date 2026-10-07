@@ -53,14 +53,17 @@ export const useCoreStore = defineStore('core', () => {
   const resourceColumnsError: Ref<string> = ref('');
   const resourceColumnsId: Ref<string | null> = ref(null);
   const adminUser: Ref<null | AdminUser> = ref(null);
+  // /get_resource responses, valid until config is refetched or user logs out
+  const fullResourceCache = new Map<string, AdminForthResourceFrontend>();
 
-  
+
   async function resetAdminUser() {
     adminUser.value = null;
   }
 
   async function resetResource() {
     resource.value = null;
+    fullResourceCache.clear();
   }
 
   async function toggleTheme() {
@@ -99,6 +102,7 @@ export const useCoreStore = defineStore('core', () => {
     }
 
     menu.value = resp.menu;
+    fullResourceCache.clear();
     resourceById.value = resp.resources.reduce((acc: Record<string, ResourceVeryShort>, resource: ResourceVeryShort) => {
       acc[resource.resourceId] = resource;
       return acc;
@@ -237,14 +241,23 @@ export const useCoreStore = defineStore('core', () => {
 
   }
 
+  function applyResource(fullResource: AdminForthResourceFrontend) {
+    resource.value = fullResource;
+    resourceOptions.value = fullResource.options;
+  }
+
   async function fetchResourceFull({ resourceId, forceFetch }: { resourceId: string, forceFetch?: boolean }) {
-    if (resourceColumnsId.value === resourceId && resource.value && !forceFetch) {
-      // already fetched
+    resourceColumnsId.value = resourceId;
+    resourceColumnsError.value = '';
+    const cached = fullResourceCache.get(resourceId);
+    if (cached && !forceFetch) {
+      // applied synchronously so the page renders real columns on the first frame
+      // flag is reset because a request for previously opened resource may still be in flight
+      isResourceFetching.value = false;
+      applyResource(cached);
       return;
     }
     isResourceFetching.value = true;
-    resourceColumnsId.value = resourceId;
-    resourceColumnsError.value = '';
     const res = await callAdminForthApi({
       path: '/get_resource',
       method: 'POST',
@@ -252,18 +265,23 @@ export const useCoreStore = defineStore('core', () => {
         resourceId,
       }
     });
+    if (res && !res.error) {
+      fullResourceCache.set(resourceId, res.resource);
+      resourceById.value[resourceId] = res.resource;
+    }
+    if (resourceColumnsId.value !== resourceId) {
+      // user switched to another resource while this request was in flight, that fetch owns the state now
+      return;
+    }
+    isResourceFetching.value = false;
     if (!res) {
-      isResourceFetching.value = false;
       return;
     }
     if (res.error) {
       resourceColumnsError.value = res.error;
     } else {
-      resourceById.value[resourceId] = res.resource;
-      resource.value = res.resource;
-      resourceOptions.value = res.resource.options;
+      applyResource(res.resource);
     }
-    isResourceFetching.value = false;
   }
 
   async function getLoginFormConfig() {
