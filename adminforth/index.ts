@@ -627,10 +627,10 @@ class AdminForth implements IAdminForth {
       if (isCompositePrimaryKey(res as AdminForthResource)) {
         const virtualPk = res.columns.find((col) => col.primaryKey && col.virtual);
         if (virtualPk) {
-          throw new Error(`Resource '${res.resourceId}' has virtual column '${virtualPk.name}' marked as primaryKey, which is not allowed`);
+          afLogger.error(`Resource '${res.resourceId}' has virtual column '${virtualPk.name}' marked as primaryKey, which is not allowed`);
         }
         if (!this.connectors[res.dataSource].supportsCompositePrimaryKey) {
-          throw new Error(
+          afLogger.error(
             `Resource '${res.resourceId}' has composite primary key (${primaryKeyColumnNames(res as AdminForthResource).join(', ')}), ` +
             `but data source '${res.dataSource}' connector does not support composite primary keys. ` +
             `Please update connector package to version which supports them`
@@ -662,7 +662,7 @@ class AdminForth implements IAdminForth {
         )).name }
       ), null as null | { resourceId: string, column: string });
       if (referencingColumn) {
-        throw new Error(
+        afLogger.error(
           `Column '${referencingColumn.column}' of resource '${referencingColumn.resourceId}' has foreignResource pointing to ` +
           `resource '${res.resourceId}' which has composite primary key (${primaryKeyColumnNames(res).join(', ')}). ` +
           `foreignResource to resources with composite primary key is not supported yet`
