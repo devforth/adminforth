@@ -603,13 +603,20 @@ class AdminForth implements IAdminForth {
         res.columns = Object.keys(fieldTypes).map((name) => ({ name }));
       }
 
+      // primary key set in config fully defines it, so discovered primaryKey flags are used only when config sets none
+      const configDefinesPrimaryKey = res.columns.some((col) => col.primaryKey);
+
       res.columns.forEach((col, i) => {
         if (!fieldTypes[col.name] && !col.virtual) {
           const similar = suggestIfTypo(Object.keys(fieldTypes), col.name);
           throw new Error(`Table '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // first find discovered values, but allow override
-        res.columns[i] = { ...fieldTypes[col.name], ...col };
+        res.columns[i] = {
+          ...fieldTypes[col.name],
+          ...(configDefinesPrimaryKey && { primaryKey: false }),
+          ...col,
+        };
       });
 
       // check if primaryKey column is present
