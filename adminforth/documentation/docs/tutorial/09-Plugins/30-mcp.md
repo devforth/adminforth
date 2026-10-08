@@ -79,7 +79,7 @@ export default {
 
 Register `mcpAuthSecrets` in the application's `resources` array.
 
-`oauth_client_id` holds the client of an OAuth connection and stays empty for auth secrets. It is needed only for [OAuth sign-in](#oauth-sign-in); without it the plugin works with auth secrets alone. If the table already exists from an earlier plugin version, add only this nullable column with a migration to enable OAuth.
+`oauth_client_id` holds the client of an OAuth connection and stays empty for auth secrets. If the table already exists from an earlier plugin version, add this nullable column with a migration.
 
 ## Plugin setup
 
@@ -110,9 +110,9 @@ new AdminForth({
 });
 ```
 
-`oauthClientIdField` enables OAuth sign-in. Leave it out to keep only auth secrets, as in plugin versions before OAuth; then the dialog in **MCP Settings** shows only the auth secret form and no OAuth routes are added.
+`oauthClientIdField` and `adminPanelOrigin` are required: [OAuth sign-in](#oauth-sign-in) is always enabled, and auth secrets work alongside it.
 
-`adminPanelOrigin` is the public origin agents connect to, such as `https://admin.example.com`, without a path; the plugin appends the AdminForth `baseUrl`. It is required with OAuth sign-in, and the app does not start without it: the OAuth issuer and the MCP resource URL are built from it, and MCP clients reject a resource URL whose origin differs from the one they connected to. The origin is not inferred from request headers. The MCP server also identifies itself to agents by it and by [`customization.brandName`](/docs/tutorial/Customization/branding/), which tells several AdminForth installations apart.
+`adminPanelOrigin` is the public origin agents connect to, such as `https://admin.example.com`, without a path; the plugin appends the AdminForth `baseUrl`. The OAuth issuer and the MCP resource URL are built from it, and MCP clients reject a resource URL whose origin differs from the one they connected to. The origin is not inferred from request headers. The MCP server also identifies itself to agents by it and by [`customization.brandName`](/docs/tutorial/Customization/branding/), which tells several AdminForth installations apart.
 
 The MCP endpoint is:
 
@@ -124,17 +124,15 @@ If `baseUrl` is configured, it appears before `/adminapi/v1/mcp`.
 
 ## Connecting an agent
 
-The plugin adds **MCP Settings** under the user profile. With OAuth sign-in enabled, **Connect agent** opens a dialog with a tab per client:
+The plugin adds **MCP Settings** under the user profile. **Connect agent** opens a dialog with a tab per client:
 
 - **Claude Code** – `claude mcp add --transport http <name> <url>`, then `/mcp` in Claude Code to sign in;
 - **Codex** – `codex mcp add <name> --url <url>`; Codex opens the browser to sign in, or run `codex mcp login <name>`;
 - **Other** – creates an auth secret for clients without OAuth sign-in.
 
-`<name>` is `brandName` in lowercase with hyphens. The commands use the address the admin panel is opened at, so open it at its public address. The table below the button lists all connections of the user, auth secrets and OAuth ones, and revokes them. A revoked connection stops working on the agent's next request. Logging out, ending sessions and changing the password do not revoke MCP connections: revoke them in this table.
+`<name>` is `brandName` in lowercase with hyphens. The commands use the MCP endpoint URL built from `adminPanelOrigin`. The table below the button lists all connections of the user, auth secrets and OAuth ones, and revokes them. A revoked connection stops working on the agent's next request. Logging out, ending sessions and changing the password do not revoke MCP connections: revoke them in this table.
 
 ## OAuth sign-in
-
-OAuth sign-in is enabled by `oauthClientIdField` together with `adminPanelOrigin`, see [Plugin setup](#plugin-setup).
 
 When an agent calls the MCP endpoint without a token, the server answers `401` with a `WWW-Authenticate` header that leads the agent to the OAuth metadata. The agent then opens the browser on the consent page `/mcp-authorize`. If the user is not logged in, AdminForth shows its login page first, including two-factor authentication if it is enabled, and returns to the consent page. The consent page has a **Read only** checkbox, see [Read-only mode](#read-only-mode). After the user clicks **Allow**, the agent gets an access token and a refresh token and the connection appears in **MCP Settings** under the client's name.
 
@@ -162,7 +160,7 @@ MCP clients look for the metadata at the host root first. The AdminForth SPA ans
 
 ## Auth secrets
 
-For clients without OAuth sign-in, create an auth secret in the **Connect agent** dialog, on the **Other** tab when OAuth is enabled, and send it with every request:
+For clients without OAuth sign-in, create an auth secret in the **Connect agent** dialog, on the **Other** tab, and send it with every request:
 
 ```http
 Authorization: Bearer afmcp_...
@@ -218,7 +216,7 @@ The server fetches `client_id` URLs chosen by whoever starts a sign-in. The plug
 - **`Could not fetch the client metadata document`** – the server could not download the client's `client_id` URL; the reason is in the server log. Check outbound network access, or list the client in `devOAuthClients` in development.
 - **`redirect_uri is not listed in the client metadata document`** – the client signs in with a redirect URI its document does not allow. For clients in `devOAuthClients`, add the redirect URI there.
 - **The agent rejects the server's resource or issuer** – `adminPanelOrigin` differs from the origin the agent connects to, for example `http://` instead of `https://` behind a TLS proxy.
-- **`Authentication required: the MCP auth secret or OAuth access token is missing, invalid or revoked.`** – the first answer to an agent without a token, which starts OAuth. If the agent shows it instead of opening the browser, it does not support OAuth sign-in, or OAuth is not enabled: use an auth secret.
+- **`Authentication required: the MCP auth secret or OAuth access token is missing, invalid or revoked.`** – the first answer to an agent without a token, which starts OAuth. If the agent shows it instead of opening the browser, it does not support OAuth sign-in: use an auth secret.
 
 `last_used_at` and `last_used_by_agent` are updated in the background without running resource hooks. Client identity comes from per-request `io.modelcontextprotocol/clientInfo` metadata in MCP `2026-07-28`, with legacy `initialize` and `User-Agent` fallbacks.
 
@@ -272,9 +270,9 @@ Tool responses are trimmed to save the agent's context:
 
 ## Read-only mode
 
-A read-only connection lets an agent only read data. Check **Read only** when you create an auth secret in **MCP Settings**, or on the consent page when you connect an agent with OAuth sign-in. The mode is stored in `read_only` and cannot be changed later: create a new auth secret or connect the agent again instead.
+A read-only connection lets an agent only read data. **Read only** is checked by default when you create an auth secret in **MCP Settings** and on the consent page when you connect an agent with OAuth sign-in. The mode is stored in `read_only` and cannot be changed later: create a new auth secret or connect the agent again instead.
 
-To make every connection read-only, set `readOnly: true` in the plugin options. The **Read only** checkbox is then hidden, the consent page says that the agent can only read data, and new auth secrets and OAuth connections are stored as read-only, so they stay read-only if you remove the option later:
+To make every connection read-only, set `readOnly: true` in the plugin options. The **Read only** checkbox then stays checked and locked, the consent page says that the agent can only read data, and new auth secrets and OAuth connections are stored as read-only, so they stay read-only if you remove the option later:
 
 ```ts
 new AdminForthMcpPlugin({
