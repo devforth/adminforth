@@ -27,8 +27,6 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, getIcon } from '@/utils';
-import { Dropdown } from 'flowbite';
-import { useAdminforth } from '@/adminforth';
 import { VerticalTabs } from '@/afcl'
 import { useRoute } from 'vue-router'
 
@@ -36,10 +34,8 @@ const route = useRoute()
 const coreStore = useCoreStore();
 const router = useRouter();
 
-let { closeUserMenuDropdown } = useAdminforth();
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
-const dropdownUserButton = ref<HTMLElement | null>(null);
 const VerticalTabsRef = ref();
 const activeTab = ref('');
 const initialTabSet = ref(false);
@@ -52,16 +48,6 @@ async function initRouter() {
   await router.isReady();
   routerIsReady.value = true;
 }
-
-watch(dropdownUserButton, (el) => {
-  if (el) {
-    const dd = new Dropdown(
-      document.querySelector('#dropdown-user') as HTMLElement,
-      document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement,
-    );
-    closeUserMenuDropdown = () => dd.hide();
-  }
-});
 
 onMounted(async () => {
   if (coreStore.adminUser) {

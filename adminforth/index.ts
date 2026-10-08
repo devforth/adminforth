@@ -41,6 +41,9 @@ import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
+import { createRequire } from 'module';
+import path from 'path';
+import { pathToFileURL } from 'url';
 export { afLogger } from './modules/logger.js';
 export { dbLogger } from './modules/logger.js';
 export { logger } from './modules/logger.js';
@@ -482,7 +485,10 @@ class AdminForth implements IAdminForth {
 
   async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
     try {
-      const connectorModule = await import(`@adminforth/connector-${connectorName}`);
+      // connectors are installed by the user's app, so resolve them from the app root, not from adminforth's own location
+      const userRequire = createRequire(path.join(process.cwd(), 'package.json'));
+      const connectorPath = userRequire.resolve(`@adminforth/connector-${connectorName}`);
+      const connectorModule = await import(pathToFileURL(connectorPath).href);
       return connectorModule.default;
     } catch (e) {
       throw new Error(`
@@ -597,13 +603,20 @@ class AdminForth implements IAdminForth {
         res.columns = Object.keys(fieldTypes).map((name) => ({ name }));
       }
 
+      // primary key set in config fully defines it, so discovered primaryKey flags are used only when config sets none
+      const configDefinesPrimaryKey = res.columns.some((col) => col.primaryKey);
+
       res.columns.forEach((col, i) => {
         if (!fieldTypes[col.name] && !col.virtual) {
           const similar = suggestIfTypo(Object.keys(fieldTypes), col.name);
           throw new Error(`Table '${res.table}' has no column '${col.name}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
         // first find discovered values, but allow override
-        res.columns[i] = { ...fieldTypes[col.name], ...col };
+        res.columns[i] = {
+          ...fieldTypes[col.name],
+          ...(configDefinesPrimaryKey && { primaryKey: false }),
+          ...col,
+        };
       });
 
       // check if primaryKey column is present
@@ -614,10 +627,10 @@ class AdminForth implements IAdminForth {
       if (isCompositePrimaryKey(res as AdminForthResource)) {
         const virtualPk = res.columns.find((col) => col.primaryKey && col.virtual);
         if (virtualPk) {
-          throw new Error(`Resource '${res.resourceId}' has virtual column '${virtualPk.name}' marked as primaryKey, which is not allowed`);
+          afLogger.error(`Resource '${res.resourceId}' has virtual column '${virtualPk.name}' marked as primaryKey, which is not allowed`);
         }
         if (!this.connectors[res.dataSource].supportsCompositePrimaryKey) {
-          throw new Error(
+          afLogger.error(
             `Resource '${res.resourceId}' has composite primary key (${primaryKeyColumnNames(res as AdminForthResource).join(', ')}), ` +
             `but data source '${res.dataSource}' connector does not support composite primary keys. ` +
             `Please update connector package to version which supports them`
@@ -634,7 +647,7 @@ class AdminForth implements IAdminForth {
         continue;
       }
       if (this.config.auth?.usersResourceId === res.resourceId) {
-        throw new Error(
+        afLogger.error(
           `Resource '${res.resourceId}' is used as auth.usersResourceId, so it must have single primaryKey column, ` +
           `but it has composite primary key (${primaryKeyColumnNames(res).join(', ')})`
         );
@@ -649,7 +662,7 @@ class AdminForth implements IAdminForth {
         )).name }
       ), null as null | { resourceId: string, column: string });
       if (referencingColumn) {
-        throw new Error(
+        afLogger.error(
           `Column '${referencingColumn.column}' of resource '${referencingColumn.resourceId}' has foreignResource pointing to ` +
           `resource '${res.resourceId}' which has composite primary key (${primaryKeyColumnNames(res).join(', ')}). ` +
           `foreignResource to resources with composite primary key is not supported yet`

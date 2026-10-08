@@ -10,6 +10,7 @@ export default {
       'AdminForthAgentPlugin',
       'TwoFactorsAuthPlugin',
       'DashboardPlugin',
+      'OAuthPlugin',
     ].includes(p.className)) || [],
   ],
 }

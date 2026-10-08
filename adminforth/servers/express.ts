@@ -283,7 +283,7 @@ class ExpressServer implements IExpressHttpServer {
   setupWsServer() {
     let base = this.adminforth.config.baseUrl || '';
     if (base.endsWith('/')) {
-      base = base.slice(0, -1);
+      base = base.slice(0, -1); 
     }
 
     this.server = http.createServer(this.expressApp);
@@ -763,7 +763,12 @@ class ExpressServer implements IExpressHttpServer {
       }
 
       response.headers.forEach(([name, value]) => {
-        res.setHeader(name, value);
+        // setHeader replaces previous value, so cookies set by hooks would be lost behind auth cookie
+        if (name.toLowerCase() === 'set-cookie') {
+          res.append(name, value);
+        } else {
+          res.setHeader(name, value);
+        }
       });
       res.status(response.status);
       if (response.message) {

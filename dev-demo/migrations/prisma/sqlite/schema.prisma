@@ -1,7 +1,3 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "sqlite"
 }
@@ -69,6 +65,7 @@ model mcp_auth_secrets {
   created_at         DateTime
   last_used_at       DateTime?
   last_used_by_agent String?
+  read_only          Boolean  @default(false)
   oauth_client_id    String?
 
   @@index([user_id])

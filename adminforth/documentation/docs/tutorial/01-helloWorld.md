@@ -33,7 +33,7 @@ nvm use 24
 mkdir af-hello
 cd af-hello
 pnpm init
-pnpm add adminforth express@^4 @dotenvx/dotenvx @types/express typescript tsx @types/node prisma @prisma/client -D
+pnpm add adminforth express@^4 @dotenvx/dotenvx @types/express typescript tsx @types/node prisma -D
 npx --yes tsc --init --module NodeNext --target ESNext
 ```
 
@@ -419,10 +419,6 @@ Create new directory `./custom/tsconfig.json` with following content:
 Create `./schema.prisma` and put next content there:
 
 ```text title="./schema.prisma"
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "sqlite"
 }

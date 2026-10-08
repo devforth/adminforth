@@ -46,7 +46,7 @@
   </div>
 </template>
 <script setup>
-import {ref, computed, onMounted, watch, onBeforeUnmount, nextTick} from 'vue';
+import {ref, computed, onMounted, watch, onBeforeUnmount} from 'vue';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -89,6 +89,8 @@ const startTime = ref('');
 
 const datepickerObject = ref('')
 
+let datepickerReady;
+
 const start = computed(() => {
   if (props.column?.type === 'time') {
     return formatTime(startTime.value);
@@ -118,14 +120,15 @@ async function updateFromProps() {
   } else if (props.column.type === 'time') {
     startTime.value = props.valueStart;
   } else {
-    // wait ref to initialize
-    await nextTick();
+    // datepicker is created only after its lazy-loaded chunk resolves
+    await datepickerReady;
     datepickerObject.value.setDate(dayjs(props.valueStart).format('DD MMM YYYY'));
     startTime.value = dayjs(props.valueStart).format('HH:mm:ss')
   }
 }
 
 onMounted(() => {
+  datepickerReady = initDatepickers();
   updateFromProps();
 
   watch(() => [props.valueStart], (value) => {
@@ -182,10 +185,6 @@ function addTimeToDate(time, date) {
 const toggleTimeInputs = () => {
   showTimeInputs.value = !showTimeInputs.value
 }
-
-onMounted(() => {
-  initDatepickers();
-});
 
 onBeforeUnmount(() => {
   removeChangeDateListener();
