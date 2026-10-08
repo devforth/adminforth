@@ -17,9 +17,10 @@
       :class="{
         'block': showDropdown,
         'hidden': !showDropdown,
-        'left-0 md:left-auto': checkboxes && checkboxes.length > 0
+        'left-0': openToRight,
+        'right-0': !openToRight
       }"
-      class="absolute z-50 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-max max-w-64 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600 right-0">
+      class="absolute z-50 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-max max-w-64 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
         <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
           <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
             <div  
@@ -102,7 +103,7 @@ import { useCoreStore } from '@/stores/core';
 import { useAdminforth } from '@/adminforth';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
-import { ref, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
+import { ref, nextTick, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
 import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
 import { Spinner, Button } from '@/afcl';
 
@@ -112,6 +113,7 @@ const coreStore = useCoreStore();
 const router = useRouter();
 const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]);
 const showDropdown = ref(false);
+const openToRight = ref(true);
 const actionLoadingStates = ref<Record<string, boolean>>({});
 const dropdownRef = ref<HTMLElement | null>(null);
 const buttonTriggerRef = ref<ComponentPublicInstance | null>(null);
@@ -188,8 +190,14 @@ async function injectedComponentClick(index: number, event?: MouseEvent) {
   showDropdown.value = false;
 }
 
-function toggleDropdownVisibility() {
+async function toggleDropdownVisibility() {
   showDropdown.value = !showDropdown.value;
+  if (!showDropdown.value) return;
+  await nextTick();
+  const triggerRect = (buttonTriggerRef.value!.$el as HTMLElement).getBoundingClientRect();
+  const appEl = document.getElementById('app')!;
+  const appContentRight = appEl.getBoundingClientRect().right - parseFloat(getComputedStyle(appEl).paddingRight);
+  openToRight.value = triggerRect.left + dropdownRef.value!.offsetWidth <= appContentRight;
 }
 
 function handleClickOutside(e: MouseEvent) {
