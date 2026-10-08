@@ -96,6 +96,7 @@ export default {
       required: true,
       isUnique: true,
       type: AdminForthDataTypes.STRING,
+      normalize: (value: string) => value.trim().toLowerCase(),
     },
     {
       name: 'created_at',
