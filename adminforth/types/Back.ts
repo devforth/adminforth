@@ -64,7 +64,9 @@ export interface IAdminForthAuthenticatedEndpointHandlerInput extends IAdminFort
 }
 
 export type AgentToolMeta = {
-  isDangerous?: boolean;
+  requiresHumanApproval?: boolean;
+  hiddenFromAgents?: boolean;
+  onlyReadsData?: boolean;
 };
 
 export interface IAdminForthEndpointOptionsBase {

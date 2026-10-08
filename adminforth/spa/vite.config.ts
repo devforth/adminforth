@@ -45,32 +45,11 @@ export default defineConfig({
           // reduce the size of the vendor chunk
           // to only include the package name
           // helps to reduce consumption of memory
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+          if (id.includes('node_modules/')) {
+            // take the last node_modules segment: pnpm nests packages as node_modules/.pnpm/<pkg>@<version>/node_modules/<pkg>
+            return id.split('node_modules/').pop()!.split('/')[0];
           }
         },
-
-        // by default servers doesnt returns dotfiles
-        // so if we'll generate file with name like ".pnpm-BLnlxqcJ.js"
-        // it won't be loaded
-        assetFileNames: (chunkInfo) => {
-          if (chunkInfo.name && chunkInfo.name.startsWith('.pnpm')) {
-            return `assets/pnpm-${chunkInfo.name.slice(6)}-[hash].[ext]`;
-          }
-          return 'assets/[name]-[hash].[ext]';
-        },
-        entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name && chunkInfo.name.startsWith('.pnpm')) {
-            return `assets/pnpm-${chunkInfo.name.slice(6)}-[hash].js`;
-          }
-          return 'assets/[name]-[hash].js';
-        },
-        chunkFileNames: (chunkInfo) => {
-          if (chunkInfo.name && chunkInfo.name.startsWith('.pnpm')) {
-            return `assets/pnpm-${chunkInfo.name.slice(6)}-[hash].js`;
-          }
-          return 'assets/[name]-[hash].js';
-        }
       },
     },
   },

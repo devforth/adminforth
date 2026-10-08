@@ -41,21 +41,24 @@
           <div>
             <button 
               ref="dropdownUserButton"
-              type="button" class=" hover:scale-110 transition-transform duration-200 flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false" data-dropdown-toggle="dropdown-user">
+              type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false">
               <span class="sr-only">{{ $t('Open user menu') }}</span>
-                <img 
+              <!-- hover scale lives on the inner span: popper measures the button with transforms, so scaling it would shift the popup -->
+              <span class="flex hover:scale-110 transition-transform duration-200">
+                <img
                   v-if="coreStore.userAvatarUrl"
-                  class="w-8 h-8 rounded-full object-cover" 
-                  :src="coreStore.userAvatarUrl" 
+                  class="w-8 h-8 rounded-full object-cover"
+                  :src="coreStore.userAvatarUrl"
                   alt="user photo"
                 />
-              <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
-              </svg>
+                <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
+                </svg>
+              </span>
             </button>
           </div>
           <Teleport to="body">
-            <div class="af-settings-popup z-50 hidden my-4 text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
+            <div class="af-settings-popup z-50 hidden my-4 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
               <div class="px-4 py-3" role="none">
                 <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
                   {{ coreStore.userFullname }}
@@ -350,11 +353,17 @@ watch(dropdownUserButton, async (dropdownUserButton) => {
   if (dropdownUserButton) {
     await nextTick();
     const dropdownUser = document.querySelector('#dropdown-user') as HTMLElement;
-    const dropdownUserTrigger = document.querySelector('[data-dropdown-toggle="dropdown-user"]') as HTMLElement;
+    // trigger is passed by ref without data-dropdown-toggle: flowbite auto-inits such triggers on window load
+    // with default 'bottom' placement, and that second popper overrides our positioning
     const dd = new Dropdown(
       dropdownUser,
-      dropdownUserTrigger,
+      dropdownUserButton,
+      { placement: 'bottom-end' },
     );
+    // trigger lives in the fixed header, so fixed strategy keeps popup in place while the page scrolls
+    dd._popperInstance.setOptions({ strategy: 'fixed' });
+    // keep popup anchored to the right edge when its content size changes (e.g. async user menu components)
+    new ResizeObserver(() => dd._popperInstance.update()).observe(dropdownUser);
     closeUserMenuDropdown = () => {
       dd.hide();
     }

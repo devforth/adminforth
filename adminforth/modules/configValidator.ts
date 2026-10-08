@@ -1352,6 +1352,13 @@ export default class ConfigValidator implements IConfigValidator {
 
   postProcessAfterDiscover(resource: AdminForthResource) {
     resource.columns.forEach((column) => {
+      // checked after discovery, because primaryKey may come from the database schema.
+      // frontend builds record links from primary key values, so they must always reach it.
+      // a backendOnly function is rejected too: it can hide the key only for some users
+      if (column.primaryKey && column.backendOnly) {
+        throw new Error(`Resource "${resource.resourceId}" column "${column.name}" is a primary key and cannot be backendOnly`);
+      }
+
       // if db/user says column is required in boolean, expand
       if (typeof column.required === 'boolean') {
         column.required = { create: column.required, edit: column.required };

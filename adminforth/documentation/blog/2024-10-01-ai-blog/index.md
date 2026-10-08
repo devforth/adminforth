@@ -131,10 +131,6 @@ Open `./schema.prisma` and put next content there:
 
 
 ```yaml title="./schema.prisma" 
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "sqlite"
   url      = env("PRISMA_DATABASE_URL")

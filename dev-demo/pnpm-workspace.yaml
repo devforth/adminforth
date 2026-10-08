@@ -1,6 +1,6 @@
 allowBuilds:
-  '@prisma/client': true
   '@prisma/engines': true
+  better-sqlite3: false
   esbuild: true
   prisma: true
 overrides:

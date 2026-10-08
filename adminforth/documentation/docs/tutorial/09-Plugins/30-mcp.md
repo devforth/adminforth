@@ -8,6 +8,8 @@ slug: /tutorial/Plugins/mcp
 
 The MCP plugin exposes AdminForth API methods as remote MCP tools. An agent connects either through OAuth sign-in, where the user approves it in the browser, or with an auth secret the user creates. Every request runs as that AdminForth user, so the same resource permissions, validation, and hooks apply.
 
+Endpoints marked with `agent: { hiddenFromAgents: true }` are not exposed. AdminForth and its plugins mark the endpoints the admin panel uses internally, such as login, two-factor authentication, passkeys, and agent chat. Mark your own endpoints the same way to keep them away from agents.
+
 ## Installation
 
 ```bash
@@ -27,6 +29,7 @@ model mcp_auth_secrets {
   created_at         DateTime
   last_used_at       DateTime?
   last_used_by_agent String?
+  read_only          Boolean   @default(false)
   oauth_client_id    String?
 
   @@index([user_id])
@@ -59,6 +62,7 @@ export default {
     { name: 'created_at', type: AdminForthDataTypes.DATETIME },
     { name: 'last_used_at', type: AdminForthDataTypes.DATETIME, required: false },
     { name: 'last_used_by_agent', type: AdminForthDataTypes.STRING, required: false },
+    { name: 'read_only', type: AdminForthDataTypes.BOOLEAN },
     { name: 'oauth_client_id', type: AdminForthDataTypes.STRING, required: false },
   ],
   options: {
@@ -98,6 +102,7 @@ new AdminForth({
         createdAtField: 'created_at',
         lastUsedAtField: 'last_used_at',
         lastUsedByAgentField: 'last_used_by_agent',
+        readOnlyField: 'read_only',
         oauthClientIdField: 'oauth_client_id',
       },
     }),
@@ -131,7 +136,7 @@ The plugin adds **MCP Settings** under the user profile. With OAuth sign-in enab
 
 OAuth sign-in is enabled by `oauthClientIdField` together with `adminPanelOrigin`, see [Plugin setup](#plugin-setup).
 
-When an agent calls the MCP endpoint without a token, the server answers `401` with a `WWW-Authenticate` header that leads the agent to the OAuth metadata. The agent then opens the browser on the consent page `/mcp-authorize`. If the user is not logged in, AdminForth shows its login page first, including two-factor authentication if it is enabled, and returns to the consent page. After the user clicks **Allow**, the agent gets an access token and a refresh token and the connection appears in **MCP Settings** under the client's name.
+When an agent calls the MCP endpoint without a token, the server answers `401` with a `WWW-Authenticate` header that leads the agent to the OAuth metadata. The agent then opens the browser on the consent page `/mcp-authorize`. If the user is not logged in, AdminForth shows its login page first, including two-factor authentication if it is enabled, and returns to the consent page. The consent page has a **Read only** checkbox, see [Read-only mode](#read-only-mode). After the user clicks **Allow**, the agent gets an access token and a refresh token and the connection appears in **MCP Settings** under the client's name.
 
 The plugin is an OAuth 2.1 authorization server for public clients:
 
@@ -264,6 +269,21 @@ Tool responses are trimmed to save the agent's context:
 - `get_resource` returns only the column properties needed to read, filter and aggregate records. The agent passes `detailed: true` to get every column property and the resource actions before it creates or updates records or runs actions.
 - `get_resource_data` rows leave out columns with `null`, empty array and empty object values, and datetimes come without milliseconds.
 - Tool outputs are serialized as YAML instead of JSON.
+
+## Read-only mode
+
+A read-only connection lets an agent only read data. Check **Read only** when you create an auth secret in **MCP Settings**, or on the consent page when you connect an agent with OAuth sign-in. The mode is stored in `read_only` and cannot be changed later: create a new auth secret or connect the agent again instead.
+
+To make every connection read-only, set `readOnly: true` in the plugin options. The **Read only** checkbox is then hidden, the consent page says that the agent can only read data, and new auth secrets and OAuth connections are stored as read-only, so they stay read-only if you remove the option later:
+
+```ts
+new AdminForthMcpPlugin({
+  readOnly: true,
+  // ...
+}),
+```
+
+In read-only mode the server exposes only endpoints marked with `agent: { onlyReadsData: true }`, such as `get_resource`, `get_resource_data`, and `aggregate`. Creating, updating, and deleting records and running actions are not available. To make your own endpoint available in read-only mode, mark it with `onlyReadsData: true`.
 
 ## Audit attribution
 

@@ -1037,6 +1037,7 @@ export interface AdminForthResourceColumnInputCommon {
 
   /**
    * if true field will !not be passed to UI under no circumstances, but will be presented in hooks
+   * Not allowed on primary key columns.
    */
   backendOnly?: boolean,
 

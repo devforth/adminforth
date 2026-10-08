@@ -1231,3 +1231,41 @@ describe('POST /delete_record', () => {
   });
 
 });
+
+describe('POST /aggregate', () => {
+  beforeAll(async () => {
+    const res = await agent
+      .post('/adminapi/v1/login')
+      .send({
+        username: 'adminforth',
+        password: 'adminforth',
+      });
+    expect(res.status).toEqual(200);
+    authCookie = res.headers['set-cookie']?.[0]?.split(';')[0];
+  });
+
+  it('aggregates a resource that allows list and show', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/aggregate')
+      .send({
+        resourceId: 'cars_sl',
+        aggregations: { total: { operation: 'count' } },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBeUndefined();
+    expect(res.body.data).toEqual([{ total: await admin.resource('cars_sl').count() }]);
+  });
+
+  it('should throw error, that action is not allowed when show is denied', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/aggregate')
+      .send({
+        resourceId: 'cars_sl_no_show',
+        aggregations: { total: { operation: 'count' } },
+      });
+    expect(res.status).toEqual(200);
+    expect(res.body.error).toBe("Action is not allowed");
+  });
+});
