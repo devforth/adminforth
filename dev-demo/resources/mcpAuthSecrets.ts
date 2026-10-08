@@ -15,6 +15,7 @@ export default {
     { name: 'last_used_at', type: AdminForthDataTypes.DATETIME, required: false },
     { name: 'last_used_by_agent', type: AdminForthDataTypes.STRING, required: false },
     { name: 'read_only', type: AdminForthDataTypes.BOOLEAN },
+    { name: 'oauth_client_id', type: AdminForthDataTypes.STRING, required: false },
   ],
   options: {
     allowedActions: {
