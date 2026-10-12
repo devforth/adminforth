@@ -94,7 +94,7 @@ new UserSessionsPlugin({
 | Option | Default | Description |
 |---|---|---|
 | `keyValueAdapter` | required | Adapter where active sessions are stored |
-| `collection` | `adminforth-user-sessions` | Collection (key prefix) used in the adapter |
+| `collection` | `adminforth-user-sessions` | Collection (key prefix) used in the adapter. Last used times are kept in `<collection>-last-used` |
 | `countryHeader` | `CF-IPCountry` | Header with two-letter country code set by your CDN, empty string disables it |
 | `resolveCountry` | — | Called when the header did not tell the country |
 | `canManageOtherUsersSessions` | — | `(adminUser) => Promise<boolean>`, decides who may see and revoke sessions of other users |
