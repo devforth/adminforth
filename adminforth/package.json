@@ -105,7 +105,7 @@
     "execa": "^9.5.2",
     "fs-extra": "^11.2.0",
     "fuse.js": "^7.0.0",
-    "handlebars": "^4.7.9",
+    "handlebars": "^4.7.10",
     "inquirer": "^12.3.0",
     "ip-address": "^10.7.2",
     "jiti": "^2.4.2",
