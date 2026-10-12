@@ -5,6 +5,7 @@ import OpenAIAudioAdapter from '../adapters/adminforth-audio-adapter-openai/inde
 import DashboardPlugin from '../plugins/adminforth-dashboard/index.js';
 import AdminForthMcpPlugin from '../plugins/adminforth-mcp/index.js';
 import UserSessionsPlugin from '../plugins/adminforth-user-sessions/index.js';
+import I18nStaticPlugin from '../plugins/adminforth-i18n-static/index.js';
 import { levelDbAdapter } from './utils.js';
 
 const OVH_AI_ENDPOINTS_BASE_URL = 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
@@ -38,6 +39,9 @@ function createAgentCompletionAdapter(
 }
 
 export const globalPlugins = [
+  new I18nStaticPlugin({
+    supportedLanguages: ['en', 'uk', 'de', 'fr', 'ja'],
+  }),
   new UserSessionsPlugin({
     keyValueAdapter: levelDbAdapter,
     canManageOtherUsersSessions: async (adminUser) => adminUser.dbUser.role === 'superadmin',

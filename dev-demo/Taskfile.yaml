@@ -11,6 +11,7 @@ vars:
     - "adminforth-email-password-reset"
     - "adminforth-foreign-inline-list"
     - "adminforth-i18n"
+    - "adminforth-i18n-static"
     - "adminforth-import-export"
     - "adminforth-text-complete"
     - "adminforth-open-signup"
