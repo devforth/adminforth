@@ -1,7 +1,7 @@
 
 import CompletionAdapterOpenAIResponses from "../../adapters/adminforth-completion-adapter-openai-responses/index.js";
 import AdminForth, { AdminForthDataTypes, AdminForthResourceInput } from "../../adminforth/index.js";
-import I18nPlugin from "../../plugins/adminforth-i18n/index.js";
+// import I18nPlugin from "../../plugins/adminforth-i18n/index.js";
 import { randomUUID } from 'crypto';
 
 
@@ -13,7 +13,7 @@ export default {
 
   recordLabel: (r: any) => `✍️ ${r.en_string}`,
   plugins: [
-    new I18nPlugin({
+    /* new I18nPlugin({
       supportedLanguages: [
         'en', 'uk', 'ja', 'fr', 'es', 'pt-BR',
         'de', 'it', 'pt', 'nl', 'pl', 'tr', 'cs', 'sv', 'da', 'fi',
@@ -72,7 +72,7 @@ export default {
       : {}),
       // translateLangAsBCP47Code: {sr: 'sr-Cyrl'},
       parallelTranslationLimit: 1
-    }),
+    }), */
 
   ],
   options: {
