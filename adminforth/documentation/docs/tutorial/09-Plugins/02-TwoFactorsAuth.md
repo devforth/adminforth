@@ -276,6 +276,16 @@ Here is an example:
 
 Under the hood, this metod uses websocket.
 
+To tell the user what they confirm, pass a short description of the action as the second argument:
+
+```ts
+const verifyResult = await t2fa.verifyAuto(adminUser, `Approve a $${amount} bonus for ${employee.name}`);
+```
+
+The 2FA modal shows the description above the authenticator code field. When an AI agent runs the action through the [MCP server](/docs/tutorial/Plugins/mcp/), the confirmation page in the admin panel shows the description instead of the raw arguments of the agent's call.
+
+`verifyAuto` also works in a tool call of the MCP server. There is no browser tab to show the modal in, so a missing verification stops the whole call, and the agent gets a link to [confirm the action in the admin panel](/docs/tutorial/Plugins/mcp/#actions-that-require-2fa), where the action runs again. Call `verifyAuto` before the action changes anything, otherwise the changes made before it happen twice.
+
 ## Manual Step-Up MFA (Two-Factor re-authentication on critical operations)
 But if you websocket doesn't work in you application, or you wan't to perform verification manually, here are manual verification examples
 
@@ -283,7 +293,7 @@ But if you websocket doesn't work in you application, or you wan't to perform ve
 
 You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
 
-To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `get2FaConfirmationResult` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP)
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `get2FaConfirmationResult` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP). The popup checks the TOTP code and stays open until the user enters a correct code or closes it. Instead of the code, it returns a token that confirms the checked code for 1 minute, so `verify` does not check the code a second time.
 
 ```ts title='/custom/RequireTwoFaGate.vue'
 <template>
@@ -321,17 +331,9 @@ options: {
       allowed: () => true,
       action: async ({ recordId, adminUser, adminforth, response, extra }) => {
         //diff-add
-        const verificationResult = extra?.verificationResult
-        //diff-add
-        if (!verificationResult) {
-          //diff-add
-          return { ok: false, error: 'No verification result provided' };
-        //diff-add
-        }
-        //diff-add
         const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
         //diff-add
-        const result = await t2fa.verify(verificationResult, {
+        const result = await t2fa.verify(extra?.verificationResult, {
         //diff-add
           adminUser: adminUser,
         //diff-add
@@ -342,9 +344,9 @@ options: {
         });
 
         //diff-add
-        if (!result?.ok) {
+        if ('error' in result) {
           //diff-add
-          return { ok: false, error: result?.error ?? 'Provided 2fa verification data is invalid' };
+          return { ok: false, error: result.error, code: result.code };
           //diff-add
         }
         //diff-add
@@ -379,6 +381,26 @@ options: {
   ],
 }
 ```
+
+Pass the verification result to `t2fa.verify` as is, even when the action was called without it, and return the `code` of a failed verification together with the error. `verify` lets users excluded by `usersFilterToApply` and users in the [grace period](#step-up-authentication-grace-period) through without a verification result, and returns the `TWO_FACTOR_REQUIRED` code for everyone else, so callers such as AI agents can tell that the action needs a second factor. The [MCP server](/docs/tutorial/Plugins/mcp/#actions-that-require-2fa) then lets the user confirm the action in the admin panel.
+
+### Verification error codes
+
+A failed `verify` returns `{ error, code }`, and a failed `verifyAuto` returns `{ ok: false, error, code }`. In a tool call of the MCP server a failed `verifyAuto` does not return: it stops the call, and the agent gets the error. The `code` is one of `TwoFactorErrorCode`, exported by the plugin:
+
+| Code | Meaning |
+|------|---------|
+| `TWO_FACTOR_REQUIRED` | No verification result was passed, and the user is not excluded from 2FA or in the grace period. |
+| `TWO_FACTOR_INVALID` | The TOTP code is wrong or expired, the code confirmation returned by the popup expired, or the passkey is invalid. |
+| `TWO_FACTOR_RATE_LIMITED` | The user entered TOTP codes too often. Every TOTP check, at login and for step-up verification, counts as an attempt, and a user gets 30 attempts per minute, 300 per hour and 1000 per day. |
+| `TWO_FACTOR_NOT_SET_UP` | The user has not set up 2FA yet. |
+| `USER_NOT_FOUND` | The user no longer exists. |
+| `UNSUPPORTED_CONFIRMATION_MODE` | The verification result has an unknown `mode`. |
+| `BROWSER_CONTEXT_REQUIRED` | `verifyAuto` was called outside a browser request and outside a tool call of the MCP server, so there is no browser tab to show the modal in. |
+| `VERIFICATION_CANCELLED` | The user closed the modal opened by `verifyAuto`. |
+| `VERIFICATION_TIMEOUT` | The user did not answer the modal opened by `verifyAuto` within 5 minutes. |
+| `INVALID_VERIFICATION_SESSION` | The modal answered a `verifyAuto` session that is invalid or belongs to another user. |
+| `INTERNAL_ERROR` | The verification failed with an unexpected error. |
 
 ### Request 2FA for create/edit (secure save gating)
 
