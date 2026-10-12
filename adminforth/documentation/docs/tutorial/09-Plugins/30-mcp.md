@@ -240,7 +240,7 @@ The same numbers are quoted in the instructions and skills the MCP server gives 
 
 A tool call fails with a timeout error when its handler runs longer than `toolTimeoutMs`, 15 seconds by default. The handler gets an aborted signal, and the error tells the agent that a change it started may still complete, so it checks the result before calling again.
 
-The instructions also ask the agent to make at most `toolCallsPerRequest` calls, 10 by default, for one user request, and to ask the user before it continues with more. MCP clients do not tell the server where a user request starts, so this is guidance for the agent, not a limit the server enforces.
+The instructions also ask the agent to make at most `toolCallsPerRequest` calls, 10 by default, for one user request, and to ask the user before it continues with more. Calls of `wait_for_confirmation`, which waits for an [action confirmed in the admin panel](#actions-that-require-2fa), do not count. MCP clients do not tell the server where a user request starts, so this is guidance for the agent, not a limit the server enforces.
 
 ```ts title="./index.ts"
 new AdminForthMcpPlugin({
@@ -259,6 +259,41 @@ The MCP server sends agents short rules in its instructions: to treat record val
 - `mutate_data` – create, update and delete records and run actions.
 
 Tools that change data, such as `delete_record`, are marked as destructive for MCP clients, and their descriptions repeat that the agent must get a confirmation in chat, even when the client itself does not ask for approval.
+
+## Actions that require 2FA
+
+With the [Two-Factor Authentication plugin](/docs/tutorial/Plugins/two-factors-auth/) installed, agents can run actions protected with a second factor: the user confirms such an action in the admin panel. The action asks for the second factor with [`verifyAuto`](/docs/tutorial/Plugins/two-factors-auth/#calling-2fa-modal-from-backend) or [`verify`](/docs/tutorial/Plugins/two-factors-auth/#request-2fa-on-custom-actions) and returns the `code` of a failed verification:
+
+```ts title="./resources/cars.ts"
+action: async ({ recordId, adminUser, adminforth }) => {
+  const t2fa = adminforth.getPluginByClassName<TwoFactorsAuthPlugin>('TwoFactorsAuthPlugin');
+  const result = await t2fa.verifyAuto(adminUser, `Approve listing of car ${recordId}`);
+  if ('error' in result) {
+    return { ok: false, error: result.error, code: result.code };
+  }
+  await adminforth.resource('cars').update(recordId, { listed: true });
+  return { ok: true, successMessage: 'Listing approved' };
+},
+```
+
+An agent's call has no second factor, so the action fails with the `TWO_FACTOR_REQUIRED` code. Then:
+
+1. Instead of the error, the agent gets a `confirmationUrl` to a page of the admin panel and a `confirmationId`.
+2. The agent shows the link to the user and calls the `wait_for_confirmation` tool with the `confirmationId`. The tool returns a waiting status after about 50 seconds, and the agent calls it again to keep waiting.
+3. The user opens the link, signed in to the admin panel, and clicks **Confirm** or **Decline**. The page shows the description passed to `verifyAuto`, or, without one, the tool and the arguments of the agent's call. **Confirm** asks for the second factor.
+4. The admin panel runs the action again with the user's verification, and `wait_for_confirmation` returns its result. If the user declines, the agent gets an error.
+
+A confirmation link:
+
+- opens only for the user who owns the MCP connection, and only this connection can wait for its result;
+- expires after 10 minutes and works once: a wrong code or a closed 2FA modal ends it, and the agent has to call the action again;
+- runs the action with the same [tool timeout](#tool-timeout-and-call-limit).
+
+The admin panel runs the whole call again, so ask for the second factor before the action changes anything. Otherwise the changes made before the check happen twice.
+
+Pending confirmations are kept in the memory of the server process. If the admin panel runs on several instances, a link works only when the page request reaches the instance that served the agent's call.
+
+Without the Two-Factor Authentication plugin, the server has no `wait_for_confirmation` tool and no confirmation page.
 
 ## Tool responses
 
@@ -280,6 +315,17 @@ new AdminForthMcpPlugin({
   // ...
 }),
 ```
+
+To make only some users' connections read-only, pass a function of the user instead, as in [`allowedActions`](/docs/tutorial/Customization/limitingAccess/). It may be async. The function is called on every MCP request, so a user it starts returning `true` for loses write access from the next request. It also locks the **Read only** checkbox for that user in **MCP Settings** and on the consent page:
+
+```ts
+new AdminForthMcpPlugin({
+  readOnly: ({ adminUser }) => adminUser.dbUser.role !== 'superadmin',
+  // ...
+}),
+```
+
+A connection is read-only when either the option or its stored `read_only` value says so.
 
 In read-only mode the server exposes only endpoints marked with `agent: { onlyReadsData: true }`, such as `get_resource`, `get_resource_data`, and `aggregate`. Creating, updating, and deleting records and running actions are not available. To make your own endpoint available in read-only mode, mark it with `onlyReadsData: true`.
 
