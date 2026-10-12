@@ -238,6 +238,7 @@ t2fa.verifyAuto(adminUser);
 ```
 This method opens 2FA verification modal at the frontend and then returns verification result.
 The modal is shown only in the same browser tab/window which made the backend request.
+`verifyAuto` calls that reach the tab within a second, for example when an action runs for several selected records, share one modal: it lists up to 20 actions, and one verification confirms all of them. The next actions wait for another modal.
 Because of this, `verifyAuto` must be called from a browser-initiated request handled by AdminForth request context, for example from an endpoint wrapped with `admin.express.authorize`.
  
 Here is an example:
@@ -282,7 +283,7 @@ To tell the user what they confirm, pass a short description of the action as th
 const verifyResult = await t2fa.verifyAuto(adminUser, `Approve a $${amount} bonus for ${employee.name}`);
 ```
 
-The 2FA modal shows the description above the authenticator code field. When an AI agent runs the action through the [MCP server](/docs/tutorial/Plugins/mcp/), the confirmation page in the admin panel shows the description instead of the raw arguments of the agent's call.
+The 2FA modal shows the description as its title. When an AI agent runs the action through the [MCP server](/docs/tutorial/Plugins/mcp/), the modal opened from the agent's confirmation link shows the description instead of the raw arguments of the agent's call.
 
 `verifyAuto` also works in a tool call of the MCP server. There is no browser tab to show the modal in, so a missing verification stops the whole call, and the agent gets a link to [confirm the action in the admin panel](/docs/tutorial/Plugins/mcp/#actions-that-require-2fa), where the action runs again. Call `verifyAuto` before the action changes anything, otherwise the changes made before it happen twice.
 
@@ -293,7 +294,7 @@ But if you websocket doesn't work in you application, or you wan't to perform ve
 
 You might want to to allow to call some custom critical/money related actions with additional 2FA approval. This eliminates risks caused by user cookies theft by some virous/doorway software after login.
 
-To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `get2FaConfirmationResult` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup and asks user to authenticate with 2nd factor (if passkey is enabled it will be suggested first, with ability to fallback to TOTP). The popup checks the TOTP code and stays open until the user enters a correct code or closes it. Instead of the code, it returns a token that confirms the checked code for 1 minute, so `verify` does not check the code a second time.
+To do it, first, create frontend custom component which wraps and intercepts click event to menu item, and in click handler do a call to `get2FaConfirmationResult` frontend API exposed by this plugin. This is awaitable call wich shows 2FA popup with the passed title and a **Cancel** button, and asks user to authenticate with 2nd factor: a user with a passkey clicks **Use passkey** to start the passkey prompt, with ability to fallback to TOTP, other users enter a TOTP code. During the [grace period](#step-up-authentication-grace-period) the popup only asks to **Approve** the action. Pass `{ details }` as the third argument, `get2FaConfirmationResult(title, undefined, { details })`, to show a text under the title, or `{ items }` to list several actions that one verification confirms. The popup checks the TOTP code and stays open until the user enters a correct code or cancels it. Instead of the code, it returns a token that confirms the checked code for 1 minute, so `verify` does not check the code a second time.
 
 ```ts title='/custom/RequireTwoFaGate.vue'
 <template>
@@ -667,7 +668,7 @@ If it is still inconvenient for admins who perform multiple critical actions in 
 This configuration still remembers user browser fingerprint and IP address, and if at least one of them changes, it will ask for 2FA again, ignoring grace period. 
 
 
-Any popups asking for 2FA would be automatically resolved during grace period without user interaction if both browser fingerprint and IP address are the same as during last successful 2FA and time since last 2FA is less than grace period.
+Popups asking for 2FA do not ask for a second factor during grace period if both browser fingerprint and IP address are the same as during last successful 2FA and time since last 2FA is less than grace period: the user only clicks **Approve** to confirm the operation, or **Cancel**.
 
 > 💡** Note ** We strongly do not recommend using this feature because it increases blast radius for MitB, Cookie parsing/decoding Stealer malwares and Remote Browser Control (device controlling attacks). None of these attacks are fixed compleately by 2FA when you are not using grace period, but using grace period makes these attacks easier to perform.
 > Instead we recommend to reducing number of critical operations requiring 2FA by carefully prefiltering them.

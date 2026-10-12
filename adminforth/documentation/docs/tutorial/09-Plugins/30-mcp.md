@@ -280,14 +280,15 @@ An agent's call has no second factor, so the action fails with the `TWO_FACTOR_R
 
 1. Instead of the error, the agent gets a `confirmationUrl` to a page of the admin panel and a `confirmationId`.
 2. The agent shows the link to the user and calls the `wait_for_confirmation` tool with the `confirmationId`. The tool returns a waiting status after about 50 seconds, and the agent calls it again to keep waiting.
-3. The user opens the link, signed in to the admin panel, and clicks **Confirm** or **Decline**. The page shows the description passed to `verifyAuto`, or, without one, the tool and the arguments of the agent's call. **Confirm** asks for the second factor.
-4. The admin panel runs the action again with the user's verification, and `wait_for_confirmation` returns its result. If the user declines, the agent gets an error.
+3. The user opens the link, signed in to the admin panel, and the page opens the 2FA modal right away. The modal shows the description passed to `verifyAuto`, or, without one, the tool and the arguments of the agent's call. The user confirms the action with the second factor, or with **Approve** during the [grace period](/docs/tutorial/Plugins/two-factors-auth/#step-up-authentication-grace-period), or clicks **Cancel**.
+4. The admin panel runs the action again with the user's verification, and `wait_for_confirmation` returns its result. If the user cancels, the agent gets an error.
 
 A confirmation link:
 
 - opens only for the user who owns the MCP connection, and only this connection can wait for its result;
-- expires after 10 minutes and works once: a wrong code or a closed 2FA modal ends it, and the agent has to call the action again;
-- runs the action with the same [tool timeout](#tool-timeout-and-call-limit).
+- expires after 10 minutes and works once: a cancelled 2FA modal or passkey prompt ends it, and the agent has to call the action again;
+- runs the action with the same [tool timeout](#tool-timeout-and-call-limit);
+- confirms up to 20 pending actions of the same MCP connection at once: the modal lists them, one verification runs them one by one, and `wait_for_confirmation` returns the result of each. Other pending actions wait for another link.
 
 The admin panel runs the whole call again, so ask for the second factor before the action changes anything. Otherwise the changes made before the check happen twice.
 
