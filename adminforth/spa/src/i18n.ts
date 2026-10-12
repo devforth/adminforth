@@ -4,6 +4,10 @@ import { createApp } from 'vue';
 
 // taken from here https://vue-i18n.intlify.dev/guide/essentials/pluralization.html#custom-pluralization
 function slavicPluralRule(choice: number, choicesLength: number, orgRule: any) {
+  // not translated yet string has 2 English forms, forms 2-4 and 5+ do not exist in it
+  if (choicesLength === 2) {
+    return choice === 1 ? 0 : 1
+  }
   if (choice === 0) {
     return 0
   }
