@@ -701,7 +701,13 @@ export interface IAdminForth {
   getPluginById<T>(id: string): T;
 
   registerMenuContribution(contribution: AdminForthMenuContribution): void;
-  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider): void;
+  /**
+   * Registers a provider which is called every time the menu is fetched.
+   *
+   * AdminForth bundles menu icons when it builds the SPA, and providers are called there without `adminUser`,
+   * so list in `options.icons` every icon the provider can return, otherwise it renders empty.
+   */
+  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider, options?: { icons?: string[] }): void;
   getMenuContributions(): AdminForthMenuContribution[];
   getMenuWithContributions(adminUser?: AdminUser, menu?: AdminForthConfigMenuItem[]): Promise<AdminForthConfigMenuItem[]>;
 

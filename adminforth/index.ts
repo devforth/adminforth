@@ -117,6 +117,7 @@ class AdminForth implements IAdminForth {
   pluginsById: Record<string, AdminForthPlugin> = {};
   private menuContributions: AdminForthMenuContribution[] = [];
   private menuContributionProviders: AdminForthMenuContributionProvider[] = [];
+  menuContributionProviderIcons: string[] = [];
   configValidator: IConfigValidator;
   restApi: AdminForthRestAPI;
 
@@ -126,8 +127,9 @@ class AdminForth implements IAdminForth {
     this.menuContributions.push(contribution);
   }
 
-  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider): void {
+  registerMenuContributionProvider(provider: AdminForthMenuContributionProvider, { icons = [] }: { icons?: string[] } = {}): void {
     this.menuContributionProviders.push(provider);
+    this.menuContributionProviderIcons.push(...icons);
   }
 
   getMenuContributions(): AdminForthMenuContribution[] {
