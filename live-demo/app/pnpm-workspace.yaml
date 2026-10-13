@@ -6,7 +6,9 @@ allowBuilds:
   esbuild: true
   prisma: true
 minimumReleaseAgeExclude:
-  - '@adminforth/i18n'
+  - '@adminforth/i18n-static'
   - adminforth
   - '@adminforth/agent'
-  - '@adminforth/background-jobs@1.20.9'
+  - '@adminforth/background-jobs'
+  - '@adminforth/i18n'
+  - '@adminforth/two-factors-auth@4.7.0'

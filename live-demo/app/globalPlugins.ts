@@ -28,9 +28,9 @@ export const adminForthAgent = new AdminForthAgent({
     defaultVoice: 'alloy',
     defaultSpeed: 1.25,
   }),
-  placeholderMessages: async ({ httpExtra }: any) => getLocalizedPlaceholderMessages({
-    completionAdapter: fastCompletionAdapter as any,
-    httpExtra,
+  placeholderMessages: async ({ headers }) => getLocalizedPlaceholderMessages({
+    completionAdapter: fastCompletionAdapter,
+    headers,
   }),
   modes: [
     {
