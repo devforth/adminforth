@@ -766,6 +766,8 @@ class CodeInjector implements ICodeInjector {
     registerCustomPages(this.adminforth.config);
     const menuWithContributions = await this.adminforth.getMenuWithContributions();
     collectAssetsFromMenu(menuWithContributions);
+    // providers get no adminUser here, so icons they return only at runtime are declared on registration
+    icons.push(...this.adminforth.menuContributionProviderIcons);
     registerSettingPages(this.adminforth.config.auth.userMenuSettingsPages);
     const spaDir = this.getSpaDir();
 
