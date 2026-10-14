@@ -283,7 +283,7 @@ To tell the user what they confirm, pass a short description of the action as th
 const verifyResult = await t2fa.verifyAuto(adminUser, `Approve a $${amount} bonus for ${employee.name}`);
 ```
 
-The 2FA modal shows the description as its title. When an AI agent runs the action through the [MCP server](/docs/tutorial/Plugins/mcp/), the modal opened from the agent's confirmation link shows the description instead of the raw arguments of the agent's call.
+The 2FA modal lists the description under **You are approving**. When an AI agent runs the action through the [MCP server](/docs/tutorial/Plugins/mcp/), the modal opened from the agent's confirmation link shows the description instead of the raw arguments of the agent's call.
 
 `verifyAuto` also works in a tool call of the MCP server. There is no browser tab to show the modal in, so a missing verification stops the whole call, and the agent gets a link to [confirm the action in the admin panel](/docs/tutorial/Plugins/mcp/#actions-that-require-2fa), where the action runs again. Call `verifyAuto` before the action changes anything, otherwise the changes made before it happen twice.
 
