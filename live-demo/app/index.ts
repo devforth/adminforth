@@ -6,7 +6,8 @@ import fs from 'fs';
 import usersResource from "./resources/users";
 import apartmentsResource from "./resources/apartments";
 import auditLogsResource from "./resources/auditLogs"
-import translations from "./resources/translations";
+// old DB-based i18n plugin, replaced by I18nStaticPlugin in globalPlugins
+// import translations from "./resources/translations";
 import sessionsResource from './resources/agent_resources/sessions';
 import turnsResource from './resources/agent_resources/turns';
 import checkpointsResource from './resources/agent_resources/checkpoints';
@@ -14,6 +15,7 @@ import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
 import { adminForthAgent } from './globalPlugins';
+import I18nStaticPlugin from '@adminforth/i18n-static';
 
 let db;
 
@@ -65,7 +67,7 @@ new AdminForth({
     apartmentsResource,
     usersResource,
     auditLogsResource,
-    translations,
+    // translations,
     sessionsResource,
     turnsResource,
     checkpointsResource,
@@ -90,11 +92,11 @@ new AdminForth({
           icon: 'flowbite:home-solid',
           resourceId: 'aparts',
         },
-        {
-          label: 'Translations',
-          icon: 'material-symbols:translate',
-          resourceId: 'translations',
-        },
+        // {
+        //   label: 'Translations',
+        //   icon: 'material-symbols:translate',
+        //   resourceId: 'translations',
+        // },
       ]
     },
     {
@@ -130,7 +132,14 @@ new AdminForth({
     },
   ],
   globalPlugins: [
-    adminForthAgent
+    adminForthAgent,
+    new I18nStaticPlugin({
+      supportedLanguages: [
+        'en', 'uk', 'ja', 'fr', 'es', 'pt-BR',
+        'de', 'it', 'pt', 'nl', 'pl', 'tr', 'cs', 'sv', 'da', 'fi',
+        'ro', 'hu', 'el', 'bg', 'zh', 'ko', 'ar', 'he', 'hi', 'vi',
+      ],
+    }),
   ]
 });
 
