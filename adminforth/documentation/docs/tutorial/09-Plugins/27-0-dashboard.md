@@ -189,16 +189,19 @@ export const globalPlugins = [
 
 #### Control Dashboard Access and Editing Permissions
 
-By default, only users with the `superadmin` role can access dashboards. Use the `editRoles` option to grant dashboard access and editing to other roles:
+By default, only users with the `superadmin` role can access dashboards. Use the `editRoles` option to grant dashboard access and editing to other roles, and the `viewRoles` option to grant read-only access:
 
 ```ts title="./globalPlugins.ts"
 new DashboardPlugin({
   dashboardConfigsResourceId: 'dashboard_configs',
   editRoles: ['superadmin', 'admin'], // allow 'admin' users to edit dashboards too
+  viewRoles: ['manager'], // allow 'manager' users to view dashboards without editing them
 });
 ```
 
-Users whose role is not listed in `editRoles` do not see the **Dashboards** sidebar group and receive a `403` response from dashboard configuration and widget-data endpoints. The same role check protects all dashboard mutations on the backend.
+Users with a role from `viewRoles` see the **Dashboards** sidebar group and can open dashboards, but they do not get the edit mode button and receive a `403` response from all dashboard mutation endpoints. Roles from `editRoles` can always view dashboards, so there is no need to repeat them in `viewRoles`.
+
+Users whose role is listed in neither option do not see the **Dashboards** sidebar group and receive a `403` response from dashboard configuration and widget-data endpoints. The dashboard configs resource itself stays available only to `editRoles`.
 
 Dashboard widget queries also respect the target resource's list access rules. Before loading data, the plugin checks `allowedActions.list`, runs the resource's `list.beforeDatasourceRequest` hooks, and applies any filters added by those hooks. A widget cannot query a column that is `backendOnly` or hidden from the current user with `showIn.list`.
 
@@ -233,12 +236,12 @@ widgets: []
 If you need to configure dashboards without using the AI Agent, you can do so manually via the AdminForth interface:
 
 1. **Access Dashboards**: Open the **Dashboards** group in the sidebar and choose a dashboard page.
-2. **Interactive UI Editor**: Users with a role listed in the plugin's `editRoles` option (defaults to `superadmin`) can add, rename, reorder, and remove groups or widgets directly from the user interface.
+2. **Interactive UI Editor**: Users with a role listed in the plugin's `editRoles` option (defaults to `superadmin`) see a wrench button in the dashboard header that toggles edit mode. Turning it on reveals the controls to add, rename, reorder, and remove groups or widgets directly from the user interface. With edit mode off, the dashboard looks the same as it does for read-only viewers.
 3. **YAML Configuration Editor**: The dashboard builder has built-in code editors. When editing a widget or a group manually, you write configurations using a YAML-based DSL.
 
 ### Editing dashboard settings
 
-Click the tools icon in the dashboard header to edit the dashboard itself. The YAML editor accepts these fields:
+Turn on edit mode with the wrench button and click the gear icon next to it to edit the dashboard itself. The YAML editor accepts these fields:
 
 ```yaml
 label: Sales Overview
