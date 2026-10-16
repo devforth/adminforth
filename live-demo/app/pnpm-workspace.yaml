@@ -1,7 +1,7 @@
 allowBuilds:
   '@prisma/engines': true
   adminforth: true
-  better-sqlite3: true
+  better-sqlite3: false
   classic-level: true
   esbuild: true
   prisma: true
