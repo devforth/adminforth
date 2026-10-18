@@ -1,6 +1,8 @@
 <template>
   <Modal 
     ref="modalRef" 
+    class="afcl-dialog"
+    :aria-labelledby="header ? titleId : undefined"
     v-bind="$attrs"
     :closeByClickOutside="clickToCloseOutside || closeByClickOutside"
     :closeByEsc="closeByEsc || closable"
@@ -18,35 +20,41 @@
     <!-- Modal header -->
     <div
       v-if="header"
-      class="flex items-center justify-between px-5 py-4 border-b rounded-t-xl dark:border-darkDialogBreakLine border-lightDialogBreakLine"
+      class="afcl-dialog-header flex items-start justify-between gap-3 px-5 pt-[18px] pb-1.5"
     >
-      <h3 class="text-base font-semibold text-lightDialogHeaderText dark:text-darkDialogHeaderText">
+      <h3 :id="titleId" class="text-base font-semibold tracking-[-0.01em] text-lightDialogHeaderText dark:text-darkDialogHeaderText">
         {{ header }}
       </h3>
-      <button
+      <Button
         v-if="headerCloseButton"
         type="button"
-        class="text-lightDialogCloseButton bg-transparent hover:bg-lightDialogCloseButtonHoverBackground hover:text-lightDialogCloseButtonHover rounded-default text-sm w-7 h-7 ms-auto inline-flex justify-center items-center focus:outline-none focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing dark:text-darkDialogCloseButton dark:hover:bg-darkDialogCloseButtonHoverBackground dark:hover:text-darkDialogCloseButtonHover"
+        variant="ghost"
+        size="sm"
+        iconOnly
+        class="-mt-0.5 -me-1.5 text-lightDialogCloseButton hover:text-lightDialogCloseButtonHover hover:bg-lightDialogCloseButtonHoverBackground dark:text-darkDialogCloseButton dark:hover:text-darkDialogCloseButtonHover dark:hover:bg-darkDialogCloseButtonHoverBackground"
+        :aria-label="t('Close Modal')"
         @click="tryToCancelModal"
       >
-        <IconX class="w-4 h-4" aria-hidden="true" />
-        <span class="sr-only">{{ t('Close Modal') }}</span>
-      </button>
+        <IconX aria-hidden="true" />
+      </Button>
     </div>
     <!-- Modal body -->
-    <div class="px-5 py-4 text-sm text-lightDialogBodyText dark:text-darkDialogBodyText">
+    <div
+      class="afcl-dialog-body px-5 pb-[18px] text-sm text-lightDialogBodyText dark:text-darkDialogBodyText"
+      :class="header ? 'pt-1.5' : 'pt-5'"
+    >
       <slot></slot>
     </div>
     <!-- Modal footer -->
     <div
       v-if="buttons.length"
-      class="flex items-center justify-end flex-wrap gap-y-2 px-5 py-3 border-t border-lightDialogBreakLine rounded-b-xl bg-lightFormHeading dark:bg-darkFormHeading dark:border-darkDialogBreakLine"
+      class="afcl-dialog-footer"
+      :class="dialogFooterClasses"
     >
       <Button
         v-for="(button, buttonIndex) in buttons"
         :key="buttonIndex"
         v-bind="button.options"
-        :class="{ 'ms-2': buttonIndex > 0 }"
         @click="button.onclick(dialog)"
         :mode="button.options?.mode || 'primary'"
       >
@@ -59,8 +67,9 @@
 <script setup lang="ts">
 import Button from "./Button.vue";
 import { IconX } from '@iconify-prerendered/vue-lucide';
-import { ref, computed, type Ref } from 'vue';
+import { ref, computed, useId, type Ref } from 'vue';
 import { Modal } from '@/afcl'
+import { dialogFooterClasses } from './dialogStyles';
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -78,6 +87,7 @@ interface DialogButton {
 }
 
 const modalRef = ref();
+const titleId = useId();
 
 const props = withDefaults(defineProps<DialogProps>(), {
   header: '',
@@ -104,7 +114,7 @@ const buttons = computed<DialogButton[]>(() => {
       onclick: (dialog: any) => {
         tryToHideModal();
       },
-      options: {}
+      options: { variant: 'secondary' }
     }
   ];
 });

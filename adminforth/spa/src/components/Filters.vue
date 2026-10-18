@@ -159,7 +159,7 @@
    </div>
   </div>
 
-  <div v-if="show"  class="bg-zinc-900/30 dark:bg-black/60 fixed inset-0  z-40"
+  <div v-if="show"  class="bg-lightScrim dark:bg-darkScrim fixed inset-0  z-40"
     @click="$emit('hide')">
   </div>
 </template>

@@ -49,7 +49,6 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 - `afcl/Tooltip.vue` uses the flowbite `Tooltip`, `afcl/DatePicker.vue` and `components/CustomDateRangePicker.vue` use `flowbite-datepicker`.
 - The Tooltip import is the last place where core loads `flowbite`, and loading it also runs flowbite's auto-init of `data-*` attributes (`data-tooltip-target`, `data-dropdown-toggle`, …) on page load. Apps and plugins may rely on it (foreign-inline-list uses `data-tooltip-target`), so a native Tooltip has to come together with moving those usages to AFCL.
 - Palette classes instead of tokens in `views/PageNotFound.vue`, `views/LoginView.vue`, `views/ListView.vue` (action badge), `renderers/URL.vue`, `afcl/BarChart.vue` (axis labels), the HTML in `utils/utils.ts` and a commented line in `components/Sidebar.vue`.
-- Backdrops of `afcl/Modal.vue`, `components/Filters.vue` and `App.vue` use `bg-zinc-900/30…40`, the design has one `--scrim` for them.
 
 ## Targets
 

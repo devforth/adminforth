@@ -6,7 +6,7 @@
       backgroundCustomClasses="z-[998]"
       modalCustomClasses="z-[999] flex items-center justify-center" 
     >
-      <div class="relative p-6 sm:w-[420px] rounded-xl shadow-popover dark:shadow-darkPopover bg-lightAcceptModalBackground dark:bg-darkAcceptModalBackground" >
+      <div class="relative p-6 sm:w-[420px] rounded-[inherit] bg-lightAcceptModalBackground dark:bg-darkAcceptModalBackground" >
         
         <button type="button" @click="modalStore.togleModal()" class="absolute top-3 right-3 p-1.5 rounded-default text-lightAcceptModalCloseIcon hover:text-lightAcceptModalCloseIconHover hover:bg-lightAcceptModalCloseIconHoverBackground dark:text-darkAcceptModalCloseIcon dark:hover:text-darkAcceptModalCloseIconHover dark:hover:bg-darkAcceptModalCloseIconHoverBackground transition-colors" >
           <IconX class="w-4 h-4" />

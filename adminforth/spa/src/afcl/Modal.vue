@@ -6,15 +6,29 @@
     <slot name="trigger"></slot>
   </div>
   <Teleport to="body">
+    <Transition
+      enter-from-class="af-modal-hidden opacity-0"
+      enter-active-class="transition-opacity duration-150 ease-out motion-reduce:transition-none"
+      leave-active-class="transition-opacity duration-100 ease-in motion-reduce:transition-none"
+      leave-to-class="af-modal-hidden opacity-0"
+    >
       <div 
         v-show="isModalOpen" 
         v-if="!removeFromDom" 
         @click="backdropClick" 
-        class="bg-zinc-900/40 dark:bg-black/60 overflow-y-auto overscroll-contain overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex"
+        class="afcl-modal-backdrop group/modal fixed inset-0 z-50 flex justify-center overflow-y-auto overflow-x-hidden overscroll-contain bg-lightScrim dark:bg-darkScrim max-sm:pt-12"
         :class="props.backgroundCustomClasses"
       >
         <!-- Modal content -->
-        <div v-bind="$attrs" class="relative bg-lightDialogBackgorund rounded-xl shadow-popover dark:shadow-darkPopover dark:bg-darkDialogBackgorund mx-4 sm:mx-0">
+        <div
+          ref="panelRef"
+          role="dialog"
+          aria-modal="true"
+          tabindex="-1"
+          v-bind="$attrs"
+          class="afcl-modal focus:outline-none transition-transform duration-150 ease-out motion-reduce:transition-none group-[.af-modal-hidden]/modal:translate-y-1 group-[.af-modal-hidden]/modal:scale-[.98] max-sm:group-[.af-modal-hidden]/modal:translate-y-full max-sm:group-[.af-modal-hidden]/modal:scale-100"
+          :class="dialogPanelClasses"
+        >
 
           <!-- Modal body -->
           <div class="text-lightDialogBodyText dark:text-darkDialogBodyText">
@@ -24,13 +38,21 @@
           <!-- Confirmation Modal -->
           <div
             v-if="showConfirmationOnClose"
-            class="fixed inset-0 flex items-center justify-center bg-zinc-900/40 dark:bg-black/60 z-[60]"
+            class="fixed inset-0 z-[60] flex justify-center overflow-y-auto bg-lightScrim dark:bg-darkScrim max-sm:pt-12"
             :class="props.modalCustomClasses"
           >
-            <div class="bg-lightDialogBackgorund dark:bg-darkDialogBackgorund p-5 rounded-xl shadow-popover dark:shadow-darkPopover max-w-sm w-full">
-              <h2 class="text-base font-semibold mb-2 text-lightDialogHeaderText dark:text-darkDialogHeaderText">{{ t('Confirm Close') }}</h2>
-              <p class="mb-5 text-sm text-lightDialogBodyText dark:text-darkDialogBodyText">{{ props.closeConfirmationText }}</p>
-              <div class="flex justify-end gap-2">
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              :aria-labelledby="confirmationTitleId"
+              class="w-full sm:max-w-sm"
+              :class="dialogPanelClasses"
+            >
+              <div class="px-5 py-[18px]">
+                <h2 :id="confirmationTitleId" class="mb-1.5 text-base font-semibold text-lightDialogHeaderText dark:text-darkDialogHeaderText">{{ t('Confirm Close') }}</h2>
+                <p class="text-sm text-lightDialogBodyText dark:text-darkDialogBodyText">{{ props.closeConfirmationText }}</p>
+              </div>
+              <div :class="dialogFooterClasses">
                 <Button
                   variant="secondary"
                   @click="showConfirmationOnClose = false"
@@ -50,13 +72,15 @@
           </div>
         </div>
       </div>
+    </Transition>
   </Teleport>
 </template>
 
 <script setup lang="ts">
 import Button from "./Button.vue";
-import { ref, onMounted, nextTick, onUnmounted, computed, type Ref } from 'vue';
+import { ref, onMounted, nextTick, onUnmounted, computed, watch, useId, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { dialogPanelClasses, dialogFooterClasses } from './dialogStyles';
 
 const isModalOpen = defineModel<boolean>('open', { default: false });
 const { t } = useI18n();
@@ -92,6 +116,23 @@ const props = withDefaults(defineProps<DialogProps>(), {
 })
 
 const showConfirmationOnClose = ref(false);
+const confirmationTitleId = useId();
+
+const panelRef = ref<HTMLElement>();
+let focusBeforeOpen: HTMLElement | null = null;
+
+// focus goes into the dialog on open (unless the content already took it) and back to the trigger on close
+watch(isModalOpen, async (open) => {
+  if (open) {
+    focusBeforeOpen = document.activeElement as HTMLElement | null;
+    await nextTick();
+    if (!panelRef.value!.contains(document.activeElement)) {
+      panelRef.value!.focus({ preventScroll: true });
+    }
+  } else {
+    focusBeforeOpen?.focus({ preventScroll: true });
+  }
+});
 
 
 async function open() {

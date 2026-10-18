@@ -476,6 +476,11 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
 :where(#afcl-feedback) .mini-main{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px}
 :where(#afcl-feedback) .mini-main span{height:8px;border-radius:4px;background:var(--surface-3)}
 :where(#afcl-feedback) .mini-scrim{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:16px}
+:where(#afcl-feedback) .mini-phone{position:relative;width:240px;max-width:100%;height:400px;border-radius:24px;overflow:hidden;border:1px solid var(--border-strong);background:var(--bg)}
+:where(#afcl-feedback) .mini-phone .mini-main{height:100%;padding:36px 12px 12px}
+:where(#afcl-feedback) .mini-scrim-dock{align-items:flex-end;padding:0}
+:where(#afcl-feedback) .dlg-sheet{width:100%;border-radius:16px 16px 0 0}
+:where(#afcl-feedback) .dlg-sheet .dlg-foot{flex-direction:column-reverse;padding:0 20px 20px;border-top:0;background:none}
 :where(#afcl-feedback) .tip-wrap{display:flex;flex-direction:column;align-items:center;gap:0}
 :where(#afcl-feedback) .arrow{width:8px;height:8px;transform:rotate(45deg);margin-top:-4px;background:var(--ink)}
 :where(#afcl-feedback) .arrow-up{margin-top:0;margin-bottom:-4px}
@@ -671,6 +676,7 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       <div class="map"><div><code>accent</code></div><div><code>lightPrimary · lightCheckboxBgChecked · lightToggleBgActive · lightInputFocusBorder · lightProgressBarFilledColor · lightDatePickerCalendarDateActiveButtonBackground</code></div></div>
       <div class="map"><div><code>ring</code></div><div><code>lightFocusRing · lightInputFocusRing · lightButtonFocusRing · lightToggleRing (accent at 26%)</code></div></div>
       <div class="map"><div><code>danger</code></div><div><code>lightAcceptModalConfirmButtonBackground · lightInputErrorColor · lightRequiredIconColor</code></div></div>
+      <div class="map"><div><code>scrim</code></div><div><code>lightScrim</code></div></div>
     </div>
   </section>
 </div>
@@ -2460,7 +2466,7 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
   </div>
 
   <section class="sec">
-    <div class="sec-head"><span class="sec-name">&lt;Dialog&gt;</span><span class="t-sm t-muted">confirm · destructive · form</span></div>
+    <div class="sec-head"><span class="sec-name">&lt;Dialog&gt;</span><span class="t-sm t-muted">confirm · destructive · form · sheet on phones</span></div>
     <div class="grid3">
       <div class="tile">
         <div class="tile-stage stage-dlg">
@@ -2500,6 +2506,30 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       </div>
     </div>
     <div class="grid2">
+      <div class="tile">
+        <div class="tile-stage stage-dlg">
+          <div class="dlg" role="dialog" aria-label="Dialog without header" style="width: 100%; max-width: 360px">
+            <div class="dlg-body" style="padding-top: 20px; display: flex; flex-direction: column; gap: 12px"><p>This is the first paragraph of dialog content.</p><p>And this is the second paragraph.</p></div>
+            <div class="dlg-foot"><button class="btn btn-secondary" type="button">Close</button></div>
+          </div>
+        </div>
+        <div class="tile-cap"><b>No header, built-in Close</b><code>secondary</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage stage-dlg">
+          <div class="mini-phone">
+            <div class="mini-main"><span style="width: 40%"></span><span></span><span></span><span style="width: 70%"></span><span></span><span></span></div>
+            <div class="mini-scrim mini-scrim-dock">
+              <div class="dlg dlg-sheet" role="dialog" aria-label="Approve listings on a phone">
+                <div class="dlg-head"><h3 class="t-h2">Approve 2 listings?</h3><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Close"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+                <div class="dlg-body">Aether Nimbus S and Cinder Kiln Coupe will become visible on the public site.</div>
+                <div class="dlg-foot"><button class="btn btn-secondary" type="button">Cancel</button><button class="btn btn-primary" type="button">Approve</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tile-cap"><b>Phone sheet</b><code>below sm, main action on top</code></div>
+      </div>
     </div>
   </section>
 

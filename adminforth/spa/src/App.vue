@@ -144,7 +144,7 @@
 
     <div v-if="sideBarOpen"
          @click="hideSidebar"
-         drawer-backdrop="" class="bg-zinc-900/30 dark:bg-black/60 fixed inset-0 z-20">
+         drawer-backdrop="" class="bg-lightScrim dark:bg-darkScrim fixed inset-0 z-20">
     </div>
 
     <component

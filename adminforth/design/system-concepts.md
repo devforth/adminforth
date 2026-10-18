@@ -6,7 +6,7 @@ Rules for the AdminForth UI (the "Hairline" theme). States and variants of every
 
 - Colors, shadows, radius and fonts are tokens in `adminforth/modules/styles.ts` (`light*` / `dark*` pairs, `alias:` points one token to another). Apps override them via `customization.styles`, so token names are a public contract: change values, never rename or remove tokens.
 - Components color themselves with tokens (`bg-lightListTableHeading dark:bg-darkListTableHeading`). Tailwind palette colors (`text-gray-400`, `bg-red-50`, `border-emerald-200`, `zinc-*`, …) are not used in core and plugins at all: they ignore `customization.styles` and drift from the theme. `black` and `white` appear only as a translucent tint over any surface (`hover:bg-black/5`), and only where no token fits.
-- Keep the token list short. Reuse a token with the same role before adding one: muted icons and secondary text `InputIconColor`, faint text and empty values (`-`) `InputPlaceholderText`, subtle fill `SecondaryDarken` / `SecondaryLighten`, a softer variant of a token is its opacity modifier (`stroke-lightPrimary/50`). Add a token for a new role, not for a new component, always as a `light*` / `dark*` pair.
+- Keep the token list short. Reuse a token with the same role before adding one: muted icons and secondary text `InputIconColor`, faint text and empty values (`-`) `InputPlaceholderText`, subtle fill `SecondaryDarken` / `SecondaryLighten`, page dimming behind dialogs, modals and drawers `Scrim` (a photo lightbox stays `bg-black/*`, it is dark in both themes), a softer variant of a token is its opacity modifier (`stroke-lightPrimary/50`). Add a token for a new role, not for a new component, always as a `light*` / `dark*` pair.
 - Statuses use `Success`, `Warning` and `Danger` tokens: the base one for text and icons, `*Soft` for the background, `*Border` for the border. Badges, alerts, toasts and diffs take them, e.g. `bg-lightSuccessSoft text-lightSuccess border-lightSuccessBorder`.
 - Gray ground, white surfaces, 1px hairline borders. Shadows only on layers that float above the page: popovers, menus, dialogs.
 - One ink (near-black) primary button for the main action of a screen, everything else is `secondary`, destructive actions are `danger`. The accent color is the `primary` token: links, focus rings, selection, active states.
@@ -28,6 +28,10 @@ Apps restyle and test AdminForth by `af-*` and `afcl-*` classes. A restyle never
 ## Disabled state
 
 A disabled control gets the native `disabled` attribute (`aria-disabled` on a link, which then has no `href`), not `pointer-events-none`: the attribute also blocks the keyboard and form submit, is announced by screen readers and does not pass the click to a parent. Hover styles are left out for a disabled control.
+
+## Dialogs on phones
+
+Below `sm` (640px) a Dialog or Modal docks to the bottom edge as a sheet: full width, 16px top corners, actions stacked full width with the last (main) one on top. Width classes an app passes (`class="w-96"`) apply from `sm` up. The panel and footer classes live in `afcl/dialogStyles.ts`, so an overlay built on `Modal` gets the sheet without extra code.
 
 ## Lucide icons
 

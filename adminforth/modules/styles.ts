@@ -248,6 +248,7 @@ export const styles = () => ({
     lightVerticalTabsBackgroundActive: "#ECECEE",
     lightVerticalTabsSlotText: "#3F3F46",
 
+    lightScrim: "rgba(24, 24, 27, 0.32)", // page dimming behind dialogs, modals and drawers
     lightDialogBackgorund: "#FFFFFF",
     lightDialogBreakLine: "#E4E4E7",
     lightDialogHeaderText: "#18181B",
@@ -613,6 +614,7 @@ export const styles = () => ({
     darkVerticalTabsBackgroundActive: "#27272B",
     darkVerticalTabsSlotText: "#D4D4D8",
 
+    darkScrim: "rgba(0, 0, 0, 0.6)",
     darkDialogBackgorund: "#151517",
     darkDialogBreakLine: "#29292E",
     darkDialogHeaderText: "#F4F4F5",

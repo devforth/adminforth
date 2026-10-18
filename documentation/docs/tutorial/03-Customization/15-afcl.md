@@ -665,6 +665,8 @@ import { Dialog, Button } from '@/afcl'
 
 </AfclPreview>
 
+On screens narrower than 640px the dialog docks to the bottom edge as a sheet: it takes the full width, and footer buttons stack with the last one on top. Width classes like `w-96` apply from 640px up.
+
 ### Header
 
 You can add header to the dialog by using header prop.
@@ -2583,6 +2585,8 @@ import { Modal, Button } from '@/afcl';
 ```
 
 </AfclPreview>
+
+Like Dialog, the modal docks to the bottom edge as a full-width sheet on screens narrower than 640px.
 
 ### Open state
 
