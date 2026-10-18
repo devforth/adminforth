@@ -1,7 +1,7 @@
 import { type ClassNameValue } from 'tailwind-merge';
 import { mergeClasses } from './classMerge';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'danger-soft' | 'ghost';
 
 export type ButtonSize = 'md' | 'sm';
 
@@ -36,6 +36,12 @@ const variantStyles: Record<ButtonVariant, string> = {
     border-transparent
   `,
 
+  // a quieter destructive action which sits next to secondary buttons, e.g. Remove on a card
+  'danger-soft': `
+    text-lightDanger bg-lightSecondary border-lightDangerBorder focus-visible:ring-lightDanger/20
+    dark:text-darkDanger dark:bg-darkSecondary dark:border-darkDangerBorder dark:focus-visible:ring-darkDanger/30
+  `,
+
   ghost: `
     bg-transparent border-transparent text-lightInputIconColor focus-visible:ring-lightFocusRing
     dark:text-darkInputIconColor dark:focus-visible:ring-darkFocusRing
@@ -55,6 +61,9 @@ const variantHoverStyles: Record<ButtonVariant, string> = {
   danger: `
     hover:bg-lightAcceptModalConfirmButtonBackgroundHover hover:border-transparent
     dark:hover:bg-darkAcceptModalConfirmButtonBackgroundHover
+  `,
+  'danger-soft': `
+    hover:bg-lightDangerSoft dark:hover:bg-darkDangerSoft
   `,
   ghost: `
     hover:bg-lightSecondaryDarken hover:text-lightInputText

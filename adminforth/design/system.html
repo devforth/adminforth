@@ -190,6 +190,15 @@
 .input.is-error { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-ring); }
 .input.is-disabled { background: var(--surface-2); color: var(--faint); box-shadow: none; }
 .input.is-disabled > input { color: var(--faint); }
+/* CodeInput — one field drawn as digit cells */
+.code { display: inline-flex; align-items: center; gap: 8px; }
+.code-cell { display: flex; align-items: center; justify-content: center; width: 44px; height: 48px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; box-shadow: var(--shadow-xs); }
+.code-cell.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring); }
+.code.is-error .code-cell { border-color: var(--danger); }
+.code.is-error .code-cell.is-focus { box-shadow: 0 0 0 3px var(--danger-ring); }
+.code.is-disabled { opacity: .5; }
+.code-sep { width: 12px; height: 2px; border-radius: 999px; background: var(--border-strong); }
+.code-caret { width: 1px; height: 24px; background: var(--text); }
 .input .i { color: var(--muted); }
 .affix { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .affix-box { align-self: stretch; display: flex; align-items: center; padding: 0 10px; margin: 0 -10px; background: var(--surface-2); color: var(--muted); font-size: 13px; }
@@ -1653,8 +1662,11 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
             <button class="btn btn-danger" type="button">Delete</button>
             <button class="btn btn-danger is-disabled" type="button">Delete</button>
           </div>
+          <div class="row">
+            <button class="btn btn-danger-soft" type="button">Remove</button>
+          </div>
         </div>
-        <div class="tile-cap"><b>Danger</b><code>variant="danger"</code></div>
+        <div class="tile-cap"><b>Danger</b><code>variant="danger" · "danger-soft"</code></div>
       </div>
       <div class="tile">
         <div class="tile-stage">
@@ -1907,6 +1919,31 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       <div class="tile">
         <div class="tile-stage"><div class="fld"><span class="label">Generated summary</span><label class="input textarea is-disabled"><textarea rows="4" aria-label="Generated summary" disabled>Compact hybrid hatch with low mileage and a clean history.</textarea></label></div></div>
         <div class="tile-cap"><b>Disabled</b><code>readonly</code></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="sec-name">&lt;CodeInput&gt;</span><span class="t-sm t-muted">one field drawn as cells · autofill and paste fill the whole code</span></div>
+    <div class="grid3">
+      <div class="tile">
+        <div class="tile-stage center"><div class="code" role="img" aria-label="Empty code, focused"><span class="code-cell is-focus"><span class="code-caret"></span></span><span class="code-cell"></span><span class="code-cell"></span><span class="code-sep"></span><span class="code-cell"></span><span class="code-cell"></span><span class="code-cell"></span></div></div>
+        <div class="tile-cap"><b>Focus</b><code>autofocus · groupSize="3"</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage center"><div class="code" role="img" aria-label="Code being typed"><span class="code-cell">4</span><span class="code-cell">8</span><span class="code-cell">1</span><span class="code-sep"></span><span class="code-cell is-focus"><span class="code-caret"></span></span><span class="code-cell"></span><span class="code-cell"></span></div></div>
+        <div class="tile-cap"><b>Typing</b><code>v-model · @complete</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage center">
+          <div class="code is-error" role="img" aria-label="Wrong code"><span class="code-cell is-focus"><span class="code-caret"></span></span><span class="code-cell"></span><span class="code-cell"></span><span class="code-sep"></span><span class="code-cell"></span><span class="code-cell"></span><span class="code-cell"></span></div>
+          <span class="err">Wrong or expired code</span>
+        </div>
+        <div class="tile-cap"><b>Error</b><code>invalid · clear()</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage center"><div class="code is-disabled" role="img" aria-label="Disabled code"><span class="code-cell">4</span><span class="code-cell">8</span><span class="code-cell">1</span><span class="code-sep"></span><span class="code-cell">2</span><span class="code-cell">0</span><span class="code-cell">9</span></div></div>
+        <div class="tile-cap"><b>Disabled</b><code>disabled</code></div>
       </div>
     </div>
   </section>

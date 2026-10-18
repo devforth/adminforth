@@ -40,7 +40,7 @@ loader prop would show loader when it's true.
 
 ### Variant
 
-The `variant` prop controls the button style. Possible values are `primary` (default), `secondary`, `danger` and `ghost`. A `ghost` button has no border and no background until hover, use it for quiet actions like icons in table rows.
+The `variant` prop controls the button style. Possible values are `primary` (default), `secondary`, `danger`, `danger-soft` and `ghost`. `danger-soft` is a quieter destructive action with a red outline, e.g. Remove on a card next to secondary buttons. A `ghost` button has no border and no background until hover, use it for quiet actions like icons in table rows.
 
 <AfclPreview id="button-variant">
 
@@ -54,6 +54,9 @@ The `variant` prop controls the button style. Possible values are `primary` (def
   </Button>
   <Button @click="doSmth" variant="danger">
     Danger button
+  </Button>
+  <Button @click="doSmth" variant="danger-soft">
+    Danger soft button
   </Button>
   <Button @click="doSmth" variant="ghost">
     Ghost button
@@ -189,6 +192,8 @@ import { Link } from '@/afcl'
 ```
 
 </AfclPreview>
+
+A `to` with a scheme (`https://`, `mailto:`, `tel:`, `otpauth:`) renders a plain link which leaves the app, other values are routes.
 
 ## LinkButton
 
@@ -405,6 +410,54 @@ import { IconSearch } from '@iconify-prerendered/vue-lucide'
 ```
 
 </AfclPreview>
+
+## Code Input
+
+An input for one-time codes, e.g. a 6-digit code from an authenticator app. It is one real field drawn as cells, so password managers and the browser fill the whole code at once, a pasted code with spaces or a dash (`123 456`) is cleaned, and screen readers read one field. Only digits are kept, `complete` is emitted when the last digit is entered.
+
+<AfclPreview id="code-input">
+
+```js
+import { ref } from 'vue'
+import { CodeInput } from '@/afcl'
+
+const code = ref('')
+const checked = ref('')
+```
+
+```html
+<div class="flex flex-col gap-3">
+  <CodeInput v-model="code" :groupSize="3" @complete="checked = $event" />
+  <p class="text-sm">Completed code: {{ checked || '-' }}</p>
+</div>
+```
+
+</AfclPreview>
+
+`invalid` paints the cells red, e.g. after a wrong code:
+
+<AfclPreview id="code-input-invalid">
+
+```html
+<CodeInput modelValue="1234" :groupSize="3" invalid />
+```
+
+</AfclPreview>
+
+Props:
+
+```ts
+  length?: number // number of digits, 6 by default
+  groupSize?: number // draws a dash after every groupSize digits, 0 (default) draws none
+  invalid?: boolean
+  disabled?: boolean
+  autofocus?: boolean // focuses the field once it is shown, also inside a dialog
+  // the code is the main control of the screen or dialog: after a click anywhere, e.g. on a copy button,
+  // the focus comes back to it, Tab still moves on, and a code pasted anywhere on the page fills it
+  keepFocus?: boolean
+```
+
+Attributes like `id`, `name` and `aria-labelledby` go to the field. Through a template ref the component exposes `focus()` and `clear()`, which empties the field and focuses it, e.g. after the server rejected the code.
 
 ## Textarea
 
