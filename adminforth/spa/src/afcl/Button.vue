@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { Spinner } from '@/afcl';
+import Spinner from './Spinner.vue';
 import { computed, useAttrs } from 'vue';
 import { type ClassNameValue } from 'tailwind-merge';
 import { getButtonClasses, type ButtonVariant, type ButtonSize } from './buttonStyles';

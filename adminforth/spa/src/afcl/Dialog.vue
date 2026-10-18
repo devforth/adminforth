@@ -68,7 +68,7 @@
 import Button from "./Button.vue";
 import { IconX } from '@iconify-prerendered/vue-lucide';
 import { ref, computed, useId, type Ref } from 'vue';
-import { Modal } from '@/afcl'
+import Modal from './Modal.vue';
 import { dialogFooterClasses } from './dialogStyles';
 import { useI18n } from "vue-i18n";
 
