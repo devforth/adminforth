@@ -5,18 +5,20 @@
 <title>OAuth sign-in</title>
 <link rel="stylesheet" href="previews.css">
 <style>
-  .oauth { width: 44px; height: 44px; }
-  .oauth svg { width: 20px; height: 20px; }
+  .or { display: flex; align-items: center; gap: 12px; font-size: 12px; line-height: 16px; color: var(--muted); }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .oauth { width: auto; }
+  .oauth svg { width: 18px; height: 18px; }
 </style>
 </head>
 <body>
-<!-- core LoginView with the provider buttons of the OAuth plugin (iconOnly) under the login button -->
+<!-- core LoginView on DialogPanel with the provider buttons of the OAuth plugin (iconOnly) under an "or" divider -->
 <div class="screen center">
-  <div style="width: 368px; background: var(--surface); border-radius: 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1)">
-    <div style="padding: 20px; border-bottom: 1px solid var(--border)">
-      <h3 style="font-size: 20px; line-height: 28px; font-weight: 600">Sign in to My Admin</h3>
+  <div style="width: 368px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-xs)">
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--border)">
+      <h3 style="font-size: 18px; line-height: 24px; font-weight: 600">Sign in to My Admin</h3>
     </div>
-    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; font-size: 14px">
+    <div style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px; font-size: 14px">
       <div>
         <div style="margin-bottom: 8px; font-weight: 500">Your email</div>
         <div class="input">adminforth</div>
@@ -25,9 +27,9 @@
         <div style="margin-bottom: 8px; font-weight: 500">Your password</div>
         <div class="input" style="justify-content: space-between; letter-spacing: 2px">••••••••••<svg class="i"><use href="icons.svg#eye"/></svg></div>
       </div>
-      <div style="display: flex; align-items: center; gap: 8px; color: var(--text-2)"><input class="cb" type="checkbox" checked>Remember me</div>
       <div class="btn btn-primary">Login to your account</div>
-      <div style="display: flex; justify-content: center; gap: 12px">
+      <div class="or">or continue with</div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
         <div class="btn btn-secondary btn-icon oauth" style="color: var(--text)"><svg><use href="brands.svg#github"/></svg></div>
         <div class="btn btn-secondary btn-icon oauth"><svg><use href="brands.svg#google"/></svg></div>
         <div class="btn btn-secondary btn-icon oauth"><svg><use href="brands.svg#facebook"/></svg></div>
