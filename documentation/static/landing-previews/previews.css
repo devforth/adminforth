@@ -134,6 +134,8 @@ button { font: inherit; }
 .kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; line-height: 1; }
 .btn-primary .kbd { background: transparent; border-color: rgba(127, 127, 127, .35); color: inherit; opacity: .7; }
 .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--accent); color: #FFFFFF; }
+/* primary with its contrast color, like lightPrimary / darkPrimary and their *Contrast tokens */
+:root.dark .count { background: var(--accent-fg); color: var(--bg); }
 .btn-primary .count { background: var(--on-ink); color: var(--ink); }
 
 /* links */
@@ -197,6 +199,7 @@ button { font: inherit; }
 .nav.is-on { background: var(--surface-3); color: var(--text); font-weight: 500; }
 .nav.is-on .i { color: var(--text); }
 .nav .trail { margin-left: auto; color: var(--faint); }
+.nav .count { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; font-weight: 500; }
 .nav-head { padding: 14px 10px 6px; font-size: 12px; font-weight: 500; color: var(--muted); }
 .nav-sep { height: 1px; background: var(--border); margin: 8px 10px; }
 

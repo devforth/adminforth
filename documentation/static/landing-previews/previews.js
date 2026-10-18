@@ -26,7 +26,7 @@ for (const side of document.querySelectorAll('.side')) {
     if (item.heading) {
       return `<div class="nav-sep"></div>${rail ? '' : `<div class="nav-head">${item.heading}</div>`}`;
     }
-    const text = rail ? '' : `${item.label}${item.badge ? `<span class="count trail">${item.badge}</span>` : ''}`;
+    const text = rail ? '' : `${item.label}${item.badge ? `<span class="count">${item.badge}</span>` : ''}`;
     return `<span class="nav${item.label === side.dataset.active ? ' is-on' : ''}">${icon(item.icon)}${text}</span>`;
   });
   const logo = `<svg><use href="brands.svg#${side.dataset.logo ?? 'adminforth'}"/></svg>`;
