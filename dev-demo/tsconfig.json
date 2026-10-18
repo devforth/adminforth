@@ -4,7 +4,18 @@
     "module": "nodenext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "strict": true,
+    // Why: dev-demo takes every plugin from ../plugins, so local changes show up at once.
+    // i18n-static is the only plugin which needs another plugin at runtime: it does
+    // `import { I18nBase } from "@adminforth/i18n"`, and without this line that import would load
+    // the npm copy of i18n from plugins/adminforth-i18n-static/node_modules, not the local one.
+    // What: tsx follows "paths", so here the import goes to the local i18n sources instead.
+    // For the record: this comes from the architecture decision done in (AdminForth/1609)
+    // to build i18n-static on I18nBase shared from the i18n plugin.
+    // probably there might be better re-architect approach to move both to common part
+    "paths": {
+      "@adminforth/i18n": ["../plugins/adminforth-i18n/index.ts"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }
