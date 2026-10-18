@@ -193,12 +193,6 @@ export const admin = new AdminForth({
       icon: 'flowbite:chart-pie-solid',
       component: '@@/AfComponents.vue',
       path: '/af-components',
-      itemId: 'menuTimestamp',
-      badge: async (adminUser: AdminUser, adminForth: IAdminForth) => {
-        const now = new Date();
-        return now.getSeconds();
-      },
-      badgeTooltip: 'Seconds in current minute',  
     },
     {
       label: 'Dashboard',
@@ -218,6 +212,9 @@ export const admin = new AdminForth({
         {
           label: 'Cars (SQLITE)',
           resourceId: 'cars_sl',
+          itemId: 'carsSqliteUnlisted',
+          badge: async (adminUser: AdminUser, adminForth: IAdminForth) => adminForth.resource('cars_sl').count([Filters.EQ('listed', false)]),
+          badgeTooltip: 'Cars waiting for listing approval',
         },
         {
           label: 'Cars (MySQL)',

@@ -82,7 +82,7 @@ export function initApi(app: Express, admin: IAdminForth) {
       },
       admin.express.authorize(
         async (req: IAdminUserExpressRequest, res: Response) => {
-          admin.refreshMenuBadge('menuTimestamp', req.adminUser);
+          admin.refreshMenuBadge('carsSqliteUnlisted', req.adminUser);
           const cars_sqlite_list = await admin.resource('cars_sl').list( [Filters.EQ('id', '0')] );
           console.log('cars_sqlite_list', cars_sqlite_list);
           const cars_pg_list = await admin.resource('cars_pg').list( [Filters.EQ('id', '0')] );
