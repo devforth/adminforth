@@ -67,7 +67,7 @@
                 >
                 </slot>
                 <span v-else-if="!isLoading || props.isLoading" >
-                  {{ item[column.fieldName] }}
+                  {{ getByPath(item, column.fieldName) }}
                 </span>
                 <div v-else>
                   <div class=" w-full">
@@ -338,10 +338,13 @@ function getAriaSort(col:{fieldName:string; sortable?:boolean}) {
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
+// fieldName may be a dot path into nested objects, e.g. 'user.address.city'
+function getByPath(o:any, p:string) {
+  return p.split('.').reduce((a:any,k)=>a?.[k], o);
+}
+
 function sortArrayData(data:any[], sortField?:string, dir:'asc'|'desc'='asc') {
   if (!sortField) return data;
-  // Helper function to get nested properties by path
-  const getByPath = (o:any, p:string) => p.split('.').reduce((a:any,k)=>a?.[k], o);
   return [...data].sort((a,b) => {
     const av = getByPath(a, sortField), bv = getByPath(b, sortField);
     // Handle null/undefined values
