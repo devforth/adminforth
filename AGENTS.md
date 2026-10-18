@@ -6,6 +6,10 @@
 All packages and projects in this repo use `pnpm` and not `npm`. 
 Howeverer internally (e.g. in `codeInjector`) adminforth still supports both `npm` and `pnpm` style install commands, so users of framework itself can use it with either package manager. But in all dev demo/live demo, plugins, adapters, and documentation, we use `pnpm` as the standard.
 
+## SPA build folder
+
+Never patch anything in `spa_tmp` (e.g. `/tmp/adminforth/<app>/spa_tmp`): no file edits, no `pnpm install`, no own vite or other commands there. `codeInjector` generates it from `adminforth/spa` and the custom components of the app and its plugins, a manual install there drops the packages it adds for plugins. After a change in `spa/package.json` or `spa/tailwind.config.js` the running app breaks until a restart, tell the user to restart it.
+
 ## Package names rules
 
 
