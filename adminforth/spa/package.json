@@ -55,7 +55,6 @@
     "eslint": "^8.57.0",
     "eslint-plugin-vue": "^9.23.0",
     "flag-icons": "^7.2.3",
-    "flowbite": "^3.1.2",
     "i18n-iso-countries": "^7.12.0",
     "npm-run-all2": "^9.0.2",
     "portfinder": "^1.0.32",

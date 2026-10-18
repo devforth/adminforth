@@ -35,7 +35,6 @@
       <template v-if="isResourceReady && checkboxes.length" #selection>
         <Button
           @click="()=>{checkboxes = []}"
-          data-tooltip-target="tooltip-remove-all"
           variant="secondary"
           iconOnly
         >

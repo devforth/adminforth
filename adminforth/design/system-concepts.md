@@ -56,6 +56,8 @@ The header of the list page is a container named `header`. Below 896px (`@4xl/he
 
 flowbite is being removed step by step. Don't add new flowbite usages (`flowbite` JS components, `flowbite-datepicker`, `data-*-toggle` attributes). When you touch code which uses it, replace it with a native Vue implementation, usually an AFCL component. Example: the user menu moved from flowbite `Dropdown` to AFCL `DropdownMenu`.
 
+A floating layer is a `popover` element positioned by CSS anchor positioning, like `afcl/Tooltip.vue`. The top layer frees it from z-index and the overflow of parents. Browsers without anchor positioning (Safari before 26, Firefox before 147) get the position from `getBoundingClientRect` under `CSS.supports('anchor-name: --a')`.
+
 ## SPA dependencies
 
 Fonts and icons are dependencies of `adminforth/spa`. Apps install the SPA with npm or pnpm, so a new SPA dependency goes to both `spa/package-lock.json` and `spa/pnpm-lock.yaml`.

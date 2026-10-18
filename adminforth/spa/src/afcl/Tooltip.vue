@@ -1,87 +1,111 @@
 <template>
-  <div ref="triggerEl" class="afcl-tooltip inline-flex items-center" @mouseenter="mouseOn" @mouseleave="mouseOff">
+  <div ref="triggerEl" class="afcl-tooltip inline-flex items-center" :style="{ anchorName }" @mouseenter="show" @mouseleave="hide">
       <slot></slot>
   </div>
-  <teleport to="body" v-if="showTooltip">
+  <teleport to="body" v-if="isOpen">
     <div
+      ref="tooltipEl"
+      popover="manual"
       role="tooltip"
-      class="absolute z-[100] invisible inline-block px-2.5 py-1.5 text-xs font-medium text-lightTooltipText dark:text-darkTooltipText transition-opacity duration-150 bg-lightTooltipBackground rounded-md shadow-popover opacity-0 tooltip dark:bg-darkTooltipBackground dark:shadow-darkPopover"
-      ref="tooltip"
+      :data-placement="placement"
+      :style="{ positionAnchor: anchorName }"
+      class="afcl-tooltip-popover inline-block px-2.5 py-1.5 text-xs font-medium text-lightTooltipText dark:text-darkTooltipText transition-opacity duration-150 bg-lightTooltipBackground rounded-md shadow-popover dark:bg-darkTooltipBackground dark:shadow-darkPopover"
     >
       <slot name="tooltip"></slot>
-      <div class="tooltip-arrow" data-popper-arrow></div>
+      <div class="afcl-tooltip-arrow" :style="{ left: `${arrowLeft}px` }"></div>
     </div>
   </teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, type Ref } from 'vue';
-import { Tooltip } from 'flowbite';
+import { ref, nextTick, onBeforeUnmount, useId } from 'vue';
 
-const triggerEl = ref(null);
-const tooltip = ref(null);
-const showTooltip = ref(false);
-const tp: Ref<Tooltip|null> = ref(null);
+const OFFSET = 8;
+const SUPPORTS_ANCHOR = CSS.supports('anchor-name: --a');
 
-async function mouseOn() {
-  showTooltip.value = true;
+const anchorName = `--afcl-tooltip-${useId()}`;
+const triggerEl = ref<HTMLElement>();
+const tooltipEl = ref<HTMLElement>();
+const isOpen = ref(false);
+const placement = ref<'top' | 'bottom'>('bottom');
+const arrowLeft = ref(0);
+
+async function show() {
+  isOpen.value = true;
   await nextTick();
+  tooltipEl.value!.showPopover();
 
-  tp.value?.destroy();
+  const trigger = triggerEl.value!.getBoundingClientRect();
+  if (!SUPPORTS_ANCHOR) {
+    placeByRect(trigger);
+  }
+  const tooltip = tooltipEl.value!.getBoundingClientRect();
+  placement.value = tooltip.top < trigger.top ? 'top' : 'bottom';
+  arrowLeft.value = trigger.left + trigger.width / 2 - tooltip.left;
 
-  tp.value = new Tooltip(
-    tooltip.value,
-    triggerEl.value,
-    {
-      placement: 'bottom',
-      triggerType: 'hover',
-    },
-  );
-
-  tp.value.show();
+  document.addEventListener('keydown', onKeydown);
 }
 
-function mouseOff() {
-  tp.value?.hide();
-  tp.value?.destroy();
-  tp.value = null;
-  showTooltip.value = false;
+function hide() {
+  isOpen.value = false;
+  document.removeEventListener('keydown', onKeydown);
 }
 
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    hide();
+  }
+}
+
+// Safari before 26 and Firefox before 147 have no CSS anchor positioning
+function placeByRect(trigger: DOMRect) {
+  const el = tooltipEl.value!;
+  const { width, height } = el.getBoundingClientRect();
+  const fitsBelow = trigger.bottom + OFFSET + height <= window.innerHeight;
+  const top = fitsBelow ? trigger.bottom + OFFSET : trigger.top - OFFSET - height;
+  const left = Math.min(Math.max(trigger.left + (trigger.width - width) / 2, 0), window.innerWidth - width);
+  el.style.top = `${top}px`;
+  el.style.left = `${left}px`;
+}
+
+onBeforeUnmount(hide);
 </script>
 
 <style>
-.tooltip .tooltip-arrow,
-.tooltip .tooltip-arrow::before {
+/* popover puts the tooltip into the top layer, so no z-index and no clipping by overflow of the parents */
+.afcl-tooltip-popover {
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+}
+
+@supports (anchor-name: --a) {
+  .afcl-tooltip-popover {
+    position-area: bottom;
+    position-try-fallbacks: flip-block;
+    margin-top: 8px;
+  }
+}
+
+@starting-style {
+  .afcl-tooltip-popover {
+    opacity: 0;
+  }
+}
+
+.afcl-tooltip-arrow {
   position: absolute;
   width: 8px;
   height: 8px;
   background: inherit;
+  transform: translateX(-50%) rotate(45deg);
 }
 
-.tooltip .tooltip-arrow {
-  visibility: hidden;
-}
-
-.tooltip .tooltip-arrow::before {
-  visibility: visible;
-  content: '';
-  transform: rotate(45deg);
-}
-
-.tooltip[data-popper-placement^='top'] > .tooltip-arrow {
+.afcl-tooltip-popover[data-placement='top'] > .afcl-tooltip-arrow {
   bottom: -4px;
 }
 
-.tooltip[data-popper-placement^='bottom'] > .tooltip-arrow {
+.afcl-tooltip-popover[data-placement='bottom'] > .afcl-tooltip-arrow {
   top: -4px;
-}
-
-.tooltip[data-popper-placement^='left'] > .tooltip-arrow {
-  right: -4px;
-}
-
-.tooltip[data-popper-placement^='right'] > .tooltip-arrow {
-  left: -4px;
 }
 </style>
