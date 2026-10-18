@@ -1,6 +1,5 @@
 import { createApp, defineAsyncComponent } from 'vue';
 import { createRouter, createMemoryHistory } from 'vue-router';
-import * as afcl from '@/afcl';
 import { initI18n } from '@/i18n';
 import { coreStore } from './stubs';
 import '@fontsource-variable/geist';
@@ -24,14 +23,14 @@ syncTheme();
 new MutationObserver(syncTheme).observe(docsRoot, { attributeFilter: ['data-theme'] });
 
 const app = createApp(defineAsyncComponent(loadExample));
-Object.entries(afcl).forEach(([name, component]) => typeof component === 'object' && app.component(name, component));
 app.use(createRouter({ history: createMemoryHistory(), routes: [{ path: '/:path(.*)*', component: { render: () => null } }] }));
 initI18n(app);
 app.mount('#app');
 
 // the docs page sizes the iframe to the example, and asks for the height again once it listens
+// offsetHeight rounds a fractional height down as well, the frame then is a bit short and shows a scrollbar
 function postHeight() {
-  window.parent.postMessage({ afclPreview: id, height: document.body.offsetHeight }, '*');
+  window.parent.postMessage({ afclPreview: id, height: Math.ceil(document.body.getBoundingClientRect().height) }, '*');
 }
 new ResizeObserver(postHeight).observe(document.body);
 window.addEventListener('message', (e) => e.data === 'afclPreviewHeight' && postHeight());

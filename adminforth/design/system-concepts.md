@@ -22,7 +22,7 @@ Apps restyle and test AdminForth by `af-*` and `afcl-*` classes. A restyle never
 
 - Build UI in core and plugins from AFCL components (`@/afcl`). A plugin may adjust a few classes of a component via `class` or props like `contentClass`.
 - When the same piece of UI shows up in several places, or a piece clearly is a component, add it to AFCL instead of copying markup. Follow AFCL conventions: typed props with `withDefaults`, slots for content, `v-model` for state, `defineExpose` for an imperative API, `mergeClasses` for class overrides, tokens for colors, an `afcl-*` root class.
-- A new AFCL component gets a section in the AFCL docs (`documentation/docs/tutorial/03-Customization/15-afcl.md`) and its states and variants in [system.html](./system.html). Docs examples are live, not screenshots: wrap the code blocks of an example into `<AfclPreview id="...">` and the docs build renders them with real AFCL (see `documentation/afcl-preview/vite.config.ts`).
+- A new AFCL component gets a section on the page of its category in the AFCL docs (`documentation/docs/tutorial/03-Customization/15-afcl/`, a link in its `index.md` as well) and its states and variants in [system.html](./system.html). Docs examples are live, not screenshots: wrap the code blocks of an example into `<AfclPreview id="...">` and the docs build renders them with real AFCL (see `documentation/afcl-preview/vite.config.ts`). Nothing is registered globally, an example imports every AFCL component it uses from `@/afcl`, otherwise the build fails.
 - Example: `DropdownMenu` and `DropdownMenuItem` replaced the hand-made menus of the list (⋯ in the header and in rows), the user menu and the import-export plugin.
 
 ## Disabled state
