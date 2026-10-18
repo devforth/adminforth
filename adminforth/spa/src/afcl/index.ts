@@ -26,6 +26,7 @@ export { default as DatePicker } from './DatePicker.vue';
 export { default as Textarea } from './Textarea.vue';
 export { default as ButtonGroup } from './ButtonGroup.vue';
 export { default as Card } from './Card.vue';
+export { default as PageHeader } from './PageHeader.vue';
 export { default as Modal } from './Modal.vue';
 export { default as DropdownMenu } from './DropdownMenu.vue';
 export { default as DropdownMenuItem } from './DropdownMenuItem.vue';

@@ -1,20 +1,25 @@
 <template>
   <div class="md:flex">
-    <ul class="flex-column space-y-0.5 text-sm text-lightVerticalTabsText dark:text-darkVerticalTabsText md:me-4 mb-4 md:mb-0 md:mr-0 mr-6 md:min-w-[11rem]">
-      <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
-        <a 
-          v-if="!props.hideTabesWhenSingle || tabs.length > 1"
-          href="#"
-          @click="setActiveTab(tab)"
-          class="inline-flex items-center gap-2 px-3 py-2 rounded-default w-full transition-colors"
-          :class="tab === activeTab ? 'font-medium text-lightVerticalTabsTextActive bg-lightVerticalTabsBackgroundActive active dark:bg-darkVerticalTabsBackgroundActive dark:text-darkVerticalTabsTextActive' : 'text-lightVerticalTabsText dark:text-darkVerticalTabsText hover:text-lightVerticalTabsTextHover bg-lightVerticalTabsBackground hover:bg-lightVerticalTabsBackgroundHover dark:bg-darkVerticalTabsBackground dark:hover:bg-darkVerticalTabsBackgroundHover dark:hover:darkVerticalTabsTextHover'"
-          aria-current="page"
-        >
-          <slot :name="`tab:${tab}`"></slot>
-        </a>
-      </li>
-    </ul>
-    <div class="md:ps-6 md:border-s md:border-lightFormBorder dark:md:border-darkFormBorder text-sm text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText  w-full ">
+    <div :class="mergeClasses('md:me-4 mb-4 md:mb-0 mr-6 md:mr-0 md:min-w-[11rem]', tabsClass)">
+      <slot name="tabs-header"></slot>
+      <ul class="space-y-0.5 text-sm">
+        <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
+          <a
+            v-if="!props.hideTabesWhenSingle || tabs.length > 1"
+            href="#"
+            @click.prevent="setActiveTab(tab)"
+            class="flex items-center gap-2 w-full min-h-[34px] px-2.5 py-1.5 rounded-default transition-colors [&>svg]:shrink-0"
+            :class="tab === activeTab
+              ? 'font-medium text-lightVerticalTabsTextActive bg-lightVerticalTabsBackgroundActive dark:text-darkVerticalTabsTextActive dark:bg-darkVerticalTabsBackgroundActive'
+              : 'text-lightVerticalTabsText hover:text-lightVerticalTabsTextHover hover:bg-lightVerticalTabsBackgroundHover dark:text-darkVerticalTabsText dark:hover:text-darkVerticalTabsTextHover dark:hover:bg-darkVerticalTabsBackgroundHover [&>svg]:text-lightInputIconColor dark:[&>svg]:text-darkInputIconColor'"
+            :aria-current="tab === activeTab ? 'page' : undefined"
+          >
+            <slot :name="`tab:${tab}`"></slot>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div :class="mergeClasses('w-full md:ps-6 md:border-s md:border-lightFormBorder dark:md:border-darkFormBorder text-sm text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText', contentClass)">
       <slot :name="activeTab"></slot>
     </div>
   </div>
@@ -22,16 +27,19 @@
 
 <script setup lang="ts">
 import { onMounted, useSlots, ref, type Ref } from 'vue';
+import { type ClassNameValue } from 'tailwind-merge';
+import { mergeClasses } from './classMerge';
+
   const tabs : Ref<string[]> = ref([]);
   const activeTab = ref('');
-  const props = defineProps({
-    activeTab: {
-      type: String
-    },
-    hideTabesWhenSingle: {
-      type: Boolean,
-      default: false
-    }
+  const props = withDefaults(defineProps<{
+    activeTab?: string;
+    hideTabesWhenSingle?: boolean;
+    // override the default classes of the tab list column and of the content, e.g. paddings or the divider
+    tabsClass?: ClassNameValue;
+    contentClass?: ClassNameValue;
+  }>(), {
+    hideTabesWhenSingle: false,
   });
   const emites = defineEmits([
     'update:activeTab',

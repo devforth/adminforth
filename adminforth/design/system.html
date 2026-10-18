@@ -2315,6 +2315,33 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
   </section>
 
   <section class="sec">
+    <div class="sec-head"><span class="sec-name">&lt;PageHeader&gt;</span><span class="t-sm t-muted">title · description · actions on the right, they wrap under the text on narrow screens</span></div>
+    <div class="grid2">
+      <div class="tile">
+        <div class="tile-stage top">
+          <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; width: 100%">
+            <div style="flex: 1 1 200px; min-width: 0">
+              <div style="font-size: 18px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; color: var(--text)">MCP</div>
+              <p class="t-sm t-muted" style="margin: 4px 0 0">Connect an AI agent to dev-demo. It acts on your behalf with your permissions.</p>
+            </div>
+            <button class="btn btn-primary" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Connect agent</button>
+          </div>
+        </div>
+        <div class="tile-cap"><b>With action</b><code>#actions</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage top">
+          <div style="width: 100%">
+            <div style="font-size: 18px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; color: var(--text)">Connected accounts</div>
+            <p class="t-sm t-muted" style="margin: 4px 0 0">Connect an external account to sign in without a password.</p>
+          </div>
+        </div>
+        <div class="tile-cap"><b>Text only</b><code>title · description</code></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
     <div class="sec-head"><span class="sec-name">&lt;VerticalTabs&gt;</span><span class="t-sm t-muted">gray pill marks the active tab, same as the sidebar</span></div>
     <div class="grid3">
       <div class="tile">
@@ -2344,6 +2371,23 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       </div>
     </div>
     <div class="grid2">
+      <div class="tile">
+        <div class="tile-stage top soft">
+          <div class="card" style="display: flex; width: 100%; min-height: 180px; overflow: hidden; border-radius: 12px">
+            <div style="width: 180px; flex-shrink: 0; padding: 14px 10px; background: var(--bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px">
+              <div style="padding: 0 10px 10px"><div class="t-h3">Settings</div><div class="t-muted" style="font-size: 12px; line-height: 16px">Signed in as adminforth</div></div>
+              <button class="vtab" type="button" role="tab"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>Connected accounts</button>
+              <button class="vtab is-on" type="button" role="tab"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"></path><path d="M10 19v-3.96 3.15"></path><path d="M7 19h5"></path><rect width="6" height="10" x="16" y="12" rx="2"></rect></svg>Active sessions</button>
+              <button class="vtab" type="button" role="tab"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>MCP</button>
+            </div>
+            <div style="flex: 1; min-width: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px">
+              <div style="font-size: 15px; line-height: 22px; font-weight: 600; color: var(--text)">Active sessions</div>
+              <p class="t-sm t-muted" style="margin: 0">Every browser you signed in from has its own session.</p>
+            </div>
+          </div>
+        </div>
+        <div class="tile-cap"><b>In a card (settings page)</b><code>tabsClass · contentClass · #tabs-header</code></div>
+      </div>
     </div>
   </section>
 

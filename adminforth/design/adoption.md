@@ -27,8 +27,8 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/login-captcha | |
 | @adminforth/many2many | |
 | @adminforth/markdown | |
-| @adminforth/mcp | |
-| @adminforth/oauth | |
+| @adminforth/mcp | ✓ |
+| @adminforth/oauth | ✓ |
 | @adminforth/open-signup | |
 | @adminforth/quick-filters | ✓ |
 | @adminforth/rich-editor | |
@@ -36,7 +36,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/two-factors-auth | |
 | @adminforth/universal-search | |
 | @adminforth/upload | |
-| @adminforth/user-sessions | |
+| @adminforth/user-sessions | ✓ |
 | @adminforth/user-soft-delete | |
 
 ## Releasing an adapted plugin

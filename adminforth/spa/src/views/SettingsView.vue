@@ -1,19 +1,33 @@
 <template>
-  <div class="mt-20 h-full w-full" :class="{ 'hidden': initialTabSet === false }">
-    <div v-if="!coreStore?.config?.settingPages?.filter(page => page.isVisible) || coreStore?.config?.settingPages.length === 0">
+  <div class="h-full w-full px-4 py-6 md:px-10" :class="{ 'hidden': initialTabSet === false }">
+    <div v-if="!visiblePages.length">
       <p>{{ $t('No setting pages configured or still loading...') }}</p>
     </div>
-      <VerticalTabs v-else ref="VerticalTabsRef" hideTabesWhenSingle v-model:active-tab="activeTab" @update:active-tab="setURL({slug: $event, pageLabel: ''})">
-      <template v-for="(c,i) in coreStore?.config?.settingPages.filter(page => page.isVisible)" :key="`tab:${settingPageSlotName(c,i)}`" v-slot:['tab:'+c.slug]>
-        <div class="flex items-center justify-center whitespace-nowrap w-full px-4 gap-2" @click="setURL(c)">
-          <component v-if="c.icon" :is="getIcon(c.icon)" class="w-5 h-5 group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
-          {{ c.pageLabel }}
+    <!-- settings are one card: tabs on a tinted pane at the left, the page of the active tab at the right -->
+    <VerticalTabs
+      v-else
+      ref="VerticalTabsRef"
+      v-model:active-tab="activeTab"
+      class="md:min-h-[40rem] overflow-hidden rounded-xl border border-lightCardBorder bg-lightCardBackground dark:border-darkCardBorder dark:bg-darkCardBackground"
+      tabsClass="m-0 md:m-0 md:w-64 md:shrink-0 px-3 py-4 md:py-5 border-b md:border-b-0 md:border-e border-lightCardBorder dark:border-darkCardBorder bg-lightVerticalTabsBackground dark:bg-darkVerticalTabsBackground"
+      contentClass="min-w-0 p-5 md:py-6 md:ps-7 md:pe-7 md:border-s-0"
+      @update:active-tab="setURL({slug: $event, pageLabel: ''})"
+    >
+      <template #tabs-header>
+        <div class="px-2.5 pb-4">
+          <h1 class="text-[15px] font-semibold leading-snug text-lightCardTitle dark:text-darkCardTitle">{{ $t('Settings') }}</h1>
+          <p class="mt-0.5 truncate text-xs text-lightCardDescription dark:text-darkCardDescription">{{ $t('Signed in as {username}', { username: coreStore.username }) }}</p>
         </div>
       </template>
 
-      <template v-for="(c,i) in coreStore?.config?.settingPages.filter(page => page.isVisible)" :key="`${settingPageSlotName(c,i)}-content`" v-slot:[c.slug]>
-        <component 
-          :is="getCustomComponent({file: c.component || ''})"
+      <template v-for="page in visiblePages" v-slot:['tab:'+page.slug]>
+        <component v-if="page.icon" :is="getIcon(page.icon)" class="w-4 h-4"></component>
+        <span class="min-w-0 truncate">{{ page.pageLabel }}</span>
+      </template>
+
+      <template v-for="page in visiblePages" v-slot:[page.slug]>
+        <component
+          :is="getCustomComponent({file: page.component || ''})"
           :resource="coreStore.resource"
           :adminUser="coreStore.adminUser"
         />
@@ -23,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCoreStore } from '@/stores/core';
 import { getCustomComponent, getIcon } from '@/utils';
@@ -39,6 +53,7 @@ const loginRedirectCheckIsReady = ref(false);
 const VerticalTabsRef = ref();
 const activeTab = ref('');
 const initialTabSet = ref(false);
+const visiblePages = computed(() => coreStore.config?.settingPages?.filter(page => page.isVisible) ?? []);
 
 watch(() => route?.params?.page, (val) => {
   handleURLChange(val as string | null);

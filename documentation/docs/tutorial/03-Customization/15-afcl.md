@@ -485,6 +485,45 @@ import { IconCircleUser, IconLayoutGrid } from '@iconify-prerendered/vue-lucide'
 
 </AfclPreview>
 
+### In a card
+
+`tabsClass` and `contentClass` add classes to the column of tabs and to the content, they override the default ones (the margins of the column, the padding and the divider of the content). The `tabs-header` slot goes above the tabs. This is how the settings page puts its tabs on a tinted pane of a card:
+
+<AfclPreview id="vertical-tabs-card">
+
+```js
+import { VerticalTabs } from '@/afcl'
+import { IconLink, IconMonitorSmartphone } from '@iconify-prerendered/vue-lucide'
+```
+
+```html
+<VerticalTabs
+  class="overflow-hidden rounded-xl border border-lightCardBorder bg-lightCardBackground dark:border-darkCardBorder dark:bg-darkCardBackground"
+  tabsClass="m-0 md:m-0 md:w-64 px-3 py-4 border-b md:border-b-0 md:border-e border-lightCardBorder dark:border-darkCardBorder bg-lightVerticalTabsBackground dark:bg-darkVerticalTabsBackground"
+  contentClass="p-5 md:ps-6 md:border-s-0"
+>
+  <template #tabs-header>
+    <p class="px-2.5 pb-3 font-semibold text-lightCardTitle dark:text-darkCardTitle">Settings</p>
+  </template>
+  <template #tab:accounts>
+    <IconLink class="w-4 h-4" />
+    Connected accounts
+  </template>
+  <template #tab:sessions>
+    <IconMonitorSmartphone class="w-4 h-4" />
+    Active sessions
+  </template>
+  <template #accounts>
+    Connected accounts content
+  </template>
+  <template #sessions>
+    Active sessions content
+  </template>
+</VerticalTabs>
+```
+
+</AfclPreview>
+
 ## Checkbox
 
 <AfclPreview id="checkbox">
@@ -553,6 +592,33 @@ import { Card } from '@/afcl'
   >
   </Card>
 </div>
+```
+
+</AfclPreview>
+
+## Page Header
+
+Title of a page or of a section with a description and actions on the right (`afcl-page-header`). The actions wrap under the text on narrow screens. Settings pages of plugins start with it.
+
+<AfclPreview id="page-header">
+
+```js
+import { Button, PageHeader } from '@/afcl'
+import { IconPlus } from '@iconify-prerendered/vue-lucide'
+```
+
+```html
+<PageHeader
+  title="MCP"
+  description="Connect an AI agent to your admin panel. It acts on your behalf with your permissions."
+>
+  <template #actions>
+    <Button>
+      <IconPlus class="w-4 h-4" />
+      Connect agent
+    </Button>
+  </template>
+</PageHeader>
 ```
 
 </AfclPreview>
