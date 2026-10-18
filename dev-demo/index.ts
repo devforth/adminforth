@@ -114,12 +114,18 @@ export const admin = new AdminForth({
             text:'white'
           },
         },
+        // graphite: near-black neutral ground, muted sidebar and a white accent instead of a brand color
         dark: {
-          primary: '#8a158d',
+          primary: '#E5E5E5',
+          html: '#0A0A0A',
+          navbar: '#0A0A0A',
+          list: '#0A0A0A',
           sidebar: {
-            main:'#8a158d', 
-            text:'white'
+            main: '#0A0A0A',
+            text: '#A3A3A3'
           },
+          announcementBG: '#262626',
+          announcementText: '#E5E5E5',
         }
       }
     }
@@ -230,9 +236,6 @@ export const admin = new AdminForth({
           resourceId: 'cars_ch',
         }
       ],
-    },
-    {
-      type: 'divider'
     },
     {
       type: 'gap'
