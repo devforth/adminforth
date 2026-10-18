@@ -13,12 +13,14 @@
   .tool-ok { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--success-soft); color: var(--success); }
   .tool-ok .i { width: 12px; height: 12px; }
   .chart { overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  /* the chart as the agent draws it with its Vega-Lite theme: tokens, slot 1 of the palette, 4px rounded bar tops */
   .vt { fill: var(--text); font-size: 13px; font-weight: 600; }
-  .vl { fill: var(--text-2); }
-  .va { fill: var(--text); font-size: 11px; font-weight: 600; }
-  .vg { stroke: var(--grid); }
-  .vd { stroke: var(--faint); }
-  .vb { fill: #4C78A8; }
+  .vs { fill: var(--muted); font-size: 12px; }
+  .vl { fill: var(--muted); font-size: 11px; }
+  .va { fill: var(--muted); font-size: 11px; font-weight: 500; }
+  .vg { stroke: var(--border); fill: none; }
+  .vd { stroke: var(--border-strong); fill: none; }
+  .vb { fill: var(--c1); }
   .mic { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; gap: 2px; border-radius: 50%; color: var(--muted); }
   .mic span { width: 3px; border-radius: 2px; background: currentColor; }
 </style>
@@ -80,44 +82,29 @@
           <p style="margin-bottom: 8px">Here is the price distribution of 101 apartments:</p>
           <div class="chart">
             <div style="display: flex; justify-content: flex-end; padding: 4px; border-bottom: 1px solid var(--border); background: var(--bg)"><span class="t-xs t-muted" style="height: 24px; display: flex; align-items: center; padding: 0 8px; font-weight: 500">Copy</span></div>
-            <div style="padding: 12px">
-              <svg width="424" height="206" viewBox="0 0 424 206" style="display: block; font-size: 10px">
-              <text x="229.0" y="13" text-anchor="middle" class="vt">Apartment prices</text>
-              <line x1="40" x2="418" y1="166.0" y2="166.0" class="vg"/>
-              <text x="35" y="169.5" text-anchor="end" class="vl">0</text>
-              <line x1="40" x2="418" y1="131.0" y2="131.0" class="vg"/>
-              <text x="35" y="134.5" text-anchor="end" class="vl">4</text>
-              <line x1="40" x2="418" y1="96.0" y2="96.0" class="vg"/>
-              <text x="35" y="99.5" text-anchor="end" class="vl">8</text>
-              <line x1="40" x2="418" y1="61.0" y2="61.0" class="vg"/>
-              <text x="35" y="64.5" text-anchor="end" class="vl">12</text>
-              <line x1="40" x2="418" y1="26.0" y2="26.0" class="vg"/>
-              <text x="35" y="29.5" text-anchor="end" class="vl">16</text>
-              <rect x="43.8" y="26.0" width="30.2" height="140.0" class="vb"/>
-              <text x="58.9" y="179" text-anchor="middle" class="vl">$1k</text>
-              <rect x="81.6" y="87.2" width="30.2" height="78.8" class="vb"/>
-              <text x="96.7" y="179" text-anchor="middle" class="vl">$2k</text>
-              <rect x="119.4" y="131.0" width="30.2" height="35.0" class="vb"/>
-              <text x="134.5" y="179" text-anchor="middle" class="vl">$3k</text>
-              <rect x="157.2" y="69.8" width="30.2" height="96.2" class="vb"/>
-              <text x="172.3" y="179" text-anchor="middle" class="vl">$4k</text>
-              <rect x="195.0" y="43.5" width="30.2" height="122.5" class="vb"/>
-              <text x="210.1" y="179" text-anchor="middle" class="vl">$5k</text>
-              <rect x="232.8" y="113.5" width="30.2" height="52.5" class="vb"/>
-              <text x="247.9" y="179" text-anchor="middle" class="vl">$6k</text>
-              <rect x="270.6" y="87.2" width="30.2" height="78.8" class="vb"/>
-              <text x="285.7" y="179" text-anchor="middle" class="vl">$7k</text>
-              <rect x="308.4" y="61.0" width="30.2" height="105.0" class="vb"/>
-              <text x="323.5" y="179" text-anchor="middle" class="vl">$8k</text>
-              <rect x="346.2" y="78.5" width="30.2" height="87.5" class="vb"/>
-              <text x="361.3" y="179" text-anchor="middle" class="vl">$9k</text>
-              <rect x="384.0" y="78.5" width="30.2" height="87.5" class="vb"/>
-              <text x="399.1" y="179" text-anchor="middle" class="vl">$10k</text>
-              <line x1="40" x2="418" y1="166" y2="166" class="vd"/>
-              <text x="229.0" y="202" text-anchor="middle" class="va">Price, USD</text>
-              <text transform="translate(10 96.0) rotate(-90)" text-anchor="middle" class="va">Apartments</text>
+              <svg width="446" height="230" viewBox="0 0 446 230" style="display: block">
+              <text x="12.4" y="22" class="vt">Apartment prices</text>
+              <text x="12.4" y="36" class="vs">101 apartments in $1k price buckets</text>
+              <path d="M50.5 62.5H434.5M50.5 102.5H434.5M50.5 142.5H434.5" class="vg"/>
+              <path d="M55.76 182V58a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM94.16 182V114a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM132.56 182V154a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM170.96 182V98a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM209.36 182V74a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM247.76 182V138a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM286.16 182V114a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM324.56 182V90a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM362.96 182V106a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182ZM401.36 182V106a4 4 0 0 1 4 -4h18.88a4 4 0 0 1 4 4V182Z" class="vb"/>
+              <path d="M50.5 182.5H434.5" class="vd"/>
+              <text x="44.5" y="185.5" text-anchor="end" class="vl">0</text>
+              <text x="44.5" y="145.5" text-anchor="end" class="vl">5</text>
+              <text x="44.5" y="105.5" text-anchor="end" class="vl">10</text>
+              <text x="44.5" y="65.5" text-anchor="end" class="vl">15</text>
+              <text x="69.2" y="197.5" text-anchor="middle" class="vl">$1k</text>
+              <text x="107.6" y="197.5" text-anchor="middle" class="vl">$2k</text>
+              <text x="146.0" y="197.5" text-anchor="middle" class="vl">$3k</text>
+              <text x="184.4" y="197.5" text-anchor="middle" class="vl">$4k</text>
+              <text x="222.8" y="197.5" text-anchor="middle" class="vl">$5k</text>
+              <text x="261.2" y="197.5" text-anchor="middle" class="vl">$6k</text>
+              <text x="299.6" y="197.5" text-anchor="middle" class="vl">$7k</text>
+              <text x="338.0" y="197.5" text-anchor="middle" class="vl">$8k</text>
+              <text x="376.4" y="197.5" text-anchor="middle" class="vl">$9k</text>
+              <text x="414.8" y="197.5" text-anchor="middle" class="vl">$10k</text>
+              <text x="242.5" y="216.5" text-anchor="middle" class="va">Price, USD</text>
+              <text transform="translate(21.9 118.5) rotate(-90)" text-anchor="middle" class="va">Apartments</text>
               </svg>
-            </div>
           </div>
           <p style="margin-top: 8px">Most apartments cost from $1k to $2k or from $4k to $5k.</p>
         </div>
