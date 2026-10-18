@@ -111,7 +111,7 @@ const images: GalleryItem[] = [
     description: 'Manage users and roles with ease, extend as you like'
   },
   {
-    original: require('@site/static/img/previews/translate.png').default,
+    preview: 'i18n',
     title: 'LLM-based Translation Plugin - translate your admin and External apps',
     link: '/docs/tutorial/Plugins/i18n/',
     description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'

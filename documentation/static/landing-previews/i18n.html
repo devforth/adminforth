@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Translations</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .flag { width: 16px; height: 12px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .1); flex: none; }
+  .dark .flag { box-shadow: 0 0 0 1px rgba(255, 255, 255, .1); }
+  .avatar.is-open { box-shadow: 0 0 0 3px var(--ring); }
+  .pop-sep { height: 1px; margin: 4px 0; background: var(--border); }
+  .um .mi { min-height: 34px; padding: 0 10px; font-size: 13.5px; color: var(--text); }
+  .um .mi.sub { min-height: 30px; padding-left: 36px; font-size: 13px; color: var(--text-2); }
+  .um .mi.is-open { background: var(--surface-2); }
+  .um .mi.danger { color: var(--danger-fg); }
+  .missing { color: var(--muted); }
+</style>
+</head>
+<body>
+<!-- translations resource of the i18n plugin: every string of the panel with its translations, the user menu is open on the language list -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side rail" data-active="Translations"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar is-open"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Translations</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#list-filter"/></svg>Filter</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr>
+            <th style="width: 48px"><input class="cb" type="checkbox"></th>
+            <th style="width: 1%">Fully translated</th>
+            <th><span class="sort">English<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">Ukrainian<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">German<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="badge badge-success">Yes</span></td>
+            <td>Click to upload</td>
+            <td>Натисніть, щоб завантажити</td>
+            <td>Zum Hochladen klicken</td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="badge badge-success">Yes</span></td>
+            <td>or drag and drop</td>
+            <td>або перетягніть сюди</td>
+            <td>oder hierher ziehen</td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="badge badge-success">Yes</span></td>
+            <td>Search</td>
+            <td>Пошук</td>
+            <td>Suchen</td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="badge badge-success">Yes</span></td>
+            <td>No results found</td>
+            <td>Нічого не знайдено</td>
+            <td>Keine Ergebnisse</td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="badge badge-success">Yes</span></td>
+            <td>Remove item</td>
+            <td>Видалити елемент</td>
+            <td>Element entfernen</td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="badge badge-muted">No</span></td>
+            <td>Show time</td>
+            <td class="missing">-</td>
+            <td class="missing">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+  <div class="pop um" style="position: absolute; top: 52px; right: 20px; width: 232px">
+    <div style="padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 1px">
+      <span style="font-size: 13.5px; font-weight: 500; color: var(--text)">adminforth</span>
+      <span class="t-xs t-muted">Super admin</span>
+    </div>
+    <div class="pop-sep"></div>
+    <span class="mi is-open"><img class="flag" src="flags/us.svg" alt="">English<svg class="i trail" style="rotate: 180deg"><use href="icons.svg#chevron-down"/></svg></span>
+    <span class="mi sub"><img class="flag" src="flags/ua.svg" alt="">Українська</span>
+    <span class="mi sub is-hover"><img class="flag" src="flags/de.svg" alt="">Deutsch</span>
+    <span class="mi sub"><img class="flag" src="flags/fr.svg" alt="">Français</span>
+    <span class="mi sub"><img class="flag" src="flags/jp.svg" alt="">日本語</span>
+    <span class="mi">Settings<svg class="i trail"><use href="icons.svg#chevron-down"/></svg></span>
+    <div class="pop-sep"></div>
+    <span class="mi danger">Log out</span>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>
