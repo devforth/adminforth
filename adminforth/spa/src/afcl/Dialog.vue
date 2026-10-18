@@ -18,37 +18,35 @@
     <!-- Modal header -->
     <div
       v-if="header"
-      class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-darkDialogBreakLine border-lightDialogBreakLine"
+      class="flex items-center justify-between px-5 py-4 border-b rounded-t-xl dark:border-darkDialogBreakLine border-lightDialogBreakLine"
     >
-      <h3 class="text-xl font-semibold text-lightDialogHeaderText dark:text-darkDialogHeaderText">
+      <h3 class="text-base font-semibold text-lightDialogHeaderText dark:text-darkDialogHeaderText">
         {{ header }}
       </h3>
       <button
         v-if="headerCloseButton"
         type="button"
-        class="text-lightDialogCloseButton bg-transparent hover:bg-lightDialogCloseButtonHoverBackground hover:text-lightDialogCloseButtonHover rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:text-darkDialogCloseButton dark:hover:bg-darkDialogCloseButtonHoverBackground dark:hover:text-darkDialogCloseButtonHover"
+        class="text-lightDialogCloseButton bg-transparent hover:bg-lightDialogCloseButtonHoverBackground hover:text-lightDialogCloseButtonHover rounded-default text-sm w-7 h-7 ms-auto inline-flex justify-center items-center focus:outline-none focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing dark:text-darkDialogCloseButton dark:hover:bg-darkDialogCloseButtonHoverBackground dark:hover:text-darkDialogCloseButtonHover"
         @click="tryToCancelModal"
       >
-        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-        </svg>
+        <IconX class="w-4 h-4" aria-hidden="true" />
         <span class="sr-only">{{ t('Close Modal') }}</span>
       </button>
     </div>
     <!-- Modal body -->
-    <div class="p-4 md:p-5 text-lightDialogBodyText dark:text-darkDialogBodyText">
+    <div class="px-5 py-4 text-sm text-lightDialogBodyText dark:text-darkDialogBodyText">
       <slot></slot>
     </div>
     <!-- Modal footer -->
     <div
       v-if="buttons.length"
-      class="flex items-center p-4 md:p-5 border-t border-lightDialogBreakLine rounded-b dark:border-darkDialogBreakLine"
+      class="flex items-center justify-end flex-wrap gap-y-2 px-5 py-3 border-t border-lightDialogBreakLine rounded-b-xl bg-lightFormHeading dark:bg-darkFormHeading dark:border-darkDialogBreakLine"
     >
       <Button
         v-for="(button, buttonIndex) in buttons"
         :key="buttonIndex"
         v-bind="button.options"
-        :class="{ 'ms-3': buttonIndex > 0 }"
+        :class="{ 'ms-2': buttonIndex > 0 }"
         @click="button.onclick(dialog)"
         :mode="button.options?.mode || 'primary'"
       >
@@ -60,6 +58,7 @@
 
 <script setup lang="ts">
 import Button from "./Button.vue";
+import { IconX } from '@iconify-prerendered/vue-lucide';
 import { ref, computed, type Ref } from 'vue';
 import { Modal } from '@/afcl'
 import { useI18n } from "vue-i18n";

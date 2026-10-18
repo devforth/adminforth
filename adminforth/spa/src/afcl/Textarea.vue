@@ -1,7 +1,7 @@
 <template>
   <textarea
     ref="input"
-    class="afcl-textarea bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm rounded-default block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
+    class="afcl-textarea bg-lightInputBackground border border-lightInputBorder text-lightInputText placeholder-lightInputPlaceholderText text-sm leading-5 rounded-default block w-full px-2.5 py-2 shadow-customLight hover:border-lightInputBorderHover dark:hover:border-darkInputBorderHover dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkInputText dark:border-darkInputBorder focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder transition-colors"
     :class="`${readonly ? 'opacity-50' : ''} ${isIos ? 'text-md' : 'text-sm'}`"
     :placeholder="placeholder"
     :value="modelValue"

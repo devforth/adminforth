@@ -6,39 +6,37 @@
       backgroundCustomClasses="z-[998]"
       modalCustomClasses="z-[999] flex items-center justify-center" 
     >
-      <div class="relative p-6 sm:p-8 sm:w-[440px] rounded-lg shadow-xl bg-lightAcceptModalBackground dark:bg-darkAcceptModalBackground" >
+      <div class="relative p-6 sm:w-[420px] rounded-xl shadow-popover dark:shadow-darkPopover bg-lightAcceptModalBackground dark:bg-darkAcceptModalBackground" >
         
-        <button type="button" @click="modalStore.togleModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors dark:hover:text-white" >
-          <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-          </svg>
+        <button type="button" @click="modalStore.togleModal()" class="absolute top-3 right-3 p-1.5 rounded-default text-lightAcceptModalCloseIcon hover:text-lightAcceptModalCloseIconHover hover:bg-lightAcceptModalCloseIconHoverBackground dark:text-darkAcceptModalCloseIcon dark:hover:text-darkAcceptModalCloseIconHover dark:hover:bg-darkAcceptModalCloseIconHoverBackground transition-colors" >
+          <IconX class="w-4 h-4" />
         </button>
 
         <div class="text-center flex flex-col">
-          <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-4 relative"
-            :class="modalStore.modalContent.dangerous ? 'bg-red-50 dark:bg-red-900/20' : 'bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity'">
-            <IconClipboardDocumentSolid class="w-10 h-10"
-              :class="modalStore.modalContent.dangerous ? 'text-red-500' : 'text-lightButtonsBackground dark:text-darkButtonsBackground'" />
-            <div class="absolute bottom-1 right-1 rounded-default w-[18px] h-[18px] flex items-center justify-center border-2 border-white dark:border-gray-800"
-              :class="modalStore.modalContent.dangerous ? 'bg-red-500' : 'bg-lightButtonsBackground dark:bg-darkButtonsBackground'">
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl mb-4 relative"
+            :class="modalStore.modalContent.dangerous ? 'bg-lightDangerSoft dark:bg-darkDangerSoft' : 'bg-lightSecondaryDarken dark:bg-darkSecondaryLighten'">
+            <IconClipboardList class="w-6 h-6"
+              :class="modalStore.modalContent.dangerous ? 'text-lightAcceptModalWarningIcon dark:text-darkAcceptModalWarningIcon' : 'text-lightButtonsBackground dark:text-darkButtonsBackground'" />
+            <div class="absolute -bottom-1 -right-1 rounded-full w-[18px] h-[18px] flex items-center justify-center border-2 border-lightAcceptModalBackground dark:border-darkAcceptModalBackground"
+              :class="modalStore.modalContent.dangerous ? 'bg-lightAcceptModalConfirmButtonBackground dark:bg-darkAcceptModalConfirmButtonBackground' : 'bg-lightButtonsBackground dark:bg-darkButtonsBackground'">
                 <span class="text-lightButtonsText dark:text-darkButtonsText text-[10px] font-medium">!</span>
             </div>
           </div>
           
           <div class="flex flex-col gap-3">
-            <h3 v-if="modalStore?.modalContent?.title" class="text-2xl font-bold text-gray-900 dark:text-white">
+            <h3 v-if="modalStore?.modalContent?.title" class="text-lg font-semibold tracking-tight text-lightDialogHeaderText dark:text-darkDialogHeaderText">
               {{ modalStore.modalContent.title }}
             </h3>
             
-            <div class="text-[15px] text-gray-600 dark:text-gray-300">
-              <div v-if="modalStore?.modalContent?.contentHTML" class="font-medium" v-html="modalStore.modalContent.contentHTML"></div>
-              <p v-else-if="modalStore?.modalContent?.content" class="font-medium">{{ modalStore.modalContent.content }}</p>
+            <div class="text-sm text-lightAcceptModalText dark:text-darkAcceptModalText">
+              <div v-if="modalStore?.modalContent?.contentHTML" v-html="modalStore.modalContent.contentHTML"></div>
+              <p v-else-if="modalStore?.modalContent?.content">{{ modalStore.modalContent.content }}</p>
             </div>
           </div>
 
-          <hr class="border-t-2 border-gray-300 dark:border-gray-500 my-6">
+          <hr class="border-t border-lightDialogBreakLine dark:border-darkDialogBreakLine my-5">
 
-          <div class="flex justify-center gap-4 w-full">
+          <div class="flex justify-center gap-2 w-full">
             <Button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" variant="secondary" class="flex-1">
                 {{ modalStore?.modalContent?.cancelText }}
             </Button>
@@ -52,7 +50,7 @@
             </Button>
           </div>
 
-          <div v-if="modalStore?.modalContent?.guardMessage" class="flex items-center justify-center mt-6 text-xs text-gray-400 gap-1.5 font-medium">
+          <div v-if="modalStore?.modalContent?.guardMessage" class="flex items-center justify-center mt-5 text-xs text-lightAcceptModalText dark:text-darkAcceptModalText gap-1.5 font-medium">
             <IconShieldCheck class="w-4 h-4" />
             <span> {{ modalStore?.modalContent?.guardMessage }}</span>
           </div>
@@ -67,7 +65,7 @@
 import { watch, ref } from 'vue';
 import { useModalStore } from '@/stores/modal';
 import { Button, Modal } from '@/afcl';
-import { IconClipboardDocumentSolid, IconShieldCheck } from '@iconify-prerendered/vue-heroicons';
+import { IconClipboardList, IconShieldCheck, IconX } from '@iconify-prerendered/vue-lucide';
 
 
 const modalRef = ref();

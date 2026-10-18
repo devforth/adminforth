@@ -1,15 +1,15 @@
 <template>
-  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow dark:shadow-2xl border dark:border-darkFormBorder">
-    <div v-if="group.groupName && !group.noTitle" class="text-md font-semibold px-6 py-3 flex flex-1 items-center dark:border-darkFormBorder text-lightListTableHeadingText bg-lightFormHeading dark:bg-darkFormHeading dark:text-darkListTableHeadingText rounded-t-lg">
+  <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border border-lightFormBorder bg-lightForm dark:bg-darkForm dark:border-darkFormBorder">
+    <div v-if="group.groupName && !group.noTitle" class="text-sm font-semibold px-5 py-3 flex flex-1 items-center border-b border-lightFormBorder dark:border-darkFormBorder text-lightFormFieldTextColor bg-lightFormHeading dark:bg-darkFormHeading dark:text-darkFormFieldTextColor rounded-t-lg">
       {{ group.groupName }}
     </div>
     <table class="w-full text-sm text-left rtl:text-right text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">
-      <thead v-if="!allColumnsHaveCustomComponent" class="text-xs text-lightListTableHeadingText uppercase dark:text-darkListTableHeadingText bg-lightFormHeading dark:bg-darkFormHeading block md:table-row-group ">
+      <thead v-if="!allColumnsHaveCustomComponent" class="text-xs font-medium text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText bg-lightFormHeading dark:bg-darkFormHeading block md:table-row-group border-b border-lightFormBorder dark:border-darkFormBorder">
         <tr>
-          <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-6 py-3 hidden md:w-52 md:table-cell">
+          <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-5 py-2.5 font-medium hidden md:w-56 md:table-cell">
               {{ $t('Field') }}
           </th>
-          <th scope="col" :class="{'rounded-tr-lg': !group.groupName}" class="px-6 py-3 hidden md:table-cell">
+          <th scope="col" :class="{'rounded-tr-lg': !group.groupName}" class="px-5 py-2.5 font-medium hidden md:table-cell">
               {{ $t('Value') }}
           </th>
         </tr>
@@ -19,17 +19,17 @@
           v-for="(column, i) in group.columns"
           :key="column.name"
           v-if="currentValues !== null"
-          class="bg-lightForm dark:bg-darkForm dark:border-darkFormBorder block md:table-row"
+          class="bg-lightForm dark:bg-darkForm border-lightFormBorder dark:border-darkFormBorder block md:table-row"
           :class="{ 'border-b': i !== group.columns.length - 1}"
         >
-          <td class="px-6 py-4 flex items-center block pb-0 md:pb-4 relative md:table-cell" 
+          <td class="px-5 py-3 flex items-center block pb-0 md:pb-3 relative md:table-cell" 
               :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
-            <div class="absolute inset-0 flex items-center overflow-hidden px-6 py-4 max-h-32">
-              <span class="flex items-center gap-1">                     
+            <div class="absolute inset-0 flex items-center overflow-hidden px-5 py-3 max-h-32">
+              <span class="flex items-center gap-1 font-medium">                     
                 {{ column.label }}
                 <Tooltip v-if="column.required[mode]">
 
-                  <IconExclamationCircleSolid v-if="column.required[mode]" class="w-4 h-4" 
+                  <IconAsterisk v-if="column.required[mode]" class="w-3 h-3" 
                     :class="(columnsWithErrors[column.name] && validatingMode && !isValidating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
                   />
 
@@ -41,7 +41,7 @@
             </div>
           </td>
           <td
-            class="px-6 py-4  whitespace-pre-wrap relative block md:table-cell"
+            class="px-5 py-3  whitespace-pre-wrap relative block md:table-cell"
             :class="{'rounded-br-lg': i === group.columns.length - 1}"
           >
             <ColumnValueInputWrapper
@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-  import { IconExclamationCircleSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
+  import { IconAsterisk } from '@iconify-prerendered/vue-lucide';
   import { Tooltip } from '@/afcl';
   import { ref, computed, watch, nextTick, type Ref } from 'vue';
   import { useI18n } from 'vue-i18n';

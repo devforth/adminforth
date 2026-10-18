@@ -4,8 +4,9 @@
 
 <script setup lang="ts">
 import type ApexCharts from 'apexcharts';
-import { type ApexOptions } from 'apexcharts';
+import type { ApexOptions } from 'apexcharts';
 import { ref, type Ref, watch, computed, onUnmounted } from 'vue';
+import { CHART_COLORS, mergeChartOptions } from './chartUtils';
 type ApexChartsConstructor = new (el: Element, options: any) => ApexCharts;
 
 const chart: Ref<HTMLDivElement | null> = ref(null);
@@ -18,7 +19,7 @@ const props = defineProps<{
   series: {
     name: string,
     fieldName: string,
-    color: string,
+    color?: string,
   }[],
   options: ApexOptions,
 }>();
@@ -70,7 +71,7 @@ const optionsBase = {
     labels: {
       show: false,
       style: {
-        fontFamily: "Inter, sans-serif",
+        fontFamily: "'Geist Variable', ui-sans-serif, sans-serif",
         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
       },
       formatter: function (value: any) {
@@ -89,7 +90,7 @@ const optionsBase = {
     labels: {
       show: false,
       style: {
-        fontFamily: "Inter, sans-serif",
+        fontFamily: "'Geist Variable', ui-sans-serif, sans-serif",
         cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
       }
     }
@@ -119,9 +120,10 @@ const options = computed(() => {
     ...optionsBase,
    
     // shade and gradient take from first series
-    series: props.series.map((s) => ({
+    series: props.series.map((s, index) => ({
       data: props.data?.map((item) => item[s.fieldName]) ?? [],
       ...s,
+      color: s.color ?? CHART_COLORS[index],
     })),
     xaxis: {
       ...optionsBase.xaxis,
@@ -129,24 +131,7 @@ const options = computed(() => {
     },
   };
 
-  // for each of  ...props.options  merge on lowest level. so if { chart: {height : 2} }, it should not replace chart level, only height level
-  function mergeOptions(options: any, newOptions: any) {
-    if (!newOptions) {
-      return;
-    }
-    for (const key in newOptions) {
-      // and is not array
-      if (typeof newOptions[key] === 'object' && !Array.isArray(newOptions[key])) {
-        if (!options[key]) {
-          options[key] = {};
-        }
-        mergeOptions(options[key], newOptions[key]);
-      } else {
-        options[key] = newOptions[key];
-      }
-    }
-  }
-  mergeOptions(options, props.options);
+  mergeChartOptions(options, props.options);
 
   return options;
 });

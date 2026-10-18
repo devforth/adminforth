@@ -1,8 +1,8 @@
 <template>
   <div class="w-full mt-[36px]">
-    <div class="w-full border dark:border-darkFormBorder border-gray-200 rounded-lg overflow-hidden shadow-resourseFormShadow dark:shadow-darkResourseFormShadow bg-white dark:bg-darkForm">
+    <div class="w-full border dark:border-darkFormBorder border-lightFormBorder rounded-lg overflow-hidden shadow-resourseFormShadow dark:shadow-darkResourseFormShadow bg-lightForm dark:bg-darkForm">
       
-      <div class="flex px-6 items-center border-b border-gray-200 dark:border-darkFormBorder bg-lightFormHeading dark:bg-darkFormHeading h-[40px]">
+      <div class="flex px-5 items-center border-b border-lightFormBorder dark:border-darkFormBorder bg-lightFormHeading dark:bg-darkFormHeading h-[40px]">
         <div class="w-[208px] flex-shrink-0 pr-6 text-xs text-lightListTableHeadingText uppercase dark:text-darkListTableHeadingText font-bold">
           {{ $t('Field') }}
         </div>
@@ -14,7 +14,7 @@
       <div
         v-for="i in 10"
         :key="i"
-        class="flex items-center bg-lightForm dark:bg-darkForm border-b border-gray-100 dark:border-darkFormBorder h-[75px]"
+        class="flex items-center bg-lightForm dark:bg-darkForm border-b border-lightFormBorder dark:border-darkFormBorder h-[58px]"
       >
         <div class="w-[208px] flex-shrink-0 px-6 flex items-center">
           <Skeleton class="w-24 h-[10px]" />

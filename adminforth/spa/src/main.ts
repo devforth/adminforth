@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import '@fontsource-variable/geist'
+import '@fontsource-variable/geist-mono'
 /* IMPORTANT:ADMINFORTH IMPORTS */
 
 

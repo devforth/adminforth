@@ -1,20 +1,20 @@
 <template>
   <div class="md:flex">
-    <ul class="ps-6 flex-column space-y space-y-4 text-sm font-medium text-lightVerticalTabsText dark:text-darkVerticalTabsText md:me-4 mb-4 md:mb-0 md:mr-0 mr-6">
+    <ul class="flex-column space-y-0.5 text-sm text-lightVerticalTabsText dark:text-darkVerticalTabsText md:me-4 mb-4 md:mb-0 md:mr-0 mr-6 md:min-w-[11rem]">
       <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
         <a 
           v-if="!props.hideTabesWhenSingle || tabs.length > 1"
           href="#"
           @click="setActiveTab(tab)"
-          class="inline-flex items-center px-4 py-3 rounded-lg w-full"
-          :class="tab === activeTab ? 'text-lightVerticalTabsTextActive bg-lightVerticalTabsBackgroundActive active dark:bg-darkVerticalTabsBackgroundActive dark:text-darkVerticalTabsTextActive' : 'text-lightVerticalTabsText dark:text-darkVerticalTabsText hover:text-lightVerticalTabsTextHover bg-lightVerticalTabsBackground hover:bg-lightVerticalTabsBackgroundHover dark:bg-darkVerticalTabsBackground dark:hover:bg-darkVerticalTabsBackgroundHover dark:hover:darkVerticalTabsTextHover'"
+          class="inline-flex items-center gap-2 px-3 py-2 rounded-default w-full transition-colors"
+          :class="tab === activeTab ? 'font-medium text-lightVerticalTabsTextActive bg-lightVerticalTabsBackgroundActive active dark:bg-darkVerticalTabsBackgroundActive dark:text-darkVerticalTabsTextActive' : 'text-lightVerticalTabsText dark:text-darkVerticalTabsText hover:text-lightVerticalTabsTextHover bg-lightVerticalTabsBackground hover:bg-lightVerticalTabsBackgroundHover dark:bg-darkVerticalTabsBackground dark:hover:bg-darkVerticalTabsBackgroundHover dark:hover:darkVerticalTabsTextHover'"
           aria-current="page"
         >
           <slot :name="`tab:${tab}`"></slot>
         </a>
       </li>
     </ul>
-    <div class="ps-6 text-medium text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText  w-full ">
+    <div class="md:ps-6 md:border-s md:border-lightFormBorder dark:md:border-darkFormBorder text-sm text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText  w-full ">
       <slot :name="activeTab"></slot>
     </div>
   </div>

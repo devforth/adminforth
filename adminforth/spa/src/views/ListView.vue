@@ -12,7 +12,7 @@
     </Teleport>
 
     <component 
-      v-if="!coreStore.isResourceFetching && !initInProcess"
+      v-if="isResourceReady"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeBreadcrumbs as AdminForthComponentDeclaration[] || []"
       :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
@@ -21,125 +21,122 @@
     />
 
     <BreadcrumbsWithButtons>
-      <component 
-        v-if="!coreStore.isResourceFetching && !initInProcess"
-        v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons as AdminForthComponentDeclaration[] || []"
-        :is="getCustomComponent(formatComponent(c))"
-        :meta="(c as AdminForthComponentDeclarationFull).meta"
-        :resource="coreStore.resource"
-        :adminUser="coreStore.adminUser"
-        :checkboxes="checkboxes"
-        :clearCheckboxes="clearCheckboxes"
-      />
-      <Button
-        @click="()=>{checkboxes = []}"
-        v-if="checkboxes.length"
-        data-tooltip-target="tooltip-remove-all"
-        class="h-[2.125rem] px-2.5"
-        variant="secondary"
-      >
-          <Tooltip>
-            <IconBanOutline class="w-5 h-5 "/>
-              <template #tooltip >
-                  Remove selection
-              </template>
-          </Tooltip>
-      </Button>
-
-      <div 
-        v-if="checkboxes.length"
-        v-for="(action,i) in coreStore.resource?.options?.bulkActions" 
-      >
+      <template v-if="isResourceReady">
+        <component 
+          v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons as AdminForthComponentDeclaration[] || []"
+          :is="getCustomComponent(formatComponent(c))"
+          :meta="(c as AdminForthComponentDeclarationFull).meta"
+          :resource="coreStore.resource"
+          :adminUser="coreStore.adminUser"
+          :checkboxes="checkboxes"
+          :clearCheckboxes="clearCheckboxes"
+        />
         <Button
-          v-if="!action.showInThreeDotsDropdown"
-          :key="action.id"
-          @click="startBulkActionInner(action.id!)"
-          class="h-[2.125rem] px-2.5"
-          :class="action.buttonCustomCssClass || ''"
+          @click="()=>{checkboxes = []}"
+          v-if="checkboxes.length"
+          data-tooltip-target="tooltip-remove-all"
           variant="secondary"
+          iconOnly
         >
-          <component
-            v-if="action.icon && !bulkActionLoadingStates[action.id!]"
-            :is="getIcon(action.icon)"
-            class="w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:group-hover:text-white"></component>
-            <Spinner
-              v-if="bulkActionLoadingStates[action.id!]"
-              class="w-5 h-5 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
-            />
-          {{ `${action.label} (${checkboxes.length})` }}
-          <div v-if="action.badge" class="text-white bg-gradient-to-r from-purple-500 
-          via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none
-           focus:ring-purple-300 dark:focus:ring-purple-800 
-            font-medium rounded-default text-xs px-1 ml-1 text-center ">
-            {{ action.badge }}            
-          </div>
+            <Tooltip>
+              <IconBan class="w-4 h-4"/>
+                <template #tooltip >
+                    Remove selection
+                </template>
+            </Tooltip>
         </Button>
-      </div>
-      <div
-        v-if="checkboxes.length"
-        v-for="(action,i) in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)" 
-      >
-        <Button
-          :key="action.id"
-          @click="startCustomBulkActionInner(action.id!)"
-          class="h-[2.125rem] px-2.5"
-          variant="secondary"
+
+        <div 
+          v-if="checkboxes.length"
+          v-for="(action,i) in coreStore.resource?.options?.bulkActions" 
         >
-          <component
-            v-if="action.icon && !customActionLoadingStates[action.id!]"
-            :is="getIcon(action.icon)"
-            class="w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:group-hover:text-white"></component>
-            <Spinner
-              v-if="customActionLoadingStates[action.id!]"
-              class="w-5 h-5 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
-            />
-            {{ `${action.name} (${checkboxes.length})` }}
-        </Button>
-      </div>
-
-      <LinkButton v-if="coreStore.resource?.options?.allowedActions?.create"
-        :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
-        class="af-create-button h-[2.125rem] px-2.5"
-      >
-        <IconPlusOutline class="w-4 h-4"/>
-        <span>{{ $t('Create') }}</span>
-      </LinkButton>
-
-      <Button
-        class="af-filter-button h-[2.125rem] px-3 py-3"
-        @click="()=>{filtersShow = !filtersShow}"
-        v-if="coreStore.resource?.options?.allowedActions?.filter"
-        variant="secondary"
-      >
-        <IconFilterOutline class="w-4 h-4"/>
-        <span>{{ $t('Filter') }}</span>
-        <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
-          <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
-              {{ filtersStore.visibleFiltersCount }}
-          </span>
-          
-          <div 
-            @click.stop="filtersStore.clearFilters()"
-            class="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+          <Button
+            v-if="!action.showInThreeDotsDropdown"
+            :key="action.id"
+            @click="startBulkActionInner(action.id!)"
+            class="h-[2.125rem] px-2.5"
+            :class="action.buttonCustomCssClass || ''"
+            variant="secondary"
           >
-            <IconCloseOutline class="w-4 h-4 text-red-500" />
-          </div>
+            <component
+              v-if="action.icon && !bulkActionLoadingStates[action.id!]"
+              :is="getIcon(action.icon)"
+              class="w-4 h-4 transition duration-75"></component>
+              <Spinner
+                v-if="bulkActionLoadingStates[action.id!]"
+                class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+              />
+            {{ `${action.label} (${checkboxes.length})` }}
+            <div v-if="action.badge" class="inline-flex items-center h-[1.125rem] px-1.5 ml-1 rounded-full bg-purple-600 text-white text-[11px] font-semibold">
+              {{ action.badge }}
+            </div>
+          </Button>
         </div>
-      </Button>
+        <div
+          v-if="checkboxes.length"
+          v-for="(action,i) in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)" 
+        >
+          <Button
+            :key="action.id"
+            @click="startCustomBulkActionInner(action.id!)"
+            class="h-[2.125rem] px-2.5"
+            variant="secondary"
+          >
+            <component
+              v-if="action.icon && !customActionLoadingStates[action.id!]"
+              :is="getIcon(action.icon)"
+              class="w-4 h-4 transition duration-75"></component>
+              <Spinner
+                v-if="customActionLoadingStates[action.id!]"
+                class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+              />
+              {{ `${action.name} (${checkboxes.length})` }}
+          </Button>
+        </div>
 
-      <ThreeDotsMenu 
-        v-if="!coreStore.isResourceFetching"
-        :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
-        :bulkActions="coreStore.resource?.options?.bulkActions"
-        :checkboxes="checkboxes"
-        @startBulkAction="startBulkActionInner"
-        :updateList="getListInner"
-        :clearCheckboxes="clearCheckboxes"
-        ></ThreeDotsMenu>
+        <LinkButton v-if="coreStore.resource?.options?.allowedActions?.create"
+          :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
+          class="af-create-button h-[2.125rem] px-2.5"
+        >
+          <IconPlus class="w-4 h-4"/>
+          <span>{{ $t('Create') }}</span>
+        </LinkButton>
+
+        <Button
+          class="af-filter-button h-[2.125rem] px-3 py-3"
+          @click="()=>{filtersShow = !filtersShow}"
+          v-if="coreStore.resource?.options?.allowedActions?.filter"
+          variant="secondary"
+        >
+          <IconListFilter class="w-4 h-4"/>
+          <span>{{ $t('Filter') }}</span>
+          <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
+            <span class="inline-flex items-center justify-center min-w-[1.125rem] h-[1.125rem] px-1 rounded-full text-[11px] font-semibold tabular-nums bg-lightPrimary text-lightPrimaryContrast dark:bg-darkPrimary dark:text-darkPrimaryContrast">
+                {{ filtersStore.visibleFiltersCount }}
+            </span>
+          
+            <div 
+              @click.stop="filtersStore.clearFilters()"
+              class="p-0.5 rounded text-lightInputIconColor hover:text-lightInputText hover:bg-lightButtonGroupBackgroundHover dark:text-darkInputIconColor dark:hover:text-darkInputText dark:hover:bg-darkButtonGroupBackgroundHover transition-colors"
+            >
+              <IconX class="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </Button>
+
+        <ThreeDotsMenu 
+          :threeDotsDropdownItems="(coreStore.resourceOptions?.pageInjections?.list?.threeDotsDropdownItems as [])"
+          :bulkActions="coreStore.resource?.options?.bulkActions"
+          :checkboxes="checkboxes"
+          @startBulkAction="startBulkActionInner"
+          :updateList="getListInner"
+          :clearCheckboxes="clearCheckboxes"
+          ></ThreeDotsMenu>
+      </template>
     </BreadcrumbsWithButtons>
 
     <component 
-      v-if="!coreStore.isResourceFetching && !initInProcess"
+      v-if="isResourceReady"
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.afterBreadcrumbs as AdminForthComponentDeclaration[] || []"
       :is="getCustomComponent(formatComponent(c))"
       :meta="(c as AdminForthComponentDeclarationFull).meta"
@@ -209,18 +206,18 @@ import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery, formatComponent, executeCustomBulkAction } from '@/utils';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCustomComponent, initThreeDotsDropdown, getList, startBulkAction } from '@/utils';
+import { getCustomComponent, getList, startBulkAction } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip, Spinner, Button, LinkButton } from '@/afcl'
 import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
 import { useI18n } from 'vue-i18n';
 
 import {
-  IconBanOutline,
-  IconFilterOutline,
-  IconPlusOutline,
-  IconCloseOutline
-} from '@iconify-prerendered/vue-flowbite';
+  IconBan,
+  IconListFilter,
+  IconPlus,
+  IconX
+} from '@iconify-prerendered/vue-lucide';
 
 import Filters from '@/components/Filters.vue';
 import { useAdminforth } from '@/adminforth';
@@ -232,6 +229,9 @@ const filtersStore = useFiltersStore();
 const { t } = useI18n();
 
 const route = useRoute();
+
+// previous resource stays in the store until the new one is applied, its injections must not render here
+const isResourceReady = computed(() => coreStore.resource?.resourceId === route.params.resourceId);
 
 const page = ref(1);
 const columnsMinMax = ref({});
@@ -524,7 +524,6 @@ watch(() => filtersStore.filters, async (to, from) => {
 onMounted(async () => {
   initInProcess = true;
   await init();
-  initThreeDotsDropdown();
   initInProcess = false;
 });
 

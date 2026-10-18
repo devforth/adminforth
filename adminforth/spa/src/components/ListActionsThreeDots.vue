@@ -1,115 +1,93 @@
 <template>
-  <div class="relative inline-block">
-    <div
-      ref="triggerRef"
-      class="border border-gray-300 dark:border-gray-700 dark:border-opacity-0 border-opacity-0 hover:border-opacity-100 dark:hover:border-opacity-100 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-      @click="toggleMenu"
-    >
-      <IconDotsHorizontalOutline class="w-6 h-6 text-lightPrimary dark:text-darkPrimary dark:brightness-150" />
-    </div>
-    <teleport to="body">
-      <div
-        v-if="showMenu"
-        ref="menuRef"
-        class="af-list-actions-three-dots z-40 bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 py-1"
-        :style="menuStyles"
-      >
-        <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('show'))">
-          <RouterLink
-            v-if="resourceOptions?.allowedActions?.show"
-            class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
-            :to="{
-              name: 'resource-show', 
-              params: { 
-                resourceId: props.resourceId, 
-                primaryKey: record._primaryKeyValue,
-              }
-            }"
+  <DropdownMenu
+    v-model:open="showMenu"
+    placement="bottom-end"
+    teleportToBody
+    :contentClass="['af-list-actions-three-dots z-40 min-w-[10rem]', THREE_DOTS_MENU_CONTENT_CLASSES]"
+  >
+    <template #trigger>
+      <Button variant="ghost" size="sm" iconOnly>
+        <IconEllipsis />
+      </Button>
+    </template>
 
-          >
-            <IconEyeSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
-            {{ $t('Show item') }}
-          </RouterLink>
-        </template>
-        <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('edit'))">
-          <RouterLink
-            v-if="resourceOptions?.allowedActions?.edit"
-            class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
-            :to="{ 
-              name: 'resource-edit', 
-              params: { 
-                resourceId: props.resourceId, 
-                primaryKey: record._primaryKeyValue,
-              }
-            }"
-          >
-            <IconPenSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
-            {{ $t('Edit item') }}
-          </RouterLink>
-        </template>
-        <template v-if="!resourceOptions?.baseActionsAsQuickIcons || (resourceOptions?.baseActionsAsQuickIcons && !resourceOptions?.baseActionsAsQuickIcons.includes('delete'))">
-          <button
-            v-if="resourceOptions?.allowedActions?.delete"
-            class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300"
-            @click="deleteRecord(record)"
-          >
-            <IconTrashBinSolid class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary"/>
-            {{ $t('Delete item') }}
-          </button>
-        </template>
-        <div v-for="action in (resourceOptions.actions ?? []).filter((a: AdminForthActionInput) => a.showIn?.listThreeDotsMenu)" :key="action.id" >
-            <button class="flex text-nowrap p-1 hover:bg-gray-100 dark:hover:bg-gray-800 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300" @click="() => { startCustomAction(action.id, record); showMenu = false; }">
-              <component
-                :is="action.customComponent ? getCustomComponent(action.customComponent) : CallActionWrapper"
-                :meta="action.customComponent?.meta"
-                :row="record"
-                :resource="coreStore.resource"
-                :adminUser="coreStore.adminUser"
-                @callAction="(payload? : Object) => startCustomAction(action.id, record, payload)"
-              >
-                <component
-                  v-if="action.icon"
-                  :is="getIcon(action.icon)"
-                  class="w-5 h-5 mr-2 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
-                />
-                {{ $t(action.name) }}
-              </component>               
-            </button>
-        </div>
-        <template v-if="customActionIconsThreeDotsMenuItems">
-            <component 
-                v-for="c in customActionIconsThreeDotsMenuItems"
-                :is="getCustomComponent(formatComponent(c))"
-                :meta="formatComponent(c).meta"
-                :resource="coreStore.resource" 
-                :adminUser="coreStore.adminUser"
-                :record="record"
-                :updateRecords="props.updateRecords"
-            />
-        </template>
-      </div>
-    </teleport>
-  </div>
+    <DropdownMenuItem
+      v-if="isBaseActionInMenu('show')"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      :to="{ name: 'resource-show', params: { resourceId: props.resourceId, primaryKey: record._primaryKeyValue } }"
+    >
+      <template #icon><IconEye /></template>
+      {{ $t('Show item') }}
+    </DropdownMenuItem>
+    <DropdownMenuItem
+      v-if="isBaseActionInMenu('edit')"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      :to="{ name: 'resource-edit', params: { resourceId: props.resourceId, primaryKey: record._primaryKeyValue } }"
+    >
+      <template #icon><IconPencil /></template>
+      {{ $t('Edit item') }}
+    </DropdownMenuItem>
+    <DropdownMenuItem
+      v-if="isBaseActionInMenu('delete')"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      @click="deleteRecord(record)"
+    >
+      <template #icon><IconTrash2 /></template>
+      {{ $t('Delete item') }}
+    </DropdownMenuItem>
+
+    <DropdownMenuItem
+      v-for="action in menuActions"
+      :key="action.id"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      @click="actionItemClick(action.id, $event)"
+    >
+      <component
+        :ref="(el: any) => { actionRefs[action.id] = el; }"
+        :is="action.customComponent ? getCustomComponent(formatComponent(action.customComponent)) : CallActionWrapper"
+        :meta="formatComponent(action.customComponent).meta"
+        :row="record"
+        :resource="coreStore.resource"
+        :adminUser="coreStore.adminUser"
+        @callAction="(payload? : Object) => startCustomAction(action.id, record, payload)"
+      >
+        <!-- preventDefault marks the click as handled by the action component -->
+        <span @click.prevent class="flex flex-1 items-center gap-2">
+          <component
+            v-if="action.icon"
+            :is="getIcon(action.icon)"
+            class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor"
+          />
+          {{ $t(action.name) }}
+        </span>
+      </component>
+    </DropdownMenuItem>
+
+    <component
+      v-for="c in customActionIconsThreeDotsMenuItems"
+      :is="getCustomComponent(formatComponent(c))"
+      :meta="formatComponent(c).meta"
+      :resource="coreStore.resource"
+      :adminUser="coreStore.adminUser"
+      :record="record"
+      :updateRecords="props.updateRecords"
+    />
+  </DropdownMenu>
 </template>
 
 <script lang="ts" setup>
-import {
-  IconEyeSolid,
-  IconPenSolid,
-  IconTrashBinSolid,
-  IconDotsHorizontalOutline
-} from '@iconify-prerendered/vue-flowbite';
-import { onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue';
+import { IconEye, IconPencil, IconTrash2, IconEllipsis } from '@iconify-prerendered/vue-lucide';
+import { computed, ref } from 'vue';
 import { getIcon, getCustomComponent, formatComponent } from '@/utils';
+import { THREE_DOTS_MENU_CONTENT_CLASSES, THREE_DOTS_MENU_ITEM_CLASSES } from '@/utils/threeDotsMenu';
 import { useCoreStore } from '@/stores/core';
+import { Button, DropdownMenu, DropdownMenuItem } from '@/afcl';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
-import { type AdminForthActionInput, type AdminForthComponentDeclaration, type AdminForthComponentDeclarationFull } from '@/types/Common';
+import { type AdminForthActionFront, type AdminForthComponentDeclaration } from '@/types/Common';
 
 const coreStore = useCoreStore();
 const showMenu = ref(false);
-const triggerRef = ref<HTMLElement | null>(null);
-const menuRef = ref<HTMLElement | null>(null);
-const menuStyles = ref<Record<string, string>>({});
+const actionRefs: Record<string, any> = {};
 
 const props = defineProps<{
     resourceOptions: any;
@@ -121,116 +99,20 @@ const props = defineProps<{
     startCustomAction: (actionId: string, row: any, extraData?: Record<string, any>) => void;
 }>();
 
-onMounted(() => {
-  window.addEventListener('scroll', handleScrollOrResize, true);
-  window.addEventListener('resize', handleScrollOrResize);
-  document.addEventListener('click', handleOutsideClick, true);
-});
+const menuActions = computed<AdminForthActionFront[]>(
+  () => (props.resourceOptions.actions ?? []).filter((a: AdminForthActionFront) => a.showIn?.listThreeDotsMenu)
+);
 
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScrollOrResize, true);
-  window.removeEventListener('resize', handleScrollOrResize);
-  document.removeEventListener('click', handleOutsideClick, true);
-});
-
-watch(showMenu, async (isOpen) => {
-  if (isOpen) {
-    await nextTick();
-    // First pass: after DOM mount
-    updateMenuPosition();
-    // Second pass: after layout/paint to catch width changes (fonts/icons)
-    requestAnimationFrame(() => {
-      updateMenuPosition();
-      // Final safety: one micro-delay retry if width was still 0
-      setTimeout(() => updateMenuPosition(), 0);
-    });
-  }
-});
-
-function toggleMenu() {
-  if (!showMenu.value) {
-    // Provisional position to avoid flashing at left:0 on first open
-    const el = triggerRef.value;
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      const gap = 8;
-      menuStyles.value = {
-        position: 'fixed',
-        top: `${Math.round(rect.bottom)}px`,
-        left: `${Math.round(rect.left)}px`,
-      };
-    }
-  }
-  showMenu.value = !showMenu.value;
+// a base action is listed here unless it is rendered as a quick icon in the row
+function isBaseActionInMenu(action: 'show' | 'edit' | 'delete') {
+  return props.resourceOptions?.allowedActions?.[action] && !props.resourceOptions?.baseActionsAsQuickIcons?.includes(action);
 }
 
-function updateMenuPosition() {
-  const el = triggerRef.value;
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  const margin = 8; // gap around the trigger/menu
-  const menuEl = menuRef.value;
-  // Measure current menu size to align and decide flipping
-  let menuWidth = rect.width; // fallback to trigger width
-  let menuHeight = 0;
-  if (menuEl) {
-    const menuRect = menuEl.getBoundingClientRect();
-    // Prefer bounding rect; fallback to offset/scroll width if needed
-    const measuredW = menuRect.width || menuEl.offsetWidth || menuEl.scrollWidth;
-    if (measuredW > 0) menuWidth = measuredW;
-    const measuredH = menuRect.height || menuEl.offsetHeight || menuEl.scrollHeight;
-    if (measuredH > 0) menuHeight = measuredH;
+// a click on the item padding is forwarded to the action component (see `click` expose of custom action components),
+// clicks on its content are already handled by the component itself
+function actionItemClick(actionId: string, event: MouseEvent) {
+  if (!event.defaultPrevented) {
+    actionRefs[actionId]?.click?.();
   }
-  // Right-align: right edge of menu == right edge of trigger
-  let left = rect.right - menuWidth;
-  // Clamp within viewport with small margin so it doesn't render off-screen
-  const minLeft = margin;
-  const maxLeft = Math.max(minLeft, window.innerWidth - margin - menuWidth);
-  left = Math.min(Math.max(left, minLeft), maxLeft);
-
-  // Determine whether to place above or below based on available space
-  const spaceBelow = window.innerHeight - rect.bottom - margin;
-  const spaceAbove = rect.top - margin;
-  const maxMenuHeight = Math.max(0, window.innerHeight - 2 * margin);
-
-  let top: number;
-  if (menuHeight === 0) {
-    // Unknown height yet (first pass). Prefer placing below; a subsequent pass will correct if needed.
-    top = rect.bottom + margin;
-  } else if (menuHeight <= spaceBelow) {
-    // Enough space below
-    top = rect.bottom + margin;
-  } else if (menuHeight <= spaceAbove) {
-    // Not enough below but enough above -> flip
-    top = rect.top - margin - menuHeight;
-  } else {
-    // Not enough space on either side: pick the side with more room and clamp within viewport
-    if (spaceBelow >= spaceAbove) {
-      top = Math.min(rect.bottom + margin, window.innerHeight - margin - menuHeight);
-    } else {
-      top = Math.max(margin, rect.top - margin - menuHeight);
-    }
-  }
-
-  menuStyles.value = {
-    position: 'fixed',
-    top: `${Math.round(top)}px`,
-    left: `${Math.round(left)}px`,
-    maxHeight: `${Math.round(maxMenuHeight)}px`,
-    overflowY: 'auto',
-  };
 }
-
-function handleScrollOrResize() {
-  showMenu.value = false;
-}
-
-function handleOutsideClick(e: MouseEvent) {
-  const target = e.target as Node | null;
-  if (!target) return;
-  if (menuRef.value?.contains(target)) return;
-  if (triggerRef.value?.contains(target)) return;
-  showMenu.value = false;
-}
-
 </script>

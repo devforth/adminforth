@@ -1,16 +1,16 @@
 <template>
-    <div v-if="isInitFinished" class="inline-flex rounded-md shadow-xs" role="group">
+    <div v-if="isInitFinished" class="inline-flex rounded-default shadow-customLight" role="group">
         <button v-for="button in buttons" :key="`${button}-button-controll`" 
             :disabled="slotProps[button].disabled"
-            class="inline-flex items-center text-sm font-medium border-t border-b border-r border-lightButtonGroupBorder focus:z-10 focus:ring-2 dark:border-darkButtonGroupBorder disabled:opacity-50 disabled:cursor-not-allowed"
+            class="inline-flex items-center text-sm font-medium border-t border-b border-r border-lightButtonGroupBorder focus-visible:z-10 focus-visible:ring-[3px] dark:border-darkButtonGroupBorder disabled:opacity-50 disabled:cursor-not-allowed"
             :class="[
-                buttonsStyles[button] === 'rounded' ? 'border rounded-lg' 
-                : buttonsStyles[button] === 'rounded-left' ? 'border rounded-s-lg' 
-                : buttonsStyles[button] === 'rounded-right' ? 'border rounded-e-lg border-l-lightButtonGroupBackground focus:border-l-lightButtonGroupBorder dark:border-l-darkButtonGroupBackground dark:focus:border-l-darkButtonGroupBorder' 
-                : buttonsStyles[button] === 'no-rounded' ? 'border border-l-lightButtonGroupBackground focus:border-l-lightButtonGroupBorder dark:border-l-darkButtonGroupBackground dark:focus:border-l-darkButtonGroupBorder' 
-                : buttonsStyles[button] === 'rounded-left-with-right-border' ? 'border rounded-s-lg' : '',
-                (button === activeButton || props.solidColor === true) ? 'bg-lightButtonGroupActiveBackground text-lightButtonGroupActiveText focus:ring-lightButtonGroupActiveFocusRing dark:bg-darkButtonGroupActiveBackground dark:text-darkButtonGroupActiveText dark:focus:ring-darkButtonGroupActiveFocusRing' 
-                                        :'text-lightButtonGroupText bg-lightButtonGroupBackground focus:ring-lightButtonGroupFocusRing hover:bg-lightButtonGroupBackgroundHover hover:text-lightButtonGroupTextHover dark:bg-darkButtonGroupBackground dark:text-darkButtonGroupText dark:hover:text-darkButtonGroupTextHover dark:hover:bg-darkButtonGroupBackgroundHover dark:focus:ring-darkButtonGroupFocusRing'
+                buttonsStyles[button] === 'rounded' ? 'border rounded-default' 
+                : buttonsStyles[button] === 'rounded-left' ? 'border rounded-s-default' 
+                : buttonsStyles[button] === 'rounded-right' ? 'border rounded-e-default border-l-lightButtonGroupBackground focus-visible:border-l-lightButtonGroupBorder dark:border-l-darkButtonGroupBackground dark:focus-visible:border-l-darkButtonGroupBorder' 
+                : buttonsStyles[button] === 'no-rounded' ? 'border border-l-lightButtonGroupBackground focus-visible:border-l-lightButtonGroupBorder dark:border-l-darkButtonGroupBackground dark:focus-visible:border-l-darkButtonGroupBorder' 
+                : buttonsStyles[button] === 'rounded-left-with-right-border' ? 'border rounded-s-default' : '',
+                (button === activeButton || props.solidColor === true) ? 'bg-lightButtonGroupActiveBackground text-lightButtonGroupActiveText focus-visible:ring-lightButtonGroupActiveFocusRing dark:bg-darkButtonGroupActiveBackground dark:text-darkButtonGroupActiveText dark:focus-visible:ring-darkButtonGroupActiveFocusRing' 
+                                        :'text-lightButtonGroupText bg-lightButtonGroupBackground focus-visible:ring-lightButtonGroupFocusRing hover:bg-lightButtonGroupBackgroundHover hover:text-lightButtonGroupTextHover dark:bg-darkButtonGroupBackground dark:text-darkButtonGroupText dark:hover:text-darkButtonGroupTextHover dark:hover:bg-darkButtonGroupBackgroundHover dark:focus-visible:ring-darkButtonGroupFocusRing'
             ]"
             @click="setActiveButton(button)"
         >

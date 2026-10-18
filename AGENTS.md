@@ -18,6 +18,10 @@ Same for adapters, but with `/docs/tutorial/Adapters/<adapter-slug>/` path.
 Page names in docusarus should be human readabale. We should not use `AuditLog` but instead we should have `Audit Log` via whitespace.
 
 
+## Design system
+
+UI rules (tokens, `af-`/`afcl-` class contract, AFCL first, Lucide icons, moving off flowbite) live in [Design concepts](adminforth/design/system-concepts.md), read them before changing UI in core or plugins. States and variants of components are drawn in `adminforth/design/system.html`, the progress of core and plugins is in `adminforth/design/adoption.md`.
+
 ## General engineering rules
 
 Write code as if the system contracts are already defined and trusted.

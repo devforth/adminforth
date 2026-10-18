@@ -13,7 +13,7 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <Button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="af-cancel-button h-[2.125rem] px-3 mr-2"
+        class="af-cancel-button h-[2.125rem] px-3"
         variant="secondary"
       >
         {{ $t('Cancel') }}
@@ -21,11 +21,11 @@
       <Button  
         @click="() => saveRecord()"
         class="af-save-button h-[2.125rem] px-3 text-lightCreateViewSaveButtonText hover:text-lightCreateViewSaveButtonTextHover dark:text-darkCreateViewSaveButtonText dark:hover:text-darkCreateViewSaveButtonTextHover"
-        variant="secondary"
+        variant="primary"
         :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
       > 
         <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
-        <IconFloppyDiskSolid v-else class="w-4 h-4" />
+        <IconSave v-else class="w-4 h-4" />
         {{ $t('Save') }}
       </Button>
 
@@ -79,8 +79,8 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent, atob_function } from '@/utils';
-import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent, atob_function } from '@/utils';
+import { IconSave } from '@iconify-prerendered/vue-lucide';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref  } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
@@ -192,7 +192,6 @@ onMounted(async () => {
   record.value = initialValues.value;
   loading.value = false;
   checkAcessByAllowedActions(coreStore.resourceOptions!.allowedActions,'create');
-  initThreeDotsDropdown();
 });
 
 async function saveRecord() {

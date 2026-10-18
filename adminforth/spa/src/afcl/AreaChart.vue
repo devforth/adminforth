@@ -4,8 +4,9 @@
 
 <script setup lang="ts">
 import type ApexCharts from 'apexcharts';
-import { type ApexOptions } from 'apexcharts';
+import type { ApexOptions } from 'apexcharts';
 import { ref, type Ref, watch, computed, onUnmounted } from 'vue';
+import { mergeChartOptions } from './chartUtils';
 type ApexChartsConstructor = new (el: Element, options: any) => ApexCharts;
 
 const chart: Ref<HTMLDivElement | null> = ref(null);
@@ -29,7 +30,7 @@ const optionsBase = {
   chart: {
     height: 150,
     type: "area",
-    fontFamily: "Inter, sans-serif",
+    fontFamily: "'Geist Variable', ui-sans-serif, sans-serif",
     dropShadow: {
       enabled: false,
     },
@@ -46,17 +47,17 @@ const optionsBase = {
   fill: {
     type: "gradient",
     gradient: {
-      opacityFrom: 0.55,
+      opacityFrom: 0.18,
       opacityTo: 0,
-      shade: "#1C64F2",
-      gradientToColors: ["#1C64F2"],
+      shade: "#2a78d6",
+      gradientToColors: ["#2a78d6"],
     },
   },
   dataLabels: {
     enabled: false,
   },
   stroke: {
-    width: 6,
+    width: 2,
   },
   grid: {
     show: false,
@@ -116,24 +117,7 @@ const options = computed(() => {
     },
   };
 
-  // for each of  ...props.options  merge on lowest level. so if { chart: {height : 2} }, it should not replace chart level, only height level
-  function mergeOptions(options: any, newOptions: any) {
-    if (!newOptions) {
-      return;
-    }
-    for (const key in newOptions) {
-      // and is not array
-      if (typeof newOptions[key] === 'object' && !Array.isArray(newOptions[key])) {
-        if (!options[key]) {
-          options[key] = {};
-        }
-        mergeOptions(options[key], newOptions[key]);
-      } else {
-        options[key] = newOptions[key];
-      }
-    }
-  }
-  mergeOptions(options, props.options);
+  mergeChartOptions(options, props.options);
 
   return options;
 });

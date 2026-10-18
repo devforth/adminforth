@@ -1,25 +1,46 @@
 <template>
-<a href="#" 
-    class="block max-w-sm bg-lightCardBackground border border-lightCardBorder rounded-lg shadow-sm hover:bg-lightCardBackgroundHover dark:bg-darkCardBackground dark:border-darkCardBorder dark:hover:bg-darkCardBackgroundHover"
-    :class="[
-        props.size === 'sm' ? 'p-2' : props.size === 'md' ? 'p-4' : 'p-6',
-        props.hideBorder ? 'border-0' : ''
-    ]"
->
-
-<h5 class="font-bold tracking-tight text-lightCardTitle dark:text-darkCardTitle" :class="[props.size === 'sm' ? 'text-base' : props.size === 'md' ? 'text-lg mb-1' : 'text-xl mb-2']">{{ props.title }}</h5>
-<p class="font-normal text-lightCardDescription dark:text-darkCardDescription" :class="[props.size === 'sm' ? 'text-sm' : props.size === 'md' ? 'text-base' : 'text-lg']">{{ props.description }}</p>
+  <div v-bind="restAttrs" :class="rootClasses">
+    <div v-if="title || description" class="afcl-card-header" :class="{ 'mb-4': $slots.default }">
+      <h3 v-if="title" class="afcl-card-title font-semibold tracking-tight text-lightCardTitle dark:text-darkCardTitle" :class="TITLE_SIZES[size]">{{ title }}</h3>
+      <p v-if="description" class="afcl-card-description mt-1 text-lightCardDescription dark:text-darkCardDescription" :class="DESCRIPTION_SIZES[size]">{{ description }}</p>
+    </div>
     <slot></slot>
-</a>
+  </div>
 </template>
 
 
 <script setup lang="ts">
-const props = defineProps<{
-    title?: string;
-    description?: string;
-    size?: 'sm' | 'md' | 'lg';
-    hideBorder?: boolean;
-}>();
+import { computed, useAttrs } from 'vue';
+import { type ClassNameValue } from 'tailwind-merge';
+import { mergeClasses } from './classMerge';
 
+type CardSize = 'sm' | 'md' | 'lg';
+
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<{
+  title?: string;
+  description?: string;
+  size?: CardSize;
+  hideBorder?: boolean;
+}>(), {
+  size: 'lg',
+});
+
+const PADDINGS: Record<CardSize, string> = { sm: 'p-3', md: 'p-4', lg: 'p-6' };
+const TITLE_SIZES: Record<CardSize, string> = { sm: 'text-sm', md: 'text-base', lg: 'text-lg' };
+const DESCRIPTION_SIZES: Record<CardSize, string> = { sm: 'text-xs', md: 'text-sm', lg: 'text-base' };
+
+const attrs = useAttrs();
+const restAttrs = computed(() => {
+  const { class: _class, ...rest } = attrs;
+  return rest;
+});
+
+const rootClasses = computed(() => mergeClasses(
+  'afcl-card rounded-lg bg-lightCardBackground dark:bg-darkCardBackground',
+  !props.hideBorder && 'border border-lightCardBorder dark:border-darkCardBorder',
+  PADDINGS[props.size],
+  attrs.class as ClassNameValue,
+));
 </script>

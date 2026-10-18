@@ -15,10 +15,10 @@
         :to="nextRecordRoute ?? $route"
         @click="handleNextClick()"
         :class="!nextRecordRoute ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''"
-        class="h-[2.125rem] text-lightListViewButtonText dark:text-darkListViewButtonText px-3 py-3"
+        class="h-[2.125rem] text-lightListViewButtonText dark:text-darkListViewButtonText px-3"
         variant="secondary"
       >
-        <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300" />
+        <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText" />
         {{ $t('Next') }}
       </LinkButton>
 
@@ -40,11 +40,11 @@
               <component 
                 v-if="action.icon && !actionLoadingStates[action.id!]" 
                 :is="getIcon(action.icon)" 
-                class="w-4 h-4 me-2 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
+                class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor"
               />
               <Spinner
                 v-if="actionLoadingStates[action.id!]"
-                class="w-5 h-5 me-2 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
+                class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
               />
               {{ action.name }}
             </Button>
@@ -56,7 +56,7 @@
         class="af-add-new-button h-[2.125rem] px-2.5"
         variant="secondary"
       >
-        <IconPlusOutline class="w-4 h-4"/>
+        <IconPlus class="w-4 h-4"/>
         {{ $t('Add new') }}
       </LinkButton>
 
@@ -64,15 +64,15 @@
         class="h-[2.125rem] af-edit-button px-2.5"
         variant="secondary"
       >
-        <IconPenSolid class="w-4 h-4" />
+        <IconPencil class="w-4 h-4" />
         {{ $t('Edit') }}
       </LinkButton>
 
       <Button v-if="coreStore?.resourceOptions?.allowedActions?.delete"  @click="deleteRecord"
-        class="h-[2.125rem] af-delete-button px-3 text-red-600 hover:text-red-700 focus:z-10 dark:text-red-500 dark:hover:text-darkShowViewButtonTextHover"
+        class="h-[2.125rem] af-delete-button px-3 text-lightInputErrorColor hover:text-lightInputErrorColor focus-visible:z-10 dark:text-darkInputErrorColor dark:hover:text-darkInputErrorColor"
         variant="secondary"  
       >
-        <IconTrashBinSolid class="w-4 h-4" />
+        <IconTrash2 class="w-4 h-4" />
         {{ $t('Delete') }}
       </Button>
 
@@ -100,18 +100,18 @@
     >
       <div 
         v-if="groups && groups.length > 0" 
-        class="text-md font-semibold px-6 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
+        class="text-sm font-semibold px-5 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
       >
-        <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded-full w-32"></div>
+        <div class="h-3 bg-lightSkeletonBackgroundColor dark:bg-darkSkeletonBackgroundColor rounded-full w-32"></div>
       </div>
 
       <table class="w-full text-sm text-left table-fixed border-collapse">
         <thead class="bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground block md:table-row-group">
           <tr class="block md:table-row">
-            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
+            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:w-56 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
               {{ $t('Field') }}
             </th>
-            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
+            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
               {{ $t('Value') }}
             </th>
           </tr>
@@ -125,13 +125,13 @@
           >
             <td class="px-6 py-[15.5px] relative block md:table-cell pb-0 md:pb-[15.5px]">
               <div class="md:absolute md:inset-0 flex items-center px-6 py-[15.5px]">
-                <div class="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full w-24"></div>
+                <div class="h-2.5 bg-lightSkeletonBackgroundColor dark:bg-darkSkeletonBackgroundColor rounded-full w-24"></div>
               </div>
             </td>
 
             <td class="px-6 py-[15.5px] whitespace-pre-wrap block md:table-cell">
               <div class="flex items-center h-full min-h-[21px]">
-                <div class="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full w-full max-w-[280px]"></div>
+                <div class="h-2.5 bg-lightSkeletonBackgroundColor dark:bg-darkSkeletonBackgroundColor rounded-full w-full max-w-[280px]"></div>
               </div>
             </td>
           </tr>
@@ -172,7 +172,7 @@
     </template>
     </div>
 
-    <div v-else class="text-center text-gray-500 dark:text-gray-400 mt-10">
+    <div v-else class="text-center text-sm text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText mt-10">
       {{ $t('Ooops. Record not found') }}
     </div>
 
@@ -196,8 +196,8 @@
 import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 
 import { useCoreStore } from '@/stores/core';
-import { getCustomComponent, checkAcessByAllowedActions, initThreeDotsDropdown, formatComponent, executeCustomAction } from '@/utils';
-import { IconPenSolid, IconTrashBinSolid, IconPlusOutline } from '@iconify-prerendered/vue-flowbite';
+import { getCustomComponent, checkAcessByAllowedActions, formatComponent, executeCustomAction } from '@/utils';
+import { IconPencil, IconTrash2, IconPlus } from '@iconify-prerendered/vue-lucide';
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import {callAdminForthApi} from '@/utils';
@@ -271,7 +271,6 @@ onMounted(async () => {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string,
   });
-  initThreeDotsDropdown();
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId as string, 
     primaryKey: route.params.primaryKey as string,

@@ -1,7 +1,7 @@
 <template>
   <Tooltip>
-    <span class="flex items-center">
-      {{ visualValue }} <IconFileCopyAltSolid @click.stop="copyToCB" class="min-w-5 min-h-5 text-lightPrimary dark:text-darkPrimary" v-if="visualValue"/>
+    <span class="flex items-center gap-1.5 font-mono text-[12.5px]">
+      {{ visualValue }} <IconCopy @click.stop="copyToCB" class="min-w-4 w-4 h-4 cursor-pointer text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText transition-colors" v-if="visualValue"/>
     </span>
     <template #tooltip v-if="visualValue">
       {{ props.record[props.column.name] }}
@@ -13,7 +13,7 @@
 <script setup lang="ts">
 
 import { computed, ref, onMounted, nextTick } from 'vue';
-import { IconFileCopyAltSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconCopy } from '@iconify-prerendered/vue-lucide';
 import Tooltip from '@/afcl/Tooltip.vue';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';

@@ -28,6 +28,13 @@ export default defineConfig({
       port: hmrPort,
     },
   },
+  // Vite 5 dropped imports which are used only as types (`import { Ref } from 'vue'`), Vite 8 keeps them when
+  // tsconfig has verbatimModuleSyntax and fails on the missing export: keep the old behavior for custom components of apps
+  oxc: {
+    typescript: {
+      onlyRemoveTypeImports: false,
+    },
+  },
   plugins: [
     //ignoreTailwindErrors(),
     vue(),
@@ -39,25 +46,25 @@ export default defineConfig({
     }
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          // reduce the size of the vendor chunk
-          // to only include the package name
-          // helps to reduce consumption of memory
-          if (id.includes('node_modules/')) {
-            // take the last node_modules segment: pnpm nests packages as node_modules/.pnpm/<pkg>@<version>/node_modules/<pkg>
-            return id.split('node_modules/').pop()!.split('/')[0];
-          }
+        codeSplitting: {
+          groups: [
+            {
+              // reduce the size of the vendor chunk
+              // to only include the package name
+              // helps to reduce consumption of memory
+              name(id) {
+                if (id.includes('node_modules/')) {
+                  // take the last node_modules segment: pnpm nests packages as node_modules/.pnpm/<pkg>@<version>/node_modules/<pkg>
+                  return id.split('node_modules/').pop()!.split('/')[0];
+                }
+                return null;
+              },
+            },
+          ],
         },
       },
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: 'modern-compiler'
-      }
-    }
-  }
 })

@@ -4,8 +4,9 @@
 
 <script setup lang="ts">
 import type ApexCharts from 'apexcharts';
-import { type ApexOptions } from 'apexcharts';
+import type { ApexOptions } from 'apexcharts';
 import { ref, type Ref, watch, computed, onUnmounted } from 'vue';
+import { mergeChartOptions } from './chartUtils';
 type ApexChartsConstructor = new (el: Element, options: ApexOptions) => ApexCharts;
 
 const chart: Ref<HTMLDivElement | null> = ref(null);
@@ -26,7 +27,7 @@ const optionsBase: ApexOptions = {
   chart: {
     height: 350,
     type: 'treemap',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: "'Geist Variable', ui-sans-serif, sans-serif",
     toolbar: {
       show: false,
     },
@@ -37,7 +38,7 @@ const optionsBase: ApexOptions = {
   dataLabels: {
     enabled: true,
     style: {
-      fontFamily: 'Inter, sans-serif',
+      fontFamily: "'Geist Variable', ui-sans-serif, sans-serif",
       colors: ['#FFFFFF'],
     },
   },
@@ -75,23 +76,7 @@ const options = computed(() => {
     })),
   };
 
-  function mergeOptions(target: any, source: any) {
-    if (!source) {
-      return;
-    }
-    for (const key in source) {
-      if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!target[key]) {
-          target[key] = {};
-        }
-        mergeOptions(target[key], source[key]);
-      } else {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  mergeOptions(nextOptions, props.options);
+  mergeChartOptions(nextOptions, props.options);
   return nextOptions;
 });
 

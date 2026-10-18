@@ -1,10 +1,10 @@
 <template>
   <div class="range-slider" ref="trackRef" @mousedown="onTrackMouseDown">
-    <div class="track"></div>
-    <div class="range bg-lightPrimary/30" :style="rangeStyle"></div>
+    <div class="track bg-lightProgressBarUnfilledColor dark:bg-darkProgressBarUnfilledColor"></div>
+    <div class="range bg-lightPrimary dark:bg-darkPrimary" :style="rangeStyle"></div>
 
     <div
-      class="bg-lightPrimary thumb"
+      class="thumb bg-white border border-lightInputBorderHover shadow-[0_1px_2px_rgba(24,24,27,0.2)] dark:border-darkInputBorder"
       :style="minThumbStyle"
       @mousedown.stop.prevent="startDrag('min', $event)"
       @mouseenter="minHovered = true"
@@ -13,7 +13,7 @@
     <div v-if="minHovered || activeThumb === 'min'" class="thumb-tooltip" :style="minTooltipStyle">{{ minVal }}</div>
 
     <div
-      class="bg-lightPrimary thumb"
+      class="thumb bg-white border border-lightInputBorderHover shadow-[0_1px_2px_rgba(24,24,27,0.2)] dark:border-darkInputBorder"
       :style="maxThumbStyle"
       @mousedown.stop.prevent="startDrag('max', $event)"
       @mouseenter="maxHovered = true"
@@ -34,8 +34,8 @@ const props = defineProps({
   },
   min: { type: Number, default: 0 },
   max: { type: Number, default: 100 },
-  dotSize: { type: Number, default: 20 },
-  height: { type: String, default: '8px' }
+  dotSize: { type: Number, default: 16 },
+  height: { type: String, default: '4px' }
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -184,14 +184,13 @@ onBeforeUnmount(() => {
 .track {
   position: absolute;
   width: 100%;
-  height: 8px;
-  background: #e5e7eb;
+  height: 4px;
   border-radius: 9999px;
 }
 
 .range {
   position: absolute;
-  height: 8px;
+  height: 4px;
   border-radius: 9999px;
 }
 
@@ -209,7 +208,7 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.75);
   color: #fff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   padding: 6px 6px;

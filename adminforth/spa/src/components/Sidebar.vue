@@ -46,38 +46,38 @@
         </div>
         <div class="absolute top-1.5 -right-4 z-10 hidden sm:block" v-if="!forceIconOnly && iconOnlySidebarEnabled && (!isSidebarIconOnly || (isSidebarIconOnly && isSidebarHovering))">
           <button class="text-sm text-lightSidebarIcons group-hover:text-lightSidebarIconsHover dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" @click="toggleSidebar">
-            <IconCloseSidebarSolid v-if="!isSidebarIconOnly" class="w-5 h-5 active:scale-95 transition-all duration-200 hover:text-lightSidebarIconsHover dark:hover:text-darkSidebarIconsHover" />
-            <IconOpenSidebarSolid v-else class="w-5 h-5 active:scale-95 transition-all duration-200 hover:text-lightSidebarIconsHover dark:hover:text-darkSidebarIconsHover" />
-          </button> 
+            <IconPanelLeftClose v-if="!isSidebarIconOnly" class="w-4 h-4 active:scale-95 transition-all duration-200 hover:text-lightSidebarIconsHover dark:hover:text-darkSidebarIconsHover" />
+            <IconPanelLeftOpen v-else class="w-4 h-4 active:scale-95 transition-all duration-200 hover:text-lightSidebarIconsHover dark:hover:text-darkSidebarIconsHover" />
+          </button>
         </div>
       </div>
 
      <div
       v-if="coreStore?.config?.defaultUserExists && !isLocalhost"
-      class="mb-4 text-white rounded-lg bg-red-700/80 fill-white text-sm"
-      :class="iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering ? 'flex w-10 h-10 ml-1 items-center justify-center' : 'p-4'"
+      class="mb-4 rounded-lg border border-lightInputErrorColor/30 bg-lightInputErrorColor/10 text-lightInputErrorColor dark:border-darkInputErrorColor/30 dark:bg-darkInputErrorColor/10 dark:text-darkInputErrorColor text-sm"
+      :class="iconOnlySidebarEnabled && isSidebarIconOnly && !isSidebarHovering ? 'flex w-10 h-10 ml-1 items-center justify-center' : 'p-3'"
     >
-      <IconExclamationCircleOutline class="inline-block align-text-bottom w-5 h-5 shrink-0" />
+      <IconCircleAlert class="inline-block align-text-bottom w-4 h-4 shrink-0" />
       <template v-if="!iconOnlySidebarEnabled || !isSidebarIconOnly || isSidebarHovering">
         {{ $t('Default user') }} <strong>"adminforth"</strong> {{ $t('detected. Delete it and create your own account.') }}
       </template>
     </div>
 
-      <ul class="af-sidebar-container space-y-2 font-medium" >
+      <ul class="af-sidebar-container space-y-0.5 text-sm" >
       <template v-if="!iconOnlySidebarEnabled || !isSidebarIconOnly" v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-          <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
-          <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
-          <div v-else-if="item.type === 'heading'" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
+          <div v-if="item.type === 'divider'" class="my-2 mx-2 border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
+          <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-4"></div>
+          <div v-else-if="item.type === 'heading'" class="flex items-center justify-left px-3 pt-3 pb-1 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
           ">{{ item.label }}</div>
           <li v-else-if="item.children" class="af-sidebar-expand-container">
-            <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full px-3.5 py-2 text-base text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+            <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full px-3 py-1.5 text-sm text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
                 :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                 :aria-controls="`dropdown-example${i}`"
             >
-              <component v-if="item.icon" :is="getIcon(item.icon)" class="w-5 h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
+              <component v-if="item.icon" :is="getIcon(item.icon)" class="w-4 h-4 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
               <span class="overflow-hidden flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">{{ item.label }}
-                <span v-if="item.badge || item.badge === 0" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-                  fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
+                <span v-if="item.badge || item.badge === 0" class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 ms-2 text-[11px] font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG
+                  fill-lightAnnouncementText dark:fill-darkAnnouncementText text-lightAnnouncementText dark:text-darkAnnouncementText">
                   <Tooltip v-if="item.badgeTooltip">
                     {{ item.badge }}
                     <template #tooltip>
@@ -90,13 +90,11 @@
                 </span>
               </span>
 
-              <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-              </svg>
+              <IconChevronDown :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
             </button>
 
             <transition name="slow-drop">
-              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1 overflow-hidden">              
+              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown mt-0.5 ml-[1.25rem] pl-2 border-l border-lightSidebarDevider dark:border-darkSidebarDevider space-y-0.5 overflow-hidden">              
                 <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                   <li class="af-sidebar-menu-link">
                       <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
@@ -110,20 +108,20 @@
       </li>
       </template>
       <template v-if="iconOnlySidebarEnabled && isSidebarIconOnly" v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-            <div v-if="item.type === 'divider'" class="border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
-            <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-8"></div>
-            <div v-else-if="item.type === 'heading' && isSidebarHovering" class="flex items-center justify-left pl-2 h-8 text-lightSidebarHeading dark:text-darkSidebarHeading
+            <div v-if="item.type === 'divider'" class="my-2 mx-2 border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
+            <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-4"></div>
+            <div v-else-if="item.type === 'heading' && isSidebarHovering" class="flex items-center justify-left px-3 h-8 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
             ">{{ item.label }}</div>
             <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="opacity-0 w-1 h-8">{{ item.label }}</div>
             <li v-else-if="item.children" class="af-sidebar-expand-container">
-                <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button relative flex items-center h-10 py-2 text-base text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarHover dark:hover:text-darkSidebarTextHover"
+                <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button relative flex items-center h-9 py-2 text-sm text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
                     :class="[
                       opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed',
-                      isSidebarIconOnly && !isSidebarHovering ? 'w-10 ml-1 px-2.5' : 'w-full px-3.5'
+                      isSidebarIconOnly && !isSidebarHovering ? 'w-10 ml-1 px-3' : 'w-full px-3'
                     ]"
                     :aria-controls="`dropdown-example${i}`"
                 >
-                    <component v-if="item.icon" :is="getIcon(item.icon)" class="min-w-5 min-h-5 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
+                    <component v-if="item.icon" :is="getIcon(item.icon)" class="min-w-4 w-4 h-4 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75    dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
 
                     <span 
                       class="overflow-hidden block ms-3 text-left rtl:text-right transition-all duration-200 ease-in-out"
@@ -133,13 +131,13 @@
                         'opacity-100 ms-3 translate-x-0 flex-1': !isSidebarIconOnly
                       }"
                       :style="isSidebarIconOnly ? { 
-                        minWidth: `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`,
-                        width: `calc(${expandedWidth} - 0.75rem*2 - 0.875rem*2 - 1.25rem - 0.75rem)`
+                        minWidth: `calc(${expandedWidth} - 0.75rem*2 - 0.75rem*2 - 1rem - 0.75rem)`,
+                        width: `calc(${expandedWidth} - 0.75rem*2 - 0.75rem*2 - 1rem - 0.75rem)`
                       } : {}"
                     >{{ item.label }}
 
-                        <span v-if="item.badge || item.badge === 0" class="inline-flex items-center justify-center w-3 h-3 p-3 ms-3 text-sm font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-                        fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent">
+                        <span v-if="item.badge || item.badge === 0" class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 ms-2 text-[11px] font-medium rounded-full bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
+                        fill-lightAnnouncementText dark:fill-darkAnnouncementText text-lightAnnouncementText dark:text-darkAnnouncementText">
                         <Tooltip v-if="item.badgeTooltip">
                             {{ item.badge }}
                             <template #tooltip>
@@ -152,12 +150,10 @@
                         </span>
                     </span>
 
-                    <svg :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3 ml-2 absolute right-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 10 6">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
-                    </svg>
+                    <IconChevronDown :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3 ml-2 absolute right-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
                 </button>
 
-                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-1 space-y-1" :class="{ 'hidden': !opened.includes(i) }">
+                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-0.5 space-y-0.5" :class="{ 'hidden': !opened.includes(i) }">
                     <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                         <li class="af-sidebar-menu-link">
                             <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')" :isSidebarIconOnly="isSidebarIconOnly" :isSidebarHovering="isSidebarHovering"/>
@@ -173,7 +169,7 @@
 
 
       <div id="dropdown-cta" class="p-4 mt-6 w-[14.375rem] rounded-lg bg-lightAnnouncementBG dark:bg-darkAnnouncementBG 
-        fill-lightAnnouncementText dark:fill-darkAccent text-lightAnnouncementText dark:text-darkAccent text-sm" role="alert"
+        fill-lightAnnouncementText dark:fill-darkAnnouncementText text-lightAnnouncementText dark:text-darkAnnouncementText text-sm" role="alert"
         v-if="(ctaBadge && !isSidebarIconOnly) || (ctaBadge && isSidebarIconOnly && isSidebarHovering)"
       >
         <div class="flex items-center mb-3" :class="!ctaBadge.title ? 'float-right' : ''">
@@ -190,9 +186,7 @@
             v-if="ctaBadge?.closable" @click="closeCTA"
           >
             <span class="sr-only">Close</span>
-            <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-            </svg>
+            <IconX class="w-3.5 h-3.5" aria-hidden="true" />
           </button>
         </div>
         <p class="mb-3 text-sm" v-if="ctaBadge.html" v-html="ctaBadge.html"></p>
@@ -332,12 +326,11 @@
 import { computed, ref, watch, nextTick, onMounted, onUnmounted, type Ref } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import MenuLink from './MenuLink.vue';
-import { IconCloseSidebarSolid, IconOpenSidebarSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconPanelLeftClose, IconPanelLeftOpen, IconChevronDown, IconX, IconCircleAlert } from '@iconify-prerendered/vue-lucide';
 import { getIcon, verySimpleHash, loadFile, getCustomComponent } from '@/utils';
 import { Tooltip } from '@/afcl';
 import type { AnnouncementBadgeResponse } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
-import { IconExclamationCircleOutline} from '@iconify-prerendered/vue-flowbite';
 import { useI18n } from 'vue-i18n';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '::1';

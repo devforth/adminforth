@@ -2,34 +2,34 @@
   <!-- drawer component -->
   <div id="drawer-navigation" 
   
-      class="af-filters-sidebar fixed right-0 z-50 p-4 overflow-y-auto transition-transform translate-x-full bg-lightFiltersBackgroung w-80 dark:bg-darkFiltersBackgroung shadow-xl dark:shadow-gray-900"
+      class="af-filters-sidebar fixed right-0 z-50 p-5 overflow-y-auto transition-transform translate-x-full bg-lightFiltersBackgroung w-[22rem] max-w-full border-l border-lightUserMenuBorder dark:border-darkUserMenuBorder dark:bg-darkFiltersBackgroung shadow-popover dark:shadow-darkPopover"
 
       :class="show ? 'top-0 transform-none' : ''"
       tabindex="-1" aria-labelledby="drawer-navigation-label"
       :style="{ height: `calc(100dvh ` }"
   >
-    <h5 id="drawer-navigation-label" class="text-base font-semibold text-lightFiltersHeaderText uppercase dark:text-darkFiltersHeaderText">
+    <h5 id="drawer-navigation-label" class="text-base font-semibold leading-8 text-lightFiltersHeaderText dark:text-darkFiltersHeaderText">
       {{ $t('Filters') }}
 
-      <button type="button" @click="$emit('hide')" class="text-lightFiltersCloseIcon bg-transparent hover:bg-lightFiltersCloseIconHoverBackground hover:text-lightFiltersCloseIconHover rounded-lg text-sm p-1.5 absolute end-2.5 inline-flex items-center dark:text-darkFiltersCloseIcon dark:hover:bg-darkFiltersCloseIconHoverBackground dark:hover:text-darkFiltersCloseIconHover" >
-        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+      <button type="button" @click="$emit('hide')" class="text-lightFiltersCloseIcon bg-transparent hover:bg-lightFiltersCloseIconHoverBackground hover:text-lightFiltersCloseIconHover rounded-default text-sm p-1.5 absolute end-4 top-5 inline-flex items-center dark:text-darkFiltersCloseIcon dark:hover:bg-darkFiltersCloseIconHoverBackground dark:hover:text-darkFiltersCloseIconHover" >
+        <IconX aria-hidden="true" class="w-4 h-4" />
         <span class="sr-only">{{ $t('Close menu') }}</span>
       </button>
     </h5>
    
     <div class="py-4 ">
-      <ul class="space-y-3 font-medium text-sm">
+      <ul class="space-y-5 text-sm">
          <li v-for="c in columnsWithFilter" :key="c.name">
             <div class="flex flex-col">
               <div class="flex justify-between items-center">
-                <p class="dark:text-gray-400 my-1">{{ c.label }}</p>
+                <p class="my-1 text-[13px] font-medium text-lightFiltersHeaderText dark:text-darkFiltersHeaderText">{{ c.label }}</p>
                 <Tooltip v-if="filtersStore.filters.find(f => f.field === c.name)">
                 <button 
-                  class=" flex items-center justify-center w-7 h-7 my-1 hover:border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                  class=" flex items-center justify-center w-6 h-6 my-0.5 rounded-default text-lightFiltersCloseIcon hover:text-lightFiltersCloseIconHover hover:bg-lightFiltersCloseIconHoverBackground dark:text-darkFiltersCloseIcon dark:hover:text-darkFiltersCloseIconHover dark:hover:bg-darkFiltersCloseIconHoverBackground"
                   :disabled="!filtersStore.filters.find(f => f.field === c.name)"
                   @click="filtersStore.clearFilter(c.name);"
                 > 
-                  <IconCloseOutline /> 
+                  <IconX class="w-3.5 h-3.5" /> 
                 </button>
                 <template #tooltip>
                   Clear filter
@@ -69,7 +69,7 @@
                 :modelValue="filtersStore.filters.find(f => f.field === c.name && f.operator === (c.filterOptions?.multiselect ? AFFO.IN : AFFO.EQ))?.value || (c.filterOptions?.multiselect ? [] : '')"
               >
                 <template #extra-item v-if="columnLoadingState[c.name]?.loading">
-                  <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
+                  <div class="text-center text-lightDropdownButtonsPlaceholderText dark:text-darkDropdownButtonsPlaceholderText py-2 flex items-center justify-center gap-2">
                     <Spinner class="w-4 h-4" />
                     {{ $t('Loading...') }}
                   </div>
@@ -153,13 +153,13 @@
       <button 
         :disabled="!filtersStore.visibleFiltersCount"
         type="button" 
-        class="flex gap-1 items-center py-1 pr-3 text-sm font-medium text-lightFiltersClearAllButtonText focus:outline-none bg-lightFiltersClearAllButtonBackground rounded-default border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus:z-10 focus:ring-4 focus:ring-lightFiltersClearAllButtonFocus dark:focus:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="clear"><IconCloseOutline class="ml-3"/> {{ $t('Clear all') }}</button>
+        class="flex gap-1.5 items-center h-[2.125rem] px-3 text-sm font-medium text-lightFiltersClearAllButtonText shadow-customLight focus:outline-none bg-lightFiltersClearAllButtonBackground rounded-default border border-lightFiltersClearAllButtonBorder hover:bg-lightFiltersClearAllButtonBackgroundHover hover:text-lightFiltersClearAllButtonTextHover focus-visible:z-10 focus-visible:ring-[3px] focus-visible:ring-lightFiltersClearAllButtonFocus dark:focus-visible:ring-darkFiltersClearAllButtonFocus dark:bg-darkFiltersClearAllButtonBackground dark:text-darkFiltersClearAllButtonText dark:border-darkFiltersClearAllButtonBorder dark:hover:text-darkFiltersClearAllButtonTextHover dark:hover:bg-darkFiltersClearAllButtonBackgroundHover disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="clear"><IconX class="w-4 h-4"/> {{ $t('Clear all') }}</button>
 
    </div>
   </div>
 
-  <div v-if="show"  class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0  z-40"
+  <div v-if="show"  class="bg-zinc-900/30 dark:bg-black/60 fixed inset-0  z-40"
     @click="$emit('hide')">
   </div>
 </template>
@@ -177,7 +177,7 @@ import Select from '@/afcl/Select.vue';
 import Spinner from '@/afcl/Spinner.vue';
 import debounce from 'debounce';
 import { Tooltip } from '@/afcl';
-import { IconCloseOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconX } from '@iconify-prerendered/vue-lucide';
 import type { AdminforthFilterStore, AdminforthFilterStoreUnwrapped } from '@/spa_types/core';
 import type { AdminForthResourceColumnCommon, FilterParams, ColumnMinMaxValue } from '@/types/Common';
 import { AdminForthFilterOperators } from '@/types/Common';

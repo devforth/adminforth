@@ -4,7 +4,6 @@ import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull
 import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
-import { Dropdown } from 'flowbite';
 import adminforth, { useAdminforth } from '../adminforth';
 import DOMPurify  from 'dompurify'
 import debounce from 'debounce';
@@ -241,22 +240,22 @@ export function getIcon(icon: string) {
   return resolveComponent(compName);
 }
 
+// URLs of the files an app config references as '@/...' (SPA src) or '@@/...' (app custom folder, copied to src/custom).
+// The glob is explicit: Vite turns a template in new URL(`../${path}`, import.meta.url) into a one-level glob,
+// which misses files in nested folders like '@@/assets/logo.svg'.
+const assetUrls = import.meta.glob<string>(
+  ['../**', '!../**/*.{vue,ts,tsx,js,mjs,cjs,css,scss,sass,json,yaml,yml,md,html}'],
+  { eager: true, query: '?url', import: 'default' },
+);
+
 export const loadFile = (file: string) => {
   if (file.startsWith('http')) {
     return file;
   }
-  let path;
-  let baseUrl = '';
-  if (file.startsWith('@/')) {
-    path = file.replace('@/', '');
-    baseUrl = new URL(`../${path}`, import.meta.url).href;
-  } else if (file.startsWith('@@/')) {
-    path = file.replace('@@/', '');
-    baseUrl = new URL(`../custom/${path}`, import.meta.url).href;
-  } else {
-    baseUrl = new URL(`../${file}`, import.meta.url).href;
+  if (file.startsWith('@@/')) {
+    return assetUrls[`../custom/${file.slice('@@/'.length)}`];
   }
-  return baseUrl;
+  return assetUrls[`../${file.replace('@/', '')}`];
 }
 
 
@@ -285,21 +284,6 @@ export function checkAcessByAllowedActions(allowedActions:any, action:any ) {
   if(allowedActions[action] === false) {
     console.warn(`Action ${action} is not allowed`);
     router.back();
-  }
-}
-
-export function initThreeDotsDropdown() {
-  const threeDotsDropdown: HTMLElement | null = document.querySelector('#listThreeDotsDropdown');
-  if (threeDotsDropdown) {
-    // this resource has three dots dropdown
-    const dd = new Dropdown(
-      threeDotsDropdown, 
-      document.querySelector('[data-dropdown-toggle="listThreeDotsDropdown"]') as HTMLElement,
-      { placement: 'bottom-end' }
-    );
-    adminforth.list.closeThreeDotsDropdown = () => {
-      dd.hide();
-    }
   }
 }
 
@@ -350,18 +334,7 @@ export function verySimpleHash(str: string): string {
   return `${str.split('').reduce((a, b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)}`;
 }
 
-export function humanifySize(size: number) {
-  if (!size) {
-    return '';
-  }
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let i = 0
-  while (size >= 1024 && i < units.length - 1) {
-    size /= 1024
-    i++
-  }
-  return `${size.toFixed(1)} ${units[i]}`
-}
+export { humanifySize } from '../afcl/fileSize';
 
 export function protectAgainstXSS(value: string) {
   return DOMPurify.sanitize(value, {

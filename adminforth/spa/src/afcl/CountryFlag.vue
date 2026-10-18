@@ -1,22 +1,28 @@
 <template>
   <div class="aspect-[4/3] w-8 h-6 flex items-center justify-center">
-    <component v-if="getFlagComponent(countryCode)" :is="getFlagComponent(countryCode)" class="flag-icon  h-full object-contain rounded-sm"/>
-    <span v-else-if="countryCode">{{ countryCode }}</span>
+    <component v-if="flagComponent" :is="flagComponent" class="flag-icon  h-full object-contain rounded-sm"/>
+    <span v-else-if="flagIcons && countryCode">{{ countryCode }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-import * as FlagIcons from '@iconify-prerendered/vue-flag';
+import { computed, shallowRef, type Component } from 'vue';
 
-defineProps(['countryCode']);
+const props = defineProps(['countryCode']);
 
-const getFlagComponent = (countryCode: string) => {
-        if (!countryCode) return null;
-        
-        const normalizedCode = countryCode.charAt(0).toUpperCase() + countryCode.slice(1).toLowerCase();
-        const iconName = `Icon${normalizedCode}4x3`; // 4:3 aspect ratio flags
-        return FlagIcons[iconName as keyof typeof FlagIcons] || null;
-    };
+// the flag set takes megabytes, so it is loaded when a flag is shown for the first time
+const flagIcons = shallowRef<Record<string, Component>>();
+import('@iconify-prerendered/vue-flag').then((icons) => {
+  flagIcons.value = icons;
+});
+
+const flagComponent = computed(() => {
+  if (!props.countryCode || !flagIcons.value) {
+    return null;
+  }
+  const normalizedCode = props.countryCode.charAt(0).toUpperCase() + props.countryCode.slice(1).toLowerCase();
+  return flagIcons.value[`Icon${normalizedCode}4x3`] || null; // 4:3 aspect ratio flags
+});
 </script>
 
 <style scoped>

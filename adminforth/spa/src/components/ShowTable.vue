@@ -1,17 +1,17 @@
 <template>
-      <div class="overflow-x-auto overscroll-x-contain shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border dark:border-gray-700"
-        :class="{'rounded-default' : isRounded}"
+      <div class="overflow-x-auto overscroll-x-contain shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border border-lightFormBorder dark:border-darkFormBorder"
+        :class="{'rounded-lg' : isRounded}"
       >
-        <div v-if="groupName && !noTitle"  class="text-md font-semibold px-6 py-3 flex flex-1 items-center text-lightShowTableHeadingText bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground  dark:text-darkShowTableHeadingText rounded-t-lg">
+        <div v-if="groupName && !noTitle"  class="text-sm font-semibold px-5 py-3 flex flex-1 items-center text-lightShowTableHeadingText bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground  dark:text-darkShowTableHeadingText rounded-t-lg">
         {{ groupName }}
         </div>
       <table class="w-full text-sm text-left rtl:text-right text-lightShowTableBodyText dark:text-darkShowTableBodyText table-fixed">
         <thead v-if="!allColumnsHaveCustomComponent"  class="text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground dark:border-darkFormBorder block md:table-row-group">
           <tr>
-            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:w-52 md:table-cell">
+            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:w-56 md:table-cell">
               {{ $t('Field') }}
             </th>
-            <th scope="col" class="px-6 py-3 text-xs uppercase hidden md:table-cell">
+            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:table-cell">
               {{ $t('Value') }}
             </th>
           </tr>
@@ -32,12 +32,12 @@
                   :record="coreStore.record"
               />
             <template v-else-if="checkShowIf(column, record, resource?.columns || [])">
-              <td class="px-6 py-4 relative block flex justify-start font-bold md:font-normal pb-0 md:pb-4 relative md:table-cell">
-                <div class="absolute inset-0 flex items-center overflow-hidden px-6 py-4 max-h-32">
+              <td class="px-5 py-3 relative block flex justify-start font-medium text-lightFormFieldTextColor dark:text-darkFormFieldTextColor pb-0 md:pb-3 relative md:table-cell">
+                <div class="absolute inset-0 flex items-center overflow-hidden px-5 py-3 max-h-32">
                   {{ column.label }}
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-pre-wrap" :data-af-column="column.name">
+              <td class="px-5 py-3 whitespace-pre-wrap" :data-af-column="column.name">
                 <component
                   v-if="column?.components?.show"
                   :is="getCustomComponent(column?.components?.show)"

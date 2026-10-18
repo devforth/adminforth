@@ -10,9 +10,9 @@
         v-model="search"
         @click="inputClick"
         @input="inputInput"
-        class="block w-full pl-3 pr-10 py-2.5 border border-lightDropownButtonsBorder rounded-default leading-5 bg-lightDropdownButtonsBackground 
+        class="block w-full pl-2.5 pr-9 py-1.5 border border-lightDropownButtonsBorder rounded-default leading-5 bg-lightDropdownButtonsBackground shadow-customLight hover:border-lightInputBorderHover dark:hover:border-darkInputBorderHover
         placeholder-lightDropdownButtonsPlaceholderText text-lightDropdownButtonsText text-base sm:text-sm transition duration-150 ease-in-out dark:bg-darkDropdownButtonsBackground dark:border-darkDropdownButtonsBorder dark:placeholder-darkDropdownButtonsPlaceholderText
-        dark:text-darkDropdownButtonsText focus:ring-lightPrimary focus:border-lightPrimary dark:focus:ring-darkPrimary dark:focus:border-darkPrimary"
+        dark:text-darkDropdownButtonsText focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
         :class="[{'cursor-pointer': searchDisabled}, classesForInput]"
         :id="inputId"
         :name="inputId"
@@ -23,67 +23,67 @@
         data-bwignore
         data-form-type="other"
         :placeholder="
-          selectedItems.length && !multiple ? '' :  (showDropdown ? $t('Search') : placeholder || $t('Select...')) 
+          selectedItems.length && !multiple ? '' :  (showDropdown && !searchDisabled ? $t('Search') : placeholder || $t('Select...'))
         "
       />
 
-      <div v-if="!multiple && selectedItems.length" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText absolute pointer-events-none inset-y-0 left-2 flex items-center pr-2 px-1">
+      <div v-if="!multiple && selectedItems.length" class="text-sm text-lightDropdownButtonsText dark:text-darkDropdownButtonsText absolute pointer-events-none inset-y-0 left-1.5 flex items-center pr-2 px-1">
         <slot 
           name="selected-item" 
           :option="selectedItems[0]"
         ></slot>
-        <span v-if="!$slots['selected-item']" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText font-medium  ">
+        <span v-if="!$slots['selected-item']" class="text-lightDropdownButtonsText dark:text-darkDropdownButtonsText">
           {{ selectedItems[0]?.label }}
         </span>
       </div>
 
       <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none">
         <!-- triangle icon -->
-        <IconCaretDownSolid class="h-4 w-4 text-lightPrimary dark:text-darkPrimary opacity-50 transition duration-150 ease-in"
+        <IconChevronDown class="h-4 w-4 text-lightInputIconColor dark:text-darkInputIconColor transition duration-150 ease-in"
           :class="{ 'transform rotate-180': showDropdown }"
         />
       </div>
     </div>
     <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
       <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-30': teleportToBody, 'z-[1000]': teleportToTop}"
-        class="fixed w-full bg-lightDropdownOptionsBackground shadow-lg dark:shadow-black dark:bg-darkDropdownOptionsBackground
-          dark:border-gray-600 rounded-default py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+        class="fixed w-full bg-lightDropdownOptionsBackground shadow-popover dark:shadow-darkPopover dark:bg-darkDropdownOptionsBackground
+          rounded-lg p-1 text-base overflow-auto focus:outline-none sm:text-sm max-h-60"
         @scroll="handleDropdownScroll">
         <div
           v-for="item in filteredItems"
           :key="item.value"
-          class="px-4 py-2 cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground text-lightDropdownOptionsText dark:text-darkDropdownOptionsText"
-          :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
+          class="px-2.5 py-1.5 rounded-md cursor-pointer hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground text-lightDropdownOptionsText dark:text-darkDropdownOptionsText"
+          :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked font-medium': selectedItems.includes(item) }"
           @click="toogleItem(item)"
         >
           <slot name="item" :option="item"></slot>
           <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
         </div>
-        <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
+        <div v-if="!filteredItems.length" class="px-2.5 py-1.5 text-lightDropdownButtonsPlaceholderText dark:text-darkDropdownButtonsPlaceholderText">
           {{ $t('No results found') }}
         </div>
 
-        <div v-if="$slots['extra-item']" class="px-4 py-2 dark:text-gray-400">
+        <div v-if="$slots['extra-item']" class="px-2.5 py-1.5 text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
           <slot name="extra-item"></slot>
         </div>
       </div>
     </teleport>
 
     <div v-if="!teleportToBody && !teleportToTop && showDropdown" ref="dropdownEl" :style="dropdownStyle" :class="{'shadow-none': isTop}"
-      class="afcl-select-content absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-lg text-lightDropdownButtonsText dark:shadow-black dark:bg-darkDropdownOptionsBackground
-        dark:border-gray-600 rounded-default py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm max-h-48"
+      class="afcl-select-content absolute z-10 mt-1 w-full bg-lightDropdownOptionsBackground shadow-popover text-lightDropdownButtonsText dark:shadow-darkPopover dark:bg-darkDropdownOptionsBackground
+        rounded-lg p-1 text-base overflow-auto focus:outline-none sm:text-sm max-h-60"
         @scroll="handleDropdownScroll">
       <div
         v-for="item in filteredItems"
         :key="item.value"
-        class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground dark:text-darkDropdownOptionsText"
-        :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked': selectedItems.includes(item) }"
+        class="px-2.5 py-1.5 rounded-md cursor-pointer text-lightDropdownOptionsText hover:bg-lightDropdownOptionsHoverBackground dark:hover:bg-darkDropdownOptionsHoverBackground dark:text-darkDropdownOptionsText"
+        :class="{ 'bg-lightDropdownPicked dark:bg-darkDropdownPicked font-medium': selectedItems.includes(item) }"
         @click="toogleItem(item)"
       >
         <slot name="item" :option="item"></slot>
         <label v-if="!$slots.item" :for="item.value">{{ item.label }}</label>
       </div>
-      <div v-if="!filteredItems.length" class="px-4 py-2 cursor-pointer text-lightDropdownOptionsText dark:text-darkDropdownOptionsText">
+      <div v-if="!filteredItems.length" class="px-2.5 py-1.5 text-lightDropdownButtonsPlaceholderText dark:text-darkDropdownButtonsPlaceholderText">
         {{ options?.length ? $t('No results found') : $t('No items here') }}
       </div>
       <div v-if="$slots['extra-item']"  class="px-4 py-2 dark:text-darkDropdownOptionsText">
@@ -98,7 +98,7 @@
       <template v-for="item in selectedItems" :key="`afcl-select-${item.value}`">
         <slot name="selected-item" :item="item"></slot>
         <div v-if="!$slots['selected-item']"
-          class="bg-lightDropdownMultipleSelectBackground text-lightDropdownMultipleSelectText text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-darkDropdownMultipleSelectBackground dark:text-darkDropdownMultipleSelectText">
+          class="inline-flex items-center bg-lightDropdownMultipleSelectBackground text-lightDropdownMultipleSelectText text-xs font-medium me-1.5 ps-2 pe-1.5 h-[1.375rem] rounded dark:bg-darkDropdownMultipleSelectBackground dark:text-darkDropdownMultipleSelectText">
           <span>{{ item.label }}</span>
           <button
             type="button"
@@ -123,7 +123,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, useId,type PropType, type Ref } from 'vue';
-import { IconCaretDownSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconChevronDown } from '@iconify-prerendered/vue-lucide';
 import { useElementSize } from '@vueuse/core'
 
 type ISingleSelectModelValue = string | number | boolean | null;
@@ -131,7 +131,7 @@ type ISingleSelectModelValue = string | number | boolean | null;
 const props = defineProps({
   options: Array,
   modelValue: {
-    type: Array as PropType<(ISingleSelectModelValue)[] | ISingleSelectModelValue>,
+    type: [Array, String, Number, Boolean] as PropType<(ISingleSelectModelValue)[] | ISingleSelectModelValue>,
     default: () => [],
   },
   multiple: {

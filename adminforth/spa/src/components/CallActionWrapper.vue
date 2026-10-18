@@ -12,4 +12,7 @@ function onClick() {
     if (props.disabled) return;
     emit('callAction', props.extra);
 }
+
+// menus forward clicks on the item padding around the wrapper here
+defineExpose({ click: onClick });
 </script>

@@ -8,7 +8,7 @@
       <span
         v-if="record[column.name] && column.isArray?.enabled"
         v-for="foreignResource in record[column.name]"
-        class="rounded-md m-0.5 bg-lightAnnouncementBG dark:bg-darkAnnouncementBG text-lightAnnouncementText dark:text-darkAnnouncementText py-0.5 px-2.5 text-sm"
+        class="inline-flex items-center rounded-full m-0.5 bg-lightButtonGroupActiveBackground dark:bg-darkButtonGroupActiveBackground text-lightButtonGroupActiveText dark:text-darkButtonGroupActiveText h-5 px-2 text-xs font-medium"
       >
         <RouterLink
           v-if="foreignResource && foreignResource?.pk"
@@ -53,14 +53,14 @@
         {{ record[column.name].label }}
       </p>
       <div v-else>
-        <span class="text-gray-400">-</span>
+        <span class="text-lightInputPlaceholderText dark:text-darkInputPlaceholderText">-</span>
       </div>
     </span>
         
     <span v-else-if="column.type === 'boolean'">
-      <span v-if="record[column.name] === true" class="af-true-value-icon bg-green-100 whitespace-nowrap text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">{{ $t('Yes') }}</span>
-      <span v-else-if="record[column.name] === false" class="af-false-value-icon bg-red-100 whitespace-nowrap text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">{{ $t('No') }}</span>
-      <span v-else class="bg-gray-100 whitespace-nowrap text-gray-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-400 border border-gray-400">{{ $t('Unset') }}</span>
+      <span v-if="record[column.name] === true" class="af-true-value-icon gap-1" :class="[BADGE_CLASSES, TRUE_BADGE_CLASSES]"><IconCheck class="w-3 h-3" aria-hidden="true" />{{ $t('Yes') }}</span>
+      <span v-else-if="record[column.name] === false" class="af-false-value-icon" :class="[BADGE_CLASSES, FALSE_BADGE_CLASSES]">{{ $t('No') }}</span>
+      <span v-else class="border-dashed text-lightInputIconColor border-lightInputBorder dark:text-darkInputIconColor dark:border-darkInputBorder" :class="BADGE_CLASSES">{{ $t('Unset') }}</span>
     </span>
     <span
       v-else-if="column.type === 'json' && column.isArray?.enabled"
@@ -70,19 +70,19 @@
         <span
           v-if="column.isArray.itemType === 'boolean' && arrayItem"
           :key="`${column.name}-${arrayItemIndex}-true`"
-          class="af-true-value-icon bg-green-100 whitespace-nowrap text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-green-400 border border-green-400">
+          class="af-true-value-icon gap-1" :class="[BADGE_CLASSES, TRUE_BADGE_CLASSES]">
           {{ $t('Yes') }}
         </span>
         <span
           v-else-if="column.isArray.itemType === 'boolean'"
           :key="`${column.name}-${arrayItemIndex}-false`"
-          class="af-false-value-icon bg-red-100 whitespace-nowrap text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-red-400 border border-red-400">
+          class="af-false-value-icon" :class="[BADGE_CLASSES, FALSE_BADGE_CLASSES]">
           {{ $t('No') }}
         </span>
         <span
           v-else
           :key="`${column.name}-${arrayItemIndex}`"
-          class="rounded-md m-0.5 bg-lightAnnouncementBG dark:bg-darkAnnouncementBG text-lightAnnouncementText dark:text-darkAnnouncementText py-0.5 px-2.5 text-sm"
+          class="inline-flex items-center rounded-full m-0.5 bg-lightButtonGroupActiveBackground dark:bg-darkButtonGroupActiveBackground text-lightButtonGroupActiveText dark:text-darkButtonGroupActiveText h-5 px-2 text-xs font-medium"
         >
           {{ checkEmptyValues(getArrayItemDisplayValue(arrayItem, column), route.meta.type as "show" | "list") }}
         </span>
@@ -119,11 +119,16 @@ import {checkEmptyValues, formatDate, formatDateTime, formatTime} from '@/utils'
 import { useRoute, useRouter } from 'vue-router';
 import "vue3-json-viewer/dist/vue3-json-viewer.css";
 import { computed, defineAsyncComponent } from 'vue';
+import { IconCheck } from '@iconify-prerendered/vue-lucide';
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
 const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => module.JsonViewer))
 
 import { useCoreStore } from '@/stores/core';
 import type { any } from 'zod';
+
+const BADGE_CLASSES = 'inline-flex items-center whitespace-nowrap me-2 px-2 h-5 rounded-full border text-xs font-medium';
+const TRUE_BADGE_CLASSES = 'bg-lightSuccessSoft text-lightSuccess border-lightSuccessBorder dark:bg-darkSuccessSoft dark:text-darkSuccess dark:border-darkSuccessBorder';
+const FALSE_BADGE_CLASSES = 'bg-lightSecondaryDarken text-lightInputIconColor border-transparent dark:bg-darkSecondaryLighten dark:text-darkInputIconColor';
 
 const coreStore = useCoreStore();
 const route = useRoute();

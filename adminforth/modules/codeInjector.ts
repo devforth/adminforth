@@ -181,6 +181,16 @@ async function findFirstMenuItemWithResource(menuItem: AdminForthConfigMenuItem[
 
 const execAsync = promisify(exec);
 
+async function isScriptFile(file: string): Promise<boolean> {
+  const handle = await fs.promises.open(file, 'r');
+  try {
+    const { buffer, bytesRead } = await handle.read(Buffer.alloc(2), 0, 2, 0);
+    return bytesRead === 2 && buffer.toString() === '#!';
+  } finally {
+    await handle.close();
+  }
+}
+
 function hashify(obj) {
   return md5hash(JSON.stringify(obj));
 }
@@ -411,7 +421,10 @@ class CodeInjector implements ICodeInjector {
       // Quote paths that contain spaces (for Unix systems)
       const quotedNodeBinary = nodeBinary.includes(' ') ? `"${nodeBinary}"` : nodeBinary;
       const quotedPackagePath = packagePath.includes(' ') ? `"${packagePath}"` : packagePath;
-      execCommand = `${quotedNodeBinary} ${quotedPackagePath} ${command}`;
+      // npm and pnpm < 11 are node scripts and run with the current node; pnpm >= 11 is a native executable
+      execCommand = await isScriptFile(packagePath)
+        ? `${quotedNodeBinary} ${quotedPackagePath} ${command}`
+        : `${quotedPackagePath} ${command}`;
     }
     
     const execOptions: any = {
@@ -1107,7 +1120,8 @@ class CodeInjector implements ICodeInjector {
         return acc;
       }, []),
     ];
-    const EXCLUDE_PACKS = ['@iconify-prerendered/vue-flowbite'];
+    // icon packs which the SPA already depends on
+    const EXCLUDE_PACKS = ['@iconify-prerendered/vue-flowbite', '@iconify-prerendered/vue-lucide'];
 
     const allPacksFiltered = allPacks.filter((pack) => {
       return !EXCLUDE_PACKS.some((exclude) => pack.startsWith(exclude));
@@ -1534,8 +1548,10 @@ class CodeInjector implements ICodeInjector {
       let devServer;
       if (process.platform === 'win32') {
         devServer = spawn(usersPackageManager, command.split(' '), { cwd, env, shell: true });
-      } else {
+      } else if (await isScriptFile(packageManagerPath)) {
         devServer = spawn(`${nodeBinary}`, [`${packageManagerPath}`, ...command.split(' ')], { cwd, env });
+      } else {
+        devServer = spawn(packageManagerPath, command.split(' '), { cwd, env });
       }
       devServer.stdout.on('data', (data) => {
         if (data.includes('➜')) {

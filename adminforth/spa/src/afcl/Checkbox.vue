@@ -7,15 +7,15 @@
         :checked="props.modelValue"
         :disabled="props.disabled"
         @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
-        class="peer appearance-none min-w-4 min-h-4 bg-lightCheckboxBgUnchecked border border-lightCheckboxBorderColor rounded-sm checked:bg-lightCheckboxBgChecked 
-                        focus:ring-lightFocusRing dark:focus:ring-darkFocusRing dark:focus:ring-darkFocusRing
-                        focus:ring-2 dark:bg-darkCheckboxBgUnchecked dark:border-darkCheckboxBorderColor dark:checked:bg-darkCheckboxBgChecked cursor-pointer"
+        class="peer appearance-none min-w-4 min-h-4 bg-lightCheckboxBgUnchecked border border-lightCheckboxBorderColor rounded shadow-customLight checked:bg-lightCheckboxBgChecked checked:border-lightCheckboxBgChecked
+                        focus:outline-none focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing
+                        focus-visible:ring-[3px] focus-visible:ring-offset-0 dark:bg-darkCheckboxBgUnchecked dark:border-darkCheckboxBorderColor dark:checked:bg-darkCheckboxBgChecked dark:checked:border-darkCheckboxBgChecked cursor-pointer transition-colors"
         >     
         <div class="pointer-events-none absolute text-lightCheckboxIconColor dark:text-darkCheckboxIconColor leading-none peer-checked:block hidden">
-          <IconCheckOutline class="w-[1.1rem] h-[1.1rem]" />
+          <IconCheck class="w-3 h-3 [&_g]:[stroke-width:3]" />
         </div> 
     </div>
-    <label :for="id" class="ms-2 text-sm font-medium text-lightTextLabel dark:text-darkTextLabel">
+    <label :for="id" class="ms-2 text-sm text-lightTextLabel dark:text-darkTextLabel">
       <slot></slot>
     </label>
 
@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { IconCheckOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconCheck } from '@iconify-prerendered/vue-lucide';
 const props = defineProps({
   modelValue: Boolean,
   disabled: Boolean,

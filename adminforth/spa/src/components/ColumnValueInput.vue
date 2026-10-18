@@ -36,7 +36,7 @@
       disableTogleOfSelectedItem
     >
       <template #extra-item v-if="columnLoadingState && columnLoadingState[column.name]?.loading">
-        <div class="text-center text-gray-400 dark:text-gray-300 py-2 flex items-center justify-center gap-2">
+        <div class="text-center text-lightDropdownButtonsPlaceholderText dark:text-darkDropdownButtonsPlaceholderText py-2 flex items-center justify-center gap-2">
           <Spinner class="w-4 h-4" />
           {{ $t('Loading...') }}
         </div>
@@ -157,7 +157,7 @@
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
       @click="$emit('delete')"
     >
-      <IconTrashBinSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"/>
+      <IconTrash2 class="w-4 h-4 text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText"/>
     </button>
     <button
       v-else-if="column.masked"
@@ -165,14 +165,14 @@
       @click="$emit('update:unmasked')"
       class="h-6 inset-y-2 right-0 flex items-center px-2 pt-4 z-index-100 focus:outline-none"
     >
-      <IconEyeSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons"  v-if="!unmasked[column.name]"/>
-      <IconEyeSlashSolid class="w-6 h-6 text-lightInputIcons dark:text-darkInputIcons" v-else />
+      <IconEye class="w-4 h-4 text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText"  v-if="!unmasked[column.name]"/>
+      <IconEyeOff class="w-4 h-4 text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText" v-else />
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { IconEyeSlashSolid, IconEyeSolid, IconTrashBinSolid } from '@iconify-prerendered/vue-flowbite';
+  import { IconEyeOff, IconEye, IconTrash2 } from '@iconify-prerendered/vue-lucide';
   import DatePicker from "@/afcl/DatePicker.vue";
   import Select from '@/afcl/Select.vue';
   import Input from '@/afcl/Input.vue';

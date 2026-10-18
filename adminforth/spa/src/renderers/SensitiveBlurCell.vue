@@ -51,23 +51,23 @@
       </span>
     </div>
 
-    <span v-if="eyeButton" class="shrink-0 w-5 h-5">
-      <IconEyeSolid
+    <span v-if="eyeButton" class="shrink-0 w-4 h-4">
+      <IconEye
         v-if="!show"
         @click.stop="toggle"
-        class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
+        class="w-4 h-4 cursor-pointer text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText transition-colors"
       />
-      <IconEyeSlashSolid
+      <IconEyeOff
         v-else
         @click.stop="toggle"
-        class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
+        class="w-4 h-4 cursor-pointer text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText transition-colors"
       />
     </span>
 
-    <span v-if="showCopy && rawValue" class="shrink-0 w-5 h-5">
-      <IconFileCopyAltSolid
+    <span v-if="showCopy && rawValue" class="shrink-0 w-4 h-4">
+      <IconCopy
         @click.stop="copyToCB"
-        class="w-5 h-5 cursor-pointer text-lightPrimary dark:text-darkPrimary"
+        class="w-4 h-4 cursor-pointer text-lightInputIconColor hover:text-lightInputText dark:text-darkInputIconColor dark:hover:text-darkInputText transition-colors"
       />
     </span>
   </div>
@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { IconFileCopyAltSolid, IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconCopy, IconEye, IconEyeOff } from '@iconify-prerendered/vue-lucide';
 import ValueRenderer from '@/components/ValueRenderer.vue';
 import Tooltip from '@/afcl/Tooltip.vue';
 import { useAdminforth } from '@/adminforth';

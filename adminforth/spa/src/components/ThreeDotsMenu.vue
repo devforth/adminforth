@@ -1,99 +1,82 @@
-<template >
-  <div class="relative" v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionFront) => action.showInThreeDotsDropdown))">
-    <Button 
-      ref="buttonTriggerRef"
-      @click="toggleDropdownVisibility"
-      class="py-2.5 px-2.5 text-lightThreeDotsMenuIconDots hover:text-lightThreeDotsMenuIconDotsHover dark:text-darkThreeDotsMenuIconDots  dark:hover:text-darkThreeDotsMenuIconDotsHover"
-      variant="secondary"
-    >
-      <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 4 15">
-        <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-      </svg>
-    </Button>
+<template>
+  <DropdownMenu
+    v-if="threeDotsDropdownItems?.length || customActions?.length || (bulkActions?.some((action: AdminForthBulkActionFront) => action.showInThreeDotsDropdown))"
+    v-model:open="showDropdown"
+    placement="bottom-start"
+    :closeOnSelect="false"
+    keepMounted
+    :contentClass="['max-w-64', THREE_DOTS_MENU_CONTENT_CLASSES]"
+  >
+    <template #trigger>
+      <Button
+        iconOnly
+        class="text-lightThreeDotsMenuIconDots hover:text-lightThreeDotsMenuIconDotsHover dark:text-darkThreeDotsMenuIconDots  dark:hover:text-darkThreeDotsMenuIconDotsHover"
+        variant="secondary"
+      >
+        <IconEllipsis aria-hidden="true" />
+      </Button>
+    </template>
 
-    <!-- Dropdown menu -->
-    <div 
-      ref="dropdownRef"
-      :class="{
-        'block': showDropdown,
-        'hidden': !showDropdown,
-        'left-0': openToRight,
-        'right-0': !openToRight
-      }"
-      class="absolute z-50 mt-3 bg-lightThreeDotsMenuBodyBackground divide-y divide-gray-100 rounded-lg shadow w-max max-w-64 dark:bg-darkThreeDotsMenuBodyBackground dark:divide-gray-600">
-        <ul class="py-2 text-sm text-lightThreeDotsMenuBodyText dark:text-darkThreeDotsMenuBodyText" aria-labelledby="dropdownMenuIconButton">
-          <li v-for="(item, i) in threeDotsDropdownItems" :key="`dropdown-item-${i}`">
-            <div  
-              class="block hover:bg-lightThreeDotsMenuBodyBackgroundHover hover:text-lightThreeDotsMenuBodyTextHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
-              :class="{
-                'pointer-events-none': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
-                'opacity-50': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
-                'cursor-not-allowed': checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes,
-              }"
-              @click="injectedComponentClick(i, $event)"
-            >
-              <div class="wrapper" v-if="getCustomComponent(item)">
-                <component 
-                  :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)!"
-                  :meta="item.meta" 
-                  :resource="coreStore.resource" 
-                  :adminUser="coreStore.adminUser"
-                  :checkboxes="checkboxes"
-                  :updateList="props.updateList"
-                  :clearCheckboxes="clearCheckboxes"
-                />
-              </div>
-            </div>
-          </li>
-          <li v-for="(action, i) in customActions" :key="action.id">
-            <div 
-              class="wrapper"                 
-              @click="injectedComponentClick(threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i, $event)"
-            > 
-              <component
-                :ref="(el: any) => setComponentRef(el, threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i)"
-                :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
-                :meta="formatComponent(action.customComponent).meta"
-                @callAction="(payload? : Object) => handleActionClick(action, payload)"
-              >
-                <a @click.prevent class="block">
-                  <div class="flex items-center gap-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover">
-                    <component 
-                      v-if="action.icon && !actionLoadingStates[action.id!]" 
-                      :is="getIcon(action.icon)" 
-                      class="w-4 h-4 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
-                    />
-                    <Spinner
-                      v-if="actionLoadingStates[action.id!]"
-                      class="w-5 h-5 text-gray-200 dark:text-gray-500 fill-gray-500 dark:fill-gray-300"
-                    />
-                    {{ action.name }}
-                  </div>
-                </a>
-              </component>
-            </div>
-          </li>
-          <li v-for="action in (bulkActions ?? []).filter(a => a.showInThreeDotsDropdown)" :key="action.id">
-            <a @click.prevent="startBulkAction(action.id)" 
-                class="block px-4 py-2 hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover"
-                :class="{
-                  'pointer-events-none': checkboxes && checkboxes.length === 0,
-                  'opacity-50': checkboxes && checkboxes.length === 0,
-                  'cursor-not-allowed': checkboxes && checkboxes.length === 0
-                }">
-              <div class="flex items-center gap-2">
-                <component 
-                  v-if="action.icon" 
-                  :is="getIcon(action.icon)" 
-                  class="w-4 h-4 text-lightPrimary dark:text-darkPrimary dark:brightness-200"
-                />
-                {{ action.label }}
-              </div>
-            </a>
-          </li>
-        </ul>
-    </div>
-  </div>
+    <DropdownMenuItem
+      v-for="(item, i) in threeDotsDropdownItems"
+      :key="`dropdown-item-${i}`"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      :disabled="!!(checkboxes && checkboxes.length === 0 && item.meta?.disabledWhenNoCheckboxes)"
+      @click="injectedComponentClick(i, $event)"
+    >
+      <component
+        v-if="getCustomComponent(item)"
+        :ref="(el: any) => setComponentRef(el, i)" :is="getCustomComponent(item)!"
+        :meta="item.meta"
+        :resource="coreStore.resource"
+        :adminUser="coreStore.adminUser"
+        :checkboxes="checkboxes"
+        :updateList="props.updateList"
+        :clearCheckboxes="clearCheckboxes"
+      />
+    </DropdownMenuItem>
+
+    <DropdownMenuItem
+      v-for="(action, i) in customActions"
+      :key="action.id"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      @click="injectedComponentClick(threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i, $event)"
+    >
+      <component
+        :ref="(el: any) => setComponentRef(el, threeDotsDropdownItems ? threeDotsDropdownItems.length + i : i)"
+        :is="(action.customComponent && getCustomComponent(formatComponent(action.customComponent))) || CallActionWrapper"
+        :meta="formatComponent(action.customComponent).meta"
+        @callAction="(payload? : Object) => handleActionClick(action, payload)"
+      >
+        <!-- preventDefault marks the click as handled by the action component -->
+        <span @click.prevent class="flex flex-1 items-center gap-2">
+          <component
+            v-if="action.icon && !actionLoadingStates[action.id!]"
+            :is="getIcon(action.icon)"
+            class="w-4 h-4 text-lightInputIconColor dark:text-darkInputIconColor"
+          />
+          <Spinner
+            v-if="actionLoadingStates[action.id!]"
+            class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+          />
+          {{ action.name }}
+        </span>
+      </component>
+    </DropdownMenuItem>
+
+    <DropdownMenuItem
+      v-for="action in (bulkActions ?? []).filter(a => a.showInThreeDotsDropdown)"
+      :key="action.id"
+      :class="THREE_DOTS_MENU_ITEM_CLASSES"
+      :disabled="!!(checkboxes && checkboxes.length === 0)"
+      @click="startBulkAction(action.id!)"
+    >
+      <template v-if="action.icon" #icon>
+        <component :is="getIcon(action.icon)" />
+      </template>
+      {{ action.label }}
+    </DropdownMenuItem>
+  </DropdownMenu>
 </template>
 
 
@@ -103,9 +86,11 @@ import { useCoreStore } from '@/stores/core';
 import { useAdminforth } from '@/adminforth';
 import { useRoute, useRouter } from 'vue-router';
 import CallActionWrapper from '@/components/CallActionWrapper.vue'
-import { ref, nextTick, type ComponentPublicInstance, onMounted, onUnmounted } from 'vue';
+import { ref, type ComponentPublicInstance, onMounted } from 'vue';
 import type { AdminForthActionFront, AdminForthBulkActionFront, AdminForthComponentDeclarationFull } from '@/types/Common';
-import { Spinner, Button } from '@/afcl';
+import { Spinner, Button, DropdownMenu, DropdownMenuItem } from '@/afcl';
+import { IconEllipsis } from '@iconify-prerendered/vue-lucide';
+import { THREE_DOTS_MENU_CONTENT_CLASSES, THREE_DOTS_MENU_ITEM_CLASSES } from '@/utils/threeDotsMenu';
 
 const { list, alert} = useAdminforth();
 const route = useRoute();
@@ -113,10 +98,7 @@ const coreStore = useCoreStore();
 const router = useRouter();
 const threeDotsDropdownItemsRefs = ref<Array<ComponentPublicInstance | null>>([]);
 const showDropdown = ref(false);
-const openToRight = ref(true);
 const actionLoadingStates = ref<Record<string, boolean>>({});
-const dropdownRef = ref<HTMLElement | null>(null);
-const buttonTriggerRef = ref<ComponentPublicInstance | null>(null);
 
 const props = defineProps({
   threeDotsDropdownItems: Array<AdminForthComponentDeclarationFull>,
@@ -178,8 +160,8 @@ function startBulkAction(actionId: string) {
   showDropdown.value = false;
 }
 
-async function injectedComponentClick(index: number, event?: MouseEvent) {
-  if (event?.defaultPrevented) {
+async function injectedComponentClick(index: number, event: MouseEvent) {
+  if (event.defaultPrevented) {
     showDropdown.value = false;
     return;
   }
@@ -190,42 +172,12 @@ async function injectedComponentClick(index: number, event?: MouseEvent) {
   showDropdown.value = false;
 }
 
-async function toggleDropdownVisibility() {
-  showDropdown.value = !showDropdown.value;
-  if (!showDropdown.value) return;
-  await nextTick();
-  const triggerRect = (buttonTriggerRef.value!.$el as HTMLElement).getBoundingClientRect();
-  const appEl = document.getElementById('app')!;
-  const appContentRight = appEl.getBoundingClientRect().right - parseFloat(getComputedStyle(appEl).paddingRight);
-  openToRight.value = triggerRect.left + dropdownRef.value!.offsetWidth <= appContentRight;
-}
-
-function handleClickOutside(e: MouseEvent) {
-  if (!dropdownRef.value) return
-
-  const triggerEl = buttonTriggerRef.value?.$el as HTMLElement | undefined;
-
-  if (!dropdownRef.value.contains(e.target as Node) && !triggerEl?.contains(e.target as Node)) {
-    showDropdown.value = false;
-  }
-}
-
 onMounted(() => {
-  document.addEventListener('mousedown', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('mousedown', handleClickOutside)
-})
+  list.closeThreeDotsDropdown = () => {
+    showDropdown.value = false;
+  };
+});
 
 </script>
 
-<style lang="scss" scoped>
-  .wrapper {
-    @apply px-4 py-2 
-    hover:text-lightThreeDotsMenuBodyTextHover hover:bg-lightThreeDotsMenuBodyBackgroundHover 
-    dark:hover:bg-darkThreeDotsMenuBodyBackgroundHover dark:hover:text-darkThreeDotsMenuBodyTextHover
-    cursor-pointer;
-  }
-</style>
 

@@ -33,5 +33,5 @@ const isExternal = computed(() => {
   return typeof props.to === 'string' && props.to.startsWith('http');
 });
 
-const linkClasses = "afcl-link text-lightPrimary underline dark:text-darkPrimary hover:no-underline hover:brightness-110 cursor-pointer";
+const linkClasses = "afcl-link font-medium text-lightPrimary underline decoration-lightPrimary/30 underline-offset-[3px] hover:decoration-lightPrimary dark:text-darkPrimary dark:decoration-darkPrimary/40 dark:hover:decoration-darkPrimary cursor-pointer transition-colors";
 </script>

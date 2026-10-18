@@ -10,11 +10,11 @@
         v-show="isModalOpen" 
         v-if="!removeFromDom" 
         @click="backdropClick" 
-        class="bg-black/50 overflow-y-auto overscroll-contain overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex"
+        class="bg-zinc-900/40 dark:bg-black/60 overflow-y-auto overscroll-contain overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full h-full md:inset-0 h-1rem max-h-full flex"
         :class="props.backgroundCustomClasses"
       >
         <!-- Modal content -->
-        <div v-bind="$attrs" class="relative bg-lightDialogBackgorund rounded-lg shadow-sm dark:bg-darkDialogBackgorund mx-4 sm:mx-0">
+        <div v-bind="$attrs" class="relative bg-lightDialogBackgorund rounded-xl shadow-popover dark:shadow-darkPopover dark:bg-darkDialogBackgorund mx-4 sm:mx-0">
 
           <!-- Modal body -->
           <div class="text-lightDialogBodyText dark:text-darkDialogBodyText">
@@ -24,15 +24,15 @@
           <!-- Confirmation Modal -->
           <div
             v-if="showConfirmationOnClose"
-            class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[60]"
+            class="fixed inset-0 flex items-center justify-center bg-zinc-900/40 dark:bg-black/60 z-[60]"
             :class="props.modalCustomClasses"
           >
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full">
-              <h2 class="text-lg font-semibold mb-4 text-lightDialogHeaderText dark:text-darkDialogHeaderText">{{ t('Confirm Close') }}</h2>
-              <p class="mb-6 text-lightDialogBodyText dark:text-darkDialogBodyText">{{ props.closeConfirmationText }}</p>
-              <div class="flex justify-end">
+            <div class="bg-lightDialogBackgorund dark:bg-darkDialogBackgorund p-5 rounded-xl shadow-popover dark:shadow-darkPopover max-w-sm w-full">
+              <h2 class="text-base font-semibold mb-2 text-lightDialogHeaderText dark:text-darkDialogHeaderText">{{ t('Confirm Close') }}</h2>
+              <p class="mb-5 text-sm text-lightDialogBodyText dark:text-darkDialogBodyText">{{ props.closeConfirmationText }}</p>
+              <div class="flex justify-end gap-2">
                 <Button
-                  class="me-3 !bg-gray-50 dark:!bg-gray-700 !text-lightDialogBodyText dark:!text-darkDialogBodyText hover:!bg-gray-100 dark:hover:!bg-gray-600 !border-gray-200 dark:!border-gray-600"
+                  variant="secondary"
                   @click="showConfirmationOnClose = false"
                 >
                   {{ t('Cancel') }}
@@ -58,7 +58,7 @@ import Button from "./Button.vue";
 import { ref, onMounted, nextTick, onUnmounted, computed, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const isModalOpen = ref(false);
+const isModalOpen = defineModel<boolean>('open', { default: false });
 const { t } = useI18n();
 
 const removeFromDom = computed(() => {

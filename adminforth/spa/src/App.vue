@@ -3,19 +3,17 @@
     <nav 
       v-if="loggedIn && routerIsReady && loginRedirectCheckIsReady && defaultLayout"
       id="af-header-nav"
-      class="fixed h-14 top-0 z-30 w-full border-b drop-shadow-sm bg-lightNavbar dark:bg-darkNavbar dark:border-darkSidebarDevider"
+      class="fixed h-14 top-0 z-30 w-full border-b border-lightNavbarBorder bg-lightNavbar dark:bg-darkNavbar dark:border-darkNavbarBorder"
     >
       <div class="af-header px-3 lg:px-5 lg:pl-3 flex items-center justify-between h-full w-full" >
         <div class="flex items-center justify-start rtl:justify-end">
           <button @click="sideBarOpen = !sideBarOpen"
-            type="button" class="inline-flex items-center p-2 text-sm  rounded-lg sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus:ring-2 focus:ring-lightSidebarDevider dark:text-darkSidebarIcons dark:hover:bg-darkSidebarHover dark:focus:ring-lightSidebarDevider">
+            type="button" class="inline-flex items-center justify-center w-[2.125rem] h-[2.125rem] text-sm text-lightNavbarIcons rounded-default sm:hidden hover:bg-lightSidebarItemHover focus:outline-none focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:text-darkNavbarIcons dark:hover:bg-darkSidebarItemHover dark:focus-visible:ring-darkFocusRing">
               <span class="sr-only">{{ $t('Open sidebar') }}</span>
-              <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
-              </svg>
+              <IconMenu class="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
           <component 
             v-if="coreStore?.adminUser"
             v-for="c in coreStore?.config?.globalInjections?.header || []"
@@ -25,66 +23,78 @@
           />
 
           <Tooltip v-if="coreStore.isInternetError">
-            <IconWifiOff class="blinking-icon w-8 h-8 text-red-500 hover:scale-110 transition-transform duration-200" />
+            <IconWifiOff class="blinking-icon w-5 h-5 text-lightInputErrorColor dark:text-darkInputErrorColor" />
             <template #tooltip>
               {{$t('Internet connection lost')}}
             </template>
           </Tooltip>
 
-          <span  
+          <button
             v-if="!coreStore.config?.singleTheme"
-            class="flex items-center gap-1 block py-2 text-sm text-black  dark:text-darkSidebarTextHover dark:hover:text-darkSidebarTextActive" role="menuitem">
-            <IconMoonSolid class="w-6 h-6 text-blue-300 hover:scale-110 cursor-pointer transition-transform duration-200" @click="toggleTheme" v-if="coreStore.theme !== 'dark'" />
-            <IconSunSolid class="w-6 h-6 text-yellow-300 hover:scale-110 cursor-pointer transition-transform duration-200" @click="toggleTheme" v-else />
-          </span>
+            type="button"
+            :aria-label="$t('Toggle theme')"
+            @click="toggleTheme"
+            class="af-header-theme-toggle flex items-center justify-center w-[2.125rem] h-[2.125rem] rounded-default cursor-pointer text-lightNavbarIcons hover:text-lightNavbarText hover:bg-lightSidebarItemHover focus:outline-none focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:text-darkNavbarIcons dark:hover:text-darkNavbarText dark:hover:bg-darkSidebarItemHover dark:focus-visible:ring-darkFocusRing transition-colors">
+            <IconMoon class="w-4 h-4" v-if="coreStore.theme !== 'dark'" />
+            <IconSun class="w-4 h-4" v-else />
+          </button>
 
-          <div>
-            <button 
-              ref="dropdownUserButton"
-              type="button" class="flex text-sm bg- rounded-full focus:ring-4 focus:ring-lightSidebarDevider dark:focus:ring-darkSidebarDevider dark:bg-" aria-expanded="false">
-              <span class="sr-only">{{ $t('Open user menu') }}</span>
-              <!-- hover scale lives on the inner span: popper measures the button with transforms, so scaling it would shift the popup -->
-              <span class="flex hover:scale-110 transition-transform duration-200">
-                <img
-                  v-if="coreStore.userAvatarUrl"
-                  class="w-8 h-8 rounded-full object-cover"
-                  :src="coreStore.userAvatarUrl"
-                  alt="user photo"
-                />
-                <svg v-else class="w-8 h-8 text-lightNavbarIcons dark:text-darkNavbarIcons" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                  <path fill-rule="evenodd" d="M12 20a7.966 7.966 0 0 1-5.002-1.756l.002.001v-.683c0-1.794 1.492-3.25 3.333-3.25h3.334c1.84 0 3.333 1.456 3.333 3.25v.683A7.966 7.966 0 0 1 12 20ZM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10c0 5.5-4.44 9.963-9.932 10h-.138C6.438 21.962 2 17.5 2 12Zm10-5c-1.84 0-3.333 1.455-3.333 3.25S10.159 13.5 12 13.5c1.84 0 3.333-1.455 3.333-3.25S13.841 7 12 7Z" clip-rule="evenodd"/>
-                </svg>
-              </span>
-            </button>
-          </div>
-          <Teleport to="body">
-            <div class="af-settings-popup z-50 hidden my-4 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain text-base list-none bg-lightUserMenuBackground divide-y divide-lightUserMenuBorder text-lightUserMenuText rounded-default shadow dark:shadow-black dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder text-darkUserMenuText dark:shadow-black" id="dropdown-user">
-              <div class="px-4 py-3" role="none">
-                <p class="text-sm text-gray-900 dark:text-darkNavbarText" role="none" v-if="coreStore.userFullname">
-                  {{ coreStore.userFullname }}
-                </p>
-                <p class="text-sm font-medium text-gray-900 truncate dark:text-darkSidebarText" role="none">
-                  {{ coreStore.username }}
-                </p>
-              </div>
-
-              <ul class="py-1" role="none">
-                <li v-for="c in userMenuComponents" class="bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover" >
-                  <component 
-                    :is="getCustomComponent(c)"
-                    :meta="c.meta"
-                    :adminUser="coreStore.adminUser"
+          <DropdownMenu
+            v-model:open="userMenuOpen"
+            placement="bottom-end"
+            keepMounted
+            contentClass="af-settings-popup min-w-[15rem] max-w-none max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain divide-y bg-lightUserMenuBackground divide-lightUserMenuBorder text-lightUserMenuText dark:bg-darkUserMenuBackground dark:divide-darkUserMenuBorder dark:text-darkUserMenuText"
+          >
+            <template #trigger>
+              <button type="button" class="flex text-sm rounded-full focus:outline-none focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing" :aria-expanded="userMenuOpen">
+                <span class="sr-only">{{ $t('Open user menu') }}</span>
+                <span class="flex rounded-full ring-1 ring-lightNavbarBorder hover:ring-lightInputBorderHover dark:ring-darkNavbarBorder dark:hover:ring-darkInputBorderHover transition-shadow">
+                  <img
+                    v-if="coreStore.userAvatarUrl"
+                    class="w-[2.125rem] h-[2.125rem] rounded-full object-cover"
+                    :src="coreStore.userAvatarUrl"
+                    alt="user photo"
                   />
-                </li>
-                <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
-                  <UserMenuSettingsButton />
-                </li>
-                <li>
-                  <button @click="logout" class="cursor-pointer flex items-center gap-1 block px-4 py-2 text-sm bg-lightUserMenuItemBackground hover:bg-lightUserMenuItemBackgroundHover text-lightUserMenuItemText hover:text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:hover:bg-darkUserMenuItemBackgroundHover dark:text-darkUserMenuItemText dark:hover:darkUserMenuItemTextHover w-full" role="menuitem">{{ $t('Sign out') }}</button>
-                </li>
-              </ul>
+                  <span v-else class="flex items-center justify-center w-[2.125rem] h-[2.125rem] rounded-full bg-lightSecondaryDarken text-lightNavbarIcons dark:bg-darkSecondaryLighten dark:text-darkNavbarIcons" aria-hidden="true">
+                    <IconUser class="w-4 h-4" />
+                  </span>
+                </span>
+              </button>
+            </template>
+
+            <div class="px-3 pt-2 pb-2.5" role="none">
+              <p class="text-sm font-medium text-lightUserMenuText truncate dark:text-darkUserMenuText" role="none" v-if="coreStore.userFullname">
+                {{ coreStore.userFullname }}
+              </p>
+              <p class="text-xs text-lightUserMenuText/60 truncate dark:text-darkUserMenuText/60" role="none" :class="{ 'text-sm font-medium !text-lightUserMenuText dark:!text-darkUserMenuText': !coreStore.userFullname }">
+                {{ coreStore.username }}
+              </p>
             </div>
-          </Teleport>
+
+            <ul class="py-1" role="none">
+              <!-- plain injected items get the hover from the row, AFCL menu items highlight themselves -->
+              <li v-for="c in userMenuComponents" class="rounded-md overflow-hidden bg-lightUserMenuItemBackground text-lightUserMenuItemText dark:bg-darkUserMenuItemBackground dark:text-darkUserMenuItemText [&:not(:has(.afcl-dropdown-menu-item))]:hover:bg-lightUserMenuItemBackgroundHover dark:[&:not(:has(.afcl-dropdown-menu-item))]:hover:bg-darkUserMenuItemBackgroundHover" >
+                <component
+                  :is="getCustomComponent(c)"
+                  :meta="c.meta"
+                  :adminUser="coreStore.adminUser"
+                />
+              </li>
+              <li v-if="coreStore?.config?.settingPages && coreStore.config.settingPages.length > 0">
+                <UserMenuSettingsButton />
+              </li>
+              <li class="mt-1 pt-1 border-t border-lightUserMenuBorder dark:border-darkUserMenuBorder first:mt-0 first:pt-0 first:border-t-0">
+                <DropdownMenuItem
+                  danger
+                  :class="USER_MENU_ITEM_CLASSES"
+                  @click="logout"
+                >
+                  <template #icon><IconLogOut /></template>
+                  {{ $t('Sign out') }}
+                </DropdownMenuItem>
+              </li>
+            </ul>
+          </DropdownMenu>
         </div>
       </div>
     </nav>
@@ -106,7 +116,7 @@
         maxWidth: headerOnlyLayout ? '100%' : isSidebarIconOnly ? 'calc(100% - 4.5rem)' : `calc(100% - ${expandedWidth})`
       }"
     >
-      <div class="p-0 dark:border-gray-700 mt-14">
+      <div class="p-0 mt-14">
         <RouterView/>     
       </div>
     </div> 
@@ -116,7 +126,7 @@
     </div>
 
     <div v-else class="flex items-center justify-center h-screen">
-      <div class="text-3xl text-gray-400 animate-bounce">
+      <div class="text-3xl text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText animate-bounce">
         <Spinner class="w-8 h-8" />
       </div>
     </div>
@@ -134,7 +144,7 @@
 
     <div v-if="sideBarOpen"
          @click="hideSidebar"
-         drawer-backdrop="" class="bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-20">
+         drawer-backdrop="" class="bg-zinc-900/30 dark:bg-black/60 fixed inset-0 z-20">
     </div>
 
     <component
@@ -188,14 +198,12 @@
 </style>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch, onBeforeMount } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, onBeforeMount } from 'vue';
 import { RouterView } from 'vue-router';
-import { Dropdown } from 'flowbite'
 import './index.scss'
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
-import { IconMoonSolid, IconSunSolid } from '@iconify-prerendered/vue-flowbite';
-import { IconWifiOff } from '@iconify-prerendered/vue-humbleicons';
+import { IconMoon, IconSun, IconWifiOff, IconMenu, IconUser, IconLogOut } from '@iconify-prerendered/vue-lucide';
 import AcceptModal from './components/AcceptModal.vue';
 import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -203,17 +211,16 @@ import { createHead } from 'unhead'
 import { getCustomComponent, handleNotAuthorized } from '@/utils';
 import Toast from './components/Toast.vue';
 import {useToastStore} from '@/stores/toast';
-import { initFrontedAPI } from '@/adminforth';
-import { useAdminforth } from '@/adminforth';
+import adminforth, { initFrontedAPI, useAdminforth } from '@/adminforth';
 import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
-import { Tooltip, Spinner } from '@/afcl'
+import { Tooltip, Spinner, DropdownMenu, DropdownMenuItem } from '@/afcl'
+import { USER_MENU_ITEM_CLASSES } from '@/utils/userMenu';
 
 const coreStore = useCoreStore();
 const toastStore = useToastStore();
 const userStore = useUserStore();
 
 const { menu } = useAdminforth();
-let { closeUserMenuDropdown } = useAdminforth();
 
 initFrontedAPI()
 
@@ -222,7 +229,12 @@ const sideBarOpen = ref(false);
 const route = useRoute();
 const router = useRouter();
 const publicConfigLoaded = ref(false);
-const dropdownUserButton = ref(null);
+const userMenuOpen = ref(false);
+
+// injected user menu items close the menu via useAdminforth().closeUserMenuDropdown()
+adminforth.closeUserMenuDropdown = () => {
+  userMenuOpen.value = false;
+};
 
 
 const routerIsReady = ref(false);
@@ -342,6 +354,7 @@ watch(title, (title) => {
 })
 
 watch(route, () => {
+  userMenuOpen.value = false;
   // Handle preferIconOnly layout
   if (route.meta?.sidebarAndHeader === 'preferIconOnly') {
     isSidebarIconOnly.value = true;
@@ -349,31 +362,10 @@ watch(route, () => {
 });
 
 
-watch(dropdownUserButton, async (dropdownUserButton) => {
-  if (dropdownUserButton) {
-    await nextTick();
-    const dropdownUser = document.querySelector('#dropdown-user') as HTMLElement;
-    // trigger is passed by ref without data-dropdown-toggle: flowbite auto-inits such triggers on window load
-    // with default 'bottom' placement, and that second popper overrides our positioning
-    const dd = new Dropdown(
-      dropdownUser,
-      dropdownUserButton,
-      { placement: 'bottom-end' },
-    );
-    // trigger lives in the fixed header, so fixed strategy keeps popup in place while the page scrolls
-    dd._popperInstance.setOptions({ strategy: 'fixed' });
-    // keep popup anchored to the right edge when its content size changes (e.g. async user menu components)
-    new ResizeObserver(() => dd._popperInstance.update()).observe(dropdownUser);
-    closeUserMenuDropdown = () => {
-      dd.hide();
-    }
-  }
-})
-
 // initialize components based on data attribute selectors
 onMounted(async () => {
   await loadConfig();
-  // before init flowbite we have to wait router initialized because it affects dom(our v-ifs) and fetch menu
+  // wait for the router: it affects the dom (our v-ifs) and fetches the menu
   await initRouter();
   document.documentElement.setAttribute('data-theme', theme.value);
   menu.refresh = async () => {

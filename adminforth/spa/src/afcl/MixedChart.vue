@@ -4,8 +4,9 @@
 
 <script setup lang="ts">
 import type ApexCharts from 'apexcharts';
-import { type ApexOptions } from 'apexcharts';
+import type { ApexOptions } from 'apexcharts';
 import { ref, onUnmounted, watch, computed } from 'vue';
+import { mergeChartOptions } from './chartUtils';
 type ApexChartsConstructor = new (el: Element, options: any) => ApexCharts;
 
 const props = defineProps<{
@@ -29,7 +30,7 @@ const optionsBase = {
     height: 250,
     type: 'line',
     stacked: false,
-    fontFamily: "Inter, sans-serif",
+    fontFamily: "'Geist Variable', ui-sans-serif, sans-serif",
     toolbar: {
       show: false,
     }
@@ -84,22 +85,7 @@ const chartOptions = computed(() => {
     labels: props.data?.map((item) => item.x) ?? [],
   };
 
-  function mergeOptions(options: any, newOptions: any) {
-    if (!newOptions) {
-      return;
-    }
-    for (const key in newOptions) {
-      if (typeof newOptions[key] === 'object' && !Array.isArray(newOptions[key])) {
-        if (!options[key]) {
-          options[key] = {};
-        }
-        mergeOptions(options[key], newOptions[key]);
-      } else {
-        options[key] = newOptions[key];
-      }
-    }
-  }
-  mergeOptions(options, props.options);
+  mergeChartOptions(options, props.options);
 
   return options;
 });

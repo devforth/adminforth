@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="grid w-40 gap-4 mb-2">
+    <div class="grid w-40 gap-2 mb-2">
       <div>
         <label v-if="label" for="start-time" class="block mb-2 text-sm font-medium text-lightDatePickerButtonText dark:text-darkDatePickerButtonText">{{ label }}</label>
 
@@ -10,7 +10,7 @@
           </div>
 
           <input ref="datepickerStartEl"  type="text"
-                 class="af-pick-date-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-default block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
+                 class="af-pick-date-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-default block w-full px-2.5 py-1.5 leading-5 shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                 :placeholder="$t('Select date')" :disabled="readonly" />
           
         </div>
@@ -18,24 +18,24 @@
     </div>
 
     <div>
-      <div class="grid w-40 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
+      <div class="grid w-40 gap-2 mb-2" :class="{hidden: !showTimeInputs}">
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
               <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
             <input v-model="startTime" type="time" id="start-time" step="1"
-                   class="af-pick-time-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-default block w-full p-2.5 dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
+                   class="af-pick-time-button bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText text-sm rounded-default block w-full px-2.5 py-1.5 leading-5 shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder dark:bg-darkInputBackground dark:border-darkInputBorder dark:placeholder-darkInputPlaceholderText dark:text-darkDatePickerButtonText focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" :disabled="readonly" required/>
           </div>
         </div>
       </div>
 
       <button type="button"
-              class="text-lightDatePickerExpandText dark:text-darkDatePickerExpandText text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              class="text-lightDatePickerExpandText dark:text-darkDatePickerExpandText text-[13px] font-medium hover:underline p-0 inline-flex items-center gap-0.5 mb-2"
               :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
-        <svg class="w-8 h-8 ms-0.5" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
+        <svg class="w-4 h-4" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
              fill="none" viewBox="0 0 24 24">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -51,7 +51,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
 import {useCoreStore} from '@/stores/core';
-import {FLEXIBLE_DATEPICKER_FORMAT} from '@/utils';
+import {FLEXIBLE_DATEPICKER_FORMAT} from '@/utils/dateUtils';
 
 import IconCalendar from "@/components/icons/IconCalendar.vue";
 import IconTime from "@/components/icons/IconTime.vue";

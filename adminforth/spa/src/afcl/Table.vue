@@ -1,11 +1,11 @@
 <template>
-  <div class="afcl-table-container relative overflow-x-auto overflow-y-auto overscroll-x-contain shadow-md rounded-lg">
-      <table class="afcl-table w-full text-sm text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
-          <thead class="afcl-table-thread z-40 text-xs text-lightTableHeadingText uppercase bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText" :class="makeHeaderSticky ? 'sticky top-0' : ''">
+  <div class="afcl-table-container relative overflow-x-auto overflow-y-auto overscroll-x-contain border border-lightTableBorder dark:border-darkTableBorder rounded-lg bg-lightTableBackground dark:bg-darkTableBackground">
+      <table class="afcl-table w-full text-[13px] text-left rtl:text-right text-lightTableText dark:text-darkTableText overflow-x-auto">
+          <thead class="afcl-table-thread z-40 text-xs font-medium text-lightTableHeadingText border-b border-lightTableBorder dark:border-darkTableBorder bg-lightTableHeadingBackground dark:bg-darkTableHeadingBackground dark:text-darkTableHeadingText" :class="makeHeaderSticky ? 'sticky top-0' : ''">
             <tr>
               <th
                 scope="col"
-                class="px-6 py-3"
+                class="px-4 py-2.5 font-medium"
                 ref="headerRefs"
                 :key="`header-${column.fieldName}`"
                 v-for="column in columns"
@@ -19,13 +19,13 @@
                   {{ column.label }}
                   <span v-if="isColumnSortable(column)" class="text-lightTableHeadingText dark:text-darkTableHeadingText">
                     <!-- Unsorted -->
-                    <svg v-if="currentSortField !== column.fieldName" class="w-3 h-3 ms-1.5 opacity-30" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 1.086Zm6.852 1.952H8.574a2.072 2.072 0 0 0-1.847 1.087 1.9 1.9 0 0 0 .11 1.985l3.426 5.05a2.123 2.123 0 0 0 3.472 0l3.427-5.05a1.9 1.9 0 0 0 .11-1.985 2.074 2.074 0 0 0-1.846-1.087Z"/></svg>
+                    <IconChevronsUpDown v-if="currentSortField !== column.fieldName" class="w-3.5 h-3.5 ms-1 opacity-40" aria-hidden="true" />
 
                     <!-- Sorted ascending -->
-                    <svg v-else-if="currentSortDirection === 'asc'" class="w-3 h-3 ms-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/></svg>
+                    <IconArrowUp v-else-if="currentSortDirection === 'asc'" class="w-3.5 h-3.5 ms-1" aria-hidden="true" />
 
                     <!-- Sorted descending -->
-                    <svg v-else class="w-3 h-3 ms-1.5 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M8.574 11.024h6.852a2.075 2.075 0 0 0 1.847-1.086 1.9 1.9 0 0 0-.11-1.986L13.736 2.9a2.122 2.122 0 0 0-3.472 0L6.837 7.952a1.9 1.9 0 0 0-.11 1.986 2.074 2.074 0 0 0 1.847 0z"/></svg>
+                    <IconArrowUp v-else class="w-3.5 h-3.5 ms-1 rotate-180" aria-hidden="true" />
                   </span>
                 </span>
               </th>
@@ -42,8 +42,8 @@
             <tr v-else-if="!isLoading && !props.isLoading && dataPage.length === 0" class="afcl-table-empty-body">
               <td :colspan="columns.length" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center justify-center text-lightTableText dark:text-darkTableText">
-                  <IconTableRowOutline class="w-10 h-10 mb-4 text-gray-400 dark:text-gray-500" />
-                  <p class="text-md">{{ $t('No data available') }}</p>
+                  <IconRows3 class="w-6 h-6 mb-3 text-lightTablePaginationText dark:text-darkTablePaginationText" />
+                  <p class="text-sm">{{ $t('No data available') }}</p>
                 </div>
               </td>
             </tr>
@@ -58,7 +58,7 @@
               }"
               @click="tableRowClick(item)"
             >
-              <td class="px-6 py-4" :key="`cell-${index}-${column.fieldName}`"
+              <td class="px-4 py-3" :key="`cell-${index}-${column.fieldName}`"
                 v-for="column in props.columns"
               >
                 <slot v-if="$slots[`cell:${column.fieldName}`]" 
@@ -94,17 +94,13 @@
       <div class="inline-flex" :class="blockPagination ? 'pointer-events-none select-none opacity-50' : ''">
           <!-- Buttons -->
           <button
-            class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightActivePaginationButtonText bg-lightActivePaginationButtonBackground border-r-0 rounded-s hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
+            class="flex items-center h-7 focus-visible:z-20 focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing px-2.5 gap-1 text-sm font-medium text-lightActivePaginationButtonText focus:outline-none bg-lightActivePaginationButtonBackground border-r-0 rounded-s-default hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
             @click="currentPage--; pageInput = currentPage.toString();" 
             :disabled="currentPage <= 1 || blockPagination">
-            <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 14 10">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 5H1m0 0 4 4M1 5l4-4"/>
-            </svg>
+            <IconChevronLeft class="w-4 h-4 rtl:rotate-180" aria-hidden="true" />
           </button>
           <button
-            class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-r-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
+            class="flex items-center h-7 focus-visible:z-20 focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing px-3 text-sm font-medium tabular-nums text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-r-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
             @click="switchPage(1); pageInput = currentPage.toString();" 
             :disabled="currentPage <= 1 || blockPagination">
             <!-- <IconChevronDoubleLeftOutline class="w-4 h-4" /> -->
@@ -114,14 +110,14 @@
             type="text"
             v-model="pageInput"
             :style="{ width: `${Math.max(1, pageInput.length+4)}ch` }"
-            class="min-w-10 outline-none inline-block w-auto py-1.5 px-3 text-sm text-center text-lightTablePaginationInputText border border-lightTablePaginationInputBorder bg-lightTablePaginationInputBackground dark:border-darkTablePaginationInputBorder dark:text-darkTablePaginationInputText dark:bg-darkTablePaginationInputBackground z-10"
+            class="min-w-10 outline-none inline-block w-auto h-7 px-3 text-sm font-medium tabular-nums text-center text-lightTablePaginationInputText border border-lightTablePaginationInputBorder bg-lightTablePaginationInputBackground dark:border-darkTablePaginationInputBorder dark:text-darkTablePaginationInputText dark:bg-darkTablePaginationInputBackground z-10"
             @keydown="onPageKeydown($event)"
             @blur="validatePageInput()"
           >
           </input>
 
           <button
-            class="flex items-center py-1 px-3 text-sm font-medium text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-l-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
+            class="flex items-center h-7 focus-visible:z-20 focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing px-3 text-sm font-medium tabular-nums text-lightUnactivePaginationButtonText focus:outline-none bg-lightUnactivePaginationButtonBackground border-l-0  border border-lightUnactivePaginationButtonBorder hover:bg-lightUnactivePaginationButtonHoverBackground hover:text-lightUnactivePaginationButtonHoverText dark:bg-darkUnactivePaginationButtonBackground dark:text-darkUnactivePaginationButtonText dark:border-darkUnactivePaginationButtonBorder dark:hover:text-darkUnactivePaginationButtonHoverText dark:hover:bg-darkUnactivePaginationButtonHoverBackground disabled:opacity-50"
             @click="currentPage = totalPages; pageInput = currentPage.toString();" 
             :disabled="currentPage >= totalPages || blockPagination"
           >
@@ -129,15 +125,11 @@
 
           </button>
           <button
-            class="flex items-center py-1 px-3 gap-1 text-sm font-medium text-lightActivePaginationButtonText focus:outline-none bg-lightActivePaginationButtonBackground border-l-0 rounded-e hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
+            class="flex items-center h-7 focus-visible:z-20 focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing px-2.5 gap-1 text-sm font-medium text-lightActivePaginationButtonText focus:outline-none bg-lightActivePaginationButtonBackground border-l-0 rounded-e-default hover:opacity-90 dark:bg-darkActivePaginationButtonBackground dark:text-darkActivePaginationButtonText disabled:opacity-50"
             @click="currentPage++; pageInput = currentPage.toString();" 
             :disabled="currentPage >= totalPages || blockPagination"
           >
-            <svg class="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 14 10">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M1 5h12m0 0L9 1m4 4L9 9"/>
-            </svg>
+            <IconChevronRight class="w-4 h-4 rtl:rotate-180" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -148,7 +140,7 @@
 <script setup lang="ts">
   import { ref, computed, useTemplateRef, watch, onMounted } from 'vue';
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
-  import { IconTableRowOutline } from '@iconify-prerendered/vue-flowbite';
+  import { IconRows3, IconChevronLeft, IconChevronRight, IconChevronsUpDown, IconArrowUp } from '@iconify-prerendered/vue-lucide';
 
   defineExpose({
     refreshTable

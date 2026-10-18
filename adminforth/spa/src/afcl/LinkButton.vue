@@ -1,5 +1,15 @@
 <template>
+  <!-- a link without href leaves the tab order and does not navigate -->
+  <a
+    v-if="props.disabled"
+    v-bind="restAttrs"
+    aria-disabled="true"
+    :class="buttonClasses"
+  >
+    <slot></slot>
+  </a>
   <router-link
+    v-else
     v-bind="restAttrs"
     :to="props.to"
     :class="buttonClasses"
@@ -11,7 +21,7 @@
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue';
 import { type ClassNameValue } from 'tailwind-merge';
-import { getButtonClasses, type ButtonVariant } from './buttonStyles';
+import { getButtonClasses, type ButtonVariant, type ButtonSize } from './buttonStyles';
 import type { RouteLocationAsRelativeGeneric, RouteLocationAsPathGeneric } from 'vue-router';
 defineOptions({ inheritAttrs: false });
 
@@ -27,6 +37,8 @@ const props = withDefaults(defineProps<{
   disabled?: boolean;
   active?: boolean;
   variant?: ButtonVariant;
+  size?: ButtonSize;
+  iconOnly?: boolean;
   shadow?: boolean;
 }>(), {
   disabled: false,
@@ -38,6 +50,8 @@ const props = withDefaults(defineProps<{
 const buttonClasses = computed(() => getButtonClasses(
   {
     variant: props.variant,
+    size: props.size,
+    iconOnly: props.iconOnly,
     shadow: props.shadow,
     active: props.active,
     disabled: props.disabled,

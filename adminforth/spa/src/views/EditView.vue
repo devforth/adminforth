@@ -12,7 +12,7 @@
     <BreadcrumbsWithButtons>
       <!-- save and cancle -->
       <Button @click="() => {cancelButtonClicked = true; $router.back()}"
-        class="h-[2.125rem] px-3 mr-2 text-lightEditViewButtonText dark:text-darkEditViewButtonText"
+        class="h-[2.125rem] px-3 text-lightEditViewButtonText dark:text-darkEditViewButtonText"
         variant="secondary"
       >
         {{ $t('Cancel') }}
@@ -21,10 +21,10 @@
         @click="() => saveRecord()"
         class="h-[2.125rem] px-3 text-sm text-lightEditViewSaveButtonText hover:text-lightEditViewSaveButtonTextHover dark:text-darkEditViewSaveButtonText dark:hover:text-darkEditViewSaveButtonTextHover"
         :disabled="saving || (validatingMode && !isValid) || resourceFormRef?.isValidating"
-        variant="secondary"
+        variant="primary"
       >
         <Spinner v-if="saving || resourceFormRef?.isValidating" class="w-4 h-4" />
-        <IconFloppyDiskSolid v-else class="w-4 h-4" />
+        <IconSave v-else class="w-4 h-4" />
         {{ $t('Save') }}
       </Button>
 
@@ -77,8 +77,8 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, initThreeDotsDropdown, compareOldAndNewRecord, generateMessageHtmlForRecordChange, leaveGuardActiveClass, onBeforeRouteLeaveCreateEditViewGuard } from '@/utils';
-import { IconFloppyDiskSolid } from '@iconify-prerendered/vue-flowbite';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, compareOldAndNewRecord, generateMessageHtmlForRecordChange, leaveGuardActiveClass, onBeforeRouteLeaveCreateEditViewGuard } from '@/utils';
+import { IconSave } from '@iconify-prerendered/vue-lucide';
 import { computed, onMounted, onBeforeMount, ref, type Ref, nextTick, watch, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
 import { showErrorTost } from '@/composables/useFrontendApi';
@@ -170,7 +170,6 @@ onMounted(async () => {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string 
   });
-  initThreeDotsDropdown();
 
   await coreStore.fetchRecord({
     resourceId: route.params.resourceId as string,

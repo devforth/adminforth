@@ -5,7 +5,7 @@
     @dragleave.prevent="dragging = false"
     @drop.prevent="dragging = false; doEmit(($event.dataTransfer as DataTransfer).files)"
   >
-      <label :id="id" class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-default cursor-pointer
+      <label :id="id" class="flex flex-col items-center justify-center w-full border border-dashed rounded-lg cursor-pointer transition-colors
         hover:bg-lightDropzoneBackgroundHover hover:border-lightDropzoneBorderHover  dark:hover:border-darkDropzoneBorderHover dark:hover:bg-darkDropzoneBackgroundHover"
         :class="{
           'border-lightDropzoneBorderDragging dark:border-darkDropzoneBorderDragging': dragging,
@@ -26,23 +26,9 @@
         />
 
         <div class="flex flex-col items-center justify-center pt-5 pb-6">
-          <svg
-            v-if="!selectedFiles.length"
-            class="w-8 h-8 mb-4 text-lightDropzoneIcon dark:text-darkDropzoneIcon"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 20 16"
-          >
-            <path
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 
-                5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 
-                0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-            />
-          </svg>
+          <span v-if="!selectedFiles.length" class="flex items-center justify-center w-9 h-9 mb-3 rounded-lg border border-lightDropzoneBorder bg-lightDropzoneBackgroundHover text-lightDropzoneIcon dark:border-darkDropzoneBorder dark:bg-darkDropzoneBackgroundHover dark:text-darkDropzoneIcon">
+            <IconCloudUpload class="w-5 h-5" />
+          </span>
 
           <div
             v-else
@@ -53,7 +39,7 @@
                 class="text-sm text-lightDropzoneIcon dark:text-darkDropzoneIcon  bg-lightDropzoneBackgroundHover dark:bg-darkDropzoneBackgroundHover rounded-default 
                       flex items-center gap-1 px-2 py-1 group"
               >
-                <IconFileSolid class="w-4 h-4 flex-shrink-0" />
+                <IconFile class="w-4 h-4 flex-shrink-0" />
                 <span
                   class="truncate max-w-[200px]"
                   :title="file.name"
@@ -64,13 +50,11 @@
                 <button
                   type="button"
                   @click.prevent.stop="removeFile(index)"
-                  class="text-lightDropzoneIcon dark:text-darkDropzoneIcon hover:text-red-600 dark:hover:text-red-400 
+                  class="text-lightDropzoneIcon dark:text-darkDropzoneIcon hover:text-lightInputErrorColor dark:hover:text-darkInputErrorColor 
                         opacity-70 hover:opacity-100 transition-all"
                   :title="$t('Remove file')"
                 >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <IconX class="w-3.5 h-3.5" />
                 </button>
               </div>
             </template>
@@ -80,7 +64,7 @@
             v-if="!selectedFiles.length"
             class="mb-2 text-sm text-lightDropzoneText dark:text-darkDropzoneText"
           >
-            <span class="font-semibold">{{ $t('Click to upload') }}</span>
+            <span class="font-medium text-lightPrimary dark:text-darkPrimary">{{ $t('Click to upload') }}</span>
             {{ $t('or drag and drop') }}
           </p>
 
@@ -96,9 +80,9 @@
 </template>
 
 <script setup lang="ts">
-import { humanifySize } from '@/utils';
+import { humanifySize } from './fileSize';
 import { ref, type Ref, computed } from 'vue';
-import { IconFileSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconFile, IconX, IconCloudUpload } from '@iconify-prerendered/vue-lucide';
 import { watch } from 'vue';
 import { useAdminforth } from '@/adminforth';
 

@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: column.type === 'time'}">
+    <div class="mx-auto grid grid-cols-2 gap-2 mb-2" :class="{hidden: column.type === 'time'}">
       <div class="relative">
         <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
           <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
         </div>
 
         <input ref="datepickerStartEl" type="text"
-               class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                :placeholder="$t('From')">
       </div>
 
@@ -17,13 +17,13 @@
         </div>
 
         <input ref="datepickerEndEl" type="text"
-               class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
+               class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                :placeholder="$t('To')">
       </div>
     </div>
 
     <div>
-      <div class="mx-auto grid grid-cols-2 gap-4 mb-2" :class="{hidden: !showTimeInputs}">
+      <div class="mx-auto grid grid-cols-2 gap-2 mb-2" :class="{hidden: !showTimeInputs}">
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
@@ -31,7 +31,7 @@
             </div>
 
             <input v-model="startTime" type="time" id="start-time"
-                   class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" required/>
           </div>
         </div>
@@ -43,17 +43,17 @@
             </div>
 
             <input v-model="endTime" type="time" id="end-time"
-                   class="bg-lightDatePickerButtonBackground border leading-none border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
                    value="00:00" required/>
           </div>
         </div>
       </div>
 
       <button type="button"
-              class="text-lightPrimary dark:text-darkPrimary text-base font-medium hover:underline p-0 inline-flex items-center mb-2"
+              class="text-lightPrimary dark:text-darkPrimary text-[13px] font-medium hover:underline p-0 inline-flex items-center gap-0.5 mb-2"
               :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
-        <svg class="w-8 h-8 ms-0.5 relative top-px" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
+        <svg class="w-4 h-4" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
              xmlns="http://www.w3.org/2000/svg" width="24" height="24"
              fill="none" viewBox="0 0 24 24">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

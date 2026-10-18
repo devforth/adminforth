@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex items-center justify-center min-h-screen bg-lightHtml dark:bg-darkHtml w-screen h-screen"
+  <div class="relative flex items-center justify-center min-h-screen bg-lightHtml dark:bg-darkHtml w-full h-screen"
     :style="coreStore.config?.loginBackgroundImage && backgroundPosition === 'over' ? {
       'background-image': 'url(' + loadFile(coreStore.config?.loginBackgroundImage) + ')',
       'background-size': 'cover',
@@ -76,8 +76,8 @@
                               :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
                               <template #rightIcon>
                                 <button type="button" @click="showPw = !showPw" class="text-lightLoginViewSubTextColor dark:text-darkLoginViewSubTextColor">
-                                  <IconEyeSolid class="w-5 h-5" v-if="!showPw" />
-                                  <IconEyeSlashSolid class="w-5 h-5" v-else />
+                                  <IconEye class="w-4 h-4" v-if="!showPw" />
+                                  <IconEyeOff class="w-4 h-4" v-else />
                                 </button>
                               </template>
                             </Input>
@@ -142,7 +142,7 @@ import { getCustomComponent, formatComponent } from '@/utils';
 import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
-import { IconEyeSolid, IconEyeSlashSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconEye, IconEyeOff } from '@iconify-prerendered/vue-lucide';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter, useRoute } from 'vue-router';
 import { Button, Checkbox, Input, Spinner } from '@/afcl';
