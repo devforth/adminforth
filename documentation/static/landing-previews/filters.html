@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Filters</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .drawer { position: absolute; top: 0; right: 0; bottom: 0; width: 352px; padding: 20px; display: flex; flex-direction: column; border-left: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-pop); }
+  .flt { display: flex; flex-direction: column; }
+  .flt-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0; font-size: 13px; font-weight: 500; }
+  .flt-head .i { width: 14px; height: 14px; margin-right: 5px; color: var(--muted); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .range { position: relative; height: 20px; margin: 10px 10px 0; }
+  .range-track { position: absolute; top: 6px; left: 0; right: 0; height: 8px; border-radius: 999px; background: var(--surface-3); }
+  .range-fill { position: absolute; top: 6px; height: 8px; background: var(--accent); }
+  .range-thumb { position: absolute; top: 0; width: 20px; height: 20px; margin-left: -10px; border: 1px solid var(--border-strong); border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px rgba(24, 24, 27, .2); }
+  .acts { display: flex; gap: 2px; color: var(--muted); }
+  .at td.act { padding-top: 8px; padding-bottom: 8px; }
+</style>
+</head>
+<body>
+<!-- list view with the filters drawer of core open over it: text, enum, number range and date range filters -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Cars"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Cars</h1></nav>
+        <div class="btns">
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Create</span>
+          <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#list-filter"/></svg>Filter<span class="count">3</span></span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr>
+            <th style="width: 48px"><input class="cb" type="checkbox"></th>
+            <th><span class="sort">Model<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">Price<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">Year<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th>Listed</th>
+            <th style="width: 1%">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse GT</td>
+            <td class="num">$12,480</td>
+            <td class="num">2024</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse Spyder</td>
+            <td class="num">$11,950</td>
+            <td class="num">2023</td>
+            <td><span class="badge badge-muted">No</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse Coupe</td>
+            <td class="num">$10,720</td>
+            <td class="num">2022</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse Cross</td>
+            <td class="num">$10,105</td>
+            <td class="num">2021</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+  <div style="position: absolute; inset: 0; background: var(--scrim)"></div>
+  <div class="drawer">
+    <h5 style="margin: 0; display: flex; align-items: center; justify-content: space-between; font-size: 16px; line-height: 32px; font-weight: 600">Filters<span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#x"/></svg></span></h5>
+    <div style="display: flex; flex-direction: column; gap: 20px; padding: 16px 0">
+      <div class="flt">
+        <p class="flt-head">Model<svg class="i"><use href="icons.svg#x"/></svg></p>
+        <div class="input">Eclipse</div>
+      </div>
+      <div class="flt">
+        <p class="flt-head">Engine type<svg class="i"><use href="icons.svg#x"/></svg></p>
+        <div class="input select">Electric<svg class="i"><use href="icons.svg#chevron-down"/></svg></div>
+      </div>
+      <div class="flt">
+        <p class="flt-head">Price<svg class="i"><use href="icons.svg#x"/></svg></p>
+        <div class="pair"><div class="input num">8000</div><div class="input num">14000</div></div>
+        <div class="range"><span class="range-track"></span><span class="range-fill" style="left: 30%; right: 25%"></span><span class="range-thumb" style="left: 30%"></span><span class="range-thumb" style="left: 75%"></span></div>
+      </div>
+      <div class="flt">
+        <p class="flt-head">Created at</p>
+        <div class="pair">
+          <div class="input" style="justify-content: space-between; color: var(--faint)">From<svg class="i"><use href="icons.svg#calendar"/></svg></div>
+          <div class="input" style="justify-content: space-between; color: var(--faint)">To<svg class="i"><use href="icons.svg#calendar"/></svg></div>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 2px; margin-top: 8px; font-size: 13px; font-weight: 500; color: var(--accent-fg)">Show time<svg class="i"><use href="icons.svg#chevron-down"/></svg></span>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary"><svg class="i"><use href="icons.svg#x"/></svg>Clear all</span></div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

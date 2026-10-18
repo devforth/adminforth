@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Active sessions</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .flag { width: 32px; height: 24px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); flex: none; }
+</style>
+</head>
+<body>
+<!-- user menu → Settings → Active sessions, the page of the user-sessions plugin; only the key columns are drawn -->
+<div class="screen" style="width: 880px; height: 550px">
+  <div class="page" style="height: 100%">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <div style="padding: 24px">
+      <div class="settings" style="height: 640px">
+        <div class="settings-tabs">
+          <div style="padding: 0 10px 16px">
+            <h1 style="font-size: 15px; line-height: 22px; font-weight: 600">Settings</h1>
+            <p class="t-xs t-muted" style="margin-top: 2px">Signed in as adminforth</p>
+          </div>
+          <div class="vt is-on"><svg class="i"><use href="icons.svg#monitor-smartphone"/></svg>Active sessions</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#lock"/></svg>Passkeys</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#link"/></svg>Connected accounts</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#bot"/></svg>MCP</div>
+        </div>
+        <div class="settings-body">
+          <div class="ph">
+            <div>
+              <h2>Active sessions</h2>
+              <p>Every browser you signed in from has its own session. Revoke the ones you do not recognize.</p>
+            </div>
+            <span class="btn btn-danger">Revoke all other sessions</span>
+          </div>
+          <table class="at zebra" style="margin-top: 24px">
+            <thead>
+              <tr>
+                <th>Device</th>
+                <th><span class="sort">Country<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+                <th><span class="sort">Last used<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+                <th style="text-align: right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div style="display: flex; align-items: center; gap: 8px"><svg class="i t-muted"><use href="icons.svg#monitor"/></svg><div><p style="font-weight: 500; color: var(--text)">Chrome 141 on macOS</p><p class="t-xs" style="margin-top: 2px; font-weight: 500; color: var(--success-fg)">This device</p></div></div></td>
+                <td><div style="display: flex; align-items: center; gap: 8px"><img class="flag" src="flags/us.svg" alt="">US</div></td>
+                <td>Oct 18, 2026 14:05:31</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td><div style="display: flex; align-items: center; gap: 8px"><svg class="i t-muted"><use href="icons.svg#smartphone"/></svg><p style="font-weight: 500; color: var(--text)">Safari 19 on iOS</p></div></td>
+                <td><div style="display: flex; align-items: center; gap: 8px"><img class="flag" src="flags/de.svg" alt="">DE</div></td>
+                <td>Oct 18, 2026 11:49:09</td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><div style="display: flex; align-items: center; gap: 8px"><svg class="i t-muted"><use href="icons.svg#monitor"/></svg><p style="font-weight: 500; color: var(--text)">Firefox 144 on Linux</p></div></td>
+                <td><div style="display: flex; align-items: center; gap: 8px"><img class="flag" src="flags/fr.svg" alt="">FR</div></td>
+                <td>Oct 15, 2026 16:22:17</td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><div style="display: flex; align-items: center; gap: 8px"><svg class="i t-muted"><use href="icons.svg#smartphone"/></svg><p style="font-weight: 500; color: var(--text)">Chrome 141 on Android</p></div></td>
+                <td><div style="display: flex; align-items: center; gap: 8px"><img class="flag" src="flags/ua.svg" alt="">UA</div></td>
+                <td>Oct 14, 2026 21:37:05</td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

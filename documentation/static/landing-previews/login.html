@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in</title>
+<link rel="stylesheet" href="previews.css">
+</head>
+<body>
+<!-- core LoginView with loginBackgroundImage on the left half of the page -->
+<div class="screen" style="display: flex">
+  <img src="login-bg.jpg" alt="" style="width: 50%; height: 100%; object-fit: cover">
+  <div class="center" style="flex: 1">
+    <div style="width: 328px; background: var(--surface); border-radius: 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, .1), 0 1px 2px -1px rgba(0, 0, 0, .1)">
+      <div style="padding: 20px; border-bottom: 1px solid var(--border)">
+        <h3 style="font-size: 20px; line-height: 28px; font-weight: 600">Sign in to My Admin</h3>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; font-size: 14px">
+        <div>
+          <div style="margin-bottom: 8px; font-weight: 500">Your email</div>
+          <div class="input" style="color: var(--faint)">name@company.com</div>
+        </div>
+        <div>
+          <div style="margin-bottom: 8px; font-weight: 500">Your password</div>
+          <div class="input" style="justify-content: space-between; letter-spacing: 2px">••••••••<svg class="i"><use href="icons.svg#eye"/></svg></div>
+        </div>
+        <div class="btn btn-primary">Login to your account</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

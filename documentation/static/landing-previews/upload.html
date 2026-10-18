@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>File upload</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .drop { position: relative; display: flex; flex-direction: column; align-items: center; padding: 20px 12px; border: 1px dashed var(--border-strong); border-radius: 8px; background: var(--bg); color: var(--muted); }
+</style>
+</head>
+<body>
+<!-- edit view: the field of the upload plugin while the picked photo goes to the storage -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Apartments"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg>Apartments<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Edit Apartment</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary">Cancel</span>
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#save"/></svg>Save</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="ft">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Apartment image</td>
+            <td>
+              <div class="drop">
+                <span class="btn btn-secondary btn-sm btn-icon" style="position: absolute; top: 8px; right: 8px"><svg class="i"><use href="icons.svg#wand-sparkles"/></svg></span>
+                <img src="park-guell.jpg" alt="" style="height: 160px; max-width: 100%; margin-bottom: 12px; border-radius: 6px; object-fit: contain">
+                <p style="margin-bottom: 8px"><span style="font-weight: 500; color: var(--accent-fg)">Click to upload</span> or drag and drop</p>
+                <p class="t-xs">PNG, JPG or WEBP (up to 10.0 MB)</p>
+                <div style="width: 100%; max-width: 320px; margin-top: 12px">
+                  <div class="bar"><span style="width: 67%"></span></div>
+                  <p style="margin-top: 8px">67%</p>
+                </div>
+              </div>
+              <p class="help">Upload image of apartment</p>
+            </td>
+          </tr>
+          <tr>
+            <td>Listed</td>
+            <td><span class="tgl is-on" style="display: block"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

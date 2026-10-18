@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dashboard</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .widgets { display: flex; flex-wrap: wrap; gap: 16px; }
+  .widget { padding: 16px; overflow: hidden; }
+  .widget h3 { margin-bottom: 12px; font-size: 14px; line-height: 24px; font-weight: 500; }
+  .kpi { font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
+  .kpi-note { display: flex; align-items: center; gap: 8px; margin-top: 4px; color: var(--muted); }
+  .gridline { stroke: var(--muted); stroke-opacity: .14; }
+  .axis { fill: var(--muted); }
+  .val { fill: var(--text); font-weight: 600; }
+  .barfill { fill: var(--accent-fg); }
+  .lg-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
+  .lg-name { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .lg-row b { font-weight: 600; }
+</style>
+</head>
+<body>
+<!-- a dashboard of the dashboard plugin: KPI cards and charts built from the resources, collapsed sidebar -->
+<div class="screen app" style="width: 1040px; height: 650px">
+  <aside class="side rail" data-active="Dashboard"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content" style="gap: 24px">
+      <div class="ph">
+        <h2>Cars overview</h2>
+        <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#pencil"/></svg>Edit</span>
+      </div>
+      <section>
+        <h2 style="margin-bottom: 12px; font-size: 16px; line-height: 28px; font-weight: 600; letter-spacing: -.01em">Sales</h2>
+        <div class="widgets">
+          <div class="card widget" style="flex: 1 1 260px">
+            <h3>Listed cars</h3>
+            <p class="kpi">1,284</p>
+            <p class="kpi-note">vs last week<span class="badge badge-success">+12%</span></p>
+          </div>
+          <div class="card widget" style="flex: 1 1 260px">
+            <h3>Average price</h3>
+            <p class="kpi">$6,357</p>
+            <p class="kpi-note">vs last week<span class="badge badge-success">+3.1%</span></p>
+          </div>
+          <div class="card widget" style="flex: 1 1 260px">
+            <h3>Sold this week</h3>
+            <p class="kpi">49</p>
+            <p class="kpi-note">vs last week<span class="badge badge-danger">−4%</span></p>
+          </div>
+          <div class="card widget" style="flex: 1 1 360px; height: 330px">
+            <h3>Average price by body type</h3>
+            <svg width="350" height="250" viewBox="0 0 350 250" style="display: block; font-size: 11px">
+            <line x1="34" x2="350" y1="228.0" y2="228.0" class="gridline"/>
+            <text x="26" y="232.0" text-anchor="end" class="axis">0</text>
+            <line x1="34" x2="350" y1="175.5" y2="175.5" class="gridline"/>
+            <text x="26" y="179.5" text-anchor="end" class="axis">2k</text>
+            <line x1="34" x2="350" y1="123.0" y2="123.0" class="gridline"/>
+            <text x="26" y="127.0" text-anchor="end" class="axis">4k</text>
+            <line x1="34" x2="350" y1="70.5" y2="70.5" class="gridline"/>
+            <text x="26" y="74.5" text-anchor="end" class="axis">6k</text>
+            <line x1="34" x2="350" y1="18.0" y2="18.0" class="gridline"/>
+            <text x="26" y="22.0" text-anchor="end" class="axis">8k</text>
+            <path d="M48.3 228.0V65.1q0 -4 4 -4h16q4 0 4 4V228.0Z" class="barfill"/>
+            <text x="60.3" y="55.1" text-anchor="middle" class="val">6,357</text>
+            <text x="60.3" y="244" text-anchor="middle" class="axis">hatchback</text>
+            <path d="M101.0 228.0V94.1q0 -4 4 -4h16q4 0 4 4V228.0Z" class="barfill"/>
+            <text x="113.0" y="84.1" text-anchor="middle" class="val">5,253</text>
+            <text x="113.0" y="244" text-anchor="middle" class="axis">van</text>
+            <path d="M153.7 228.0V101.1q0 -4 4 -4h16q4 0 4 4V228.0Z" class="barfill"/>
+            <text x="165.7" y="91.1" text-anchor="middle" class="val">4,985</text>
+            <text x="165.7" y="244" text-anchor="middle" class="axis">sedan</text>
+            <path d="M206.3 228.0V106.1q0 -4 4 -4h16q4 0 4 4V228.0Z" class="barfill"/>
+            <text x="218.3" y="96.1" text-anchor="middle" class="val">4,795</text>
+            <text x="218.3" y="244" text-anchor="middle" class="axis">coupe</text>
+            <path d="M259.0 228.0V109.8q0 -4 4 -4h16q4 0 4 4V228.0Z" class="barfill"/>
+            <text x="271.0" y="99.8" text-anchor="middle" class="val">4,657</text>
+            <text x="271.0" y="244" text-anchor="middle" class="axis">truck</text>
+            <path d="M311.7 228.0V117.2q0 -4 4 -4h16q4 0 4 4V228.0Z" class="barfill"/>
+            <text x="323.7" y="107.2" text-anchor="middle" class="val">4,373</text>
+            <text x="323.7" y="244" text-anchor="middle" class="axis">suv</text>
+            </svg>
+          </div>
+          <div class="card widget" style="flex: 1 1 480px; height: 330px">
+            <h3>Engine type share</h3>
+            <div style="display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: center; gap: 20px">
+              <div style="position: relative; display: grid; place-items: center">
+                <svg width="232" height="232" viewBox="0 0 232 232" style="display: block; rotate: -90deg">
+                <circle cx="116.0" cy="116.0" r="102.1" fill="none" stroke="var(--border)" stroke-width="27.8"/>
+                <circle cx="116.0" cy="116.0" r="102.1" fill="none" stroke="var(--c1)" stroke-width="27.8" pathLength="100" stroke-dasharray="30.4 69.6" stroke-dashoffset="0"/>
+                <circle cx="116.0" cy="116.0" r="102.1" fill="none" stroke="var(--c2)" stroke-width="27.8" pathLength="100" stroke-dasharray="28.4 71.6" stroke-dashoffset="-31"/>
+                <circle cx="116.0" cy="116.0" r="102.1" fill="none" stroke="var(--c3)" stroke-width="27.8" pathLength="100" stroke-dasharray="22.4 77.6" stroke-dashoffset="-60"/>
+                <circle cx="116.0" cy="116.0" r="102.1" fill="none" stroke="var(--c4)" stroke-width="27.8" pathLength="100" stroke-dasharray="16.4 83.6" stroke-dashoffset="-83"/>
+                </svg>
+                <div style="position: absolute; inset: 0; display: grid; place-items: center; text-align: center">
+                  <div><div style="font-size: 24px; line-height: 32px; font-weight: 600">100</div><div class="t-xs t-muted">Total</div></div>
+                </div>
+              </div>
+              <div style="display: grid; gap: 12px">
+                <div class="lg-row"><span class="lg-name"><span class="dot" style="width: 12px; height: 12px; background: var(--c1)"></span>electric</span><span style="text-align: right"><b>31%</b><br><span class="t-xs t-muted">31</span></span></div>
+                <div class="lg-row"><span class="lg-name"><span class="dot" style="width: 12px; height: 12px; background: var(--c2)"></span>gasoline</span><span style="text-align: right"><b>29%</b><br><span class="t-xs t-muted">29</span></span></div>
+                <div class="lg-row"><span class="lg-name"><span class="dot" style="width: 12px; height: 12px; background: var(--c3)"></span>hybrid</span><span style="text-align: right"><b>23%</b><br><span class="t-xs t-muted">23</span></span></div>
+                <div class="lg-row"><span class="lg-name"><span class="dot" style="width: 12px; height: 12px; background: var(--c4)"></span>diesel</span><span style="text-align: right"><b>17%</b><br><span class="t-xs t-muted">17</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

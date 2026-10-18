@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCP server</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .agent { display: flex; align-items: center; gap: 8px; }
+  .agent img { width: 20px; height: 20px; }
+  .note { margin-top: 2px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<!-- user menu → Settings → MCP, the page of the MCP plugin with the agents connected to the panel; only the key columns are drawn -->
+<div class="screen" style="width: 880px; height: 550px">
+  <div class="page" style="height: 100%">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <div style="padding: 24px">
+      <div class="settings" style="height: 640px">
+        <div class="settings-tabs">
+          <div style="padding: 0 10px 16px">
+            <h1 style="font-size: 15px; line-height: 22px; font-weight: 600">Settings</h1>
+            <p class="t-xs t-muted" style="margin-top: 2px">Signed in as adminforth</p>
+          </div>
+          <div class="vt"><svg class="i"><use href="icons.svg#monitor-smartphone"/></svg>Active sessions</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#lock"/></svg>Passkeys</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#link"/></svg>Connected accounts</div>
+          <div class="vt is-on"><svg class="i"><use href="icons.svg#bot"/></svg>MCP</div>
+        </div>
+        <div class="settings-body">
+          <div class="ph">
+            <div>
+              <h2>MCP</h2>
+              <p>Connect an AI agent to My Admin. It acts on your behalf with your permissions.</p>
+            </div>
+            <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Connect agent</span>
+          </div>
+          <table class="at zebra" style="margin-top: 24px">
+            <thead>
+              <tr>
+                <th><span class="sort">Name<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+                <th>Last used by</th>
+                <th style="text-align: right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><p style="font-weight: 500; color: var(--text)">Claude Code</p><p class="note">OAuth · claude.ai</p></td>
+                <td><div class="agent"><img src="agents/claude-code.svg" alt="">Claude Code v2.1.4</div></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><p style="font-weight: 500; color: var(--text)">Codex</p><p class="note">OAuth · chatgpt.com</p></td>
+                <td><div class="agent"><img src="agents/codex.svg" alt="">Codex v0.46.0</div></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><p style="display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text)">Weekly report<span class="badge badge-muted">Read only</span></p><p class="note">Auth secret</p></td>
+                <td><div class="agent"><img src="agents/gemini.svg" alt="">Gemini v0.9.0</div></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><p style="font-weight: 500; color: var(--text)">Support triage</p><p class="note">Auth secret</p></td>
+                <td style="color: var(--faint)">Not used yet</td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

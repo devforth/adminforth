@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Background jobs</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .job { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 6px; }
+  .job-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .job-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .job-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--text); }
+  .job-head span { flex: none; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .job-state { display: flex; align-items: center; gap: 4px; }
+  .acts { display: flex; gap: 2px; color: var(--muted); }
+  .at td.act { padding-top: 8px; padding-bottom: 8px; }
+</style>
+</head>
+<body>
+<!-- the header button of the background-jobs plugin with a running job, its list of jobs is open -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Cars"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span style="position: relative">
+        <span class="btn btn-secondary" style="position: relative; overflow: hidden; background: var(--surface-3)"><span class="spin accent"></span>1 running<span style="position: absolute; left: 0; bottom: 0; width: 64%; height: 2px; background: var(--accent)"></span></span>
+        <div class="pop" style="position: absolute; top: calc(100% + 6px); right: 0; width: 320px; z-index: 1">
+          <div class="job">
+            <div class="job-main"><div class="job-head"><b>Translate strings</b><span>2 minutes ago</span></div><div class="bar"><span style="width: 64%"></span></div></div>
+            <div class="job-state"><span class="spin accent"></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#x"/></svg></span></div>
+          </div>
+          <div class="job">
+            <div class="job-main"><div class="job-head"><b>Fill descriptions</b><span>8 minutes ago</span></div></div>
+            <div class="job-state"><svg class="i" style="color: var(--warning)"><use href="icons.svg#circle-alert"/></svg></div>
+          </div>
+          <div class="job">
+            <div class="job-main"><div class="job-head"><b>Export to CSV</b><span>25 minutes ago</span></div></div>
+            <div class="job-state"><svg class="i" style="color: var(--success)"><use href="icons.svg#circle-check"/></svg></div>
+          </div>
+          <div class="job">
+            <div class="job-main"><div class="job-head"><b>Import prices</b><span>1 hour ago</span></div></div>
+            <div class="job-state"><svg class="i" style="color: var(--danger)"><use href="icons.svg#circle-x"/></svg></div>
+          </div>
+          <div class="job">
+            <div class="job-main"><div class="job-head"><b>Resize photos</b><span>3 hours ago</span></div></div>
+            <div class="job-state"><svg class="i" style="color: var(--success)"><use href="icons.svg#circle-check"/></svg></div>
+          </div>
+        </div>
+      </span>
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Cars</h1></nav>
+        <div class="btns">
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Create</span>
+          <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#list-filter"/></svg>Filter</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr>
+            <th style="width: 48px"><input class="cb" type="checkbox"></th>
+            <th><span class="sort">Model<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">Price<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">Year<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th>Listed</th>
+            <th style="width: 1%">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse GT</td>
+            <td class="num">$12,480</td>
+            <td class="num">2024</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse Spyder</td>
+            <td class="num">$11,950</td>
+            <td class="num">2023</td>
+            <td><span class="badge badge-muted">No</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse Coupe</td>
+            <td class="num">$10,720</td>
+            <td class="num">2022</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Eclipse Cross</td>
+            <td class="num">$10,105</td>
+            <td class="num">2021</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Aether Nimbus S</td>
+            <td class="num">$6,420</td>
+            <td class="num">2023</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Borealis Aurora X</td>
+            <td class="num">$8,950</td>
+            <td class="num">2024</td>
+            <td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td style="color: var(--text); font-weight: 500">Cairn RL</td>
+            <td class="num">$5,140</td>
+            <td class="num">2020</td>
+            <td><span class="badge badge-muted">No</span></td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

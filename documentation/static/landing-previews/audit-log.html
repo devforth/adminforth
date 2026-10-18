@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Audit log</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .ft td { border-bottom-color: var(--divider); }
+  .diff { overflow: hidden; border: 1px solid var(--border); border-radius: 6px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 13px; line-height: 20px; }
+  .dl { display: flex; color: var(--text-2); white-space: pre; }
+  .dl > span { flex: none; width: 34px; padding-right: 8px; text-align: right; color: var(--faint); }
+  .dl > code { flex: 1; font: inherit; padding-left: 4px; }
+  .dl.del { background: var(--danger-soft); }
+  .dl.add { background: var(--success-soft); }
+  .dl.del mark { background: var(--danger-line); color: inherit; }
+  .dl.add mark { background: var(--success-line); color: inherit; }
+  .k { color: var(--accent-fg); }
+</style>
+</head>
+<body>
+<!-- show view of a record of the audit log resource: who changed what, with the diff of the plugin -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Audit Logs"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg>Audit Logs<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Show Audit Log</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="ft">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Created at</td><td>Oct 18, 2026 14:05:31</td></tr>
+          <tr><td>Resource</td><td><span class="link-u">Apartments</span></td></tr>
+          <tr><td>User</td><td><span class="link-u">john.finch@acme.io</span></td></tr>
+          <tr><td>Action</td><td>edit</td></tr>
+          <tr>
+            <td>Diff</td>
+            <td>
+              <div class="diff">
+                <div class="dl"><span>1</span><span>1</span><code>  {</code></div>
+                <div class="dl del"><span>2</span><span></span><code>- <span class="k">"price"</span>: 151<mark>7</mark>.65,</code></div>
+                <div class="dl del"><span>3</span><span></span><code>- <span class="k">"square_meter"</span>: 5<mark>5.9</mark></code></div>
+                <div class="dl add"><span></span><span>2</span><code>+ <span class="k">"price"</span>: 151<mark>8</mark>.65,</code></div>
+                <div class="dl add"><span></span><span>3</span><code>+ <span class="k">"square_meter"</span>: 5<mark>8</mark></code></div>
+                <div class="dl"><span>4</span><span>4</span><code>  }</code></div>
+              </div>
+            </td>
+          </tr>
+          <tr><td>Record</td><td><span class="link-u">Sunny loft in Gràcia</span></td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

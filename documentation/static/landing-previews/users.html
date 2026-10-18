@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Users</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .opt { display: flex; align-items: center; min-height: 32px; padding: 0 10px; border-radius: 6px; color: var(--text-2); }
+  .opt.is-on { background: var(--surface-3); color: var(--text); font-weight: 500; }
+</style>
+</head>
+<body>
+<!-- edit view of the users resource of the app: email, password and the role picked from a select -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Users"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg>Users<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Edit User</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary">Cancel</span>
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#save"/></svg>Save</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="ft">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Email <svg class="i req"><use href="icons.svg#asterisk"/></svg></td>
+            <td><div class="input">john.finch@acme.io</div></td>
+          </tr>
+          <tr>
+            <td>Password</td>
+            <td><div class="input" style="justify-content: space-between; letter-spacing: 2px">••••••••••<svg class="i"><use href="icons.svg#eye"/></svg></div><p class="help">Leave empty to keep password unchanged</p></td>
+          </tr>
+          <tr>
+            <td>Role <svg class="i req"><use href="icons.svg#asterisk"/></svg></td>
+            <td>
+              <div class="input select is-focus">Super admin<svg class="i" style="rotate: 180deg"><use href="icons.svg#chevron-down"/></svg></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+  <div class="pop" style="position: absolute; top: 364px; left: 525px; width: 302px">
+    <span class="opt is-on">Super admin</span>
+    <span class="opt">Admin</span>
+    <span class="opt">Editor</span>
+    <span class="opt">Viewer</span>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

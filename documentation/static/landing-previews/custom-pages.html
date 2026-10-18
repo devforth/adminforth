@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Custom page</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .chart { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .ch-t { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--muted); }
+  .ch-v { font-size: 20px; line-height: 24px; font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .grid { stroke: var(--grid); fill: none; }
+  .base { stroke: var(--border-strong); fill: none; }
+  .xl { display: flex; justify-content: space-between; margin-top: -4px; font-size: 10.5px; color: var(--muted); }
+  .lg { display: flex; gap: 12px; font-size: 11.5px; color: var(--text-2); }
+  .lg span { display: inline-flex; align-items: center; gap: 6px; }
+  .ln { width: 12px; height: 2px; border-radius: 1px; }
+  .hb { display: flex; flex-direction: column; gap: 3px; }
+  .hb-row { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-2); }
+  .hb-row b { font-weight: 500; color: var(--text); }
+  .hb-fill { height: 8px; border-radius: 0 4px 4px 0; background: var(--c1); }
+</style>
+</head>
+<body>
+<!-- a custom Vue page of the app, built from AFCL cards and charts -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Dashboard"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="ph">
+        <div>
+          <h2>Apartments statistics</h2>
+          <p>Listings and prices of the last 7 days</p>
+        </div>
+        <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#download"/></svg>Report</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+        <div class="card chart">
+          <div><div class="ch-t">Apartments listed · 7d</div><div class="ch-v">12</div></div>
+            <svg width="242" height="110" viewBox="0 0 242 110" style="display: block; overflow: visible">
+            <path class="grid" d="M0 10.5H242M0 43.5H242M0 76.5H242"></path>
+            <path d="M0.0 85.0L40.3 110.0L80.7 60.0L121.0 85.0L161.3 85.0L201.7 35.0L242.0 10.0L242 110L0 110Z" style="fill: var(--c1); opacity: .12"></path>
+            <path d="M0.0 85.0L40.3 110.0L80.7 60.0L121.0 85.0L161.3 85.0L201.7 35.0L242.0 10.0" style="fill: none; stroke: var(--c1); stroke-width: 2; stroke-linejoin: round"></path>
+            <path class="base" d="M0 109.5H242"></path>
+            </svg>
+          <div class="xl"><span>Mon</span><span>Wed</span><span>Fri</span><span>Sun</span></div>
+        </div>
+        <div class="card chart">
+          <div><div class="ch-t">Listed vs unlisted price · 10d</div><div class="ch-v">$5,920</div></div>
+            <svg width="242" height="110" viewBox="0 0 242 110" style="display: block; overflow: visible">
+            <path class="grid" d="M0 10.5H242M0 43.5H242M0 76.5H242"></path>
+            <path d="M0.0 51.4L26.9 47.1L53.8 50.0L80.7 40.0L107.6 34.3L134.4 38.6L161.3 30.0L188.2 25.7L215.1 28.6L242.0 21.4" style="fill: none; stroke: var(--c1); stroke-width: 2; stroke-linejoin: round"></path>
+            <path d="M0.0 58.6L26.9 60.0L53.8 54.3L80.7 55.7L107.6 50.0L134.4 44.3L161.3 47.1L188.2 41.4L215.1 37.1L242.0 40.0" style="fill: none; stroke: var(--c2); stroke-width: 2; stroke-linejoin: round"></path>
+            <path class="base" d="M0 109.5H242"></path>
+            </svg>
+          <div class="lg"><span><span class="ln" style="background: var(--c1)"></span>Listed</span><span><span class="ln" style="background: var(--c2)"></span>Unlisted</span></div>
+        </div>
+        <div class="card chart" style="grid-column: span 2">
+          <div class="ch-t">Apartments by country</div>
+            <div class="hb"><div class="hb-row"><span>Spain</span><b class="num">34</b></div><div class="hb-fill" style="width: 100%"></div></div>
+            <div class="hb"><div class="hb-row"><span>Portugal</span><b class="num">21</b></div><div class="hb-fill" style="width: 62%"></div></div>
+            <div class="hb"><div class="hb-row"><span>France</span><b class="num">15</b></div><div class="hb-fill" style="width: 44%"></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

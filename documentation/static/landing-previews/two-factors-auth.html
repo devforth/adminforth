@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Two-factor setup</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .step { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-weight: 500; }
+  .step-n { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%; background: color-mix(in oklab, var(--accent) 10%, transparent); color: var(--accent-fg); font-size: 12px; font-weight: 600; }
+  .well { border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); }
+</style>
+</head>
+<body>
+<!-- TwoFactorsSetup: the card a user gets after the first login, cropped under the code input -->
+<div class="screen" style="width: 840px; height: 525px; display: flex; justify-content: center; padding-top: 10px">
+  <div style="width: 448px; height: fit-content; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-pop)">
+    <div style="display: flex; align-items: flex-start; gap: 14px; padding: 20px 24px; border-bottom: 1px solid var(--border)">
+      <span class="icon-well" style="width: 40px; height: 40px; background: color-mix(in oklab, var(--accent) 10%, transparent); color: var(--accent-fg)"><svg class="i i-lg"><use href="icons.svg#shield-check"/></svg></span>
+      <div>
+        <h3 style="font-size: 18px; line-height: 24px; font-weight: 600">Set up two-factor authentication</h3>
+        <p class="t-muted" style="margin-top: 2px">Add this account to your authenticator app</p>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px; padding: 20px 24px 24px">
+      <div>
+        <p class="step"><span class="step-n">1</span>Scan the QR code with your authenticator app</p>
+        <div class="well" style="display: flex; align-items: center; gap: 16px; padding: 14px">
+          <img src="qr.svg" alt="" style="width: 128px; height: 128px; padding: 8px; border-radius: 8px; background: #FFFFFF">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span class="t-muted">Setting up on this device?</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--accent-fg); font-weight: 500; text-decoration: underline; text-decoration-color: color-mix(in oklab, var(--accent) 30%, transparent); text-underline-offset: 3px">Open in authenticator app<svg class="i"><use href="icons.svg#external-link"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="t-muted" style="margin-bottom: 8px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em">Or enter the key manually</p>
+        <div class="well" style="display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px">
+          <span class="mono" style="flex: 1; font-size: 14px; letter-spacing: .05em">VOO3ODWR3WWIIXDUM2TSRSWLJNZQ</span>
+          <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#copy"/></svg></span>
+        </div>
+      </div>
+      <div>
+        <p class="step"><span class="step-n">2</span>Enter the 6-digit code from the app</p>
+        <div class="code" style="display: flex; justify-content: center">
+          <span class="code-cell">4</span>
+          <span class="code-cell">8</span>
+          <span class="code-cell">2</span>
+          <span class="code-sep"></span>
+          <span class="code-cell is-focus"><span class="code-caret"></span></span>
+          <span class="code-cell"></span>
+          <span class="code-cell"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

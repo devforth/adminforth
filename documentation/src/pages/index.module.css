@@ -657,9 +657,10 @@
 
 /* --- gallery of what it can do -------------------------------------------- */
 
+/* two columns at most: the screens in the cards stay big enough to read */
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
   gap: 22px;
 }
 
@@ -672,10 +673,20 @@
   flex-direction: column;
 }
 
-.gcard img {
+.gcard img,
+.gcard iframe {
   display: block;
   width: 100%;
   border-bottom: 1px solid var(--line);
+}
+
+/* a drawn screen is a picture: no focus, clicks and scroll stay with the page */
+.gcard iframe {
+  aspect-ratio: 16 / 10;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  pointer-events: none;
 }
 
 .gcardBody {

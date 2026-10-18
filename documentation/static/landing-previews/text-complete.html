@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI text completion</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .ghost { color: var(--faint); }
+  .caret { display: inline-block; width: 1px; height: 18px; margin: 0 -1px; background: var(--text); vertical-align: -4px; }
+</style>
+</head>
+<body>
+<!-- edit view: the description field of the text-complete plugin suggests the rest of the sentence, Tab accepts it -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Apartments"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg>Apartments<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Edit Apartment</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary">Cancel</span>
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#save"/></svg>Save</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="ft">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Title <svg class="i req"><use href="icons.svg#asterisk"/></svg></td>
+            <td><div class="input">Sunny loft in Gràcia</div></td>
+          </tr>
+          <tr>
+            <td>Price</td>
+            <td><div class="input" style="width: 160px">2940.56</div><p class="help">Price is in USD</p></td>
+          </tr>
+          <tr>
+            <td>Number of rooms</td>
+            <td><div class="input select">3<svg class="i"><use href="icons.svg#chevron-down"/></svg></div></td>
+          </tr>
+          <tr>
+            <td>Description</td>
+            <td>
+              <div class="input is-focus textarea" style="height: auto; white-space: normal; color: var(--text)">
+                <p style="flex: 1">Bright loft with a view of Park Güell right from the balcony. Calm and fre<span class="caret"></span><span class="ghost">sh air make it a perfect retreat from the bustling city.</span></p>
+                <span class="kbd">Tab</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

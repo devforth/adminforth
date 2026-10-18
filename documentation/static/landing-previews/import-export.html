@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Import and export</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .uuid { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12.5px; }
+  .uuid .i { color: var(--muted); }
+  .acts { display: flex; gap: 2px; color: var(--muted); }
+  .at td.act { padding-top: 8px; padding-bottom: 8px; }
+</style>
+</head>
+<body>
+<!-- list view with the ⋯ menu open: the items of the import-export plugin, the export submenu picks the rows -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Apartments"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Apartments</h1></nav>
+        <div class="btns">
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Create</span>
+          <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#list-filter"/></svg>Filter</span>
+          <span class="btn btn-secondary btn-icon" style="background: var(--surface-3)"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr>
+            <th style="width: 48px"><input class="cb" type="checkbox"></th>
+            <th style="width: 1%"><span class="sort">ID<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th><span class="sort">Title<svg class="i"><use href="icons.svg#chevrons-up-down"/></svg></span></th>
+            <th style="width: 1%">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">8978…7f8a<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Sunny loft in Gràcia</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">ba99…7f8a<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Penthouse with terrace</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">c41d…02b3<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Studio near Park Güell</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">e07a…9d1c<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Flat by Barceloneta beach</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">f3b8…5e60<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Two rooms in Eixample</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">1a6f…c8e2<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Attic with a sea view</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><input class="cb" type="checkbox"></td>
+            <td><span class="uuid">7d20…4b9f<svg class="i"><use href="icons.svg#copy"/></svg></span></td>
+            <td>Quiet flat in Sant Antoni</td>
+            <td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+  <div class="pop" style="position: absolute; top: 121px; right: 32px; width: 176px">
+    <span class="mi is-hover"><svg class="i"><use href="icons.svg#download"/></svg>Export to CSV<svg class="i trail"><use href="icons.svg#chevron-left"/></svg></span>
+    <span class="mi"><svg class="i"><use href="icons.svg#upload"/></svg>Import from CSV</span>
+  </div>
+  <div class="pop" style="position: absolute; top: 121px; right: 212px; width: 168px">
+    <span class="mi">All<span class="trail t-xs t-muted">(1.2k+)</span></span>
+    <span class="mi is-hover">Filtered<span class="trail t-xs t-muted">(37)</span></span>
+    <span class="mi is-disabled">Selected<span class="trail t-xs t-muted">(0)</span></span>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

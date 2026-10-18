@@ -1,5 +1,6 @@
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
+import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
@@ -63,46 +64,48 @@ const FEATURED_ON = [
 
 type PluginItem = {name: string; slug: string; description: string; standard?: string};
 type PluginGroup = {title: string; items: PluginItem[]};
+// a card shows a screenshot (original) or a page of static/landing-previews drawn in the design system (preview)
+type GalleryItem = {title: string; link: string; description: string; original?: string; preview?: string};
 
-const images = [
+const images: GalleryItem[] = [
   {
-    original: require('@site/static/img/previews/login_form.png').default,
+    preview: 'login',
     title: 'Authentication and Authorization',
     link: '/docs/tutorial/gettingStarted',
     description: 'OWASP-Compliant Sign-In done for you'
   },
   {
-    original: require('@site/static/img/previews/sso.png').default,
+    preview: 'oauth',
     title: 'OAuth2/OpenID SSO Plugin - one click login',
     link: '/docs/tutorial/Plugins/oauth/',
     description: 'RFC 6749 SSO plugin with premade Google, Github, Facebook, Keycloak, Microsoft or any custom OAuth2 adapter'
   },
   {
-    original: require('@site/static/img/previews/2fa_plugin.png').default,
+    preview: 'two-factors-auth',
     title: '2FA Plugin - secure your admin panel',
     link: '/docs/tutorial/Plugins/two-factors-auth/',
     description: 'RFC 6238-Compliant TOTP-Based & WebAuthn PassKeys 2FA will add additional security layer (login and preferred actions)'
   },
   {
-    original: require('@site/static/img/previews/user_sessions.png').default,
+    preview: 'user-sessions',
     title: 'User Sessions Plugin - revoke access from any device',
     link: '/docs/tutorial/Plugins/user-sessions/',
     description: 'Every browser signed into the panel, with IP, country and last use, revocable in one click and really signed out on logout'
   },
   {
-    original: require('@site/static/img/previews/branding.png').default,
+    preview: 'branding',
     title: 'Branding and theming',
     link: '/docs/tutorial/Customization/branding/',
     description: 'Upload your logo, change colors, update titles, make the look to match your brand'
   },
   {
-    original: require('@site/static/img/previews/dashboard.png').default,
+    preview: 'custom-pages',
     title: 'Custom Pages and Dashboards',
     link: '/docs/tutorial/Customization/customPages/',
     description: 'Create your own pages and dashboards with Vue3 components. Add any additional npm packages and extend your admin panel as you like'
   },
   {
-    original: require('@site/static/img/previews/users_management.png').default,
+    preview: 'users',
     title: 'Users management',
     link: '/docs/tutorial/gettingStarted',
     description: 'Manage users and roles with ease, extend as you like'
@@ -114,44 +117,44 @@ const images = [
     description: 'Use LLMs to translate any external apps (Mobile, Nuxt, etc.) OR/AND admin panel with minimal effort. Any language supported'
   },
   {
-    original: require('@site/static/img/previews/auditlog.png').default,
+    preview: 'audit-log',
     title: 'Audit log Plugin - know who did what',
     link: '/docs/tutorial/Plugins/audit-log/',
     description: 'Attach Audit log plugin with couple of lines, create table for logs and track full history of any data changes'
   },
   {
-    original: require('@site/static/img/previews/ai_complete.png').default,
+    preview: 'text-complete',
     title: 'AI autocomplete Plugin - write with LLMs',
     link: '/docs/tutorial/Plugins/text-complete/',
     description: 'Provide your LLM API key to autocomplete plugin and AI will help you to write your content using record context'
   },
   {
-    original: require('@site/static/img/previews/dark.png').default,
+    preview: 'dark-mode',
     title: 'Dark mode out of the box',
     link: '/docs/tutorial/gettingStarted',
     description: 'Dark mode is enabled by default, create your own components in Tailwind-way and it will work with no additional friction'
   },
   {
-    original: require('@site/static/img/previews/upload.png').default,
+    preview: 'upload',
     title: 'Upload Plugin - upload files',
     link: '/docs/tutorial/Plugins/upload/',
     description: 'Upload files to Amazon S3 with instantiating plugin and providing your S3 credentials' 
   },
   
   {
-    original: require('@site/static/img/previews/filters.png').default,
+    preview: 'filters',
     title: 'Filters to query your data',
     link: '/docs/tutorial/Customization/virtualColumns/#virtual-columns-for-filtering',
     description: 'AdminForth provides basic filters out of the box and allows you to create your own'
   },
   {
-    original: require('@site/static/img/previews/richeditor.png').default,
+    preview: 'rich-editor',
     title: 'Rich Editor Plugin - WYSIWYG',
     link: '/docs/tutorial/Plugins/rich-editor/',
     description: 'Attach Rich Editor plugin to your text fields and get WYSIWYG editor for your content'
   },
   {
-    original: require('@site/static/img/previews/inplace-edit.png').default,
+    preview: 'list-in-place-edit',
     title: 'List in-place edit Plugin for quick edit', 
     link: '/docs/tutorial/Plugins/list-in-place-edit/',
     description: 'Edit some oftenly used fields in list directly without opening edit page. Decide which fields to be editable in list view'
@@ -163,7 +166,7 @@ const images = [
     description: 'For tables with small fields number which should be created massively, use inline create plugin to create records directly in list view'
   },
   {
-    original: require('@site/static/img/previews/importexport.png').default,
+    preview: 'import-export',
     title: 'Import/Export CSV Plugin',
     link: '/docs/tutorial/Plugins/import-export/',
     description: 'Export tables to CSV and import from CSV with one click. Move data between environments easily'
@@ -175,31 +178,31 @@ const images = [
     description: 'Use LLMs to fill records with generated data or images. For example, generate product descriptions based on product name and image or generate products images'
   },
   {
-    original: require('@site/static/img/previews/quick-filters.png').default,
+    preview: 'quick-filters',
     title: 'Quick Filters Plugin - filter your data quickly',
     link: '/docs/tutorial/Plugins/quick-filters/',
     description: 'Use quick filters to filter your data efficiently. Create custom filters and apply them with a single click'
   },
   {
-    original: require('@site/static/img/previews/background-jobs1.png').default,
+    preview: 'background-jobs',
     title: 'Background Jobs Plugin - manage your background tasks',
     link: '/docs/tutorial/Plugins/background-jobs/',
     description: 'Use background jobs to handle long-running tasks efficiently. Schedule, monitor, and manage your background processes with ease even after server restarts'
   },
   {
-    original: require('@site/static/img/previews/agent.png').default,
+    preview: 'agent',
     title: 'Agent Plugin - give AI any task and let it handle it',
     link: '/docs/tutorial/Plugins/agent/',
     description: 'Provides an internal agent that can perform various tasks based on natural language instructions. Connect it to your data and let it help you with content generation, data management, or any custom use case you can think of'
   },
   {
-    original: require('@site/static/img/previews/mcp.png').default,
+    preview: 'mcp',
     title: 'MCP Server Plugin - plug your admin into coding agents',
     link: '/docs/tutorial/Plugins/mcp/',
     description: 'Expose AdminForth resources and actions as remote MCP tools for Claude Code, OpenAI Codex, Gemini CLI and any other MCP client. Every call runs as the AdminForth user who created the auth secret, so your resource permissions, validation and hooks still apply'
   },
   {
-    original: require('@site/static/img/previews/dashboards-plugin.png').default,
+    preview: 'dashboard',
     title: 'Dashboard Plugin - creare custom dashboards from web interface',
     link: '/docs/tutorial/Plugins/dashboard/',
     description: 'Provides a customizable dashboard plugin that allows you to create and manage dashboards for your data. Connect it to your resources and visualize your data in a meaningful way'
@@ -531,6 +534,7 @@ function Watch(): JSX.Element {
 }
 
 function Gallery(): JSX.Element {
+  const {withBaseUrl} = useBaseUrlUtils();
   return (
     <Section eyebrow="In the panel" note="What ships, and what a plugin adds on top.">
       <Heading as="h2" className={styles.h2}>What it can do for you.</Heading>
@@ -540,7 +544,16 @@ function Gallery(): JSX.Element {
       <div className={styles.gallery}>
         {images.map((item, index) => (
           <div className={styles.gcard} key={`feature${index}`}>
-            <img src={item.original} alt={item.title} title={item.title} loading="lazy" />
+            {item.preview ? (
+              <iframe
+                src={withBaseUrl(`/landing-previews/${item.preview}.html`)}
+                title={item.title}
+                loading="lazy"
+                tabIndex={-1}
+              />
+            ) : (
+              <img src={item.original} alt={item.title} title={item.title} loading="lazy" />
+            )}
             <div className={styles.gcardBody}>
               <Heading as="h3" className={styles.gcardTitle}>{item.title}</Heading>
               <p>{item.description}</p>

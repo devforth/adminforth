@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI agent</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .acts { display: flex; gap: 2px; color: var(--muted); }
+  .at td.act { padding-top: 8px; padding-bottom: 8px; }
+  .agent { flex: none; width: 480px; display: flex; flex-direction: column; border-left: 1px solid var(--border); background: var(--bg); }
+  .agent-head { height: 48px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--border); }
+  .tool { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 13px; }
+  .tool-ok { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--success-soft); color: var(--success); }
+  .tool-ok .i { width: 12px; height: 12px; }
+  .chart { overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  .vt { fill: var(--text); font-size: 13px; font-weight: 600; }
+  .vl { fill: var(--text-2); }
+  .va { fill: var(--text); font-size: 11px; font-weight: 600; }
+  .vg { stroke: var(--grid); }
+  .vd { stroke: var(--faint); }
+  .vb { fill: #4C78A8; }
+  .mic { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; gap: 2px; border-radius: 50%; color: var(--muted); }
+  .mic span { width: 3px; border-radius: 2px; background: currentColor; }
+</style>
+</head>
+<body>
+<!-- the AI agent panel docked at the right of the list: tools it called on the data and a chart in the answer -->
+<div class="screen app" style="width: 1040px; height: 650px">
+  <aside class="side rail" data-active="Apartments"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary" style="background: var(--surface-3)"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg><svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Apartments</h1></nav>
+        <div class="btns">
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Create</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#list-filter"/></svg></span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr><th style="width: 48px"><input class="cb" type="checkbox"></th><th>Title</th><th>Price</th><th style="width: 1%">Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Sunny loft in Gràcia</td><td class="num">$2,940</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Penthouse with terrace</td><td class="num">$9,120</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Studio near Park Güell</td><td class="num">$1,480</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Flat by Barceloneta beach</td><td class="num">$4,350</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Two rooms in Eixample</td><td class="num">$3,260</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Attic with a sea view</td><td class="num">$7,800</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Quiet flat in Sant Antoni</td><td class="num">$2,150</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Loft in Poblenou</td><td class="num">$5,470</td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+  <aside class="agent">
+    <div class="agent-head">
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#history"/></svg></span>
+      <span class="btn btn-ghost btn-icon" style="background: var(--surface-2); color: var(--text)"><svg class="i"><use href="icons.svg#panel-right"/></svg></span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#maximize-2"/></svg></span>
+      <p style="flex: 1; padding: 0 4px; font-size: 13px; font-weight: 600">Apartment prices</p>
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#plus"/></svg>New chat</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#x"/></svg></span>
+    </div>
+    <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden">
+      <p style="align-self: flex-end; max-width: 82%; margin: 16px 16px 0 0; padding: 8px 12px; border-radius: 12px 12px 4px 12px; background: var(--surface-2)">Show a histogram of apartment prices</p>
+      <div style="padding-top: 20px">
+        <p class="t-muted" style="display: flex; align-items: center; gap: 4px; margin: 0 16px 8px; font-size: 13px; font-weight: 500"><svg class="i i-sm" style="rotate: 90deg"><use href="icons.svg#chevron-right"/></svg>Thought for 4s · 2 tools</p>
+        <div class="card" style="margin: 0 16px 12px; padding: 8px 20px 8px 10px; display: flex; flex-direction: column; gap: 4px">
+          <div class="tool"><span class="tool-ok"><svg class="i"><use href="icons.svg#check"/></svg></span><span class="mono t-xs" style="color: var(--text)">get_resource_data</span><span class="t-muted" style="flex: 1">apartments · 101 records</span><span class="t-muted num">0.8s</span><svg class="i i-sm t-muted"><use href="icons.svg#chevron-down"/></svg></div>
+          <div class="tool"><span class="tool-ok"><svg class="i"><use href="icons.svg#check"/></svg></span><span class="mono t-xs" style="color: var(--text)">aggregate</span><span class="t-muted" style="flex: 1">count by price, $1k buckets</span><span class="t-muted num">0.3s</span><svg class="i i-sm t-muted"><use href="icons.svg#chevron-down"/></svg></div>
+        </div>
+        <div style="padding: 0 16px; color: var(--text-2)">
+          <p style="margin-bottom: 8px">Here is the price distribution of 101 apartments:</p>
+          <div class="chart">
+            <div style="display: flex; justify-content: flex-end; padding: 4px; border-bottom: 1px solid var(--border); background: var(--bg)"><span class="t-xs t-muted" style="height: 24px; display: flex; align-items: center; padding: 0 8px; font-weight: 500">Copy</span></div>
+            <div style="padding: 12px">
+              <svg width="424" height="206" viewBox="0 0 424 206" style="display: block; font-size: 10px">
+              <text x="229.0" y="13" text-anchor="middle" class="vt">Apartment prices</text>
+              <line x1="40" x2="418" y1="166.0" y2="166.0" class="vg"/>
+              <text x="35" y="169.5" text-anchor="end" class="vl">0</text>
+              <line x1="40" x2="418" y1="131.0" y2="131.0" class="vg"/>
+              <text x="35" y="134.5" text-anchor="end" class="vl">4</text>
+              <line x1="40" x2="418" y1="96.0" y2="96.0" class="vg"/>
+              <text x="35" y="99.5" text-anchor="end" class="vl">8</text>
+              <line x1="40" x2="418" y1="61.0" y2="61.0" class="vg"/>
+              <text x="35" y="64.5" text-anchor="end" class="vl">12</text>
+              <line x1="40" x2="418" y1="26.0" y2="26.0" class="vg"/>
+              <text x="35" y="29.5" text-anchor="end" class="vl">16</text>
+              <rect x="43.8" y="26.0" width="30.2" height="140.0" class="vb"/>
+              <text x="58.9" y="179" text-anchor="middle" class="vl">$1k</text>
+              <rect x="81.6" y="87.2" width="30.2" height="78.8" class="vb"/>
+              <text x="96.7" y="179" text-anchor="middle" class="vl">$2k</text>
+              <rect x="119.4" y="131.0" width="30.2" height="35.0" class="vb"/>
+              <text x="134.5" y="179" text-anchor="middle" class="vl">$3k</text>
+              <rect x="157.2" y="69.8" width="30.2" height="96.2" class="vb"/>
+              <text x="172.3" y="179" text-anchor="middle" class="vl">$4k</text>
+              <rect x="195.0" y="43.5" width="30.2" height="122.5" class="vb"/>
+              <text x="210.1" y="179" text-anchor="middle" class="vl">$5k</text>
+              <rect x="232.8" y="113.5" width="30.2" height="52.5" class="vb"/>
+              <text x="247.9" y="179" text-anchor="middle" class="vl">$6k</text>
+              <rect x="270.6" y="87.2" width="30.2" height="78.8" class="vb"/>
+              <text x="285.7" y="179" text-anchor="middle" class="vl">$7k</text>
+              <rect x="308.4" y="61.0" width="30.2" height="105.0" class="vb"/>
+              <text x="323.5" y="179" text-anchor="middle" class="vl">$8k</text>
+              <rect x="346.2" y="78.5" width="30.2" height="87.5" class="vb"/>
+              <text x="361.3" y="179" text-anchor="middle" class="vl">$9k</text>
+              <rect x="384.0" y="78.5" width="30.2" height="87.5" class="vb"/>
+              <text x="399.1" y="179" text-anchor="middle" class="vl">$10k</text>
+              <line x1="40" x2="418" y1="166" y2="166" class="vd"/>
+              <text x="229.0" y="202" text-anchor="middle" class="va">Price, USD</text>
+              <text transform="translate(10 96.0) rotate(-90)" text-anchor="middle" class="va">Apartments</text>
+              </svg>
+            </div>
+          </div>
+          <p style="margin-top: 8px">Most apartments cost from $1k to $2k or from $4k to $5k.</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin: 0 12px 12px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface)">
+      <p style="padding: 10px 12px 4px; line-height: 22px; color: var(--faint)">Ask anything about your data…</p>
+      <div style="display: flex; align-items: center; gap: 4px; padding: 4px 8px 8px">
+        <span class="btn btn-ghost btn-sm"><svg class="i"><use href="icons.svg#sparkles"/></svg>Balanced<svg class="i i-sm"><use href="icons.svg#chevron-down"/></svg></span>
+        <span class="mic" style="margin-left: auto"><span style="height: 8px"></span><span style="height: 16px"></span><span style="height: 11px"></span><span style="height: 8px"></span></span>
+        <span class="btn btn-primary btn-icon" style="border-radius: 50%; opacity: .5"><svg class="i"><use href="icons.svg#arrow-up"/></svg></span>
+      </div>
+    </div>
+  </aside>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

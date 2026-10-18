@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Branding</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  /* what an app sets in customization: brandName, brandLogo and styles (sidebar, primary, buttons) */
+  :root { --accent: #0284C7; --ink: #1E2A5A; --on-ink: #FFFFFF; --brand-side: #1E2A5A; }
+  :root.dark { --accent: #38BDF8; --ink: #38BDF8; --on-ink: #0B1430; --brand-side: #0F1733; }
+  .side { background: var(--brand-side); border-right-color: transparent; color: #FFFFFF; }
+  .side .nav { color: rgba(255, 255, 255, .78); }
+  .side .nav .i { color: rgba(255, 255, 255, .6); }
+  .side .nav.is-on { background: rgba(255, 255, 255, .12); color: #FFFFFF; }
+  .side .nav.is-on .i { color: #FFFFFF; }
+  .side .nav-sep { background: rgba(255, 255, 255, .14); }
+  .side .nav-head { color: rgba(255, 255, 255, .5); }
+  .side .count { background: #38BDF8; color: #0B1430; }
+  .acts { display: flex; gap: 2px; color: var(--muted); }
+  .at td.act { padding-top: 8px; padding-bottom: 8px; }
+  .at tr.is-sel td { background: var(--accent-soft); }
+</style>
+</head>
+<body>
+<!-- the list of an app with its own logo, brand name and colors, two rows are checked -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Apartments" data-brand="Acme Rentals" data-logo="acme"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Apartments</h1></nav>
+        <div class="btns">
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Create</span>
+          <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#list-filter"/></svg>Filter</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ban"/></svg></span>
+        <span class="btn btn-secondary">Mark as listed (2)</span>
+        <span class="btn btn-secondary" style="color: var(--danger-fg)">Delete (2)</span>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr><th style="width: 48px"><input class="cb" type="checkbox"></th><th>Title</th><th>Price</th><th>Listed</th><th style="width: 1%">Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Sunny loft in Gràcia</td><td class="num">$2,940</td><td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr class="is-sel"><td><input class="cb" type="checkbox" checked></td><td style="color: var(--text); font-weight: 500">Penthouse with terrace</td><td class="num">$9,120</td><td><span class="badge badge-muted">No</span></td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr class="is-sel"><td><input class="cb" type="checkbox" checked></td><td style="color: var(--text); font-weight: 500">Studio near Park Güell</td><td class="num">$1,480</td><td><span class="badge badge-muted">No</span></td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Flat by Barceloneta beach</td><td class="num">$4,350</td><td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+          <tr><td><input class="cb" type="checkbox"></td><td style="color: var(--text); font-weight: 500">Two rooms in Eixample</td><td class="num">$3,260</td><td><span class="badge badge-success"><svg class="i"><use href="icons.svg#check"/></svg>Yes</span></td><td class="act"><div class="acts"><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#eye"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#pencil"/></svg></span><span class="btn btn-ghost btn-icon btn-sm"><svg class="i"><use href="icons.svg#trash-2"/></svg></span></div></td></tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

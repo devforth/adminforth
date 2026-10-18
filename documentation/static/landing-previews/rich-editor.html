@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rich editor</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .editor { border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); box-shadow: var(--shadow-xs); color: var(--text); }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 4px 6px; border-bottom: 1px solid var(--border-strong); }
+  .toolbar > span { display: inline-flex; gap: 2px; margin-right: 8px; }
+  .toolbar .tb { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 6px; color: var(--muted); }
+  .toolbar .tb.is-on { color: var(--accent-fg); }
+  .text { padding: 10px 12px; line-height: 1.5; }
+  .text p { margin-bottom: .4rem; }
+  .text ol { margin: .4rem 0; padding-left: 1rem; }
+  .text li { margin-bottom: .2rem; }
+  .completer { font-style: italic; color: var(--faint); }
+</style>
+</head>
+<body>
+<!-- edit view: a text column with the Quill editor of the rich-editor plugin, the AI completion goes on after the caret -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side" data-active="Apartments"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg>Home<svg class="i sep"><use href="icons.svg#chevron-right"/></svg>Apartments<svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Edit Apartment</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary">Cancel</span>
+          <span class="btn btn-primary"><svg class="i"><use href="icons.svg#save"/></svg>Save</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="ft">
+        <thead><tr><th>Field</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Description</td>
+            <td>
+              <div class="editor" style="border-color: var(--accent); box-shadow: 0 0 0 3px var(--ring)">
+                <div class="toolbar">
+                  <span><i class="tb is-on"><svg class="i"><use href="icons.svg#bold"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#italic"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#underline"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#strikethrough"/></svg></i></span>
+                  <span><i class="tb"><svg class="i"><use href="icons.svg#table"/></svg></i></span>
+                  <span><i class="tb"><svg class="i"><use href="icons.svg#text-quote"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#code"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#link"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#image"/></svg></i></span>
+                  <span><i class="tb"><svg class="i"><use href="icons.svg#heading-2"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#heading-3"/></svg></i></span>
+                  <span><i class="tb is-on"><svg class="i"><use href="icons.svg#list-ordered"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#list"/></svg></i><i class="tb"><svg class="i"><use href="icons.svg#list-checks"/></svg></i></span>
+                  <span><i class="tb"><svg class="i"><use href="icons.svg#align-left"/></svg></i></span>
+                  <span><i class="tb"><svg class="i"><use href="icons.svg#remove-formatting"/></svg></i></span>
+                </div>
+                <div class="text">
+                  <p>Next gen apartments featuring <b>modern amenities and stylish interiors.</b></p>
+                  <p>Includes:</p>
+                  <ol>
+                    <li>a full-equipped kitchen with stainless steel appliances and high-speed internet;</li>
+                    <li>a vibrant neighborhood with shops and restaurants.</li>
+                  </ol>
+                  <p>Book<span class="completer"> a tour and feel the comfort firsthand.</span></p>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Listed</td>
+            <td><span class="tgl is-on" style="display: block"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>
