@@ -93,15 +93,20 @@
               <IconChevronDown :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
             </button>
 
-            <transition name="slow-drop">
-              <ul v-show="opened.includes(i)" :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown mt-0.5 ml-[1.25rem] pl-2 border-l border-lightSidebarDevider dark:border-darkSidebarDevider space-y-0.5 overflow-hidden">              
-                <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
-                  <li class="af-sidebar-menu-link">
-                      <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
-                  </li>
-                </template>
-              </ul>
-            </transition>
+            <div class="grid transition-[grid-template-rows,opacity] duration-200 ease-in-out"
+              :class="opened.includes(i) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
+              :inert="!opened.includes(i)"
+            >
+              <div class="min-h-0 overflow-hidden">
+                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown mt-0.5 ml-[1.25rem] pl-2 border-l border-lightSidebarDevider dark:border-darkSidebarDevider space-y-0.5">
+                  <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
+                    <li class="af-sidebar-menu-link">
+                        <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')"/>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+            </div>
       </li>
       <li v-else class="af-sidebar-menu-link">
         <MenuLink :item="item" @click="$emit('hideSidebar')"/>
@@ -293,25 +298,6 @@
   .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb,
   .dark .sidebar-scroll:active::-webkit-scrollbar-thumb {
     background-color: rgba(75, 85, 99, 0.4);
-  }
-
-  /* Custom animation for dropdown */
-  .slow-drop-enter-active,
-  .slow-drop-leave-active {
-    overflow: hidden;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .slow-drop-enter-from,
-  .slow-drop-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-
-  .slow-drop-enter-to,
-  .slow-drop-leave-from {
-    opacity: 1;
-    transform: translateY(0);
   }
 
   /* For browsers that support overlay scrollbars natively */
