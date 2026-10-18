@@ -487,7 +487,7 @@ import { IconCircleUser, IconLayoutGrid } from '@iconify-prerendered/vue-lucide'
 
 ### In a card
 
-`tabsClass` and `contentClass` add classes to the column of tabs and to the content, they override the default ones (the margins of the column, the padding and the divider of the content). The `tabs-header` slot goes above the tabs. This is how the settings page puts its tabs on a tinted pane of a card:
+`tabsClass` and `contentClass` add classes to the column of tabs and to the content, they override the default ones (the margins and the frame of the column). The `tabs-header` slot goes above the tabs. This is how the settings page puts its tabs on a tinted pane of a card:
 
 <AfclPreview id="vertical-tabs-card">
 
@@ -499,8 +499,8 @@ import { IconLink, IconMonitorSmartphone } from '@iconify-prerendered/vue-lucide
 ```html
 <VerticalTabs
   class="overflow-hidden rounded-xl border border-lightCardBorder bg-lightCardBackground dark:border-darkCardBorder dark:bg-darkCardBackground"
-  tabsClass="m-0 md:m-0 md:w-64 px-3 py-4 border-b md:border-b-0 md:border-e border-lightCardBorder dark:border-darkCardBorder bg-lightVerticalTabsBackground dark:bg-darkVerticalTabsBackground"
-  contentClass="p-5 md:ps-6 md:border-s-0"
+  tabsClass="m-0 md:m-0 md:self-stretch md:w-64 shrink-0 px-3 py-4 rounded-none border-0 border-b md:border-b-0 md:border-e border-lightCardBorder dark:border-darkCardBorder bg-lightVerticalTabsBackground dark:bg-darkVerticalTabsBackground"
+  contentClass="p-5 md:ps-6"
 >
   <template #tabs-header>
     <p class="px-2.5 pb-3 font-semibold text-lightCardTitle dark:text-darkCardTitle">Settings</p>

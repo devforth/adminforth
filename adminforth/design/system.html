@@ -312,6 +312,7 @@
 .vtab.is-on { background: var(--surface-3); color: var(--text); font-weight: 500; }
 .vtab.is-on .i { color: var(--text); }
 .vtab .trail { margin-left: auto; }
+.vtabs { display: flex; flex-direction: column; gap: 2px; align-self: flex-start; padding: 4px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
 
 /* tooltip, toast, dialog */
 .tip { display: inline-flex; align-items: center; gap: 8px; max-width: 240px; padding: 6px 9px; border-radius: 6px; background: var(--ink); color: var(--on-ink); font-size: 12px; line-height: 16px; font-weight: 500; box-shadow: 0 6px 16px -6px rgba(0, 0, 0, .3); }
@@ -2352,17 +2353,17 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
   </section>
 
   <section class="sec">
-    <div class="sec-head"><span class="sec-name">&lt;VerticalTabs&gt;</span><span class="t-sm t-muted">gray pill marks the active tab, same as the sidebar</span></div>
+    <div class="sec-head"><span class="sec-name">&lt;VerticalTabs&gt;</span><span class="t-sm t-muted">tabs sit in a framed column, gray pill marks the active tab, same as the sidebar</span></div>
     <div class="grid3">
       <div class="tile">
         <div class="tile-stage top">
-          <div style="display: flex; gap: 16px">
-            <div role="tablist" aria-orientation="vertical" style="width: 140px; display: flex; flex-direction: column; gap: 2px">
+          <div style="display: flex; gap: 24px">
+            <div class="vtabs" role="tablist" aria-orientation="vertical" style="width: 140px">
               <button class="vtab is-on" type="button" role="tab">General</button>
               <button class="vtab" type="button" role="tab">Engine</button>
               <button class="vtab" type="button" role="tab">Features</button>
             </div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding-left: 16px; border-left: 1px solid var(--border)">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
               <span class="label">Trim</span><label class="input input-sm"><input type="text" value="Base" aria-label="Trim"></label>
             </div>
           </div>
@@ -2371,7 +2372,7 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       </div>
       <div class="tile">
         <div class="tile-stage top">
-          <div role="tablist" aria-orientation="vertical" style="width: 200px; display: flex; flex-direction: column; gap: 2px">
+          <div class="vtabs" role="tablist" aria-orientation="vertical" style="width: 200px">
             <button class="vtab" type="button" role="tab"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Profile</button>
             <button class="vtab is-on" type="button" role="tab"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Security</button>
             <button class="vtab" type="button" role="tab"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path></svg>Notifications</button>

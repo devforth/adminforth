@@ -1,6 +1,6 @@
 <template>
-  <div class="md:flex">
-    <div :class="mergeClasses('md:me-4 mb-4 md:mb-0 mr-6 md:mr-0 md:min-w-[11rem]', tabsClass)">
+  <div class="afcl-vertical-tabs md:flex">
+    <div :class="mergeClasses('afcl-vertical-tabs-list mb-4 md:mb-0 md:me-6 md:self-start md:min-w-[11rem] p-1 rounded-lg border border-lightCardBorder bg-lightCardBackground dark:border-darkCardBorder dark:bg-darkCardBackground', tabsClass)">
       <slot name="tabs-header"></slot>
       <ul class="space-y-0.5 text-sm">
         <li v-for="tab in tabs" :key="`${tab}-tab-controll`">
@@ -19,7 +19,7 @@
         </li>
       </ul>
     </div>
-    <div :class="mergeClasses('w-full md:ps-6 md:border-s md:border-lightFormBorder dark:md:border-darkFormBorder text-sm text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText', contentClass)">
+    <div :class="mergeClasses('afcl-vertical-tabs-content w-full text-sm text-lightVerticalTabsSlotText dark:text-darkVerticalTabsSlotText', contentClass)">
       <slot :name="activeTab"></slot>
     </div>
   </div>
@@ -35,7 +35,7 @@ import { mergeClasses } from './classMerge';
   const props = withDefaults(defineProps<{
     activeTab?: string;
     hideTabesWhenSingle?: boolean;
-    // override the default classes of the tab list column and of the content, e.g. paddings or the divider
+    // override the default classes of the tab list column and of the content, e.g. margins or the frame of the column
     tabsClass?: ClassNameValue;
     contentClass?: ClassNameValue;
   }>(), {
