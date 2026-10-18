@@ -42,9 +42,9 @@
     "@adminforth/rich-editor": "^2.1.2",
     "@adminforth/storage-adapter-amazon-s3": "^1.2.0",
     "@adminforth/text-complete": "^3.0.0",
-    "@adminforth/two-factors-auth": "^5.0.0",
+    "@adminforth/two-factors-auth": "^6.0.0",
     "@adminforth/upload": "^3.0.0",
-    "adminforth": "^4.2.0",
+    "adminforth": "^4.4.0",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"
   },
