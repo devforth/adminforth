@@ -5,7 +5,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | Package | Done |
 |---|---|
 | adminforth (core) | |
-| @adminforth/agent | |
+| @adminforth/agent | ✓ |
 | @adminforth/audit-log | ✓ |
 | @adminforth/auto-remove | no UI |
 | @adminforth/background-jobs | ✓ |
