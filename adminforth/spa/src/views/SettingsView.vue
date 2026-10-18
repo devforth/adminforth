@@ -10,7 +10,7 @@
       v-model:active-tab="activeTab"
       class="md:min-h-[40rem] overflow-hidden rounded-xl border border-lightCardBorder bg-lightCardBackground dark:border-darkCardBorder dark:bg-darkCardBackground"
       tabsClass="m-0 md:m-0 md:w-64 md:shrink-0 px-3 py-4 md:py-5 border-b md:border-b-0 md:border-e border-lightCardBorder dark:border-darkCardBorder bg-lightVerticalTabsBackground dark:bg-darkVerticalTabsBackground"
-      contentClass="min-w-0 p-5 md:py-6 md:ps-7 md:pe-7 md:border-s-0"
+      contentClass="min-w-0 overflow-x-auto p-5 md:py-6 md:ps-7 md:pe-7 md:border-s-0"
       @update:active-tab="setURL({slug: $event, pageLabel: ''})"
     >
       <template #tabs-header>
