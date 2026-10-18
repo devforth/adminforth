@@ -16,5 +16,7 @@ export default {
   darkMode: 'class',
   plugins: [
     require('@tailwindcss/typography'),
+    // `@container` on a parent, `@4xl:flex-row` on children: layouts which follow the width of their parent, not of the viewport
+    require('@tailwindcss/container-queries'),
   ],
 }
