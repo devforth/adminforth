@@ -1,12 +1,16 @@
 <template>
-  <div class="relative w-full bg-lightProgressBarUnfilledColor rounded-full h-1.5 dark:bg-darkProgressBarUnfilledColor" :class="props.height ? `h-${props.height}` : ''">
-    <span v-if="leftLabel" class="absolute -top-6 left-0 text-sm" :class="textClass">{{ leftLabel }}</span>
-    <span v-if="rightLabel" class="absolute -top-6 right-0 text-sm" :class="textClass">{{ rightLabel }}</span>
-    <div
-      class="bg-lightPrimary dark:bg-darkPrimary h-1.5 rounded-full transition-all duration-300 ease-in-out"
-      :class="{ 'progress-bar': showAnimation, [`h-${props.height}`]: props.height }"
-      :style="{ width: `${percentage}%` }"
-    ></div>
+  <div class="w-full">
+    <div v-if="leftLabel || rightLabel" class="flex justify-between mb-1 text-sm" :class="textClass">
+      <span>{{ leftLabel }}</span>
+      <span>{{ rightLabel }}</span>
+    </div>
+    <div class="w-full bg-lightProgressBarUnfilledColor rounded-full h-1.5 dark:bg-darkProgressBarUnfilledColor" :class="props.height ? `h-${props.height}` : ''">
+      <div
+        class="bg-lightPrimary dark:bg-darkPrimary h-1.5 rounded-full transition-all duration-300 ease-in-out"
+        :class="{ 'progress-bar': showAnimation, [`h-${props.height}`]: props.height }"
+        :style="{ width: `${percentage}%` }"
+      ></div>
+    </div>
     <div v-if="showValues || showProgress" class="flex justify-between mt-2">
       <span v-if="showValues" class="text-sm" :class="textClass">{{ formatValue(minValue) }}</span>
       <span v-if="showProgress" class="text-sm" :class="textClass">{{ progressText }}</span>
