@@ -17,7 +17,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/email-password-reset | |
 | @adminforth/foreign-inline-list | |
 | @adminforth/foreign-inline-show | |
-| @adminforth/i18n | |
+| @adminforth/i18n | ✓ |
 | @adminforth/i18n-static | ✓ |
 | @adminforth/import-export | ✓ |
 | @adminforth/inline-create | |
@@ -66,4 +66,3 @@ The cards of the landing gallery (`documentation/src/pages/index.tsx`) show eith
 - If simple - get of flowbite, prefer pure AFCL + Tailwind, move features we luck to AFCL
 - Existing icon fonts apart lucide - try to get rid of them if not complex
 - Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: bulk-ai-flow, clone-row, email-invite, email-password-reset, foreign-inline-list, inline-create, json-editor, open-signup, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.
-- i18n: the translations resource UI (`ListCell`, `SingleMultiInput`, `BulkActionButton`, `TranslationJobViewComponent`) is restyled but not checked in a browser yet, dev-demo runs i18n-static which has no translations resource. The language menu and the login selector, shared by both plugins, are checked.
