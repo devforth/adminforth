@@ -35,7 +35,7 @@ Below `sm` (640px) a Dialog or Modal docks to the bottom edge as a sheet: full w
 
 ## Container width, not viewport width
 
-A page gets less than the screen: the sidebar and the agent panel squeeze it on wide screens too. Layouts which stack follow their container with Tailwind container queries (`@container` on the parent, `@4xl:` on children), not the viewport with `md:` or `lg:`.
+A page gets less than the screen: the sidebar and the agent panel squeeze it on wide screens too. Layouts which stack follow their container with Tailwind container queries (`@container` on the parent, `@4xl:` on children), not the viewport with `md:` or `lg:`. Such a grid gets `grid-cols-1` as its base, otherwise a wide chart or table stretches its single column past the page.
 
 The header of the list page is a container named `header`. Below 896px (`@4xl/header`) components from `beforeActionButtons` take a full row under the title and the buttons, from 896px all share one row. Below 512px (`@lg/header`) Home and Filter keep only their icons. Such a component fills its row and takes a fixed width from `@4xl/header:`, like the fields of quick-filters. Bulk actions of checked rows take a row of their own above the table, so the buttons next to the title never move.
 

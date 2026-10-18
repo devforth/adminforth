@@ -51,6 +51,10 @@ not wait for a follow-up prompt about styling or dark mode.
 8. **Never build Tailwind class names dynamically.** `custom/` is copied into the SPA sources and scanned
    statically by Tailwind, so `` `text-${color}-600` `` produces no CSS. Write full class strings and pick
    between them.
+9. **Layouts follow their container, not the screen.** The sidebar and the agent panel take part of the
+   screen, so a page or panel which splits into columns is a Tailwind size container: `@container` on its
+   root and `@md:`, `@4xl:` variants on the grid instead of `md:`, `lg:`. Give the grid `grid-cols-1` as its
+   base, otherwise a wide chart or table stretches the single column past the page.
 
 ## Dark Theme Self-Check
 
@@ -121,9 +125,11 @@ custom/
 
 ```vue
 <template>
-  <section class="grid gap-4 md:grid-cols-2">
-    <OrdersTotals :record="record" />
-    <OrdersFilters :meta="meta" />
+  <section class="@container">
+    <div class="grid grid-cols-1 gap-4 @2xl:grid-cols-2">
+      <OrdersTotals :record="record" />
+      <OrdersFilters :meta="meta" />
+    </div>
   </section>
 </template>
 
