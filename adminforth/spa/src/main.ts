@@ -26,6 +26,11 @@ document.addEventListener('wheel', (e) => {
   }
 }, { passive: true });
 
+// after a redeploy an open tab still asks for lazy chunks of the old build, which are gone: reload into the new build
+window.addEventListener('vite:preloadError', () => {
+  window.location.reload();
+});
+
 
 /* IMPORTANT:ADMINFORTH CUSTOM USES */
 

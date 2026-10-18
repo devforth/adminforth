@@ -916,15 +916,20 @@ class CodeInjector implements ICodeInjector {
       });
     });
 
+    // global and login page injections are on the first screen of any page
+    const firstScreenComponents = new Set<string>();
+
     if (this.adminforth.config.customization?.globalInjections) {
       Object.values(this.adminforth.config.customization.globalInjections).forEach((injection) => {
         checkInjections(injection);
+        injection.forEach(({ file }) => firstScreenComponents.add(file));
       });
     }
 
     if (this.adminforth.config.customization?.loginPageInjections) {
       Object.values(this.adminforth.config.customization.loginPageInjections).forEach((injection) => {
         checkInjections(injection);
+        injection.forEach(({ file }) => firstScreenComponents.add(file));
       });
     }
 
@@ -947,12 +952,6 @@ class CodeInjector implements ICodeInjector {
       this.allComponentNames[filePath] = componentName;
     });
 
-    
-    let customComponentsImports = '';
-    for (const [targetPath, component] of Object.entries(this.allComponentNames)) {
-      customComponentsImports += `import ${component} from '${targetPath}';\n`;
-    }
-
 
     // Generate Vue.component statements for each icon
     const iconComponents = uniqueIcons.map((icon) => {
@@ -963,14 +962,21 @@ class CodeInjector implements ICodeInjector {
       return `app.component('${PascalIconName}', ${PascalIconName});`;
     }).join('\n');
 
-    // Generate Vue.component statements for each custom component
+    // Custom components are separate chunks, so the SPA does not carry the heavy dependencies of plugins (editors, charts, AI SDKs).
+    // First screen components start loading together with the SPA, the rest is prefetched by the browser after the page load,
+    // see prefetchLazyChunks in vite.config.ts
     let customComponentsComponents = '';
-    for (const name of Object.values(this.allComponentNames)) {
-      customComponentsComponents += `app.component('${name}', ${name});\n`;
+    for (const [targetPath, name] of Object.entries(this.allComponentNames)) {
+      if (firstScreenComponents.has(targetPath)) {
+        customComponentsComponents += `const ${name}Loading = import('${targetPath}');\n`;
+        customComponentsComponents += `app.component('${name}', defineAsyncComponent(() => ${name}Loading));\n`;
+      } else {
+        customComponentsComponents += `app.component('${name}', defineAsyncComponent(() => import('${targetPath}')));\n`;
+      }
     }
 
     let imports = iconImports + '\n';
-    imports += customComponentsImports + '\n';
+    imports += `import { defineAsyncComponent } from 'vue';\n`;
 
     if (this.adminforth.config.customization?.vueUsesFile) {
       imports += `import addCustomUses from '${this.adminforth.config.customization.vueUsesFile}';\n`;
