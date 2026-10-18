@@ -2,8 +2,6 @@
 
 Which packages follow the [design concepts](./system-concepts.md): tokens instead of palette colors, AFCL components, Lucide icons, no flowbite. Put ✓ only when the whole package is done and checked in light and dark theme.
 
-Moving a plugin to the design system makes it depend on adminforth 4 (AFCL components and Lucide icons ship with it), so apps on adminforth 3 must not get it with an update: set `peerDependencies.adminforth` to `^4.0.0` and commit with a `BREAKING CHANGE:` footer, semantic-release then publishes a new major (it ignores `feat!:`). Bump `devDependencies.adminforth` together with the lockfile once 4.0.0 is on npm, earlier `pnpm install --frozen-lockfile` fails on CI.
-
 | Package | Done |
 |---|---|
 | adminforth (core) | |
@@ -40,6 +38,11 @@ Moving a plugin to the design system makes it depend on adminforth 4 (AFCL compo
 | @adminforth/upload | |
 | @adminforth/user-sessions | |
 | @adminforth/user-soft-delete | |
+
+## Releasing an adapted plugin
+
+- Moving a plugin to the design system makes it depend on adminforth 4 (AFCL components and Lucide icons ship with it), so apps on adminforth 3 must not get it with an update: set `peerDependencies.adminforth` to `^4.0.0` and commit with a `BREAKING CHANGE:` footer, semantic-release then publishes a new major (it ignores `feat!:`). Bump `devDependencies.adminforth` together with the lockfile once 4.0.0 is on npm, earlier `pnpm install --frozen-lockfile` fails on CI.
+- Roll the release out to the live demo right away: bump the plugin (and `adminforth`, when the plugin needs a newer core) in `live-demo/app/package.json` and push to `main`, the push rebuilds demo.adminforth.dev.
 
 ## Left in core
 
