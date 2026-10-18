@@ -40,6 +40,12 @@ Below `sm` (640px) a Dialog or Modal docks to the bottom edge as a sheet: full w
 - Don't add icons from other sets; replace flowbite, heroicons and humbleicons icons with Lucide when you touch a component. The old sets stay installed because apps and older plugins still import them.
 - Don't draw icons with inline `<svg>` or keep them as own `.vue` files, take the Lucide component. Inline SVG is only for graphics which are not icons: the two-tone `Spinner` ring, the `Toast` timer ring, charts.
 
+## Country flags and lazy loading
+
+- Flags are the 4:3 SVGs of `flag-icons`, shown by AFCL `<CountryFlag :countryCode="'ua'" />`. Core and plugins use this component and don't bring their own flag packages or flag CSS.
+- A set of assets (flags, illustrations) never goes into the main bundle as a whole. `CountryFlag` loads the map of flag URLs (`afcl/countryFlagUrls.ts`, 7 KB gzip) with a dynamic `import()` when the first flag is shown, then the browser downloads only the SVGs of the shown flags, 0.2–10 KB each. The former `@iconify-prerendered/vue-flag` brought 1.1 MB gzip with the first flag.
+- An eager `import.meta.glob` belongs to a module which is imported dynamically. `@/afcl` is a barrel, so in an AFCL component such glob makes the dev server load every matched file on every page. Glob assets with `query: '?url&no-inline'`, otherwise Vite inlines files under 4 KB into JS as data URIs, and with `exhaustive: true` when the files are in `node_modules`, which the glob skips by default.
+
 ## Moving off flowbite
 
 flowbite is being removed step by step. Don't add new flowbite usages (`flowbite` JS components, `flowbite-datepicker`, `data-*-toggle` attributes). When you touch code which uses it, replace it with a native Vue implementation, usually an AFCL component. Example: the user menu moved from flowbite `Dropdown` to AFCL `DropdownMenu`.

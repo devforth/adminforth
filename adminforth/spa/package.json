@@ -15,7 +15,6 @@
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
-    "@iconify-prerendered/vue-flag": "^0.28.1748584105",
     "@iconify-prerendered/vue-flowbite": "^0.28.1754899090",
     "@iconify-prerendered/vue-heroicons": "^0.28.1721921294",
     "@iconify-prerendered/vue-humbleicons": "^0.28.1754108846",

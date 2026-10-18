@@ -14,9 +14,6 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.3.0
         version: 5.3.0
-      '@iconify-prerendered/vue-flag':
-        specifier: ^0.28.1748584105
-        version: 0.28.1754899047(vue@3.5.44(typescript@5.9.3))
       '@iconify-prerendered/vue-flowbite':
         specifier: ^0.28.1754899090
         version: 0.28.1754899090(vue@3.5.44(typescript@5.9.3))
@@ -242,11 +239,6 @@ packages:
   '@humanwhocodes/object-schema@2.0.3':
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
     deprecated: Use @eslint/object-schema instead
-
-  '@iconify-prerendered/vue-flag@0.28.1754899047':
-    resolution: {integrity: sha512-pJ98pR7laS3UxJ+BZt4FhpkxYGkeFAT8B5ERC1bkiI1Jr0ws2DwjMx7dAnae7h9lRKdyNcKfhATZwQuNBheryQ==}
-    peerDependencies:
-      vue: ^3.0.0
 
   '@iconify-prerendered/vue-flowbite@0.28.1754899090':
     resolution: {integrity: sha512-WPXCiCRFLR0QC0kW0RbL8Gf2Fj1sjzXgFKD8blU3YaranXgfSe47AMuIFT/nFxxiVWhEDwtn/luOjyj+wuR31A==}
@@ -2278,10 +2270,6 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/object-schema@2.0.3': {}
-
-  '@iconify-prerendered/vue-flag@0.28.1754899047(vue@3.5.44(typescript@5.9.3))':
-    dependencies:
-      vue: 3.5.44(typescript@5.9.3)
 
   '@iconify-prerendered/vue-flowbite@0.28.1754899090(vue@3.5.44(typescript@5.9.3))':
     dependencies:
