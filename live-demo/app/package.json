@@ -44,7 +44,7 @@
     "@adminforth/text-complete": "^3.0.0",
     "@adminforth/two-factors-auth": "^5.0.0",
     "@adminforth/upload": "^3.0.0",
-    "adminforth": "^4.1.3",
+    "adminforth": "^4.2.0",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"
   },
