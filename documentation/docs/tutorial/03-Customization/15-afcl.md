@@ -1738,7 +1738,7 @@ import { Spinner } from '@/afcl'
 
 ## Country Flag
 
-The Country Flag component displays national flags using ISO 3166-1 alpha-2 country codes.
+The Country Flag component displays national flags using ISO 3166-1 alpha-2 country codes. A flag has a hairline edge, so white stripes stay visible on a white page. Only the SVG of a shown flag is downloaded.
 
 <AfclPreview id="country-flag">
 
@@ -1748,6 +1748,19 @@ import { CountryFlag } from '@/afcl'
 
 ```html
 <CountryFlag countryCode="ua" />
+```
+
+</AfclPreview>
+
+`size` is `md` (default, 32×24) or `sm` (16×12) for menus, selects and lists:
+
+<AfclPreview id="country-flag-sizes">
+
+```html
+<div class="flex items-center gap-4">
+  <span class="flex items-center gap-2 text-sm"><CountryFlag countryCode="jp" size="sm" />日本語</span>
+  <CountryFlag countryCode="jp" />
+</div>
 ```
 
 </AfclPreview>
