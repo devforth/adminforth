@@ -32,7 +32,7 @@
     "@adminforth/connector-sqlite": "^1.0.7",
     "@adminforth/email-password-reset": "^4.0.0",
     "@adminforth/foreign-inline-list": "^1.11.5",
-    "@adminforth/i18n": "^3.1.1",
+    "@adminforth/i18n": "^3.1.2",
     "@adminforth/i18n-static": "^2.0.0",
     "@adminforth/image-generation-adapter-openai": "^1.0.19",
     "@adminforth/image-vision-adapter-openai": "^1.1.6",
@@ -44,7 +44,7 @@
     "@adminforth/text-complete": "^3.0.0",
     "@adminforth/two-factors-auth": "^7.0.0",
     "@adminforth/upload": "^3.0.0",
-    "adminforth": "^4.6.1",
+    "adminforth": "^4.7.0",
     "cldr-core": "^48.2.0",
     "express": "^5.2.1"
   },
