@@ -5,7 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'adminforth/documentation/**'
+      - 'documentation/**'
+      # AFCL previews of the docs are built from these
+      - 'adminforth/spa/src/afcl/**'
+      - 'adminforth/modules/styles.ts'
       - '.github/workflows/deploy_documentation.yaml'
 
 jobs:
@@ -13,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: adminforth
+        working-directory: documentation
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,18 +29,23 @@ jobs:
         with:
           node-version: '24'
           cache: 'pnpm'
-          cache-dependency-path: adminforth/pnpm-lock.yaml
+          cache-dependency-path: |
+            adminforth/pnpm-lock.yaml
+            documentation/pnpm-lock.yaml
 
       - name: Configure Git
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
 
+      # adminforth itself is needed too: the API pages are generated from its types, AFCL previews from its SPA
       - name: Install dependencies
         run: |
-          pnpm i
-          cd documentation
-          npm ci
+          pnpm --dir ../adminforth install
+          pnpm install
 
       - name: Build and deploy docs
-        run: GIT_USER=${{ github.actor }} GIT_PASS=${{ secrets.DOCUSAURUS_DEPLOY_KEY }} pnpm rollout-doc
+        env:
+          GIT_USER: ${{ github.actor }}
+          GIT_PASS: ${{ secrets.DOCUSAURUS_DEPLOY_KEY }}
+        run: pnpm run build && pnpm run deploy

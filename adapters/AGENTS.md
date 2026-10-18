@@ -53,7 +53,7 @@ the section's heading anchor. Do not guess it — derive it from the docs source
 To build (or validate) an adapter's `homepage`:
 
 1. Find the adapter's category page under
-   `adminforth/documentation/docs/tutorial/06-Adapters/*.md`. The page slug is
+   `documentation/docs/tutorial/06-Adapters/*.md`. The page slug is
    the filename without its numeric prefix (e.g. `07-key-value-adapters.md` →
    `key-value-adapters`).
 2. On that page, find the `##` heading for this specific adapter.

@@ -112,7 +112,7 @@
   // plugins/**/types.ts are still needed for documentation
   "exclude": [
     "node_modules",
-    "dist", "spa", "documentation", 
+    "dist", "spa",
     "plugins/**/*",
     "adapters/**/*",
     ],           /* Exclude files from compilation. */

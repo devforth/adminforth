@@ -1,0 +1,4 @@
+allowBuilds:
+  # their postinstall only prints a funding message
+  core-js: false
+  core-js-pure: false
