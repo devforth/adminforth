@@ -12,7 +12,7 @@
       >
         <RouterLink
           v-if="foreignResource && foreignResource?.pk"
-          class="font-medium text-lightSidebarText dark:text-darkSidebarText hover:brightness-110 whitespace-nowrap"
+          class="font-medium hover:underline whitespace-nowrap"
           :to="{
             name: 'resource-show',
             params: {
