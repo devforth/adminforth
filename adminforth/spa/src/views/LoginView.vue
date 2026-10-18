@@ -32,11 +32,15 @@
       class="af-login-modal overflow-y-auto flex flex-grow
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
-            <!-- Modal content -->
-            <div class="af-login-popup af-login-modal-content relative bg-lightLoginViewBackground rounded-default shadow dark:bg-darkLoginViewBackground dark:shadow-black" :class=" { 'rounded-b-none  overflow-hidden': error } ">
-                <!-- Modal header -->
-                <div class="af-login-modal-header flex items-center justify-between flex-col p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-
+            <DialogPanel
+              class="af-login-popup af-login-modal-content max-w-none bg-lightLoginViewBackground dark:bg-darkLoginViewBackground"
+              :error="error"
+              :classes="{
+                header: 'af-login-modal-header',
+                body: 'af-login-modal-body',
+              }"
+            >
+                <template #title>
                     <template v-if="coreStore?.config?.loginPageInjections?.panelHeader.length  && coreStore?.config?.loginPageInjections?.panelHeader.length > 0">
                       <component 
                         v-for="(c, index) in coreStore?.config?.loginPageInjections?.panelHeader || []"
@@ -46,15 +50,13 @@
                         @update:setLoginParam="setLoginParam"
                       />
                     </template>
-                    <h3 v-else class="text-xl font-semibold text-lightLoginViewText dark:text-darkLoginViewTextColor">
+                    <p v-else class="text-lg leading-6 font-semibold text-lightLoginViewTextColor dark:text-darkLoginViewTextColor">
                       {{ $t('Sign in to') }} {{ coreStore.config?.brandName }}
-                    </h3>
-                </div>
-                <!-- Modal body -->
-                <div class="af-login-modal-body p-4 md:p-5">
-                    <form class="space-y-4" @submit.prevent>
+                    </p>
+                </template>
+                <form class="space-y-4" @submit.prevent>
                         <div>
-                            <label for="username" class="block mb-2 text-sm font-medium text-lightLoginViewText dark:text-darkLoginViewTextColor">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
+                            <label for="username" class="block mb-2 text-sm font-medium text-lightLoginViewTextColor dark:text-darkLoginViewTextColor">{{ $t('Your') }} {{ coreStore.config?.usernameFieldName?.toLowerCase() }}</label>
                             <Input 
                               v-model="username"
                               autocomplete="username"  
@@ -67,20 +69,13 @@
                               placeholder="name@company.com" required />
                         </div>
                         <div class="">
-                            <label for="password" class="block mb-2 text-sm font-medium text-lightLoginViewText dark:text-darkLoginViewTextColor">{{ $t('Your password') }}</label>
+                            <label for="password" class="block mb-2 text-sm font-medium text-lightLoginViewTextColor dark:text-darkLoginViewTextColor">{{ $t('Your password') }}</label>
                             <Input 
                               v-model="password"
                               ref="passwordInput"
                               autocomplete="current-password"
                               @keydown.enter="login"
-                              :type="!showPw ? 'password': 'text'" name="password" id="password" placeholder="••••••••" class="w-full" required>
-                              <template #rightIcon>
-                                <button type="button" @click="showPw = !showPw" class="text-lightLoginViewSubTextColor dark:text-darkLoginViewSubTextColor">
-                                  <IconEye class="w-4 h-4" v-if="!showPw" />
-                                  <IconEyeOff class="w-4 h-4" v-else />
-                                </button>
-                              </template>
-                            </Input>
+                              type="password" passwordToggle name="password" id="password" placeholder="••••••••" class="w-full" required />
                         </div>
 
                         <div v-if="coreStore?.config?.rememberMeDuration" 
@@ -123,10 +118,8 @@
                           @update:setLoginParam="setLoginParam"
                           @update:oauthRedirecting="oauthRedirecting = $event"
                         />
-                    </form>
-                </div>
-            </div>
-            <ErrorMessage v-if="error" :error="error" class="absolute left-4 right-4 rounded-t-none mb-0 shadow px-9" />
+                </form>
+            </DialogPanel>
         </div>
     </div> 
 
@@ -140,11 +133,10 @@ import { getCustomComponent, formatComponent } from '@/utils';
 import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
-import { IconEye, IconEyeOff, IconInfo } from '@iconify-prerendered/vue-lucide';
+import { IconInfo } from '@iconify-prerendered/vue-lucide';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter, useRoute } from 'vue-router';
-import { Button, Checkbox, Input, Spinner } from '@/afcl';
-import ErrorMessage from '@/components/ErrorMessage.vue';
+import { Button, Checkbox, DialogPanel, Input, Spinner } from '@/afcl';
 
 const passwordInput = ref<InstanceType<typeof Input> | null>(null);
 const usernameInput = ref<InstanceType<typeof Input> | null>(null);
@@ -161,7 +153,6 @@ const isSuccess = ref<boolean>(false);
 const coreStore = useCoreStore();
 const user = useUserStore();
 
-const showPw = ref(false);
 
 const error = ref(null);
 const disableLoginButton = ref(false);
