@@ -140,6 +140,7 @@
 <script setup lang="ts">
   import { ref, computed, useTemplateRef, watch, onMounted } from 'vue';
   import SkeleteLoader from '@/components/SkeleteLoader.vue';
+  import Skeleton from './Skeleton.vue';
   import { IconRows3, IconChevronLeft, IconChevronRight, IconChevronsUpDown, IconArrowUp } from '@iconify-prerendered/vue-lucide';
 
   defineExpose({
