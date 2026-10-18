@@ -758,7 +758,7 @@ Notes and tips:
 
 ## List table beforeActionButtons
 
-`beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, directly to the left of the default action buttons (`Create`, `Filter`, bulk actions, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
+`beforeActionButtons` allows injecting one or more compact components into the header bar of the list page, next to the default action buttons (`Create`, `Filter`, three‑dots menu). Use it for small inputs (quick search, toggle, status chip) rather than large panels.
 
 ![alt text](<Group 5.png>)
 
@@ -797,6 +797,32 @@ beforeActionButtons: [
 ```
 
 > ☝️ Keep these components visually light; wide or tall content should use `afterBreadcrumbs` or `bottom` instead.
+
+### Narrow screens
+
+The header lays out by its own width, not by the width of the screen, because the sidebar and the agent panel take space too:
+
+- below 896px the injected components take a full row under the title and the buttons;
+- from 896px the title, the injected components and the buttons share one row, the components stand to the left of the buttons.
+
+Buttons of bulk actions show up in a row of their own above the table when rows are checked, so they never push the components or the buttons around.
+
+The header is a Tailwind [size container](https://github.com/tailwindlabs/tailwindcss-container-queries) named `header`, so a component can follow it with `@4xl/header:` variants. For example, a search input fills its row on a narrow header and gets a fixed width in the single row of a wide one:
+
+```html title="./custom/UniversalQuickSearch.vue"
+<template>
+  <div class="w-full @4xl/header:w-64">
+    <Input v-model="term" fullWidth :placeholder="$t('Search')" />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { Input } from '@/afcl';
+
+const term = ref('');
+</script>
+```
 
 ## List table custom
 

@@ -33,6 +33,12 @@ A disabled control gets the native `disabled` attribute (`aria-disabled` on a li
 
 Below `sm` (640px) a Dialog or Modal docks to the bottom edge as a sheet: full width, 16px top corners, actions stacked full width with the last (main) one on top. Width classes an app passes (`class="w-96"`) apply from `sm` up. The panel and footer classes live in `afcl/dialogStyles.ts`, so an overlay built on `Modal` gets the sheet without extra code.
 
+## Container width, not viewport width
+
+A page gets less than the screen: the sidebar and the agent panel squeeze it on wide screens too. Layouts which stack follow their container with Tailwind container queries (`@container` on the parent, `@4xl:` on children), not the viewport with `md:` or `lg:`.
+
+The header of the list page is a container named `header`. Below 896px (`@4xl/header`) components from `beforeActionButtons` take a full row under the title and the buttons, from 896px all share one row. Below 512px (`@lg/header`) Home and Filter keep only their icons. Such a component fills its row and takes a fixed width from `@4xl/header:`, like the fields of quick-filters. Bulk actions of checked rows take a row of their own above the table, so the buttons next to the title never move.
+
 ## Lucide icons
 
 - Use Lucide: `@iconify-prerendered/vue-lucide` in components (`IconPencil`, `IconTrash2`), `lucide:<name>` in config (`icon: 'lucide:download'`).

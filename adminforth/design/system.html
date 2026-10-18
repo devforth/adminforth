@@ -169,9 +169,6 @@
 .seg > button.is-on { background: var(--surface-3); color: var(--text); }
 .seg > button .i { color: var(--muted); }
 .seg > button.is-on .i { color: var(--text); }
-.seg-pill { display: inline-flex; padding: 2px; gap: 2px; border-radius: 8px; background: var(--surface-3); }
-.seg-pill > button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; }
-.seg-pill > button.is-on { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--border), 0 1px 2px rgba(24, 24, 27, .06); }
 
 /* links */
 .link { color: var(--accent-fg); text-decoration: none; font-weight: 500; }
@@ -250,6 +247,25 @@
 .badge-accent { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-fg); }
 .badge-muted { background: var(--surface-2); border-color: transparent; color: var(--muted); }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+/* list page header: a container, so it follows its own width and not the viewport (the sidebar and the agent panel squeeze it too).
+   Narrow: title and buttons in a row, filters in a full row under them. From 512px: Home and Filter labels. From 896px: one row. */
+.lh { container: header / inline-size; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-height: 36px; }
+.lh-title { flex: 1 1 0; min-width: 96px; display: flex; align-items: center; gap: 8px; }
+.lh-title .t-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lh-filters { order: 1; flex: 1 1 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 8px; }
+.lh-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lh-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.lh-filter { padding: 0 8px; }
+@container header (min-width: 512px) {
+  .lh-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .lh-filter { padding: 0 12px; }
+}
+@container header (min-width: 896px) {
+  .lh-filters { order: 0; flex: 0 1 auto; display: flex; flex-wrap: wrap; margin-left: auto; }
+  .lh-filters .select { width: 192px; }
+  .lh-filters label.input { width: 256px; }
+}
 
 /* cards & tables */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
@@ -779,47 +795,35 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
   </header>
 
   <main class="af-content-wrapper" style="flex: 1; padding: 24px 32px 40px; display: flex; flex-direction: column; gap: 16px; min-width: 0">
-    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px">
-      <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 8px">
+    <!-- the header follows its own width: filters take a full row under the title and the buttons, from 896px all share one row -->
+    <div class="lh">
+      <nav class="lh-title" aria-label="Breadcrumb">
         <a class="link-muted t-sm" href="#" style="display: inline-flex; align-items: center; gap: 6px">
           <svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-          Home
+          <span class="lh-label">Home</span>
         </a>
         <span style="color: var(--faint)">/</span>
         <h1 class="t-title">Car - SQLite</h1>
       </nav>
-      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px">
-        
+      <div class="lh-filters">
+        <button class="input select" type="button" aria-haspopup="listbox" style="font: inherit; font-size: 14px; text-align: left"><span class="ph">Price</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <label class="input">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="text" placeholder="Model" aria-label="Model">
+        </label>
+      </div>
+      <div class="lh-actions">
         <a class="btn btn-primary af-create-button" href="#create">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
           Create
         </a>
-        <button class="btn btn-secondary af-filter-button" type="button" >
+        <button class="btn btn-secondary af-filter-button lh-filter" type="button" >
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></svg>
-          Filter
-          
+          <span class="lh-label">Filter</span>
         </button>
         <button class="btn btn-secondary btn-icon" type="button" aria-label="More actions">
           <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
         </button>
-      </div>
-    </div>
-
-    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-      <label class="input" style="width: 300px; max-width: 100%">
-        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-        <input type="text" placeholder="Search by model" aria-label="Model">
-      </label>
-      <div class="seg-pill" role="group" aria-label="Price">
-        
-          <button class="is-on" type="button" >Any price</button>
-        
-          <button class="" type="button" >Budget-Friendly</button>
-        
-          <button class="" type="button" >Mid-Range</button>
-        
-          <button class="" type="button" >Premium</button>
-        
       </div>
     </div>
 

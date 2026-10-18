@@ -21,9 +21,9 @@
     />
 
     <BreadcrumbsWithButtons>
-      <template v-if="isResourceReady">
+      <template v-if="isResourceReady && beforeActionButtons.length" #filters>
         <component 
-          v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.beforeActionButtons as AdminForthComponentDeclaration[] || []"
+          v-for="c in beforeActionButtons"
           :is="getCustomComponent(formatComponent(c))"
           :meta="(c as AdminForthComponentDeclarationFull).meta"
           :resource="coreStore.resource"
@@ -31,9 +31,10 @@
           :checkboxes="checkboxes"
           :clearCheckboxes="clearCheckboxes"
         />
+      </template>
+      <template v-if="isResourceReady && checkboxes.length" #selection>
         <Button
           @click="()=>{checkboxes = []}"
-          v-if="checkboxes.length"
           data-tooltip-target="tooltip-remove-all"
           variant="secondary"
           iconOnly
@@ -47,11 +48,9 @@
         </Button>
 
         <div 
-          v-if="checkboxes.length"
-          v-for="(action,i) in coreStore.resource?.options?.bulkActions" 
+          v-for="(action,i) in coreStore.resource?.options?.bulkActions?.filter(a => !a.showInThreeDotsDropdown)" 
         >
           <Button
-            v-if="!action.showInThreeDotsDropdown"
             :key="action.id"
             @click="startBulkActionInner(action.id!)"
             class="h-[2.125rem] px-2.5"
@@ -73,7 +72,6 @@
           </Button>
         </div>
         <div
-          v-if="checkboxes.length"
           v-for="(action,i) in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)" 
         >
           <Button
@@ -93,7 +91,8 @@
               {{ `${action.name} (${checkboxes.length})` }}
           </Button>
         </div>
-
+      </template>
+      <template v-if="isResourceReady">
         <LinkButton v-if="coreStore.resource?.options?.allowedActions?.create"
           :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
           class="af-create-button h-[2.125rem] px-2.5"
@@ -103,13 +102,14 @@
         </LinkButton>
 
         <Button
-          class="af-filter-button h-[2.125rem] px-3 py-3"
+          class="af-filter-button h-[2.125rem] px-2 py-3 @lg/header:px-3"
           @click="()=>{filtersShow = !filtersShow}"
           v-if="coreStore.resource?.options?.allowedActions?.filter"
           variant="secondary"
         >
           <IconListFilter class="w-4 h-4"/>
-          <span>{{ $t('Filter') }}</span>
+          <!-- a narrow header keeps only the icon, the label stays for screen readers -->
+          <span class="sr-only @lg/header:not-sr-only">{{ $t('Filter') }}</span>
           <div v-if="filtersStore.visibleFiltersCount" class="flex items-center gap-1 ms-1">
             <span class="inline-flex items-center justify-center min-w-[1.125rem] h-[1.125rem] px-1 rounded-full text-[11px] font-semibold tabular-nums bg-lightPrimary text-lightPrimaryContrast dark:bg-darkPrimary dark:text-darkPrimaryContrast">
                 {{ filtersStore.visibleFiltersCount }}
@@ -232,6 +232,7 @@ const route = useRoute();
 
 // previous resource stays in the store until the new one is applied, its injections must not render here
 const isResourceReady = computed(() => coreStore.resource?.resourceId === route.params.resourceId);
+const beforeActionButtons = computed(() => (coreStore.resourceOptions?.pageInjections?.list?.beforeActionButtons || []) as AdminForthComponentDeclaration[]);
 
 const page = ref(1);
 const columnsMinMax = ref({});
