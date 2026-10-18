@@ -45,8 +45,8 @@ importers:
         specifier: ^1.11.4
         version: 1.11.4(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))
       '@adminforth/i18n':
-        specifier: ^3.1.0
-        version: 3.1.0(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))
+        specifier: ^3.1.1
+        version: 3.1.1(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))
       '@adminforth/i18n-static':
         specifier: ^2.0.0
         version: 2.0.0(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))
@@ -176,8 +176,8 @@ packages:
     peerDependencies:
       adminforth: ^4.0.0
 
-  '@adminforth/i18n@3.1.0':
-    resolution: {integrity: sha512-EgNQIAGLqYFIUGe73oGOQtzayeCVpnxFgYFzotrGbtkaxnNbyzl5N0VK47FFFTtnA4qx+I7AydaDJJLflkuWXw==}
+  '@adminforth/i18n@3.1.1':
+    resolution: {integrity: sha512-J7VckaCdv11G3SJV4U3U8HzOnmtBR2OW0KczfC3g42y3hYCxldEX/3b+V4aogYlBbPxc+XgaYc784gpn5MP2CA==}
     peerDependencies:
       adminforth: ^4.5.0
 
@@ -3489,12 +3489,12 @@ snapshots:
 
   '@adminforth/i18n-static@2.0.0(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))':
     dependencies:
-      '@adminforth/i18n': 3.1.0(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))
+      '@adminforth/i18n': 3.1.1(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))
       adminforth: 4.5.0(@types/node@26.6.5)(express@5.2.1)
       tsx: 4.23.15
       vue-i18n-extract: 2.0.7
 
-  '@adminforth/i18n@3.1.0(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))':
+  '@adminforth/i18n@3.1.1(adminforth@4.5.0(@types/node@26.6.5)(express@5.2.1))':
     dependencies:
       '@aws-sdk/client-ses': 3.1152.0
       '@sapphire/async-queue': 1.5.5
