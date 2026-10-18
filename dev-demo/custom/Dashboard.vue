@@ -1,5 +1,6 @@
 <template>
-  <div class="flex flex-col gap-4 p-4">
+  <!-- columns follow the width of the page content, not of the screen: the sidebar and the agent panel take part of it -->
+  <div class="@container flex flex-col gap-4 p-4">
     <div class="flex min-h-9 flex-wrap items-center justify-between gap-4">
       <h1 class="text-xl font-semibold tracking-tight text-lightBreadcrumbsText dark:text-darkBreadcrumbsText">
         {{ t('Dev demo dashboard') }}
@@ -15,7 +16,7 @@
     <Spinner v-if="isLoading" class="mx-auto my-24 h-8 w-8" />
 
     <template v-else-if="dashboard">
-      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="grid grid-cols-1 gap-4 @md:grid-cols-2 @4xl:grid-cols-4">
         <Card
           v-for="card in summaryCards"
           :key="card.label"
@@ -28,10 +29,10 @@
         </Card>
       </div>
 
-      <div class="grid gap-4 xl:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 @5xl:grid-cols-3">
         <Card
           size="md"
-          class="xl:col-span-2"
+          class="@5xl:col-span-2"
           :title="t('Cars by data source')"
           :description="t('Each source keeps its own fleet, so the dashboard compares total records, listed records, and average price side by side.')"
         >
@@ -78,7 +79,7 @@
 
         <Card
           size="md"
-          class="xl:col-span-2"
+          class="@5xl:col-span-2"
           :title="t('Most common models')"
           :description="t('Top repeated model combinations across all seeded demo resources.')"
         >
