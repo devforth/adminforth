@@ -106,9 +106,7 @@
                         <div v-if="coreStore.config?.loginPromptHTML"
                           class="flex items-center p-4 mb-4 text-sm text-lightLoginViewPromptText rounded-lg bg-lightLoginViewPromptBackground dark:bg-darkLoginViewPromptBackground dark:text-darkLoginViewPromptText" role="alert"
                         >
-                          <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                          </svg>
+                          <IconInfo class="flex-shrink-0 w-4 h-4 me-3" />
                           <span class="sr-only">{{ $t('Info') }}</span>
                           <div v-html="coreStore.config?.loginPromptHTML"></div>
                         </div>
@@ -142,7 +140,7 @@ import { getCustomComponent, formatComponent } from '@/utils';
 import { onMounted, ref, computed } from 'vue';
 import { useCoreStore } from '@/stores/core';
 import { useUserStore } from '@/stores/user';
-import { IconEye, IconEyeOff } from '@iconify-prerendered/vue-lucide';
+import { IconEye, IconEyeOff, IconInfo } from '@iconify-prerendered/vue-lucide';
 import { callAdminForthApi, loadFile } from '@/utils';
 import { useRouter, useRoute } from 'vue-router';
 import { Button, Checkbox, Input, Spinner } from '@/afcl';

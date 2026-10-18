@@ -270,7 +270,7 @@ export default class ConfigValidator implements IConfigValidator {
 
     bulkActions.push({
       label: `Delete checked`,
-      icon: 'flowbite:trash-bin-outline',
+      icon: 'lucide:trash-2',
       confirm: {
         title: 'Are you sure you want to delete selected items?',
         message: 'Deleting {count} item. This process is irreversible. | Deleting {count} items. This process is irreversible.',

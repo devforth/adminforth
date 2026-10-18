@@ -1175,7 +1175,7 @@ export interface AdminForthConfigMenuItem {
    * Example:
    * 
    * ```ts
-   * icon: 'flowbite:brain-solid', 
+   * icon: 'lucide:brain',
    * ```
    * 
    */

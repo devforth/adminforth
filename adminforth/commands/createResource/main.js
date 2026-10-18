@@ -59,6 +59,6 @@ export default async function createResource(args) {
     table: resourceId,
     resourceId: resourceId,
     label: toTitleCase(table.table),
-    icon: "flowbite:user-solid",
+    icon: "lucide:user",
   });
  }

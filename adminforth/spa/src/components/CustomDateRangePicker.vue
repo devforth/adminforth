@@ -27,7 +27,7 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
+              <IconClock class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
 
             <input v-model="startTime" type="time" id="start-time"
@@ -39,7 +39,7 @@
         <div>
           <div class="relative">
             <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconTime class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
+              <IconClock class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
             </div>
 
             <input v-model="endTime" type="time" id="end-time"
@@ -53,12 +53,7 @@
               class="text-lightPrimary dark:text-darkPrimary text-[13px] font-medium hover:underline p-0 inline-flex items-center gap-0.5 mb-2"
               :class="{hidden: column.type !== 'datetime'}"
               @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
-        <svg class="w-4 h-4" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"
-             xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-             fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="m8 10 4 4 4-4"/>
-        </svg>
+        <IconChevronDown class="w-4 h-4" :class="{'rotate-180': showTimeInputs}"/>
       </button>
     </div>
   </div>
@@ -71,8 +66,7 @@ import utc from 'dayjs/plugin/utc';
 import {useCoreStore} from '@/stores/core';
 import {FLEXIBLE_DATEPICKER_FORMAT} from '@/utils';
 
-import IconCalendar from "@/components/icons/IconCalendar.vue";
-import IconTime from "@/components/icons/IconTime.vue";
+import { IconCalendar, IconChevronDown, IconClock } from '@iconify-prerendered/vue-lucide';
 
 const coreStore = useCoreStore();
 dayjs.extend(utc)

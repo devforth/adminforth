@@ -106,14 +106,7 @@
             class="z-index-100 flex-shrink-0 ml-1 h-4 w-4 -mr-1 rounded-full inline-flex items-center justify-center text-lightDropdownMultipleSelectIcon hover:text-lightDropdownMultipleSelectIconHover dark:text-darkDropdownMultipleSelectIcon dark:hover:text-darkDropdownMultipleSelectIconHover focus:outline-none focus:text-lightDropdownMultipleSelectIconFocus focus:bg-lightDropdownMultipleSelectIconFocusBackground dark:focus:text-darkDropdownMultipleSelectIconFocus dark:focus:bg-darkDropdownMultipleSelectIconFocusBackground"
           >
             <span class="sr-only">{{ $t('Remove item') }}</span>
-            <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M1 1l6 6m0-6L1 7"
-              />
-            </svg>
+            <IconX class="h-3 w-3" />
           </button>
         </div> 
       </template>
@@ -123,7 +116,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, useId,type PropType, type Ref } from 'vue';
-import { IconChevronDown } from '@iconify-prerendered/vue-lucide';
+import { IconChevronDown, IconX } from '@iconify-prerendered/vue-lucide';
 import { useElementSize } from '@vueuse/core'
 
 type ISingleSelectModelValue = string | number | boolean | null;

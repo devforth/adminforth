@@ -38,6 +38,7 @@ Below `sm` (640px) a Dialog or Modal docks to the bottom edge as a sheet: full w
 - Use Lucide: `@iconify-prerendered/vue-lucide` in components (`IconPencil`, `IconTrash2`), `lucide:<name>` in config (`icon: 'lucide:download'`).
 - 16px (`w-4 h-4`) in controls and menus. Icons are muted (`text-lightInputIconColor`), destructive items color their icon too.
 - Don't add icons from other sets; replace flowbite, heroicons and humbleicons icons with Lucide when you touch a component. The old sets stay installed because apps and older plugins still import them.
+- Don't draw icons with inline `<svg>` or keep them as own `.vue` files, take the Lucide component. Inline SVG is only for graphics which are not icons: the two-tone `Spinner` ring, the `Toast` timer ring, charts.
 
 ## Moving off flowbite
 

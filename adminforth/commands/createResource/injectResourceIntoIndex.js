@@ -18,7 +18,7 @@ export async function injectResourceIntoIndex({
   table,
   resourceId,
   label,
-  icon = "flowbite:user-solid",
+  icon = "lucide:user",
 }) {
   let code = await fs.readFile(indexFilePath, "utf-8");
   const ast = recast.parse(code, { parser });
