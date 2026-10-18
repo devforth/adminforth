@@ -239,6 +239,15 @@ new OAuthPlugin({
 }),
 ```
 
+The buttons go under the login button after an "or" divider. If other plugins add something under the login button too (passkey button, "Forgot password?" or sign up links), raise `componentsOrderUnderLoginButton` so the OAuth buttons stay right under the divider: components with a higher order come first.
+
+```typescript title="./resources/adminuser.ts"
+new OAuthPlugin({
+  // ... adapters configuration ...
+  componentsOrderUnderLoginButton: 1,
+}),
+```
+
 
 ## OAuth2 Providers
 

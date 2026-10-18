@@ -6,6 +6,8 @@ import AdminForthAdapterGithubOauth2 from '../../../adapters/adminforth-oauth-ad
 
 export default new OAuthPlugin({
   userAvatarField: "avatar",
+  // the buttons come with an "or" divider, so they go right under the login button, before passkey and links
+  componentsOrderUnderLoginButton: 1,
   adapters: [
     new AdminForthAdapterGoogleOauth2({
       clientID: process.env.GOOGLE_CLIENT_ID as string,
