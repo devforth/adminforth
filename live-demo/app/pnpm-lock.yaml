@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^2.10.0
-        version: 2.10.0(adminforth@4.1.0(@types/node@26.6.5)(express@5.2.1))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(ws@8.22.0)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.0)
+        specifier: ^3.0.0
+        version: 3.0.0(adminforth@4.1.0(@types/node@26.6.5)(express@5.2.1))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(ws@8.22.0)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.0)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.3
         version: 1.3.3(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(adminforth@4.1.0(@types/node@26.6.5)(express@5.2.1))(ws@8.22.0)(zod@4.6.7)
@@ -108,10 +108,10 @@ importers:
 
 packages:
 
-  '@adminforth/agent@2.10.0':
-    resolution: {integrity: sha512-uT/w7/YfhchD5COLgir0fsi95HRASBeTskUptFmIG7c08ajby7+3JZcnJuTq7Iwp89UKGnVoq+Rjd2+lHBuKJw==}
+  '@adminforth/agent@3.0.0':
+    resolution: {integrity: sha512-CY13vU9H18uBiv+zKvuGXOPCTb5qA67zvJBNOdnvsD2ZGaClgiB4ABrrhDkffWvYlbAWLm0cUVRYQZHausTK/g==}
     peerDependencies:
-      adminforth: ^3.32.0
+      adminforth: ^4.1.0
 
   '@adminforth/audio-adapter-openai@1.3.3':
     resolution: {integrity: sha512-eF8HO76c09d1+mzOfOQlRFxwIbMmODBw8tSkVdbyc7Yw6ZHO3m1D0S5LkG9I4KVNPyFHm96XKlhvZQodX82U3g==}
@@ -3385,7 +3385,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@2.10.0(adminforth@4.1.0(@types/node@26.6.5)(express@5.2.1))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(ws@8.22.0)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.0)':
+  '@adminforth/agent@3.0.0(adminforth@4.1.0(@types/node@26.6.5)(express@5.2.1))(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(ws@8.22.0)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.0)':
     dependencies:
       '@langchain/core': 1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(ws@8.22.0)(zod@4.6.7))(ws@8.22.0)
       '@langchain/langgraph': 1.2.8(@langchain/core@1.2.5(openai@6.49.0(@aws-sdk/credential-provider-node@3.972.86)(@smithy/signature-v4@5.7.4)(ws@8.22.0)(zod@4.6.7))(ws@8.22.0))(vue@3.5.38(typescript@5.9.3))(zod@4.6.7)
