@@ -34,7 +34,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/rich-editor | |
 | @adminforth/text-complete | ✓ |
 | @adminforth/two-factors-auth | |
-| @adminforth/universal-search | |
+| @adminforth/universal-search | ✓ |
 | @adminforth/upload | |
 | @adminforth/user-sessions | ✓ |
 | @adminforth/user-soft-delete | |
