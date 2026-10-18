@@ -199,7 +199,7 @@ new DashboardPlugin({
 });
 ```
 
-Users with a role from `viewRoles` see the **Dashboards** sidebar group and can open dashboards, but they do not get the edit mode button and receive a `403` response from all dashboard mutation endpoints. Roles from `editRoles` can always view dashboards, so there is no need to repeat them in `viewRoles`.
+Users with a role from `viewRoles` see the **Dashboards** sidebar group and can open dashboards, but they do not get the **Edit** button and receive a `403` response from all dashboard mutation endpoints. Roles from `editRoles` can always view dashboards, so there is no need to repeat them in `viewRoles`.
 
 Users whose role is listed in neither option do not see the **Dashboards** sidebar group and receive a `403` response from dashboard configuration and widget-data endpoints. The dashboard configs resource itself stays available only to `editRoles`.
 
@@ -236,17 +236,17 @@ widgets: []
 If you need to configure dashboards without using the AI Agent, you can do so manually via the AdminForth interface:
 
 1. **Access Dashboards**: Open the **Dashboards** group in the sidebar and choose a dashboard page.
-2. **Interactive UI Editor**: Users with a role listed in the plugin's `editRoles` option (defaults to `superadmin`) see a wrench button in the dashboard header that toggles edit mode. Turning it on reveals the controls to add, rename, reorder, and remove groups or widgets directly from the user interface. With edit mode off, the dashboard looks the same as it does for read-only viewers.
+2. **Interactive UI Editor**: Users with a role listed in the plugin's `editRoles` option (defaults to `superadmin`) see an **Edit** button in the dashboard header that turns on edit mode. In edit mode the **⋯** menu of every group and widget edits its YAML, moves it up or down, or removes it, and **Add group** and **Add widget** create new ones. **Done** turns edit mode off, and the dashboard looks the same as it does for read-only viewers.
 3. **YAML Configuration Editor**: The dashboard builder has built-in code editors. When editing a widget or a group manually, you write configurations using a YAML-based DSL.
 
 ### Editing dashboard settings
 
-Turn on edit mode with the wrench button and click the gear icon next to it to edit the dashboard itself. The YAML editor accepts these fields:
+Turn on edit mode with **Edit** and click **Settings** next to it to edit the dashboard itself. The YAML editor accepts these fields:
 
 ```yaml
 label: Sales Overview
 slug: sales-overview
-icon: flowbite:chart-pie-solid
+icon: lucide:chart-pie
 ```
 
 - `label` is the page title and sidebar label.
@@ -263,7 +263,7 @@ To create a new dashboard page manually, add a new record to your dashboard conf
 
 ```yaml title="dashboard_configs.config"
 version: 1
-icon: flowbite:chart-pie-solid
+icon: lucide:chart-pie
 groups:
   - id: sales
     label: Sales

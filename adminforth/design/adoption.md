@@ -12,7 +12,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/bulk-ai-flow | |
 | @adminforth/clone-row | |
 | @adminforth/crud-approve-plugin | |
-| @adminforth/dashboard | |
+| @adminforth/dashboard | ✓ |
 | @adminforth/email-invite | |
 | @adminforth/email-password-reset | |
 | @adminforth/foreign-inline-list | |
@@ -54,5 +54,5 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 
 - If simple - get of flowbite, prefer pure AFCL + Tailwind, move features we luck to AFCL
 - Existing icon fonts apart lucide - try to get rid of them if not complex
-- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: bulk-ai-flow, clone-row, dashboard, email-invite, email-password-reset, foreign-inline-list, inline-create, json-editor, markdown, open-signup, two-factors-auth, user-soft-delete; heroicons: dashboard, markdown). After plugins rework it they should disappear.
+- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: bulk-ai-flow, clone-row, email-invite, email-password-reset, foreign-inline-list, inline-create, json-editor, markdown, open-signup, two-factors-auth, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; heroicons: markdown). After plugins rework it they should disappear.
 - i18n shows language flags with its own `flag-icon-css`, a 445 KB stylesheet loaded on every page: move `LanguageFlag.vue` to AFCL `CountryFlag`.
