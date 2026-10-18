@@ -219,7 +219,7 @@ export const admin = new AdminForth({
     //diff-add
       label: 'Approvals',
     //diff-add
-      icon: 'flowbite:clipboard-check-solid',
+      icon: 'lucide:clipboard-check',
     //diff-add
       resourceId: 'crud_manual_approve',
     //diff-add

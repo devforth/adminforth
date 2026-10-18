@@ -11,7 +11,7 @@ Adminforth uses [Iconify](https://iconify.design/) icons everywhere, including t
 
 You can set an icon for each menu item using the `icon` field.
 
-You can use any icon from the [Iconify Gallery](https://icon-sets.iconify.design/) in the format `<setname>:<icon>`. For example, `flowbite:brain-solid`.
+You can use any icon from the [Iconify Gallery](https://icon-sets.iconify.design/) in the format `<setname>:<icon>`. For example, `lucide:brain`. AdminForth itself uses [Lucide](https://icon-sets.iconify.design/lucide/) icons, so they match the rest of the admin panel.
 
 ![Icons for AdminForth](image-14.png)
 
@@ -30,24 +30,24 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
     menu: [
       {
         label: 'Blog',
-        icon: 'flowbite:brain-solid',
+        icon: 'lucide:brain',
         open: true,
         children: [
           {
             label: 'Posts',
-            icon: 'flowbite:book-open-outline',
+            icon: 'lucide:book-open',
             resourceId: 'posts',
           },
           {
             label: 'Categories',
-            icon: 'flowbite:folder-duplicate-outline',
+            icon: 'lucide:folders',
             resourceId: 'categories',
           },
         ],
       },
       {
         label: 'Users',
-        icon: 'flowbite:folder-duplicate-outline',
+        icon: 'lucide:folders',
         resourceId: 'adminuser',
       },
     ],
@@ -72,7 +72,7 @@ async modifyResourceConfig(adminforth, resourceConfig) {
       itemId: 'dashboard',
       type: 'page',
       label: 'Dashboard',
-      icon: 'flowbite:chart-pie-solid',
+      icon: 'lucide:chart-pie',
       path: '/dashboard',
       component: this.componentPath('Dashboard.vue'),
     },
@@ -143,7 +143,7 @@ async modifyResourceConfig(adminforth, resourceConfig) {
           itemId: 'dashboardsMenu',
           type: 'group',
           label: 'Dashboards',
-          icon: 'flowbite:chart-pie-solid',
+          icon: 'lucide:chart-pie',
           children: dashboards.map((dashboard) => ({
             itemId: `dashboard-${dashboard.id}`,
             type: 'page',
@@ -155,7 +155,7 @@ async modifyResourceConfig(adminforth, resourceConfig) {
       },
     ];
   }, {
-    icons: ['flowbite:chart-pie-solid'],
+    icons: ['lucide:chart-pie'],
   });
 }
 ```
@@ -198,7 +198,7 @@ To do it use `visible` field in the menu item configuration:
   menu: [
     {
       label: 'Categories',
-      icon: 'flowbite:folder-duplicate-outline',
+      icon: 'lucide:folders',
       resourceId: 'categories',
 //diff-add
       visible: adminUser => adminUser.dbUser.role === 'admin'
@@ -222,7 +222,7 @@ You can put one or several gaps between menu items:
   menu: [
     {
       label: 'Posts',
-      icon: 'flowbite:book-open-outline',
+      icon: 'lucide:book-open',
       resourceId: 'posts',
     },
     {
@@ -233,7 +233,7 @@ You can put one or several gaps between menu items:
     },
     {
       label: 'Categories',
-      icon: 'flowbite:folder-duplicate-outline',
+      icon: 'lucide:folders',
       resourceId: 'categories',
     },
   ],
@@ -251,7 +251,7 @@ To split menu items with a line you can use a divider:
   menu: [
     {
       label: 'Posts',
-      icon: 'flowbite:book-open-outline',
+      icon: 'lucide:book-open',
       resourceId: 'posts',
     },
     {
@@ -259,7 +259,7 @@ To split menu items with a line you can use a divider:
     },
     {
       label: 'Categories',
-      icon: 'flowbite:folder-duplicate-outline',
+      icon: 'lucide:folders',
       resourceId: 'categories',
     },
   ]
@@ -283,12 +283,12 @@ You can add a heading to the menu:
     },
     {
       label: 'Posts',
-      icon: 'flowbite:book-open-outline',
+      icon: 'lucide:book-open',
       resourceId: 'posts',
     },
     {
       label: 'Categories',
-      icon: 'flowbite:folder-duplicate-outline',
+      icon: 'lucide:folders',
       resourceId: 'categories',
     },
   ],
@@ -308,7 +308,7 @@ You can add a badge near the menu item title (e.g. to get count of unread messag
   menu: [
     {
       label: 'Posts',
-      icon: 'flowbite:book-open-outline',
+      icon: 'lucide:book-open',
       resourceId: 'posts',
       badge: async (adminUser: AdminUser) => {
         return 10
@@ -336,7 +336,7 @@ Most times you need to refresh the badge from some backend API or hook. To do th
   menu: [
     {
       label: 'Posts',
-      icon: 'flowbite:book-open-outline',
+      icon: 'lucide:book-open',
       resourceId: 'posts',
 //diff-add
       itemId: 'postsMenuItem',
@@ -422,7 +422,7 @@ You can use the url property to override default navigation. This is useful for 
 menu: [
     {
       label: 'Posts',
-      icon: 'flowbite:book-open-outline',
+      icon: 'lucide:book-open',
       resourceId: 'posts',
       //diff-add
       url: '/resource/aparts?filter__country__in=["DE"]',  
@@ -450,7 +450,7 @@ async modifyResourceConfig(adminforth, resourceConfig) {
       itemId: 'dashboard',
       type: 'page',
       label: 'Dashboard',
-      icon: 'flowbite:chart-pie-solid',
+      icon: 'lucide:chart-pie',
       path: '/dashboard',
       component: this.componentPath('Dashboard.vue'),
     },
@@ -521,7 +521,7 @@ async modifyResourceConfig(adminforth, resourceConfig) {
           itemId: 'dashboardsMenu',
           type: 'group',
           label: 'Dashboards',
-          icon: 'flowbite:chart-pie-solid',
+          icon: 'lucide:chart-pie',
           children: dashboards.map((dashboard) => ({
             itemId: `dashboard-${dashboard.id}`,
             type: 'page',
@@ -533,7 +533,7 @@ async modifyResourceConfig(adminforth, resourceConfig) {
       },
     ];
   }, {
-    icons: ['flowbite:chart-pie-solid'],
+    icons: ['lucide:chart-pie'],
   });
 }
 ```

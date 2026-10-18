@@ -57,7 +57,7 @@ Create a component `PropertyCost.vue`:
         <template #tooltip>
           <div class="text-sm">Your total property cost</div>
         </template>
-        <IconDollarOutline class="text-2xl opacity-50" />
+        <IconDollarSign class="text-2xl opacity-50" />
         <div class="text-2xl text-gray-900 dark:text-white"> {{totalCost}}</div>
       </Tooltip>
   </div>
@@ -67,7 +67,7 @@ Create a component `PropertyCost.vue`:
 import { onMounted, onUnmounted, Ref } from 'vue';
 import { ref } from 'vue';
 import websocket from '@/websocket';
-import { IconDollarOutline } from '@iconify-prerendered/vue-flowbite';
+import { IconDollarSign } from '@iconify-prerendered/vue-lucide';
 import { Tooltip } from '@/afcl';
 
 import type { AdminUser } from '@/types/Common';

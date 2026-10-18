@@ -132,7 +132,7 @@ menu: [
 //diff-add
     label: 'Alerts',
 //diff-add
-    icon: 'flowbite:bell-active-alt-solid',
+    icon: 'lucide:bell-ring',
 //diff-add
     component: '@@/Alerts.vue',
 //diff-add

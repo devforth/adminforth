@@ -17,7 +17,7 @@ Here's how to add a custom action:
     actions: [
       {
         name: 'Auto submit',  // Display name of the action
-        icon: 'flowbite:play-solid',  // Icon to display (using Flowbite icons)
+        icon: 'lucide:play',  // Icon to display (using Lucide icons)
         
         // Control who can see/use this action
         allowed: ({ adminUser, standardAllowedActions }) => {
@@ -49,7 +49,7 @@ Here's how to add a custom action:
 ### Action Configuration Options
 
 - `name`: Display name of the action
-- `icon`: Icon to show (using Flowbite icon set)
+- `icon`: Icon to show (using Lucide icon set)
 - `allowed`: Function to control access to the action
 - `action`: Handler function that executes when action is triggered for a **single** record
 - `bulkHandler`: Handler function that executes when the action is triggered for **multiple** records at once (see [Dedicated bulk handler](#dedicated-bulk-handler))
@@ -125,7 +125,7 @@ For operations that only apply to multiple selected records, use `options.bulkAc
     bulkActions: [
       {
         label: 'Send Invitation',
-        icon: 'flowbite:envelope-solid',
+        icon: 'lucide:mail',
         confirm: 'Are you sure you want to send invitation emails?',
         allowed: async ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
         action: async ({ selectedIds }) => {
@@ -203,7 +203,7 @@ Instead of defining an `action` handler, you can specify a `url` that the user w
 ```ts title="./resources/apartments.ts"
 {
   name: 'View details',
-  icon: 'flowbite:eye-solid',
+  icon: 'lucide:eye',
   url: '/resource/aparts',  // URL to redirect to
   showIn: {
     list: true,
@@ -226,7 +226,7 @@ To open the URL in a new tab, append `target=_blank` as a query parameter. If th
 ```ts
 {
   name: 'View on Google',
-  icon: 'flowbite:external-link-solid',
+  icon: 'lucide:external-link',
   url: 'https://google.com/search?q=apartment&target=_blank',
   showIn: {
     list: true,
@@ -240,7 +240,7 @@ Example to generate dynamic URL:
 ```ts
 {
   name: 'View on Google',
-  icon: 'flowbite:external-link-solid',
+  icon: 'lucide:external-link',
   url: async ({record, recordId, adminUser, resource }) => `https://google.com/search?q=Apartment ${record.title}`,
   showIn: {
     list: true,
@@ -262,7 +262,7 @@ However, rearely you might also like to decide whether to redirect only after pe
 ```ts
 {
   name: 'View on Google',
-  icon: 'flowbite:external-link-solid',
+  icon: 'lucide:external-link',
   action: async ({ recordId }) => {
     if (await testSomething(recordId)) {
         return { ok: true, redirectUrl: 'https://google.com/search?q=apartment' };
@@ -290,7 +290,7 @@ Below we wrap a "Mark as listed" action.
     actions: [
       {
         name: 'Mark as listed',
-        icon: 'flowbite:eye-solid',
+        icon: 'lucide:eye',
         // UI wrapper for the built-in action button
         //diff-add
         customComponent: {
@@ -386,7 +386,7 @@ Backend handler: read the payload via `extra`.
     actions: [
       {
         name: 'Toggle listed',
-        icon: 'flowbite:eye-solid',
+        icon: 'lucide:eye',
         showIn: { list: false, listThreeDotsMenu: false, showButton: true, showThreeDotsMenu: true },
         // The payload from emit('callAction', { asListed: true|false }) arrives here as `extra`
         customComponent: {
@@ -417,7 +417,7 @@ actions: [
   //diff-add
   id: 'testToggle listedAction',
   name: 'Toggle listed',
-  icon: 'flowbite:eye-solid',
+  icon: 'lucide:eye',
   ...  
   }
 ]

@@ -284,21 +284,21 @@ menu: [
 //diff-add
       homepage: true,
 //diff-add
-      icon: 'flowbite:chart-pie-solid',
+      icon: 'lucide:chart-pie',
 //diff-add
       component: '@@/Dashboard.vue',
 //diff-add
     },
     {
       label: 'Core',
-      icon: 'flowbite:brain-solid',
+      icon: 'lucide:brain',
       open: true,
       children: [
         {
 //diff-remove
           homepage: true,  
           label: 'Apartments',
-          icon: 'flowbite:home-solid',
+          icon: 'lucide:house',
           resourceId: 'aparts',
         },
       ]
@@ -306,7 +306,7 @@ menu: [
 ```
 
 
-> ☝️ To find icon go to https://icon-sets.iconify.design/flowbite/?query=chart, click on icon you like and copy name:
+> ☝️ To find icon go to https://icon-sets.iconify.design/lucide/?query=chart, click on icon you like and copy name:
 ![Iconify icon select](image-icon-select.png)
 
 You might notice that in mounted hook page fetches custom endpoint '/api/dashboard-stats'. 
@@ -601,7 +601,7 @@ export const admin = new AdminForth({
         //diff-add
         slug: "users-settings",
         //diff-add
-        icon:"flowbite:user-solid"
+        icon:"lucide:user"
         //diff-add
       },
       //diff-add
@@ -611,7 +611,7 @@ export const admin = new AdminForth({
         //diff-add
         component: "@@/MySecrets.vue",
         //diff-add
-        icon: "flowbite:lock-solid"
+        icon: "lucide:lock"
         //diff-add
       }
       //diff-add

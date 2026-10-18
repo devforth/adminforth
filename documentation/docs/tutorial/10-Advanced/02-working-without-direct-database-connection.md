@@ -454,9 +454,9 @@ export const admin = new AdminForth({
   ],
   menu: [
 //diff-add
-    { label: 'Customers', icon: 'flowbite:users-solid', resourceId: 'customers' },
+    { label: 'Customers', icon: 'lucide:users', resourceId: 'customers' },
 //diff-add
-    { label: 'Orders', icon: 'flowbite:cart-solid', resourceId: 'orders' },
+    { label: 'Orders', icon: 'lucide:shopping-cart', resourceId: 'orders' },
     { type: 'heading', label: 'SYSTEM' },
     ...
   ],
