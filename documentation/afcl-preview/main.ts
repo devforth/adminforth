@@ -29,7 +29,9 @@ app.use(createRouter({ history: createMemoryHistory(), routes: [{ path: '/:path(
 initI18n(app);
 app.mount('#app');
 
-// the docs page sizes the iframe to the example
-new ResizeObserver(() => {
+// the docs page sizes the iframe to the example, and asks for the height again once it listens
+function postHeight() {
   window.parent.postMessage({ afclPreview: id, height: document.body.offsetHeight }, '*');
-}).observe(document.body);
+}
+new ResizeObserver(postHeight).observe(document.body);
+window.addEventListener('message', (e) => e.data === 'afclPreviewHeight' && postHeight());

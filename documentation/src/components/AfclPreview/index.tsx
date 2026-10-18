@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type ReactNode } from 'react';
+import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
 
@@ -10,6 +10,7 @@ const INITIAL_HEIGHT = 100;
 export default function AfclPreview({ id, minHeight = 0, children }: { id: string; minHeight?: number; children: ReactNode }) {
   const src = useBaseUrl(`/afcl-preview/index.html#${id}`);
   const [height, setHeight] = useState(minHeight || INITIAL_HEIGHT);
+  const frame = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
@@ -18,12 +19,14 @@ export default function AfclPreview({ id, minHeight = 0, children }: { id: strin
       }
     }
     window.addEventListener('message', onMessage);
+    // an example opened before the page hydrated has already reported its height, nobody listened then
+    frame.current.contentWindow.postMessage('afclPreviewHeight', '*');
     return () => window.removeEventListener('message', onMessage);
   }, [id, minHeight]);
 
   return (
     <div className={styles.preview}>
-      <iframe src={src} title={`${id} example`} loading="lazy" style={{ height }} />
+      <iframe ref={frame} src={src} title={`${id} example`} loading="lazy" style={{ height }} />
       {children}
     </div>
   );
