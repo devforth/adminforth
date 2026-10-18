@@ -22,6 +22,10 @@ Page names in docusarus should be human readabale. We should not use `AuditLog` 
 
 UI rules (tokens, `af-`/`afcl-` class contract, AFCL first, Lucide icons, moving off flowbite) live in [Design concepts](adminforth/design/system-concepts.md), read them before changing UI in core or plugins. States and variants of components are drawn in `adminforth/design/system.html`, the progress of core and plugins is in `adminforth/design/adoption.md`.
 
+## Commits
+
+Never add `Co-authored-by` trailers or any other mention of an AI assistant (Claude, Codex, Copilot, "Generated with ...") to commit messages and PR descriptions.
+
 ## General engineering rules
 
 Write code as if the system contracts are already defined and trusted.
