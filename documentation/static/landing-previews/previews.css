@@ -233,12 +233,12 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
 .list-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .list-head .btns { display: flex; gap: 8px; }
 
-/* record form (GroupsTable) and show table: label column and value column */
+/* record form (GroupsTable) and show table: label column and value column, the labels are narrower than in the app (224px) to give the field more room */
 .ft { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); border-collapse: separate; border-spacing: 0; overflow: hidden; }
 .ft th { padding: 10px 20px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 500; text-align: left; }
 .ft td { padding: 12px 20px; border-bottom: 1px solid var(--border); color: var(--text-2); }
 .ft tr:last-child td { border-bottom: 0; }
-.ft td:first-child { width: 224px; color: var(--text); font-weight: 500; }
+.ft td:first-child { width: 160px; color: var(--text); font-weight: 500; }
 .ft .req { width: 12px; height: 12px; color: var(--danger-fg); vertical-align: -1px; }
 .ft .help { margin-top: 4px; }
 
