@@ -298,6 +298,18 @@ function collectFilterFields(filters: any, fields: Set<string> = new Set()): Set
   return fields;
 }
 
+async function rejectBackendOnlyFilters(
+  filters: any,
+  ctx: Parameters<typeof isBackendOnly>[1]
+): Promise<{ error: string } | undefined> {
+  for (const fieldName of collectFilterFields(filters)) {
+    const column = ctx.resource.columns.find((col) => col.name === fieldName);
+    if (column && await isBackendOnly(column, ctx)) {
+      return { error: `Filter: column "${fieldName}" cannot be used (backendOnly is true).` };
+    }
+  }
+}
+
 function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
   return {
     anyOf: [
@@ -1461,15 +1473,23 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        const { allowedActions } = await interpretResource(
+        const columnCtx = {
           adminUser,
           resource,
           meta,
-          {
+          source: {
             'show': ActionCheckSource.ShowRequest,
             'list': ActionCheckSource.ListRequest,
             'edit': ActionCheckSource.EditLoadRequest,
           }[source],
+          adminforth: this.adminforth,
+        };
+
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          meta,
+          columnCtx.source,
           this.adminforth
         );
 
@@ -1481,6 +1501,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         if (!allowed) {
           return { error };
+        }
+        const backendOnlyFilterError = await rejectBackendOnlyFilters(body.filters, columnCtx);
+        if (backendOnlyFilterError) {
+          return backendOnlyFilterError;
         }
         if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
         const hookSource = {
@@ -1723,18 +1747,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // remove all columns which are not defined in resources, or defined but backendOnly
         {
-          const ctx = {
-            adminUser,
-            resource,
-            meta,
-            source: {
-              show: ActionCheckSource.ShowRequest,
-              list: ActionCheckSource.ListRequest,
-              edit: ActionCheckSource.EditLoadRequest,
-            }[source],
-            adminforth: this.adminforth,
-          };
-        
           for (const [i, item] of data.data.entries()) {
             const rawItem = rawItems[i];
             for (const key of Object.keys(item)) {
@@ -1742,7 +1754,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 continue;
               }
               const col = resource.columns.find((c) => c.name === key);
-              const bo = col ? await isBackendOnly(col, ctx) : true;
+              const bo = col ? await isBackendOnly(col, columnCtx) : true;
               if (!col || bo) {
                 delete item[key];
                 delete rawItem[key];
@@ -1976,14 +1988,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        // filters are not returned to the caller, but combined with an aggregation they turn
-        // into an oracle which reads a value out one comparison at a time, so backendOnly
-        // columns are off limits here as well
-        for (const fieldName of collectFilterFields(filters)) {
-          const column = resource.columns.find((col) => col.name === fieldName);
-          if (column && await isBackendOnly(column, columnCtx)) {
-            return { error: `Filter: column "${fieldName}" cannot be used (backendOnly is true).` };
-          }
+        const backendOnlyFilterError = await rejectBackendOnlyFilters(filters, columnCtx);
+        if (backendOnlyFilterError) {
+          return backendOnlyFilterError;
         }
 
         // normalize filters same way as get_resource_data
@@ -2074,6 +2081,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         const targetResourceIds = columnConfig.foreignResource.resourceId ? [columnConfig.foreignResource.resourceId] : columnConfig.foreignResource.polymorphicResources.filter(pr => pr.resourceId !== null).map((pr) => pr.resourceId);
         const targetResources = targetResourceIds.map((trId) => this.adminforth.config.resources.find((res) => res.resourceId == trId));
+
+        // request filters are applied to the target resources, so their columns are what has to be readable
+        for (const targetResource of targetResources) {
+          const backendOnlyFilterError = await rejectBackendOnlyFilters(body.filters, {
+            adminUser,
+            resource: targetResource,
+            meta,
+            source: ActionCheckSource.ListRequest,
+            adminforth: this.adminforth,
+          });
+          if (backendOnlyFilterError) {
+            return backendOnlyFilterError;
+          }
+        }
 
         const responses = (await Promise.all(
           targetResources.map(async (targetResource) => {
