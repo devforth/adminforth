@@ -424,6 +424,25 @@ Finally, since we want to support multiple installations on one resource (e.g. o
   }
 ```
 
+Plugin endpoints that declare `request_schema` or `response_schema` are exposed as tools to AI agents, such as the [Agent](../09-Plugins/01-agent.md) and [MCP](../09-Plugins/30-mcp.md) plugins. To let an agent tell plugin installations apart and call the right one, return the options that distinguish them from `getPluginConfigSafe`:
+
+```ts title='./af-plugin-chatgpt/index.ts'
+//diff-add
+  getPluginConfigSafe(): Record<string, unknown> {
+//diff-add
+    return {
+//diff-add
+      fieldName: this.options.fieldName,
+//diff-add
+      model: this.options.model,
+//diff-add
+    };
+//diff-add
+  }
+```
+
+Everything this method returns is sent to the LLM provider, so list the options one by one and never return `this.options` as a whole: here it would leak `openAiApiKey`. The same applies to adapters passed in options, because they hold the credentials of the services they connect to. Return only JSON-serializable values. By default the method returns an empty object.
+
 
 To compile plugin run:
 

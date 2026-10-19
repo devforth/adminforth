@@ -769,8 +769,18 @@ export interface IAdminForthPlugin {
    */
   instanceUniqueRepresentation(pluginOptions: any) : string;
 
+  /**
+   * Returns the plugin instance config that is safe to show to AI agents, so they can tell
+   * plugin instances apart and pick the right plugin tool. For example `{ fieldName: 'description' }`.
+   *
+   * List the options one by one: never return `pluginOptions` as a whole, because adapters inside it
+   * hold API keys and other credentials, and everything returned here is sent to the LLM provider.
+   * Return only JSON-serializable values. By default returns an empty object.
+   */
+  getPluginConfigSafe(): Record<string, unknown>;
 
-  /**   
+
+  /**
    * If this method returns true, AdminForth will allow only one instance of plugin per whole app
    * (only for case when we are creating copy of resource and activating plugins)
    * If false, multiple instances of plugin can be installed on different resources.
