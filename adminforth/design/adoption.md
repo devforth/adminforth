@@ -9,13 +9,13 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/audit-log | ✓ |
 | @adminforth/auto-remove | no UI |
 | @adminforth/background-jobs | ✓ |
-| @adminforth/bulk-ai-flow | |
-| @adminforth/clone-row | |
-| @adminforth/crud-approve-plugin | |
+| @adminforth/bulk-ai-flow | ✓ |
+| @adminforth/clone-row | ✓ |
+| @adminforth/crud-approve-plugin | ✓ |
 | @adminforth/dashboard | ✓ |
 | @adminforth/email-invite | ✓ |
 | @adminforth/email-password-reset | ✓ |
-| @adminforth/foreign-inline-list | |
+| @adminforth/foreign-inline-list |  |
 | @adminforth/foreign-inline-show | |
 | @adminforth/i18n | ✓ |
 | @adminforth/i18n-static | ✓ |
@@ -63,4 +63,4 @@ The cards of the landing gallery (`documentation/src/pages/index.tsx`) show eith
 
 - If simple - get of flowbite, prefer pure AFCL + Tailwind, move features we luck to AFCL
 - Existing icon fonts apart lucide - try to get rid of them if not complex
-- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: bulk-ai-flow, clone-row, foreign-inline-list, inline-create, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.
+- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: foreign-inline-list, inline-create, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.

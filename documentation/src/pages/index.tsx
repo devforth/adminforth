@@ -172,7 +172,7 @@ const images: GalleryItem[] = [
     description: 'Export tables to CSV and import from CSV with one click. Move data between environments easily'
   },
   {
-    original: require('@site/static/img/previews/bulk-ai-flow.png').default,
+    preview: 'bulk-ai-flow',
     title: 'Bulk AI Plugin - generate data for your resources',
     link: '/docs/tutorial/Plugins/bulk-ai-flow/',
     description: 'Use LLMs to fill records with generated data or images. For example, generate product descriptions based on product name and image or generate products images'

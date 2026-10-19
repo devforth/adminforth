@@ -187,14 +187,13 @@ export const admin = new AdminForth({
 > ⚠️ Make sure your attachFiles function returns a valid array of image URLs or an empty array. Returning anything else may cause an error.
 
 ## Usage
-1. Select fields you want to fill
+1. Select records you want to fill
 2. Click on the three dots menu
-3. Click analyze 
+3. Click the action
 ![alt text](Bulk-vision-1.png)
-4. Wait for finish analyze
-5. Check and edit result
+4. Wait while AI fills the records. The list on the left shows the status of every record, the record on the right shows the current value of each field next to the generated one. You can edit a generated value, regenerate one field or the whole record, or uncheck a record to skip it. `All`, `Changed` and `Failed` filter the list, `↑` and `↓` move between records and `Space` includes or skips the selected one.
 ![alt text](Bulk-vision-2.png)
-6. Save changhes
+5. Click `Save`, only the checked records are saved
 ![alt text](Bulk-vision-3.png)
 
 
@@ -346,23 +345,11 @@ new ImageGenerationAdapterOpenAI({
 
 ## Comparing new and old images
 
-If you want to compare a generated image with an image stored in your storage, you need to add the preview prop in your upload plugin setup:
-
-```ts
-  new UploadPlugin({
-        ...
-    //diff-add
-    preview: {
-    //diff-add
-      previewUrl: ({filePath}) => `https://static.my-domain.com/${filePath}`,
-    //diff-add
-    }
-        ...
-  })
-```
-After generation, you’ll see a button labeled "old image". Clicking it will open a pop-up where you can compare the generated image with the stored one:
+For an image field the review shows the stored image next to the generated one, a click opens an image in full size:
 
 ![alt text](Bulk-vision-4.png)
+
+The link to the stored image comes from the Upload plugin of the column, the same way as its own previews: `preview.previewUrl` when it is set, otherwise a link of the storage adapter.
 
 ## Extra data fields
 
@@ -407,12 +394,12 @@ askConfirmationBeforeGenerating: true,
 ...
 ```
 
-The user will now see a popup with a "Start generation" button and an "Edit prompts" button, allowing them to modify the prompt before running it.
+Before the generation starts, the user now sees the fields which will be generated. The pencil next to a field opens its prompt for editing. `Save prompt` keeps the edited prompt for the next runs, a prompt which is not saved (marked `Unsaved`) is used for this run only. `Reset to default` brings back the prompt from the plugin config. Here the user also chooses whether AI overwrites existing values or fills only empty fields.
 
 ![alt text](Bulk-vision-5.png)
 ![alt text](Bulk-vision-6.png)
 
-> ☝️ Updated prompts are stored in the user's local storage. Changes are local to that browser and do not affect other users or devices.
+> ☝️ Saved prompts are stored in the user's local storage. Changes are local to that browser and do not affect other users or devices.
 
 ## Processing big sets of data ( filtered records )
 
@@ -456,14 +443,14 @@ And there won't be more than 5 parallel requests being handled.
 
 ## Controlling page size in the generation dialog
 
-When users trigger bulk generation, records are displayed as cards in a paginated dialog. By default, 6 cards are shown per page. Use `pageSize` to tune this — lower values help when cards contain large images or long text, keeping the dialog fast and reviewable:
+When users trigger bulk generation, the dialog lists the records page by page, 10 records per page by default. Use `pageSize` to tune this:
 
 ```ts
 new BulkAiFlowPlugin({
   actionName: 'Generate description and Price',
 
   //diff-add
-  pageSize: 10, // default is 6
+  pageSize: 20, // default is 10
 
   // ...
 }),

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bulk AI flow</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .scrim { position: absolute; inset: 0; background: var(--scrim); display: flex; align-items: center; justify-content: center; }
+  .dlg { width: 800px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-pop); overflow: hidden; }
+  .dlg-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 8px; font-size: 15px; font-weight: 600; }
+  .dlg-head .i { color: var(--muted); }
+  .dlg-body { display: flex; flex-direction: column; gap: 10px; padding: 4px 18px 14px; }
+  .dlg-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 18px; border-top: 1px solid var(--border); background: var(--bg); }
+  .prog { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .prog .bar { flex: 1; }
+  .ok { color: var(--success); }
+  .err { color: var(--danger-fg); }
+  .md { display: grid; grid-template-columns: 240px 1fr; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .rows { border-right: 1px solid var(--border); background: var(--bg); }
+  .row { display: grid; grid-template-columns: 16px 34px 1fr 16px; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border); border-left: 2px solid transparent; }
+  .row.is-on { background: var(--accent-soft); border-left-color: var(--accent); }
+  .row img { width: 34px; height: 24px; border-radius: 4px; object-fit: cover; }
+  .row b { display: block; font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row span { display: block; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .cb:checked { display: grid; }
+  .rec-head { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+  .rec-head b { font-size: 13px; font-weight: 600; }
+  .rec-head .t-xs { display: block; }
+  .field { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+  .field:last-child { border-bottom: 0; }
+  .field-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 12.5px; font-weight: 500; }
+  .field-head .i { margin-left: auto; color: var(--muted); }
+  .badge-new { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-fg); height: 18px; font-size: 11px; }
+  .pair { display: grid; grid-template-columns: 1fr 14px 1fr; gap: 8px; align-items: start; }
+  .pair > .i { width: 14px; height: 14px; margin-top: 8px; color: var(--faint); }
+  .pair.media { align-items: center; }
+  .pair.media > .i { margin-top: 0; }
+  .cur { min-height: 30px; padding: 6px 9px; border-radius: 6px; background: var(--surface-2); color: var(--muted); font-size: 12px; line-height: 17px; }
+  .gen { min-height: 30px; padding: 6px 9px; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--surface); font-size: 12px; line-height: 17px; }
+  .pic { width: 100%; height: 64px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
+  .pic.toon { filter: saturate(1.9) contrast(1.15) brightness(1.05); }
+</style>
+</head>
+<body>
+<!-- the review of the bulk AI flow: records with their status on the left, current value next to the generated one on the right -->
+<div class="screen app" style="width: 880px; height: 550px">
+  <aside class="side rail" data-active="Apartments"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content"></main>
+  </div>
+  <div class="scrim">
+    <div class="dlg">
+      <div class="dlg-head">Process with AI<svg class="i"><use href="icons.svg#x"/></svg></div>
+      <div class="dlg-body">
+        <div class="prog">
+          <span class="spin"></span>
+          <span class="num">5 of 8 records processed</span>
+          <div class="bar"><span style="width: 62%"></span></div>
+        </div>
+        <div class="md">
+          <div class="rows">
+            <div class="row"><input class="cb" type="checkbox" checked><img src="villa.jpg" alt=""><div><b>Villa in Sitges</b><span>2 fields changed</span></div><svg class="i ok"><use href="icons.svg#circle-check"/></svg></div>
+            <div class="row is-on"><input class="cb" type="checkbox" checked><img src="park-guell.jpg" alt=""><div><b>Loft near Park Güell</b><span>3 fields changed</span></div><svg class="i ok"><use href="icons.svg#circle-check"/></svg></div>
+            <div class="row"><input class="cb" type="checkbox" checked><img src="login-bg.jpg" alt=""><div><b>Flat in Eixample</b><span style="color: var(--danger-fg)">Rate limit exceeded</span></div><svg class="i err"><use href="icons.svg#circle-alert"/></svg></div>
+            <div class="row"><input class="cb" type="checkbox" checked><img src="villa.jpg" alt="" style="filter: hue-rotate(40deg)"><div><b>House in Girona</b><span>Generating…</span></div><span class="spin"></span></div>
+            <div class="row" style="border-bottom: 0"><input class="cb" type="checkbox" checked><img src="park-guell.jpg" alt="" style="filter: grayscale(.6)"><div><b>Studio in Gràcia</b><span>Waiting</span></div><svg class="i t-muted"><use href="icons.svg#clock"/></svg></div>
+          </div>
+          <div>
+            <div class="rec-head">
+              <div style="flex: 1"><b>Loft near Park Güell</b><span class="t-xs t-muted">Record 2 of 8</span></div>
+              <span class="btn btn-secondary btn-sm"><svg class="i i-sm"><use href="icons.svg#refresh-cw"/></svg>Regenerate</span>
+              <span class="btn btn-secondary btn-sm btn-icon"><svg class="i"><use href="icons.svg#chevron-up"/></svg></span>
+              <span class="btn btn-secondary btn-sm btn-icon"><svg class="i"><use href="icons.svg#chevron-down"/></svg></span>
+            </div>
+            <div class="field">
+              <div class="field-head">Description <span class="badge badge-new">New</span><svg class="i i-sm"><use href="icons.svg#refresh-cw"/></svg></div>
+              <div class="pair"><div class="cur">-</div><svg class="i"><use href="icons.svg#arrow-right"/></svg><div class="gen">Bright loft with a balcony facing Park Güell, calm street, five minutes to the metro.</div></div>
+            </div>
+            <div class="field">
+              <div class="field-head">Square meter <span class="badge badge-new">Changed</span><svg class="i i-sm"><use href="icons.svg#refresh-cw"/></svg></div>
+              <div class="pair"><div class="cur num">47</div><svg class="i"><use href="icons.svg#arrow-right"/></svg><div class="gen num">62</div></div>
+            </div>
+            <div class="field">
+              <div class="field-head">Processed image <span class="badge badge-new">Changed</span><svg class="i i-sm"><use href="icons.svg#refresh-cw"/></svg></div>
+              <div class="pair media"><img class="pic" src="park-guell.jpg" alt=""><svg class="i"><use href="icons.svg#arrow-right"/></svg><img class="pic toon" src="park-guell.jpg" alt=""></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <span class="btn btn-secondary">Cancel</span>
+        <span class="btn btn-secondary">Save processed (5)</span>
+        <span class="btn btn-primary is-disabled">Save 8 records</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

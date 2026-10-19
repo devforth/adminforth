@@ -73,4 +73,6 @@
 <symbol id="list-checks" viewBox="0 0 24 24"><path d="m3 17l2 2l4-4M3 7l2 2l4-4m4 1h8m-8 6h8m-8 6h8"/></symbol>
 <symbol id="align-left" viewBox="0 0 24 24"><path d="M15 12H3m14 6H3M21 6H3"/></symbol>
 <symbol id="remove-formatting" viewBox="0 0 24 24"><path d="M4 7V4h16v3M5 20h6m2-16L8 20m7-5l5 5m0-5l-5 5"/></symbol>
+<symbol id="chevron-up" viewBox="0 0 24 24"><path d="m18 15l-6-6l-6 6"/></symbol>
+<symbol id="refresh-cw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9a9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5m5 4a9 9 0 0 1-9 9a9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
 </svg>
