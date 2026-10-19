@@ -219,15 +219,15 @@ export default {
       }
     }),
     OAuthPlugin,
-    ...(process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY ? [
-      new CaptchaPlugin({
-        captchaAdapter: new CaptchaAdapterCloudflare({
-          siteKey: process.env.CLOUDFLARE_TURNSTILE_SITE_KEY as string,
-          secretKey: process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY,
-        }),
-        keyValueAdapter: levelDbAdapter,
-      }),
-    ] : []),
+    // ...(process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY ? [
+    //   new CaptchaPlugin({
+    //     captchaAdapter: new CaptchaAdapterCloudflare({
+    //       siteKey: process.env.CLOUDFLARE_TURNSTILE_SITE_KEY as string,
+    //       secretKey: process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY,
+    //     }),
+    //     keyValueAdapter: levelDbAdapter,
+    //   }),
+    // ] : []),
     new UserSoftDelete({
       activeFieldName: "is_active",
       //in canDeactivate we pass a function, that specify adminusers roles, which can seactivate other adminusers  
