@@ -169,7 +169,7 @@ import { IconPlus } from '@iconify-prerendered/vue-lucide'
   
 Wrap an element on which you would like to show a tooltip with the `Tooltip` component and add a `tooltip` slot to it.
 
-<AfclPreview id="tooltip" minHeight={100}>
+<AfclPreview id="tooltip">
 
 ```js
 import { Tooltip } from '@/afcl'
@@ -192,7 +192,7 @@ import { IconSearch } from '@iconify-prerendered/vue-lucide'
 
 ## Dialog (Pop-up)
 
-<AfclPreview id="dialog" minHeight={300}>
+<AfclPreview id="dialog">
 
 ```ts
 import { Dialog, Button } from '@/afcl'
@@ -219,7 +219,7 @@ On screens narrower than 640px the dialog docks to the bottom edge as a sheet: i
 
 You can add header to the dialog by using header prop.
 
-<AfclPreview id="dialog-header" minHeight={300}>
+<AfclPreview id="dialog-header">
 
 ```js
 import { Dialog, Button } from '@/afcl'
@@ -255,7 +255,7 @@ If you want to remove close button in header, you can add `:header-close-button=
 
 By default dialog will have just one "Close" button. If you want to change that, you can set `buttons` to a desirable array.
 
-<AfclPreview id="dialog-buttons" minHeight={300}>
+<AfclPreview id="dialog-buttons">
 
 ```ts
 import { Dialog, Button } from '@/afcl'
@@ -292,7 +292,7 @@ function doSave() {
 
 Dialog component will render each button using afcl `Button` component. You can pass any props to those buttons by adding `options` field to a button item.
 
-<AfclPreview id="dialog-button-options" minHeight={300}>
+<AfclPreview id="dialog-button-options">
 
 ```ts
 import { Dialog, Button } from '@/afcl'
@@ -349,7 +349,7 @@ function doSave() {
 
 Default behavior of the Dialog component will allow user to close it by just clicking outside. You can prevent that by setting `closeByClickOutside` to `false`.
 
-<AfclPreview id="dialog-persistence" minHeight={300}>
+<AfclPreview id="dialog-persistence">
 
 ```js
 import { Dialog, Button } from '@/afcl'
@@ -379,7 +379,7 @@ import { Dialog, Button } from '@/afcl'
 
 If you want to control dialog programmatically, you can use `ref` to get a reference to the dialog component and call its `open` and `close` methods.
 
-<AfclPreview id="dialog-ref" minHeight={300}>
+<AfclPreview id="dialog-ref">
 
 ```ts
 import { Button, Dialog } from '@/afcl'
@@ -448,7 +448,7 @@ function onBeforeClose() {
 
 If you want dialog to ask user for conformation when he tryes to close dialog, you can add: 
 
-<AfclPreview id="dialog-close-confirmation" minHeight={300}>
+<AfclPreview id="dialog-close-confirmation">
 
 ```js
 import { Dialog, Button } from '@/afcl'
@@ -531,7 +531,7 @@ Slots: `icon` for the tile left of the title, `title` to replace the title and t
 
 A menu opened by a click on its trigger. Put the trigger into the `trigger` slot and menu items into the default slot.
 
-<AfclPreview id="dropdown-menu" minHeight={220}>
+<AfclPreview id="dropdown-menu">
 
 ```js
 import { DropdownMenu, DropdownMenuItem, Button } from '@/afcl'
@@ -586,7 +586,7 @@ A `DropdownMenu` rendered inside an item of another menu works as a submenu: a c
 
 Bind `v-model:open` to read or change the open state, or call `open()`, `close()` and `toggle()` on a template ref. The `trigger` slot gets `open`, the default slot gets the `close` function:
 
-<AfclPreview id="dropdown-menu-open-state" minHeight={170}>
+<AfclPreview id="dropdown-menu-open-state">
 
 ```ts
 import { DropdownMenu, Button } from '@/afcl'
@@ -641,7 +641,7 @@ Inside a table or another container with `overflow` the menu gets clipped. Pass 
 
 `DropdownMenuAccordion` is a row which expands its items in place, under itself, e.g. Settings and the language in the user menu. A click on the row does not close the menu, `v-model:open` holds its state. Put the items into the default slot and an optional icon into the `icon` slot, `triggerClass` adds classes to the row.
 
-<AfclPreview id="dropdown-menu-accordion" minHeight={300}>
+<AfclPreview id="dropdown-menu-accordion">
 
 ```js
 import { DropdownMenu, DropdownMenuItem, DropdownMenuAccordion, Button } from '@/afcl'
@@ -673,7 +673,7 @@ import { IconMonitor, IconLink } from '@iconify-prerendered/vue-lucide'
 
 ## Modal
 
-<AfclPreview id="modal" minHeight={260}>
+<AfclPreview id="modal">
 
 ```ts
 import { Modal, Button } from '@/afcl';
@@ -700,7 +700,7 @@ Like Dialog, the modal docks to the bottom edge as a full-width sheet on screens
 
 Bind `v-model:open` to open or close the modal from code, for example to show progress while a request is running:
 
-<AfclPreview id="modal-open-state" minHeight={160}>
+<AfclPreview id="modal-open-state">
 
 ```ts
 import { ref } from 'vue'

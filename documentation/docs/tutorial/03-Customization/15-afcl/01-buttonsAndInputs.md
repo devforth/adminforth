@@ -218,7 +218,7 @@ import { LinkButton } from '@/afcl'
 
 ### Single
 
-<AfclPreview id="select" minHeight={250}>
+<AfclPreview id="select">
 
 ```ts
 import { ref } from 'vue'
@@ -244,7 +244,7 @@ const selected = ref(null)
 
 ### Multiple
 
-<AfclPreview id="select-multiple" minHeight={250}>
+<AfclPreview id="select-multiple">
 
 ```ts
 import { Select } from '@/afcl'
@@ -277,7 +277,7 @@ const selected = ref([])
 
 You can customize item and selected item using slots.
 
-<AfclPreview id="select-custom-item" minHeight={250}>
+<AfclPreview id="select-custom-item">
 
 ```ts
 import { Select } from '@/afcl'
@@ -324,7 +324,7 @@ const selected = ref(null)
 
 You might need to put some extra item at bottom of list
 
-<AfclPreview id="select-extra-item" minHeight={250}>
+<AfclPreview id="select-extra-item">
 
 ```ts
 import { Select, LinkButton } from '@/afcl'
@@ -358,7 +358,7 @@ const selected = ref(null)
 
 Pass `classesForInput` to style the input of the select.
 
-<AfclPreview id="select-input-classes" minHeight={250}>
+<AfclPreview id="select-input-classes">
 
 ```ts
 import { Select } from '@/afcl'
@@ -550,7 +550,7 @@ const enabled = ref(false)
 
 ### Basic
 
-<AfclPreview id="date-picker" minHeight={440}>
+<AfclPreview id="date-picker">
 
 ```ts
 import { ref } from 'vue'

@@ -1,19 +1,17 @@
+/* no overflow: hidden, dropdowns of an example open over the code below it */
 .preview {
   margin-bottom: var(--ifm-leading);
   border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: var(--ifm-code-border-radius);
-  overflow: hidden;
 }
 
-.preview iframe {
-  display: block;
-  width: 100%;
-  border: 0;
+.example {
+  border-radius: var(--ifm-code-border-radius) var(--ifm-code-border-radius) 0 0;
 }
 
 .preview :global(.theme-code-block) {
   margin-bottom: 0;
   border-top: 1px solid var(--ifm-color-emphasis-300);
-  border-radius: 0;
+  border-radius: 0 0 var(--ifm-code-border-radius) var(--ifm-code-border-radius);
   box-shadow: none;
 }
