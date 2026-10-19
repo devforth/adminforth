@@ -9,12 +9,12 @@
       </Button>
 
       <Button @click="doSmth" 
-        :loader="false" class="w-full" mode="secondary">
+        :loader="false" class="w-full" variant="secondary">
         Secondary button
       </Button>
 
       <Button @click="doSmth" 
-        :loader="false" class="w-full" mode="danger">
+        :loader="false" class="w-full" variant="danger">
         Danger button
       </Button>
  

@@ -37,9 +37,11 @@ const loadTasks = async () => {
 }
 
 
+let unsubscribeFromTaskUpdates: () => void;
+
 onMounted(async () => {
   loadTasks();
-  websocket.subscribe(`/background-jobs-task-update/${props.job.id}`, (data: { taskIndex: number, status?: string, state?: Record<string, any> }) => {
+  unsubscribeFromTaskUpdates = websocket.subscribe(`/background-jobs-task-update/${props.job.id}`, (data: { taskIndex: number, status?: string, state?: Record<string, any> }) => {
     console.log('Received WebSocket message for job:', data.status);
     
     if (data.state) {
@@ -54,7 +56,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   console.log('Unsubscribing from WebSocket for job:', props.job.id);
-  websocket.unsubscribe(`/background-jobs-task-update/${props.job.id}`);
+  unsubscribeFromTaskUpdates();
 });
 
 

@@ -118,14 +118,6 @@ export const useCoreStore = defineStore('core', () => {
     await fetchConfig();
   }
 
-  /**
-   * @deprecated kept for plugins which were written when public config had own endpoint. Use fetchConfig instead.
-   * Old endpoint was noAuth and never redirected to login, so anonymous answer is not redirected here as well.
-   */
-  async function getPublicConfig() {
-    await fetchConfig({ redirectToLoginIfNotLoggedIn: false });
-  }
-
   async function refreshMenu() {
     await fetchMenuAndResource();
     await fetchMenuBadges();
@@ -152,15 +144,17 @@ export const useCoreStore = defineStore('core', () => {
       }
     }
   }
+  let menuBadgeUnsubscribes: Array<() => void> = [];
   async function subscribeToMenuBadges() {
+    menuBadgeUnsubscribes.forEach((unsubscribe) => unsubscribe());
+    menuBadgeUnsubscribes = [];
     const processItem = (mi: AdminForthConfigMenuItem) => {
 
       // console.log('🔔 subscribeToMenuBadges', mi.badge, JSON.stringify(mi));
       if (mi.badge !== undefined) {
-        websocket.unsubscribe(`/opentopic/update-menu-badge/${mi.itemId}`);
-        websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
+        menuBadgeUnsubscribes.push(websocket.subscribe(`/opentopic/update-menu-badge/${mi.itemId}`, ({ badge }) => {
           mi.badge = badge;
-        });
+        }));
       }
     }
   
@@ -322,7 +316,6 @@ export const useCoreStore = defineStore('core', () => {
     userFullname,
     userAvatarUrl,
     fetchConfig,
-    getPublicConfig,
     fetchMenuAndResource,
     refreshMenu,
     getLoginFormConfig,

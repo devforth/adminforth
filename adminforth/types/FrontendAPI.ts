@@ -89,31 +89,11 @@ export interface FrontendAPIInterface {
          * ```
          * 
          * Please note that you can set/update filter even for fields which have showIn.filter=false in resource configuration.
-         * Also you can set filter for virtual columns. For example Universal search plugin calls updateFilter for virtual column which has showIn.filter=false (because we dont want to show this column in filter dropdown, plugin renders its own filter UI)
+         * Also you can set filter for virtual columns. For example Universal search plugin calls setFilter for virtual column which has showIn.filter=false (because we dont want to show this column in filter dropdown, plugin renders its own filter UI)
          * 
          * @param filter - The filter to set
          */
         setFilter(filter: FilterParams): void;
-
-        /**
-         * @deprecated does the same as setFilter, kept for backward compatibility, will be removed in 4.0.0
-         * 
-         * Update a filter in the list
-         * 
-         * Filters visibility in badge is automatically determined by column configuration:
-         * - Hidden if column has showIn.filter: false
-         * 
-         * Example:
-         * 
-         * ```ts
-         * import { useAdminforth } from '@/adminforth';
-         * const { list } = useAdminforth();
-         * list.updateFilter({field: 'name', operator: 'ilike', value: 'john'})
-         * ```
-         * 
-         * @param filter - The filter to update
-         */
-        updateFilter(filter: FilterParams): void;
 
         /**
          * Clear all filters from the list

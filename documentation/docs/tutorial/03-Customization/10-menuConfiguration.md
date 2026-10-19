@@ -364,7 +364,7 @@ Most times you need to refresh the badge from some backend API or hook. To do th
   hooks: {
     edit: {
       //diff-add
-      afterSave: async ({ record, adminUser, resource, adminforth }) => {
+      afterSave: async ({ adminUser, adminforth }) => {
         //diff-add
         adminforth.refreshMenuBadge('postsMenuItem', adminUser);
         //diff-add

@@ -120,17 +120,17 @@ hooks: {
 //diff-add
   edit: {
 //diff-add
-    afterSave: async ({ record, adminUser, resource, adminforth }) => {
+    afterSave: async ({ updates, adminUser, resource, adminforth }) => {
 //diff-add
       //  if realtor id is set, recalculate total cost of all apartments
 //diff-add
-      if (record.realtor_id) {
+      if (updates.realtor_id) {
 //diff-add
-        const totalCost = (await adminforth.resource('aparts').list(Filters.EQ('realtor_id', record.realtor_id)))
+        const totalCost = (await adminforth.resource('aparts').list(Filters.EQ('realtor_id', updates.realtor_id)))
 //diff-add
           .map((r) => r.price).reduce((a, b) => a + b, 0);
 //diff-add
-        adminforth.websocket.publish(`/property-cost/${record.realtor_id}`, { type: 'message', totalCost });
+        adminforth.websocket.publish(`/property-cost/${updates.realtor_id}`, { type: 'message', totalCost });
 //diff-add
       }
 //diff-add

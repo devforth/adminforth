@@ -693,7 +693,7 @@ Sometimes you might need to create a link that will open the create form with so
         resourceId: 'aparts',
       },
       query: {
-        values: atob_function(JSON.stringify({
+        values: btoa_function(JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
       },
@@ -725,11 +725,11 @@ ALso if you want to disable ability to change such fields (but keep them as read
         resourceId: 'aparts',
       },
       query: {
-        values: (JSON.stringify({
+        values: btoa_function(JSON.stringify({
           realtor_id: coreStore?.adminUser.dbUser.id 
         })),
         //diff-add
-        readonlyColumns: (JSON.stringify(['realtor_id'])),
+        readonlyColumns: btoa_function(JSON.stringify(['realtor_id'])),
       },
     }"
   >

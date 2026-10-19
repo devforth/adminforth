@@ -128,17 +128,10 @@ class AdminForthAuth implements IAdminForthAuth {
   }
 
   setCustomCookie({ response, payload }: {
-    response: any, payload: { name: string, value: string, expiry?: number | undefined, expirySeconds: number | undefined, httpOnly: boolean, sessionBased?: boolean | undefined }
+    response: any, payload: { name: string, value: string, expirySeconds?: number, httpOnly: boolean, sessionBased?: boolean }
   }) {
-    const {name, value, expiry, httpOnly, expirySeconds, sessionBased } = payload;
-
-    let expiryMs = 24 * 60 * 60 * 1000; // default 1 day
-    if (expirySeconds !== undefined) {
-      expiryMs = expirySeconds * 1000;
-    } else if (expiry !== undefined) {
-      afLogger.warn(`setCustomCookie: expiry(in ms) is deprecated, use expirySeconds instead (seconds), traceback: ${new Error().stack}`);
-      expiryMs = expiry;
-    }
+    const { name, value, httpOnly, expirySeconds = 24 * 60 * 60, sessionBased } = payload; // default 1 day
+    const expiryMs = expirySeconds * 1000;
     const brandSlug = this.adminforth.config.customization.brandNameSlug;
     response.setHeader('Set-Cookie', 
       `adminforth_${brandSlug}_${name}=${value}; Path=${this.adminforth.config.baseUrl || '/'};${
@@ -171,7 +164,6 @@ class AdminForthAuth implements IAdminForthAuth {
     for (const hook of listify(adminUserAuthorize)) {
       const resp = await hook({
         adminUser,
-        response,
         adminforth: this.adminforth,
         extra,
       });

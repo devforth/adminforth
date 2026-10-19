@@ -4,7 +4,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, getClientIp, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -57,7 +57,7 @@ export * from './modules/requestContext.js';
 export * from './modules/utils.js';
 export { interpretResource, rejectApiRawFilters };
 export { AdminForthPlugin };
-export { suggestIfTypo, RateLimiter, RAMLock, getClientIp, convertPeriodToSeconds };
+export { suggestIfTypo, RateLimiter, RAMLock, convertPeriodToSeconds };
 export { default as AdminForthBaseConnector } from './dataConnectors/baseConnector.js';
 export {
   COMPOSITE_RECORD_ID_SEPARATOR,
@@ -798,7 +798,7 @@ class AdminForth implements IAdminForth {
   async createResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult> {
-    const { resource, record, adminUser, extra, response } = params;
+    const { resource, record, adminUser, extra } = params;
 
     normalizeRecordValues(resource, record);
 
@@ -817,24 +817,19 @@ class AdminForth implements IAdminForth {
         record, 
         adminUser,
         adminforth: this,
-        response, 
         extra,
       });
-      if (resp.newRecordId) {
-        afLogger.warn(`Deprecation warning: beforeSave hook returned 'newRecordId'. Since AdminForth v1.2.9 use 'redirectToRecordId' instead. 'newRecordId' will be removed in v2.0.0`);
-      }
-      if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.newRecordId && !resp.redirectToRecordId))) {
+      if (!resp || (typeof resp.ok !== 'boolean' && (!resp.error && !resp.redirectToRecordId))) {
         throw new Error(
-          `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, newRecordId?: any, redirectToRecordId?: any }.\n` +
-          `Note: Return { ok: false, error: null, redirectToRecordId } (preferred) or { ok: false, error: null, newRecordId } (deprecated) to stop creation and redirect to an existing record.`
+          `Invalid return value from beforeSave hook. Expected: { ok: boolean, error?: string | null, redirectToRecordId?: any }.\n` +
+          `Note: Return { ok: false, error: null, redirectToRecordId } to stop creation and redirect to an existing record.`
         );
       }
       if (resp.ok === false && !resp.error) {
-        const { error, ok, newRecordId, redirectToRecordId } = resp;
+        const { error, redirectToRecordId } = resp;
         return {
           error: error ?? 'Operation aborted by hook',
-          newRecordId: redirectToRecordId ? redirectToRecordId : newRecordId,
-          redirectToRecordId: redirectToRecordId
+          redirectToRecordId,
         };
       }
       if (resp.error) {
@@ -869,7 +864,6 @@ class AdminForth implements IAdminForth {
         adminUser,
         adminforth: this,
         recordWithVirtualColumns,
-        response,
         extra,
       });
 
@@ -892,22 +886,17 @@ class AdminForth implements IAdminForth {
   async updateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult> {
-    const { resource, recordId, record, oldRecord, adminUser, response, extra, updates } = params;
-    const dataToUse = updates || record;
-    normalizeRecordValues(resource, dataToUse);
-    const err = this.validateRecordValues(resource, dataToUse, 'edit');
+    const { resource, recordId, oldRecord, adminUser, extra, updates } = params;
+    normalizeRecordValues(resource, updates);
+    const err = this.validateRecordValues(resource, updates, 'edit');
     if (err) {
       return { error: err };
     }
 
-    if (record) {
-      afLogger.warn(`updateResourceRecord function received 'record' param which is deprecated and will be removed in future version, please use 'updates' instead.`);
-    }
-
     // remove editReadonly columns from record
     for (const column of resource.columns.filter((col) => col.editReadonly)) {
-      if (column.name in dataToUse)
-        delete dataToUse[column.name];
+      if (column.name in updates)
+        delete updates[column.name];
     }
 
     // execute hook if needed
@@ -915,12 +904,10 @@ class AdminForth implements IAdminForth {
       const resp = await hook({
         recordId,
         resource,
-        record: dataToUse,
-        updates: dataToUse,
+        updates,
         oldRecord,
         adminUser,
         adminforth: this,
-        response,
         extra,
       });
       const hookRespError = hookResponseError(resp);
@@ -932,16 +919,16 @@ class AdminForth implements IAdminForth {
     const newValues = {};
     const connector = this.connectors[resource.dataSource];
 
-    for (const recordField in dataToUse) {
-      if (dataToUse[recordField] !== oldRecord[recordField]) {
+    for (const recordField in updates) {
+      if (updates[recordField] !== oldRecord[recordField]) {
         // leave only changed fields to reduce data transfer/modifications in db
         const column = resource.columns.find((col) => col.name === recordField);
         if (!column || !column.virtual) {
           // exclude virtual columns
-          newValues[recordField] = dataToUse[recordField];
+          newValues[recordField] = updates[recordField];
         }
       }
-    } 
+    }
 
     if (Object.keys(newValues).length > 0) {
       const { error } = await connector.updateRecord({ resource, recordId, newValues });
@@ -952,15 +939,13 @@ class AdminForth implements IAdminForth {
     
     // execute hook if needed
     for (const hook of listify(resource.hooks?.edit?.afterSave)) {
-      const resp = await hook({ 
-        resource, 
-        record: dataToUse,
-        updates: dataToUse,
-        adminUser, 
+      const resp = await hook({
+        resource,
+        updates,
+        adminUser,
         oldRecord,
         recordId,
         adminforth: this,
-        response,
         extra,
       });
       const hookRespError = hookResponseError(resp);
@@ -980,16 +965,15 @@ class AdminForth implements IAdminForth {
   async deleteResourceRecord(
     params: DeleteResourceRecordParams,
   ): Promise<DeleteResourceRecordResult> {
-    const { resource, recordId, adminUser, record, response, extra } = params;
+    const { resource, recordId, adminUser, record, extra } = params;
     // execute hook if needed
     for (const hook of listify(resource.hooks?.delete?.beforeSave)) {
-      const resp = await hook({ 
-        resource, 
-        record, 
+      const resp = await hook({
+        resource,
+        record,
         adminUser,
         recordId,
         adminforth: this,
-        response,
         extra,
       });
       const hookRespError = hookResponseError(resp);
@@ -1003,13 +987,12 @@ class AdminForth implements IAdminForth {
 
     // execute hook if needed
     for (const hook of listify(resource.hooks?.delete?.afterSave)) {
-      const resp = await hook({ 
-        resource, 
-        record, 
+      const resp = await hook({
+        resource,
+        record,
         adminUser,
         recordId,
         adminforth: this,
-        response,
         extra,
       });
       const hookRespError = hookResponseError(resp);

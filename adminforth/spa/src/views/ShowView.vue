@@ -221,7 +221,7 @@ const coreStore = useCoreStore();
 const SHOW_PAGE_TOPIC_PREFIX = '/showPage/';
 
 const actionLoadingStates = ref<Record<string, boolean>>({});
-const subscribedShowPageTopic = ref<string | null>(null);
+let unsubscribeFromShowPageUpdates: () => void;
 
 const customActions = computed(() => {
   return coreStore.resource?.options?.actions?.filter((a: any) => a.showIn?.showThreeDotsMenu) || [];
@@ -261,8 +261,7 @@ function applyShowPageUpdates(data: { resourceId: string; recordId: string; upda
 
 function subscribeToShowPageUpdates() {
   websocket.unsubscribeByPrefix(SHOW_PAGE_TOPIC_PREFIX);
-  subscribedShowPageTopic.value = showPageTopic.value;
-  websocket.subscribe(subscribedShowPageTopic.value, applyShowPageUpdates);
+  unsubscribeFromShowPageUpdates = websocket.subscribe(showPageTopic.value, applyShowPageUpdates);
 }
 
 onMounted(async () => {
@@ -283,10 +282,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  if (!subscribedShowPageTopic.value) {
-    return;
-  }
-  websocket.unsubscribe(subscribedShowPageTopic.value);
+  unsubscribeFromShowPageUpdates();
 });
 
 const groups = computed(() => {

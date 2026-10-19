@@ -14,7 +14,6 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
       meta: {
         title: 'Login',
-        customLayout: true
       },
       /* IMPORTANT:ADMINFORTH LOGIN PAGE END */
       beforeEnter: (to) => {

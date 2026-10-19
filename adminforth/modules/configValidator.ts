@@ -12,8 +12,6 @@ import {
   AllowedActions,
   ShowIn,
   ShowInInput,
-  ShowInLegacyInput,
-  ShowInModernInput,
   RateLimitString,
 } from "../types/Back.js";
 import { compositePkValues, isCompositePrimaryKey } from './recordId.js';
@@ -182,9 +180,8 @@ export default class ConfigValidator implements IConfigValidator {
       page.component = this.validateComponent(page.component, errors);
       const meta = page.component.meta || {};
       if (meta.sidebarAndHeader === undefined) {
-        meta.sidebarAndHeader = meta.customLayout === true ? 'none' : 'default';
+        meta.sidebarAndHeader = 'default';
       }
-      delete meta.customLayout;
       page.component.meta = meta;
     });
     
@@ -259,17 +256,11 @@ export default class ConfigValidator implements IConfigValidator {
     return allowedActions as AllowedActions;
   }
 
-  validateAndNormalizeBulkActions(resInput: AdminForthResourceInput, res: Partial<AdminForthResource>, errors: string[]): AdminForthBulkAction[] {
-    //check if resource has bulkActions
-    let bulkActions: AdminForthBulkAction[] = resInput?.options?.bulkActions || [];
-
-    if (!Array.isArray(bulkActions)) {
-      errors.push(`Resource "${res.resourceId}" bulkActions must be an array`);
-      bulkActions = [];
-    }
-
-    bulkActions.push({
-      label: `Delete checked`,
+  createBuiltInBulkActions(res: Partial<AdminForthResource>): AdminForthBulkAction[] {
+    const deleteLabel = `Delete checked`;
+    return [{
+      id: md5hash(deleteLabel),
+      label: deleteLabel,
       icon: 'lucide:trash-2',
       confirm: {
         title: 'Are you sure you want to delete selected items?',
@@ -277,7 +268,7 @@ export default class ConfigValidator implements IConfigValidator {
       },
       dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
-      action: async ({ selectedIds, adminUser, response }) => {
+      action: async ({ selectedIds, adminUser, extra }) => {
         const connector = this.adminforth.connectors[res.dataSource];
 
         // for now if at least one error, stop and return error
@@ -295,7 +286,7 @@ export default class ConfigValidator implements IConfigValidator {
                     resource: res as AdminForthResource, 
                     record, 
                     adminUser,
-                    response,
+                    extra,
                     adminforth: this.adminforth
                   }); 
                   if (!error && resp.error) {
@@ -309,7 +300,7 @@ export default class ConfigValidator implements IConfigValidator {
               return;
             }
             
-            await cascadeChildrenDelete(res as AdminForthResource, recordId, { adminUser, response}, this.adminforth);
+            await cascadeChildrenDelete(res as AdminForthResource, recordId, { adminUser, extra }, this.adminforth);
             await connector.deleteRecord({
               resource: res as AdminForthResource,
               recordId,
@@ -324,7 +315,7 @@ export default class ConfigValidator implements IConfigValidator {
                     record, 
                     adminUser,
                     recordId: recordId,
-                    response,
+                    extra,
                     adminforth: this.adminforth,
                   }); 
                 }
@@ -339,37 +330,16 @@ export default class ConfigValidator implements IConfigValidator {
         }
         return { ok: true, successMessage: `${selectedIds.length} item${selectedIds.length > 1 ? 's' : ''} deleted` };
       }
-    });
-
-    bulkActions.map((action) => {
-      if (!action.id) {
-        action.id = md5hash(action.label);
-      }
-    });
-    return bulkActions;
+    }];
   }
 
-  validateAndNormalizeShowIn(resInput: AdminForthResourceInput, column: AdminForthResourceColumnInput, errors: string[], warnings: string[]): ShowIn {
-    if (column.showIn && !Array.isArray(column.showIn) && typeof column.showIn !== 'object') {
+  validateAndNormalizeShowIn(resInput: AdminForthResourceInput, column: AdminForthResourceColumnInput, errors: string[]): ShowIn {
+    if (column.showIn && (Array.isArray(column.showIn) || typeof column.showIn !== 'object')) {
       errors.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn must be an object`);
       return;
     }
 
-    let showIn: ShowInInput = column.showIn || { all: true };
-
-    if (column.showIn && Array.isArray(column.showIn)) {
-      showIn = Object.values(AdminForthResourcePages).reduce((acc, key) => {
-        return {
-          ...acc,
-          [key]: (column.showIn as ShowInLegacyInput).includes(key),
-        }
-      }, {} as ShowInInput);
-      if (warnings.filter((w) => w.includes('showIn should be an object, array is deprecated')).length === 0) {
-        warnings.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn should be an object, array is deprecated`);
-      }
-    }
-
-    const showInTransformedToObject: ShowInModernInput = showIn as ShowInModernInput; 
+    const showInTransformedToObject: ShowInInput = column.showIn || { all: true };
 
     // by default copy from 'all' key if present or show on all pages
     for (const key of Object.keys(AdminForthResourcePages)) {
@@ -570,7 +540,7 @@ export default class ConfigValidator implements IConfigValidator {
           }
         }
 
-        col.showIn = this.validateAndNormalizeShowIn(resInput, inCol, errors, warnings);
+        col.showIn = this.validateAndNormalizeShowIn(resInput, inCol, errors);
 
         if (col.showIn.create && inCol.fillOnCreate !== undefined) {
           errors.push(`Resource "${res.resourceId}" column "${col.name}" is shown on create page but has fillOnCreate. FillOnCreate is not allowed for columns shown on create page. Please either set showIn.create to false or remove fillOnCreate`);
@@ -723,7 +693,7 @@ export default class ConfigValidator implements IConfigValidator {
               } else if (polymorphicOnInCol.type && polymorphicOnInCol.type !== AdminForthDataTypes.STRING) {
                 errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn links to an column that is not of type string`);
               } else {
-                const polymorphicOnColShowIn = this.validateAndNormalizeShowIn(resInput, polymorphicOnInCol, errors, warnings);
+                const polymorphicOnColShowIn = this.validateAndNormalizeShowIn(resInput, polymorphicOnInCol, errors);
                 if (typeof polymorphicOnColShowIn.create !== 'function' && typeof polymorphicOnColShowIn.edit !== 'function') {
                   if (polymorphicOnColShowIn.create || polymorphicOnColShowIn.edit) {
                     errors.push(`Resource "${res.resourceId}" column "${col.name}" polymorphicOn column should not be changeable manually`);
@@ -924,10 +894,7 @@ export default class ConfigValidator implements IConfigValidator {
         }
       }
 
-      if (resInput?.options?.bulkActions?.length) {
-        warnings.push(`Resource "${res.resourceId}" uses deprecated \`bulkActions\`. Please migrate to \`actions\` instead. \`bulkActions\` will be removed in 3.0.0.`);
-      }
-      options.bulkActions = this.validateAndNormalizeBulkActions(resInput, res, errors);
+      options.bulkActions = this.createBuiltInBulkActions(res);
       options.actions = this.validateAndNormalizeCustomActions(resInput, res, errors);
 
       const allColumnsList = res.columns.map((col) => col.name);
@@ -1211,21 +1178,6 @@ export default class ConfigValidator implements IConfigValidator {
           this.validateComponent({file: page.component}, errors);
           page.slug = page.slug ?? slugifyString(page.pageLabel);
         }
-      }
-
-      if (newConfig.auth.rememberMeDays !== undefined) {
-        const rememberMeDays = newConfig.auth.rememberMeDays;
-        if (typeof rememberMeDays !== 'number' || rememberMeDays <= 0) {
-          errors.push(`auth.rememberMeDays must be a positive number`);
-        } else {
-          if (!newConfig.auth.rememberMeDuration) {
-            newConfig.auth.rememberMeDuration = `${rememberMeDays}d`;
-            warnings.push(`⚠️  auth.rememberMeDays is deprecated. Please use auth.rememberMeDuration: "${rememberMeDays}d" instead. Auto-converted for now.`);
-          } else {
-            warnings.push(`⚠️  Both auth.rememberMeDays and auth.rememberMeDuration are set. Using rememberMeDuration. Please remove rememberMeDays.`);
-          }
-        }
-        delete newConfig.auth.rememberMeDays;
       }
 
       if (newConfig.auth.rememberMeDuration !== undefined) {

@@ -453,7 +453,7 @@ Backend (resource hook verification):
 // Inside resource config
 hooks: {
   edit: {
-    beforeSave: async ({ adminUser, adminforth, response, extra }) => {
+    beforeSave: async ({ adminUser, adminforth, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
       if (!t2fa) {
         return { ok: false, error: 'TwoFactorsAuthPlugin is not configured' };
@@ -476,7 +476,7 @@ hooks: {
     },
   },
   create: {
-    beforeSave: async ({ adminUser, adminforth, response, extra }) => {
+    beforeSave: async ({ adminUser, adminforth, extra }) => {
       const t2fa = adminforth.getPluginByClassName('TwoFactorsAuthPlugin');
       if (!t2fa) {
         return { ok: false, error: 'TwoFactorsAuthPlugin is not configured' };

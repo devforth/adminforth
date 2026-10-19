@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
 import { encodeRecordId, isCompositePrimaryKey } from './recordId.js';
-import { PERIOD_UNITS, type PeriodString, type PeriodUnit } from '../types/Back.js';
+import { PERIOD_UNITS, type PeriodString, type PeriodUnit, type HttpExtra } from '../types/Back.js';
 
 // theme helpers live next to StylesGenerator, so it can be imported without the server
 export { deepMerge, transformObject, createRGBA, parseColorForAliases, darkenRGBA, lightenRGBA, inverseRGBA } from './styleGenerator.js';
@@ -98,11 +98,6 @@ export function suggestIfTypo(names: string[], name: string): string {
   }
 }
 
-
-// TODO, remove, legacy
-export function getClientIp(headers: object) {
-  throw new Error('getClientIp is deprecated, use admin.auth.getClientIp. If this error dropped from plugin, please update the plugin');
-}
 
 export function md5hash(str:string) {
   return crypto.createHash('md5').update(str).digest('hex');
@@ -239,8 +234,8 @@ export function slugifyString(str: string): string {
     .replace(/[^a-z0-9-_]/g, '-');
 }
 
-export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, response: any}, adminforth: IAdminForth): Promise<{ error: string | null }> {
-  const { adminUser, response } = context;
+export async function cascadeChildrenDelete(resource: AdminForthResource, primaryKey: string, context: {adminUser: any, extra?: HttpExtra}, adminforth: IAdminForth): Promise<{ error: string | null }> {
+  const { adminUser, extra } = context;
 
   const childResources = adminforth.config.resources.filter(r =>r.columns.some(c => c.foreignResource?.resourceId === resource.resourceId));
 
@@ -264,7 +259,7 @@ export async function cascadeChildrenDelete(resource: AdminForthResource, primar
         if (childResult?.error) {
           return childResult;
         }
-        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), response});
+        const deleteChild = await adminforth.deleteResourceRecord({resource: childRes, record: childRecord, adminUser, recordId: childRecordId(childRecord), extra});
         if (deleteChild.error) return { error: deleteChild.error };
         if (childResult?.error) {
           return childResult;

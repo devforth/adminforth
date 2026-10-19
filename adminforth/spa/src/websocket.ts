@@ -166,17 +166,6 @@ export default {
     };
   },
 
-  unsubscribe(topic: string): void {
-    console.warn('This method is deprecated because it removes all subscriptions for the topic. Use the unsubscribe function returned by subscribe(), or use unsubscribeByPrefix() when you explicitly need to unsubscribe by topic prefix.');
-    if (!subscriptions[topic]) {
-      return;
-    }
-    delete subscriptions[topic];
-    if (state.ready) {
-      doPhysicalUnsubscribe(topic);
-    }
-  },
-
   unsubscribeByPrefix(prefix: string): void {
     Object.keys(subscriptions)
       .filter((topic) => topic.startsWith(prefix))

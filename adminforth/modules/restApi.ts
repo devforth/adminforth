@@ -756,9 +756,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
     for (const hook of listify(beforeLoginConfirmation)) {
-      const resp = await hook({ 
-        adminUser, 
-        response,
+      const resp = await hook({
+        adminUser,
         adminforth: this.adminforth,
         extra,
         sessionDuration,
@@ -2414,16 +2413,16 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error: jsonError, ok: false };
             }
 
-            const createRecordResponse = await this.adminforth.createResourceRecord({ 
-              resource, record, adminUser, response, 
-              extra: { body, query, headers, cookies, requestUrl, response } 
+            const createRecordResponse = await this.adminforth.createResourceRecord({
+              resource, record, adminUser,
+              extra: { body, query, headers, cookies, requestUrl, response }
             });
             if (createRecordResponse.error) {
-              return { 
-                error: createRecordResponse.error, 
-                ok: false, 
-                newRecordId: createRecordResponse.redirectToRecordId ? createRecordResponse.redirectToRecordId :createRecordResponse.newRecordId, 
-                redirectToRecordId: createRecordResponse.redirectToRecordId 
+              return {
+                error: createRecordResponse.error,
+                ok: false,
+                newRecordId: createRecordResponse.redirectToRecordId,
+                redirectToRecordId: createRecordResponse.redirectToRecordId
               };
             }
             const connector = this.adminforth.connectors[resource.dataSource];
@@ -2596,9 +2595,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (jsonError) {
               return { error: jsonError, ok: false };
             }
-            const { error } = await this.adminforth.updateResourceRecord({ 
-              resource, updates: record, adminUser, oldRecord, recordId, response, 
-              extra: { body, query, headers, cookies, requestUrl, response } 
+            const { error } = await this.adminforth.updateResourceRecord({
+              resource, updates: record, adminUser, oldRecord, recordId,
+              extra: { body, query, headers, cookies, requestUrl, response }
             });
             if (error) {
               return { error };
@@ -2643,14 +2642,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { error: cascadeError } = await cascadeChildrenDelete(resource, body.primaryKey, {adminUser, response}, this.adminforth);
+            const extra = { body, query, headers, cookies, requestUrl, response };
+            const { error: cascadeError } = await cascadeChildrenDelete(resource, body.primaryKey, { adminUser, extra }, this.adminforth);
             if (cascadeError) {
               return { error: cascadeError };
             }
 
-            const { error: deleteError } = await this.adminforth.deleteResourceRecord({ 
-              resource, record, adminUser, recordId: body['primaryKey'], response, 
-              extra: { body, query, headers, cookies, requestUrl, response } 
+            const { error: deleteError } = await this.adminforth.deleteResourceRecord({
+              resource, record, adminUser, recordId: body['primaryKey'], extra,
             });
             if (deleteError) {
               return { error: deleteError };
@@ -2664,7 +2663,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
         method: 'POST',
         path: '/start_bulk_action',
-        handler: async ({ body, adminUser, tr, response }) => {
+        handler: async ({ body, adminUser, tr, query, headers, cookies, requestUrl, response }) => {
             const { resourceId, actionId, recordIds } = body;
             const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
             if (!resource) {
@@ -2689,7 +2688,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 return { error: await tr(`Action "{actionId}" not allowed`, 'errors', { actionId: action.label }) };
               }
             }
-            const bulkActionResponse = await action.action({selectedIds: recordIds, adminUser, resource, response, tr});
+            const bulkActionResponse = await action.action({
+              selectedIds: recordIds, adminUser, resource, tr,
+              extra: { body, query, headers, cookies, requestUrl, response },
+            });
             
             return {
               actionId,
