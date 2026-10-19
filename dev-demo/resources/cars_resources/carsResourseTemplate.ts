@@ -15,6 +15,7 @@ import MarkdownPlugin from '../../../plugins/adminforth-markdown/index.js';
 import QuickFiltersPlugin from '../../../plugins/adminforth-quick-filters/index.js';
 import Many2ManyPlugin from '../../../plugins/adminforth-many2many/index.js';
 import JSONFormPlugin from '../../../plugins/adminforth-json-form/index.js'
+import CloneRowPlugin from '../../../plugins/adminforth-clone-row/index.js';
 
 import CompletionAdapterOpenAIResponses from '../../../adapters/adminforth-completion-adapter-openai-responses/index.js';
 import CompletionAdapterGoogleGemini from '../../../adapters/adminforth-completion-adapter-google-gemini/index.js';
@@ -261,7 +262,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           completion: {
             adapter: new CompletionAdapterOpenAIResponses({
               openAiApiKey: process.env.OPENAI_API_KEY as string,
-              model: 'gpt-5-mini',
+              model: 'gpt-6-luna',
             }),
             expert: {
               debounceTime: 250,
@@ -282,6 +283,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       new ListInPlaceEditPlugin({
         columns: ["model", "engine_type", "price"],
       }),
+      new CloneRowPlugin({}),
       new ForeignInlineShowPlugin({
         foreignResourceId: 'adminuser',
       }),
@@ -364,7 +366,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
               countToGenerate: 2,
               adapter: new ImageGenerationAdapterOpenAI({
                 openAiApiKey: process.env.OPENAI_API_KEY as string,
-                model: 'gpt-image-1', 
+                model: 'gpt-image-2.5-flare',
               }),
               attachFiles: async ({ record }) => {
                 if (!record.promo_picture) {
@@ -380,7 +382,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           fieldName: 'model',
           adapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5-nano',
+            model: 'gpt-6-luna',
             extraRequestBodyParameters: {
                 temperature: 1
             }
@@ -391,7 +393,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           askConfirmationBeforeGenerating: true,
           textCompleteAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: "gpt-5-mini",
+            model: 'gpt-6-luna',
             extraRequestBodyParameters: {
               temperature: 1,
             },
@@ -411,7 +413,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           askConfirmationBeforeGenerating: true,
           visionAdapter: new AdminForthImageVisionAdapterOpenAi({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-5-mini',
+            model: 'gpt-6-luna',
           }),
           fillFieldsFromImages: {
             body_type: "What is the body type of the car shown in the image?",
@@ -435,7 +437,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           askConfirmationBeforeGenerating: true,
           imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-image-1',
+            model: 'gpt-image-2.5-flare',
           }),
           generateImages: {
             generated_promo_picture: {

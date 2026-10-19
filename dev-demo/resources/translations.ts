@@ -64,7 +64,7 @@ export default {
         { 
         completeAdapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
-          model: 'gpt-5-mini',
+          model: 'gpt-6-luna',
         }),
         // translateLangAsBCP47Code: {sr: 'sr-Cyrl'},
         parallelTranslationLimit: 1 

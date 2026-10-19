@@ -77,15 +77,15 @@ export const globalPlugins = [
     modes: [
       {
         name: 'Balanced',
-        completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'medium'),
+        completionAdapter: createAgentCompletionAdapter('gpt-6-luna', 'medium'),
       },
       {
         name: 'Fast',
-        completionAdapter: createAgentCompletionAdapter('gpt-5.4-mini', 'low'),
+        completionAdapter: createAgentCompletionAdapter('gpt-6-luna', 'low'),
       },
       {
         name: 'Smart Thinking',
-        completionAdapter: createAgentCompletionAdapter('gpt-5.4', 'xhigh'),
+        completionAdapter: createAgentCompletionAdapter('gpt-6-luna', 'xhigh'),
       },
     ],
     maxTokens: 10000,
