@@ -41,10 +41,6 @@ export const adminForthAgent = new AdminForthAgent({
       name: 'Fast',
       completionAdapter: fastCompletionAdapter,
     },
-    {
-      name: 'Smart Thinking',
-      completionAdapter: smartThinkingCompletionAdapter,
-    },
   ],
   maxTokens: 10000,
   sessionResource: {
