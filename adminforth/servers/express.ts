@@ -25,6 +25,7 @@ import { ADMINFORTH_CLIENT_ID_HEADER, runWithRequestContext } from '../modules/r
 import * as z from 'zod';
 import multer from 'multer';
 import { createRequire } from 'module';
+import { renderSpaBuildingPage, renderViteStartingPage } from './startingPages.js';
 
 // express is a peer dependency, so resolve it from the host project at runtime
 // instead of a static JSON import (which would hard-link a peer dep at parse time).
@@ -139,46 +140,6 @@ function normalizeExpressLayerRegexpSource(regexpSource: string): string {
     .replace(EXPRESS_REGEXP_LEADING_CARET_RE, '');
 }
 
-const respondNoServer = (title, explanation) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>AdminForth</title>
-    </head>
-    <body>
-      <div class="center">
-        <h1>Oops!</h1>
-        <h2>${title}</h2>
-        <p>${explanation}</p>
-      </div>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #f0f0f0;
-          margin: 0;
-          padding: 0;
-        }
-        .center {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100dvh;
-          flex-direction: column;
-        }
-      </style>
-      <script>
-        setTimeout(() => {
-          location.reload();
-        }, 1500);
-      </script>
-    </body>
-    `;
-}
-
 class ExpressServer implements IExpressHttpServer {
 
   expressApp: Express;
@@ -211,6 +172,7 @@ class ExpressServer implements IExpressHttpServer {
     }
 
     if (this.adminforth.runningHotReload) {
+      const viteStartingPage = renderViteStartingPage(this.adminforth);
       const handler = async (req, res) => {
         // proxy using fetch to webpack dev server 
         try {
@@ -219,7 +181,7 @@ class ExpressServer implements IExpressHttpServer {
           }
           await proxyTo(`http://localhost:${this.adminforth.codeInjector.devServerPort}${req.url}`, res);
         } catch (e) {
-          res.status(500).send(respondNoServer('AdminForth SPA is not ready yet', 'Vite is still starting up. Please wait a moment...'));
+          res.status(503).send(viteStartingPage);
           return;
         }
       }
@@ -229,6 +191,7 @@ class ExpressServer implements IExpressHttpServer {
      
 
     } else {
+      const spaBuildingPage = renderSpaBuildingPage(this.adminforth);
       const codeInjector = this.adminforth.codeInjector;
       this.expressApp.get(assetsRoute, (req, res) => {
         if (req.url?.includes('..')) {
@@ -264,7 +227,7 @@ class ExpressServer implements IExpressHttpServer {
           fileExists = false;
         }
         if (!fileExists) {
-          res.status(500).send(respondNoServer(`${this.adminforth.config.customization.brandName} is still warming up`, 'Please wait a moment...'));
+          res.status(503).send(spaBuildingPage);
           return;
         }
         res.sendFile(fullPath, { 
