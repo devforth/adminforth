@@ -5,7 +5,7 @@
   >
     <slot name="trigger"></slot>
   </div>
-  <Teleport to="body">
+  <Teleport :to="teleportTarget">
     <Transition
       enter-from-class="af-modal-hidden opacity-0"
       enter-active-class="transition-opacity duration-150 ease-out motion-reduce:transition-none"
@@ -81,9 +81,11 @@ import Button from "./Button.vue";
 import { ref, onMounted, nextTick, onUnmounted, computed, watch, useId, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { dialogPanelClasses, dialogFooterClasses } from './dialogStyles';
+import { useTeleportTarget, activeElementIn } from './shadowRoot';
 
 const isModalOpen = defineModel<boolean>('open', { default: false });
 const { t } = useI18n();
+const teleportTarget = useTeleportTarget();
 
 const removeFromDom = computed(() => {
   return props.removeFromDomOnClose && !isModalOpen.value;
@@ -126,7 +128,7 @@ watch(isModalOpen, async (open) => {
   if (open) {
     focusBeforeOpen = document.activeElement as HTMLElement | null;
     await nextTick();
-    if (!panelRef.value!.contains(document.activeElement)) {
+    if (!panelRef.value!.contains(activeElementIn(panelRef.value!))) {
       panelRef.value!.focus({ preventScroll: true });
     }
   } else {

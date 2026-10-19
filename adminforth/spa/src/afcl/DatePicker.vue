@@ -47,6 +47,7 @@ import utc from 'dayjs/plugin/utc';
 
 import {useCoreStore} from '@/stores/core';
 import {FLEXIBLE_DATEPICKER_FORMAT} from '@/utils/dateUtils';
+import { useTeleportTarget } from './shadowRoot';
 
 import { IconCalendar, IconChevronDown, IconClock } from '@iconify-prerendered/vue-lucide';
 
@@ -134,6 +135,8 @@ watch(start, () => {
   emit('update:valueStart', start.value)
 })
 
+const teleportTarget = useTeleportTarget();
+
 async function initDatepickers() {
   const LS_LANG_KEY = `afLanguage`;
   const options = {format: FLEXIBLE_DATEPICKER_FORMAT, language: localStorage.getItem(LS_LANG_KEY)};
@@ -147,6 +150,11 @@ async function initDatepickers() {
   );
 
   datepickerObject.value = new Datepicker(datepickerStartEl.value, options);
+  // the calendar goes to body and takes only a selector of the document for another container
+  if (teleportTarget instanceof HTMLElement) {
+    datepickerObject.value.config.container = teleportTarget;
+    teleportTarget.appendChild(datepickerObject.value.picker.element);
+  }
 
   addChangeDateListener();
 }

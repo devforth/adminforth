@@ -44,6 +44,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs } from 'vue';
 import { type ClassNameValue } from 'tailwind-merge';
 import { mergeClasses } from './classMerge';
+import { activeElementIn } from './shadowRoot';
 
 defineOptions({ inheritAttrs: false });
 
@@ -169,7 +170,7 @@ function onBlur(e: FocusEvent) {
   }
   // the clicked button still gets its click, the focus is back before the user types again
   requestAnimationFrame(() => {
-    if (inputRef.value?.isConnected && !document.activeElement?.matches(EDITABLE_SELECTOR)) {
+    if (inputRef.value?.isConnected && !activeElementIn(inputRef.value)?.matches(EDITABLE_SELECTOR)) {
       focus();
     }
   });

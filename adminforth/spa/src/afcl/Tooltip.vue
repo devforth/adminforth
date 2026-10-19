@@ -2,7 +2,7 @@
   <div ref="triggerEl" class="afcl-tooltip inline-flex items-center" :style="{ anchorName }" @mouseenter="show" @mouseleave="hide">
       <slot></slot>
   </div>
-  <teleport to="body" v-if="isOpen">
+  <teleport :to="teleportTarget" v-if="isOpen">
     <div
       ref="tooltipEl"
       popover="manual"
@@ -19,11 +19,13 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onBeforeUnmount, useId } from 'vue';
+import { useTeleportTarget } from './shadowRoot';
 
 const OFFSET = 8;
 const SUPPORTS_ANCHOR = CSS.supports('anchor-name: --a');
 
 const anchorName = `--afcl-tooltip-${useId()}`;
+const teleportTarget = useTeleportTarget();
 const triggerEl = ref<HTMLElement>();
 const tooltipEl = ref<HTMLElement>();
 const isOpen = ref(false);

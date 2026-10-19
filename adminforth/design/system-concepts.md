@@ -25,6 +25,17 @@ Apps restyle and test AdminForth by `af-*` and `afcl-*` classes. A restyle never
 - A new AFCL component gets a section on the page of its category in the AFCL docs (`documentation/docs/tutorial/03-Customization/15-afcl/`, a link in its `index.md` as well) and its states and variants in [system.html](./system.html). Docs examples are live, not screenshots: wrap the code blocks of an example into `<AfclPreview id="...">` and the docs build renders them with real AFCL (see `documentation/afcl-preview/vite.config.ts`). Nothing is registered globally, an example imports every AFCL component it uses from `@/afcl`, otherwise the build fails.
 - Example: `DropdownMenu` and `DropdownMenuItem` replaced the hand-made menus of the list (⋯ in the header and in rows), the user menu and the import-export plugin.
 
+## AFCL works inside a shadow root
+
+The live examples of the docs render AFCL in shadow roots of the docs page (`documentation/afcl-preview/mount.ts`). Code which reaches out of the tree of a component breaks there, so an AFCL component:
+
+- teleports popups, modals, tooltips and pickers to `useTeleportTarget()` from `afcl/shadowRoot.ts`, never `to="body"`. The target is `body` in an app and an element of the shadow root in the docs, content teleported out of the root loses its styles. A library which appends its popup to `document.body` (the calendar of flowbite-datepicker in `DatePicker`) is moved to that target too;
+- takes the clicked or scrolled element as `e.composedPath()[0]` in `document` and `window` listeners (outside click, scroll), `e.target` there is the shadow host;
+- reads the focus with `activeElementIn(el)`, `document.activeElement` there is the shadow host as well;
+- finds its own elements by template refs, not by `document.getElementById` or `document.querySelector`.
+
+In an app these give exactly what `body`, `e.target` and `document.activeElement` give, so apps see no difference.
+
 ## Disabled state
 
 A disabled control gets the native `disabled` attribute (`aria-disabled` on a link, which then has no `href`), not `pointer-events-none`: the attribute also blocks the keyboard and form submit, is announced by screen readers and does not pass the click to a parent. Hover styles are left out for a disabled control.

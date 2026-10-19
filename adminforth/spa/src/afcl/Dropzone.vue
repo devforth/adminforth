@@ -5,7 +5,7 @@
     @dragleave.prevent="dragging = false"
     @drop.prevent="dragging = false; doEmit(($event.dataTransfer as DataTransfer).files)"
   >
-      <label :id="id" class="flex flex-col items-center justify-center w-full border border-dashed rounded-lg cursor-pointer transition-colors
+      <label ref="labelEl" :id="id" class="flex flex-col items-center justify-center w-full border border-dashed rounded-lg cursor-pointer transition-colors
         hover:bg-lightDropzoneBackgroundHover hover:border-lightDropzoneBorderHover  dark:hover:border-darkDropzoneBorderHover dark:hover:bg-darkDropzoneBackgroundHover"
         :class="{
           'border-lightDropzoneBorderDragging dark:border-darkDropzoneBorderDragging': dragging,
@@ -203,6 +203,7 @@ function doEmit(filesIn: FileList) {
 }
 
 const dragging = ref(false);
+const labelEl = ref<HTMLLabelElement>();
 
 function removeFile(index: number) {
   storedFiles.value = storedFiles.value.filter((_, i) => i !== index);
@@ -214,7 +215,7 @@ function clear() {
   selectedFiles.value = [];
   storedFiles.value = [];
   emit('update:modelValue', []);
-  const form = document.getElementById(id)?.closest('form');
+  const form = labelEl.value?.closest('form');
   form?.reset();
 }
 

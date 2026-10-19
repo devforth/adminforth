@@ -3,7 +3,7 @@
     <div class="afcl-dropdown-menu-trigger" @click="onTriggerClick">
       <slot name="trigger" :open="isOpen" />
     </div>
-    <Teleport to="body" :disabled="!teleportToBody">
+    <Teleport :to="teleportTarget" :disabled="!teleportToBody">
       <div
         v-if="keepMounted || isOpen"
         v-show="isOpen"
@@ -23,6 +23,7 @@ import { computed, inject, nextTick, onBeforeUnmount, provide, ref, useAttrs, wa
 import { type ClassNameValue } from 'tailwind-merge';
 import { mergeClasses } from './classMerge';
 import { DROPDOWN_MENU_KEY, type DropdownMenuPlacement } from './dropdownMenuContext';
+import { useTeleportTarget } from './shadowRoot';
 
 defineOptions({ inheritAttrs: false });
 
@@ -38,6 +39,8 @@ const props = withDefaults(defineProps<{
   keepMounted: false,
   teleportToBody: false,
 });
+
+const teleportTarget = useTeleportTarget();
 
 const isOpen = defineModel<boolean>('open', { default: false });
 
@@ -148,7 +151,8 @@ function placeFixed() {
 }
 
 function onDocumentMousedown(e: MouseEvent) {
-  const target = e.target as Node;
+  // inside a shadow root e.target is the host, composedPath() starts at the clicked element
+  const target = e.composedPath()[0] as Node;
   if (rootRef.value?.contains(target) || contentRef.value?.contains(target)) {
     return;
   }
@@ -163,7 +167,8 @@ function onKeydown(e: KeyboardEvent) {
 
 function onViewportChange(e: Event) {
   // scrolling inside the menu itself must not close it
-  if (e.target instanceof Node && contentRef.value?.contains(e.target)) {
+  const target = e.composedPath()[0];
+  if (target instanceof Node && contentRef.value?.contains(target)) {
     return;
   }
   close();

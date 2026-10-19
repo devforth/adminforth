@@ -44,7 +44,7 @@
         />
       </div>
     </div>
-    <teleport to="body" v-if="(teleportToBody  || teleportToTop) && showDropdown">
+    <teleport :to="teleportTarget" v-if="(teleportToBody  || teleportToTop) && showDropdown">
       <div ref="dropdownEl" :style="getDropdownPosition" :class="{'shadow-none': isTop, 'z-30': teleportToBody, 'z-[1000]': teleportToTop}"
         class="fixed w-full bg-lightDropdownOptionsBackground shadow-popover dark:shadow-darkPopover dark:bg-darkDropdownOptionsBackground
           rounded-lg p-1 text-base overflow-auto focus:outline-none sm:text-sm max-h-60"
@@ -118,6 +118,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, useId,type PropType, type Ref } from 'vue';
 import { IconChevronDown, IconX } from '@iconify-prerendered/vue-lucide';
 import { useElementSize } from '@vueuse/core'
+import { useTeleportTarget } from './shadowRoot';
 
 type ISingleSelectModelValue = string | number | boolean | null;
 
@@ -310,9 +311,12 @@ const filteredItems: Ref<any[]> = computed(() => {
 });
 
 
+const teleportTarget = useTeleportTarget();
+
 const handleClickOutside = (event: MouseEvent) => {
-  const targetEl = event.target as HTMLElement | null;
-  const closestSelect = targetEl?.closest('.afcl-select');
+  // inside a shadow root event.target is the host, composedPath() starts at the clicked element
+  const targetEl = event.composedPath()[0] as HTMLElement;
+  const closestSelect = targetEl.closest('.afcl-select');
   if (closestSelect !== internalSelect.value)
     showDropdown.value = false;
 };
