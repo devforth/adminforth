@@ -440,10 +440,17 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
 :where(#create) a:hover{color:inherit}
 :where(#create) .frow{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--divider)}
 :where(#create) .frow:last-child{border-bottom:0}
-:where(#create) .flbl{flex:0 0 232px;max-width:100%;padding:19px 20px 0}
+:where(#create) .flbl{flex:0 0 224px;max-width:100%;padding:20px 20px 0}
 :where(#create) .fv{flex:1 1 360px;min-width:0;padding:12px 20px}
 :where(#create) .fval{max-width:640px;display:flex;flex-direction:column;gap:6px}
-:where(#create) .fhead{display:flex;flex-wrap:wrap;background:var(--bg);border-bottom:1px solid var(--border);font-size:12px;font-weight:500;color:var(--muted)}
+:where(#create, #show) .gtitle{padding:16px 20px 4px;font-size:14px;line-height:20px;font-weight:600;color:var(--text)}
+
+:where(#show) a{color:inherit}
+:where(#show) a:hover{color:inherit}
+:where(#show) .srow{display:flex;flex-wrap:wrap;align-items:baseline;border-top:1px solid var(--divider)}
+:where(#show) .gtitle + .srow{border-top:0}
+:where(#show) .sk{flex:0 0 224px;max-width:100%;padding:10px 20px;font-size:13px;line-height:20px;color:var(--muted)}
+:where(#show) .sv{flex:1 1 360px;min-width:0;padding:10px 20px;color:var(--text)}
 
 :where(#user-menu) a{color:inherit}
 :where(#user-menu) a:hover{color:inherit}
@@ -553,7 +560,7 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
 <body>
 <header class="ds-top">
   <div class="ds-brand"><b>AdminForth Design System</b><span>Hairline theme · tokens, screens and AFCL components</span></div>
-  <nav class="ds-nav" aria-label="Sections"><div class="ds-nav-group"><a href="#foundations">Foundations</a></div><div class="ds-nav-group"><span>Screens</span><a href="#list">List view</a><a href="#create">Create view</a><a href="#user-menu">User menu</a></div><div class="ds-nav-group"><span>Components</span><a href="#afcl-actions">Actions</a><a href="#afcl-inputs">Inputs</a><a href="#afcl-data">Data display</a><a href="#afcl-feedback">Overlays &amp; feedback</a><a href="#afcl-charts">Charts</a></div></nav>
+  <nav class="ds-nav" aria-label="Sections"><div class="ds-nav-group"><a href="#foundations">Foundations</a></div><div class="ds-nav-group"><span>Screens</span><a href="#list">List view</a><a href="#create">Create view</a><a href="#show">Show view</a><a href="#user-menu">User menu</a></div><div class="ds-nav-group"><span>Components</span><a href="#afcl-actions">Actions</a><a href="#afcl-inputs">Inputs</a><a href="#afcl-data">Data display</a><a href="#afcl-feedback">Overlays &amp; feedback</a><a href="#afcl-charts">Charts</a></div></nav>
   <div class="ds-controls">
     <span>Accent</span>
     <button class="ds-swatch" type="button" aria-label="Accent #1a56db" aria-pressed="false" data-accent="#1a56db" style="background:#1a56db"></button>
@@ -699,8 +706,9 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       <div class="map"><div><code>surface-2</code></div><div><code>lightSidebarItemHover · lightListTableRowHover · lightDropdownOptionsHoverBackground · lightSecondaryDarken · lightInputBackgroundHover</code></div></div>
       <div class="map"><div><code>surface-3</code></div><div><code>lightSidebarItemActive · lightVerticalTabsBackgroundActive · lightButtonGroupActiveBackground · lightSkeletonBackgroundColor · lightProgressBarUnfilledColor</code></div></div>
       <div class="map"><div><code>border</code></div><div><code>lightSidebarBorder · lightNavbarBorder · lightListBorder · lightFormBorder · lightTableBorder · lightDialogBreakLine · lightSidebarDevider</code></div></div>
+      <div class="map"><div><code>divider</code></div><div><code>lightShowTableBodyBorder (rows of the show, create and edit tables)</code></div></div>
       <div class="map"><div><code>border-strong</code></div><div><code>lightInputBorder · lightDropownButtonsBorder · lightCheckboxBorderColor · lightButtonGroupBorder · lightDropzoneBorder</code></div></div>
-      <div class="map"><div><code>text</code></div><div><code>lightSidebarTextActive · lightFormFieldTextColor · lightInputText · lightDialogHeaderText · lightTextLabel</code></div></div>
+      <div class="map"><div><code>text</code></div><div><code>lightSidebarTextActive · lightFormFieldTextColor · lightInputText · lightDialogHeaderText · lightTextLabel · lightShowTableHeadingText · lightShowTableBodyText</code></div></div>
       <div class="map"><div><code>text-2</code></div><div><code>lightSidebarText · lightListTableHeadingText · lightListTableText · lightTableText</code></div></div>
       <div class="map"><div><code>muted</code></div><div><code>lightSidebarIcons · lightNavbarIcons · lightSidebarHeading · lightInputIconColor · lightBreadcrumbsHomepageText · lightListTablePaginationHelpText</code></div></div>
       <div class="map"><div><code>faint</code></div><div><code>lightInputPlaceholderText · lightDropdownButtonsPlaceholderText · lightDatePickerPlaceHolder</code></div></div>
@@ -1326,10 +1334,6 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
     
 
     <div class="card" role="table" aria-label="Create car" style="overflow: hidden">
-      <div class="fhead" role="row">
-        <div role="columnheader" style="flex: 0 0 232px; padding: 10px 20px">Field</div>
-        <div role="columnheader" style="flex: 1 1 360px; padding: 10px 20px">Value</div>
-      </div>
       <div>
           <div class="frow" role="row">
             <div class="flbl" role="rowheader"><span class="label">Model <span class="req" aria-label="required">*</span></span></div>
@@ -1516,6 +1520,57 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
     </div>
   </main>
 </div>
+</div>
+  </div>
+</section>
+
+<section class="ds-board" id="show" aria-label="Show view">
+  <h2 class="ds-board-title"><span>Screens</span>Show view</h2>
+  <div class="ds-frame">
+<div class="af " style="--accent: #16537E; width: 1280px; padding: 24px 32px 48px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px">
+      <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 8px">
+        <a class="link-muted t-sm" href="#" style="display: inline-flex; align-items: center; gap: 6px">
+          <svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          Home
+        </a>
+        <span style="color: var(--faint)">/</span>
+        <a class="link-muted t-sm" href="#list">Car - SQLite</a>
+        <span style="color: var(--faint)">/</span>
+        <h1 class="t-title">Show</h1>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <a class="btn btn-secondary af-edit-button" href="#create">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg>
+          Edit
+        </a>
+        <button class="btn btn-secondary af-delete-button" type="button" style="color: var(--danger-fg)">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--danger-fg)"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+          Delete
+        </button>
+        <button class="btn btn-secondary btn-icon" type="button" aria-label="More actions">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+        </button>
+      </div>
+    </div>
+    <div class="card" role="table" aria-label="General" style="overflow: hidden">
+      <div class="gtitle">General</div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Identifier</div><div class="sv" role="cell"><span class="mono">8f2c1a7e</span></div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Model</div><div class="sv" role="cell">Aether Nimbus S</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Price</div><div class="sv" role="cell">7180.00 USD</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Engine Type</div><div class="sv" role="cell">Gasoline</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Engine Power</div><div class="sv" role="cell">184 HP</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Production Year</div><div class="sv" role="cell">2019</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Created At</div><div class="sv" role="cell">18 Oct 2026, 14:32</div></div>
+    </div>
+    <div class="card" role="table" aria-label="Listing" style="overflow: hidden">
+      <div class="gtitle">Listing</div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Description</div><div class="sv" role="cell">Low-mileage hatchback with a full dealer service history. One owner, garage kept.</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Listed</div><div class="sv" role="cell"><span class="badge badge-success"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Yes</span></div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Body Type</div><div class="sv" role="cell">Hatchback</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Color</div><div class="sv" role="cell">Graphite</div></div>
+      <div class="srow" role="row"><div class="sk" role="rowheader">Seller</div><div class="sv" role="cell"><a class="link" href="#">Northway Motors</a></div></div>
+    </div>
 </div>
   </div>
 </section>

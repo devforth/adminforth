@@ -50,6 +50,14 @@ A page gets less than the screen: the sidebar and the agent panel squeeze it on 
 
 The header of the list page is a container named `header`. Below 896px (`@4xl/header`) components from `beforeActionButtons` take a full row under the title and the buttons, from 896px all share one row. Below 512px (`@lg/header`) Home and Filter keep only their icons. Such a component fills its row and takes a fixed width from `@4xl/header:`, like the fields of quick-filters. Bulk actions of checked rows take a row of their own above the table, so the buttons next to the title never move.
 
+## Field tables
+
+The show, create and edit views list fields as a two-column table on a card: a 224px label column and the value next to it. Lines follow one order of weight: the card border (`FormBorder`), lighter dividers between rows (`ShowTableBodyBorder`, in forms too), the stronger border of an input. There is no "Field / Value" header row and no filled band behind a group name, a group name is a plain semibold title inside its card.
+
+- Labels sit on the first line of the value, not in the middle of a tall row: 13px medium in forms, 13px `InputIconColor` in the show view, where values take `ShowTableBodyText`.
+- Core inputs don't stretch over the whole row: text up to 576px (`max-w-xl`), selects 320px (`max-w-xs`), text areas 672px (`max-w-2xl`), numbers 160px. A custom field component sets its own width.
+- A `showRow` component renders the whole `<tr>` content (`<td colspan="2">`), so the table stays a `<table>`.
+
 ## Lucide icons
 
 - Use Lucide: `@iconify-prerendered/vue-lucide` in components (`IconPencil`, `IconTrash2`), `lucide:<name>` in config (`icon: 'lucide:download'`).

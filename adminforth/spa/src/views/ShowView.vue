@@ -96,41 +96,31 @@
     <div 
       v-if="loading" 
       role="status" 
-      class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow rounded-lg overflow-hidden border border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
+      class="animate-pulse overflow-x-auto shadow-resourseFormShadow dark:shadow-darkResourseFormShadow rounded-lg overflow-hidden border border-lightFormBorder dark:border-darkFormBorder bg-lightShowTablesBodyBackground dark:bg-darkShowTablesBodyBackground"
     >
-      <div 
-        v-if="groups && groups.length > 0" 
-        class="text-sm font-semibold px-5 py-3 flex flex-1 items-center bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground dark:text-darkShowTableHeadingText border-b border-lightShowTableBodyBorder dark:border-darkShowTableBodyBorder"
-      >
+      <div v-if="groups && groups.length > 0" class="px-5 pt-5 pb-2">
         <div class="h-3 bg-lightSkeletonBackgroundColor dark:bg-darkSkeletonBackgroundColor rounded-full w-32"></div>
       </div>
 
       <table class="w-full text-sm text-left table-fixed border-collapse">
-        <thead class="bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground block md:table-row-group">
-          <tr class="block md:table-row">
-            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:w-56 md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
-              {{ $t('Field') }}
-            </th>
-            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:table-cell text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText">
-              {{ $t('Value') }}
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr 
-            v-for="i in skeletonRowsCount" 
+        <colgroup>
+          <col class="md:w-56">
+          <col>
+        </colgroup>
+        <tbody class="divide-y divide-lightShowTableBodyBorder dark:divide-darkShowTableBodyBorder">
+          <tr
+            v-for="i in skeletonRowsCount"
             :key="i"
-            class="bg-lightShowTablesBodyBackground border-t border-lightShowTableBodyBorder dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
+            class="block md:table-row"
           >
-            <td class="px-6 py-[15.5px] relative block md:table-cell pb-0 md:pb-[15.5px]">
-              <div class="md:absolute md:inset-0 flex items-center px-6 py-[15.5px]">
+            <td class="px-5 pt-2.5 pb-0 md:pb-2.5 block md:table-cell">
+              <div class="flex items-center h-5">
                 <div class="h-2.5 bg-lightSkeletonBackgroundColor dark:bg-darkSkeletonBackgroundColor rounded-full w-24"></div>
               </div>
             </td>
 
-            <td class="px-6 py-[15.5px] whitespace-pre-wrap block md:table-cell">
-              <div class="flex items-center h-full min-h-[21px]">
+            <td class="px-5 pt-1 pb-2.5 md:pt-2.5 block md:table-cell">
+              <div class="flex items-center h-5">
                 <div class="h-2.5 bg-lightSkeletonBackgroundColor dark:bg-darkSkeletonBackgroundColor rounded-full w-full max-w-[280px]"></div>
               </div>
             </td>

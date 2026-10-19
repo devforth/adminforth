@@ -1,30 +1,19 @@
 <template>
   <div class="w-full mt-[36px]">
-    <div class="w-full border dark:border-darkFormBorder border-lightFormBorder rounded-lg overflow-hidden shadow-resourseFormShadow dark:shadow-darkResourseFormShadow bg-lightForm dark:bg-darkForm">
-      
-      <div class="flex px-5 items-center border-b border-lightFormBorder dark:border-darkFormBorder bg-lightFormHeading dark:bg-darkFormHeading h-[40px]">
-        <div class="w-[208px] flex-shrink-0 pr-6 text-xs text-lightListTableHeadingText uppercase dark:text-darkListTableHeadingText font-bold">
-          {{ $t('Field') }}
-        </div>
-        <div class="flex-1 text-xs text-lightListTableHeadingText uppercase dark:text-darkListTableHeadingText font-bold">
-          {{ $t('Value') }}
-        </div>
-      </div>
-
+    <div class="w-full border dark:border-darkFormBorder border-lightFormBorder rounded-lg overflow-hidden shadow-resourseFormShadow dark:shadow-darkResourseFormShadow bg-lightForm dark:bg-darkForm divide-y divide-lightShowTableBodyBorder dark:divide-darkShowTableBodyBorder">
       <div
         v-for="i in 10"
         :key="i"
-        class="flex items-center bg-lightForm dark:bg-darkForm border-b border-lightFormBorder dark:border-darkFormBorder h-[58px]"
+        class="flex items-center h-[58px]"
       >
-        <div class="w-[208px] flex-shrink-0 px-6 flex items-center">
+        <div class="w-56 flex-shrink-0 px-5 flex items-center">
           <Skeleton class="w-24 h-[10px]" />
         </div>
 
-        <div class="flex-1 px-6">
-          <Skeleton  class="h-[10px] w-full" />
+        <div class="flex-1 px-5">
+          <Skeleton class="h-[10px] w-full max-w-xl" />
         </div>
       </div>
-
     </div>
   </div>
 </template>

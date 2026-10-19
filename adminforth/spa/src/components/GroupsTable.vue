@@ -1,49 +1,36 @@
 <template>
   <div class="rounded-lg shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border border-lightFormBorder bg-lightForm dark:bg-darkForm dark:border-darkFormBorder">
-    <div v-if="group.groupName && !group.noTitle" class="text-sm font-semibold px-5 py-3 flex flex-1 items-center border-b border-lightFormBorder dark:border-darkFormBorder text-lightFormFieldTextColor bg-lightFormHeading dark:bg-darkFormHeading dark:text-darkFormFieldTextColor rounded-t-lg">
+    <div v-if="group.groupName && !group.noTitle" class="px-5 pt-4 pb-1 text-sm font-semibold text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">
       {{ group.groupName }}
     </div>
     <table class="w-full text-sm text-left rtl:text-right text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">
-      <thead v-if="!allColumnsHaveCustomComponent" class="text-xs font-medium text-lightListTablePaginationHelpText dark:text-darkListTablePaginationHelpText bg-lightFormHeading dark:bg-darkFormHeading block md:table-row-group border-b border-lightFormBorder dark:border-darkFormBorder">
-        <tr>
-          <th scope="col" :class="{'rounded-tl-lg': !group.groupName}" class="px-5 py-2.5 font-medium hidden md:w-56 md:table-cell">
-              {{ $t('Field') }}
-          </th>
-          <th scope="col" :class="{'rounded-tr-lg': !group.groupName}" class="px-5 py-2.5 font-medium hidden md:table-cell">
-              {{ $t('Value') }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
+      <colgroup>
+        <col class="md:w-56">
+        <col>
+      </colgroup>
+      <tbody v-if="currentValues !== null" class="divide-y divide-lightShowTableBodyBorder dark:divide-darkShowTableBodyBorder">
         <tr
-          v-for="(column, i) in group.columns"
+          v-for="column in group.columns"
           :key="column.name"
-          v-if="currentValues !== null"
-          class="bg-lightForm dark:bg-darkForm border-lightFormBorder dark:border-darkFormBorder block md:table-row"
-          :class="{ 'border-b': i !== group.columns.length - 1}"
+          class="block md:table-row"
         >
-          <td class="px-5 py-3 flex items-center block pb-0 md:pb-3 relative md:table-cell" 
-              :class="{'rounded-bl-lg border-b-none': i === group.columns.length - 1}"> <!--align-top-->
-            <div class="absolute inset-0 flex items-center overflow-hidden px-5 py-3 max-h-32">
-              <span class="flex items-center gap-1 font-medium">                     
-                {{ column.label }}
-                <Tooltip v-if="column.required[mode]">
+          <!-- top-aligned: the label sits on the first line of a tall value, md:pt-5 centers it on a 34px input -->
+          <td class="px-5 pt-3 md:pt-5 pb-0 md:pb-3 block md:table-cell align-top">
+            <span class="flex items-center gap-1 text-[13px] leading-[18px] font-medium">
+              {{ column.label }}
+              <Tooltip v-if="column.required[mode]">
 
-                  <IconAsterisk v-if="column.required[mode]" class="w-3 h-3" 
-                    :class="(columnsWithErrors[column.name] && validatingMode && !isValidating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
-                  />
+                <IconAsterisk v-if="column.required[mode]" class="w-3 h-3"
+                  :class="(columnsWithErrors[column.name] && validatingMode && !isValidating) ? 'text-lightInputErrorColor dark:text-darkInputErrorColor' : 'text-lightRequiredIconColor dark:text-darkRequiredIconColor'"
+                />
 
-                  <template #tooltip>
-                    {{ $t('Required field') }}
-                  </template>
-                </Tooltip>
-              </span>
-            </div>
+                <template #tooltip>
+                  {{ $t('Required field') }}
+                </template>
+              </Tooltip>
+            </span>
           </td>
-          <td
-            class="px-5 py-3  whitespace-pre-wrap relative block md:table-cell"
-            :class="{'rounded-br-lg': i === group.columns.length - 1}"
-          >
+          <td class="px-5 pt-1.5 pb-3 md:pt-3 whitespace-pre-wrap relative block md:table-cell">
             <ColumnValueInputWrapper
               :source="source"
               :column="column"
@@ -70,10 +57,9 @@
 <script setup lang="ts">
   import { IconAsterisk } from '@iconify-prerendered/vue-lucide';
   import { Tooltip } from '@/afcl';
-  import { ref, computed, watch, nextTick, type Ref } from 'vue';
+  import { ref, watch, nextTick, type Ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import ColumnValueInputWrapper from "@/components/ColumnValueInputWrapper.vue";
-  import type { AdminForthResourceColumnInputCommon } from '@/types/Common';
 
   const { t } = useI18n();
 
@@ -94,12 +80,6 @@
 
   const customComponentsInValidity: Ref<Record<string, boolean>> = ref({});
   const customComponentsEmptiness: Ref<Record<string, boolean>> = ref({});
-  const allColumnsHaveCustomComponent = computed(() => {
-    return props.group.columns.every((column: AdminForthResourceColumnInputCommon) => {
-      const componentKey = `${props.source}Row` as keyof typeof column.components;
-      return column.components?.[componentKey];
-    });
-  });
 
   const emit = defineEmits(['update:customComponentsInValidity', 'update:customComponentsEmptiness']);
 

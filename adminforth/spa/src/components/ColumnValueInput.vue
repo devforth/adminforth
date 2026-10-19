@@ -19,7 +19,7 @@
       v-else-if="column.foreignResource"
       ref="input"
       :key="`select-${column.name}-${source}-${column.foreignResource?.name || column.foreignResource?.table || ''}`"
-      class="w-full min-w-24"
+      class="w-full min-w-24 max-w-xs"
       :options="formatSelectOptions(columnOptions[column.name] || [], column)"
       :searchDisabled="!column.foreignResource.searchableFields"
       @scroll-near-end="loadMoreOptions && loadMoreOptions(column.name)"
@@ -45,7 +45,7 @@
     <Select
       v-else-if="column.enum"
       ref="input"
-      class="w-full min-w-24"
+      class="w-full min-w-24 max-w-xs"
       :options="formatSelectOptions(column.enum, column)"
       teleportToBody
       :modelValue="value"
@@ -56,7 +56,7 @@
     <Select
       v-else-if="(type || column.type) === 'boolean'"
       ref="input"
-      class="w-full min-w-24"
+      class="w-full min-w-24 max-w-xs"
       :options="getBooleanOptions(column)"
       teleportToBody
       :modelValue="value"
@@ -120,6 +120,7 @@
     />
     <Textarea
       v-else-if="['text', 'richtext'].includes(type || column.type)"
+      class="max-w-2xl"
       :placeholder="$t('Text')"
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
@@ -127,6 +128,7 @@
     />
     <Textarea
       v-else-if="['json'].includes(type || column.type)"
+      class="max-w-2xl"
       :placeholder="$t('Text')"
       :modelValue="value"
       @update:modelValue="$emit('update:modelValue', $event)"
@@ -135,7 +137,7 @@
       v-else
       ref="input"
       :type="!column.masked || unmasked[column.name] ? 'text' : 'password'"
-      class="w-full"
+      class="w-full max-w-xl"
       :fullWidth="true"
       :placeholder="$t('Text')"
       :prefix="column.inputPrefix"

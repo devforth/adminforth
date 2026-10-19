@@ -1,43 +1,34 @@
 <template>
-      <div class="overflow-x-auto overscroll-x-contain shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border border-lightFormBorder dark:border-darkFormBorder"
+      <div class="overflow-x-auto overscroll-x-contain shadow-resourseFormShadow dark:shadow-darkResourseFormShadow border border-lightFormBorder dark:border-darkFormBorder bg-lightShowTablesBodyBackground dark:bg-darkShowTablesBodyBackground"
         :class="{'rounded-lg' : isRounded}"
       >
-        <div v-if="groupName && !noTitle"  class="text-sm font-semibold px-5 py-3 flex flex-1 items-center text-lightShowTableHeadingText bg-lightShowTableHeadingBackground dark:bg-darkShowTableHeadingBackground  dark:text-darkShowTableHeadingText rounded-t-lg">
+        <div v-if="groupName && !noTitle" class="px-5 pt-4 pb-1 text-sm font-semibold text-lightShowTableHeadingText dark:text-darkShowTableHeadingText">
         {{ groupName }}
         </div>
       <table class="w-full text-sm text-left rtl:text-right text-lightShowTableBodyText dark:text-darkShowTableBodyText table-fixed">
-        <thead v-if="!allColumnsHaveCustomComponent"  class="text-lightShowTableUnderHeadingText dark:text-darkShowTableUnderHeadingText bg-lightShowTableUnderHeadingBackground dark:bg-darkShowTableUnderHeadingBackground dark:border-darkFormBorder block md:table-row-group">
-          <tr>
-            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:w-56 md:table-cell">
-              {{ $t('Field') }}
-            </th>
-            <th scope="col" class="px-5 py-2.5 text-xs font-medium hidden md:table-cell">
-              {{ $t('Value') }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+        <colgroup>
+          <col class="md:w-56">
+          <col>
+        </colgroup>
+        <tbody class="divide-y divide-lightShowTableBodyBorder dark:divide-darkShowTableBodyBorder">
           <tr
-            v-for="column in columns"
+            v-for="column in visibleColumns"
             :key="column.name"
-            class="bg-lightShowTablesBodyBackground border-t border-lightShowTableBodyBorder 
-              dark:bg-darkShowTablesBodyBackground dark:border-darkShowTableBodyBorder block md:table-row"
+            class="block md:table-row"
           >
             <component
-                v-if="column.components?.showRow && checkShowIf(column, record, resource?.columns || [])"
+                v-if="column.components?.showRow"
                   :is="getCustomComponent(column.components.showRow)"
                   :meta="column.components.showRow.meta"
                   :column="column"
                   :resource="coreStore.resource"
                   :record="coreStore.record"
               />
-            <template v-else-if="checkShowIf(column, record, resource?.columns || [])">
-              <td class="px-5 py-3 relative block flex justify-start font-medium text-lightFormFieldTextColor dark:text-darkFormFieldTextColor pb-0 md:pb-3 relative md:table-cell">
-                <div class="absolute inset-0 flex items-center overflow-hidden px-5 py-3 max-h-32">
-                  {{ column.label }}
-                </div>
+            <template v-else>
+              <td class="px-5 pt-2.5 pb-0 md:pb-2.5 block md:table-cell align-top text-[13px] text-lightInputIconColor dark:text-darkInputIconColor">
+                {{ column.label }}
               </td>
-              <td class="px-5 py-3 whitespace-pre-wrap" :data-af-column="column.name">
+              <td class="px-5 pt-1 pb-2.5 md:pt-2.5 block md:table-cell whitespace-pre-wrap" :data-af-column="column.name">
                 <component
                   v-if="column?.components?.show"
                   :is="getCustomComponent(column?.components?.show)"
@@ -58,14 +49,14 @@
       </table>
     </div>
   </template>
-  
+
   <script setup lang="ts">
   import ValueRenderer from '@/components/ValueRenderer.vue';
   import { getCustomComponent, checkShowIf } from '@/utils';
   import { useCoreStore } from '@/stores/core';
   import { computed } from 'vue';
   import type { AdminForthResourceFrontend, AdminForthResourceColumnInputCommon } from '@/types/Common';
-  const props = withDefaults(defineProps<{ 
+  const props = withDefaults(defineProps<{
     columns: Array<{
         name: string;
         label?: string;
@@ -89,11 +80,10 @@
   }>(), {
     isRounded: true
   });
-  
+
   const coreStore = useCoreStore();
-  const allColumnsHaveCustomComponent = computed(() => {
-    return props.columns.every(column => {
-      return column.components?.showRow;
-    });
+  // hidden columns render no row, so the dividers between rows never double up
+  const visibleColumns = computed(() => {
+    return props.columns.filter(column => checkShowIf(column, props.record, props.resource?.columns || []));
   });
   </script>

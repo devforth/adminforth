@@ -56,7 +56,7 @@
   />
   <div v-if="columnsWithErrors && columnsWithErrors[column.name] && validatingMode && !isValidating" class="af-invalid-field-message mt-1 text-xs text-lightInputErrorColor dark:text-darkInputErrorColor">{{ columnsWithErrors[column.name] }}</div>
   <Spinner v-if="shouldWeShowSpinner" class="w-4 mt-1"/>
-  <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightFormFieldTextColor dark:text-darkFormFieldTextColor">{{ column.editingNote[mode] }}</div>
+  <div v-if="column.editingNote && column.editingNote[mode]" class="mt-1 text-xs text-lightInputIconColor dark:text-darkInputIconColor">{{ column.editingNote[mode] }}</div>
 </template>
   
 <script setup lang="ts">

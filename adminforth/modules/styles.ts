@@ -91,11 +91,11 @@ export const styles = () => ({
               /*            Show View Table             */
               /*----------------------------------------*/
     lightShowTableHeadingBackground: "#FAFAFA",
-    lightShowTableHeadingText: "#3F3F46",
+    lightShowTableHeadingText: "#18181B",
     lightShowTableUnderHeadingBackground: "#FAFAFA",
     lightShowTableUnderHeadingText: "#696973",
     lightShowTablesBodyBackground: "alias:lightForm",
-    lightShowTableBodyText: "#3F3F46",
+    lightShowTableBodyText: "#18181B",
     lightShowTableBodyBorder: "#F0F0F2",
 
 
@@ -460,11 +460,11 @@ export const styles = () => ({
               /*            Show View Table             */
               /*----------------------------------------*/
     darkShowTableHeadingBackground: "alias:darkFormHeading",
-    darkShowTableHeadingText: "#D4D4D8",
+    darkShowTableHeadingText: "#F4F4F5",
     darkShowTableUnderHeadingBackground: "alias:darkFormHeading",
     darkShowTableUnderHeadingText: "#A1A1AA",
     darkShowTablesBodyBackground: "alias:darkForm",
-    darkShowTableBodyText: "#D4D4D8",
+    darkShowTableBodyText: "#F4F4F5",
     darkShowTableBodyBorder: "#202024",
 
         /* Show View buttons*/
