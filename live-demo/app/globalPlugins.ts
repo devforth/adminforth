@@ -18,9 +18,9 @@ const createCompletionAdapter = (
   },
 }); 
 
-const balancedCompletionAdapter = createCompletionAdapter('gpt-5.4-mini', 'medium');
-const fastCompletionAdapter = createCompletionAdapter('gpt-5.4-mini', 'low');
-const smartThinkingCompletionAdapter = createCompletionAdapter('gpt-5.4', 'xhigh');
+const balancedCompletionAdapter = createCompletionAdapter('gpt-6-luna', 'medium');
+const fastCompletionAdapter = createCompletionAdapter('gpt-6-luna', 'low');
+// const smartThinkingCompletionAdapter = createCompletionAdapter('gpt-5.4', 'xhigh');
 
 export const adminForthAgent = new AdminForthAgent({
   audioAdapter: new OpenAIAudioAdapter({
