@@ -186,8 +186,7 @@
           </span>
           <button type="button" 
             class="ms-auto -mx-1.5 -my-1.5 bg-lightPrimaryOpacity dark:bg-darkPrimaryOpacity inline-flex justify-center items-center w-6 h-6  rounded-lg  p-1 hover:brightness-110" 
-            
-            data-dismiss-target="#dropdown-cta" aria-label="Close"
+            aria-label="Close"
             v-if="ctaBadge?.closable" @click="closeCTA"
           >
             <span class="sr-only">Close</span>
