@@ -36,7 +36,6 @@ vars:
     - "adminforth-agent"
     - "adminforth-mcp"
     - "adminforth-dashboard"
-    - "adminforth-json-editor"
     - "adminforth-json-form"
     - "adminforth-user-sessions"
     - "af-crud-approve-plugin" 
