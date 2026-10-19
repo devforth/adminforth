@@ -562,7 +562,7 @@ export interface IAdminForthAuth {
 
   removeCustomCookie({response, name}: {response: any, name: string}): void;
 
-  setCustomCookie({response, payload}: {response: any, payload: {name: string, value: string, expiry?: number, expirySeconds: number, httpOnly: boolean}}): void;
+  setCustomCookie({response, payload}: {response: any, payload: {name: string, value: string, expirySeconds?: number, httpOnly: boolean, sessionBased?: boolean}}): void;
 
   getCustomCookie({cookies, name}: {cookies: {key: string, value: string}[], name: string}): string | null;
 
@@ -810,12 +810,8 @@ export type BeforeDataSourceRequestFunction = (params: {
   filtersTools: any,
   adminforth: IAdminForth,
 }) => Promise<{
-  ok: boolean, 
-  error?: string | null, 
-  /**
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use redirectToRecordId instead.
-   */
-  newRecordId?: string, 
+  ok: boolean,
+  error?: string | null,
   redirectToRecordId?: string
 }>;
 
@@ -860,13 +856,6 @@ export type CreateResourceRecordResult = {
 
   /**
    * Optional id of an existing record to redirect to
-   * (used when a beforeSave hook aborts creation and supplies newRecordId, allows to implement programmatic creation via API).
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use redirectToRecordId instead.
-   */
-  newRecordId?: any;
-
-  /**
-   * Optional id of an existing record to redirect to
    * (used when a beforeSave hook aborts creation and supplies redirectToRecordId, allows to implement programmatic creation via API).
    */
   redirectToRecordId?: any;
@@ -892,14 +881,7 @@ export type CreateResourceRecordParams = {
   adminUser: AdminUser;
 
   /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response?: IAdminForthHttpResponse;
-
-  /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra;
 };
@@ -907,97 +889,37 @@ export type CreateResourceRecordParams = {
 /**
  * Parameters for {@link IAdminForth.updateResourceRecord}.
  */
-export type UpdateResourceRecordParams =
-  | {
-      /**
-       * Resource configuration used to update a record.
-       */
-      resource: AdminForthResource;
+export type UpdateResourceRecordParams = {
+  /**
+   * Resource configuration used to update a record.
+   */
+  resource: AdminForthResource;
 
-      /**
-       * Primary key value of the record to update.
-       */
-      recordId: any;
+  /**
+   * Primary key value of the record to update.
+   */
+  recordId: any;
 
-      /**
-       * Full record data with applied changes.
-       *
-       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use updates instead.
-       */
-      record: any;
+  /**
+   * Record data before update.
+   */
+  oldRecord: any;
 
-      /**
-       * Record data before update.
-       */
-      oldRecord: any;
+  /**
+   * Admin user performing the action.
+   */
+  adminUser: AdminUser;
 
-      /**
-       * Admin user performing the action.
-       */
-      adminUser: AdminUser;
+  /**
+   * Extra HTTP information.
+   */
+  extra?: HttpExtra;
 
-      /**
-       * HTTP response object.
-       *
-       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-       */
-      response?: IAdminForthHttpResponse;
-
-      /**
-       * Extra HTTP information. Prefer using extra.response over the top-level response field.
-       */
-      extra?: HttpExtra;
-
-      /**
-       * Partial record data with only changed fields. Mutually exclusive with record.
-       */
-      updates?: never;
-    }
-  | {
-      /**
-       * Resource configuration used to update a record.
-       */
-      resource: AdminForthResource;
-
-      /**
-       * Primary key value of the record to update.
-       */
-      recordId: any;
-
-      /**
-       * Full record data with applied changes.
-       *
-       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use updates instead.
-       */
-      record?: never;
-
-      /**
-       * Record data before update.
-       */
-      oldRecord: any;
-
-      /**
-       * Admin user performing the action.
-       */
-      adminUser: AdminUser;
-
-      /**
-       * HTTP response object.
-       *
-       * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-       */
-      response?: IAdminForthHttpResponse;
-
-      /**
-       * Extra HTTP information. Prefer using extra.response over the top-level response field.
-       */
-      extra?: HttpExtra;
-
-      /**
-       * Partial record data with only changed fields. Mutually exclusive with record.
-       */
-      updates: any;
-    };
+  /**
+   * Partial record data with only changed fields.
+   */
+  updates: any;
+};
 
 /**
  * Parameters for {@link IAdminForth.deleteResourceRecord}.
@@ -1024,14 +946,7 @@ export type DeleteResourceRecordParams = {
   record: any;
 
   /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response?: IAdminForthHttpResponse;
-
-  /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra;
 };
@@ -1071,19 +986,13 @@ export type BeforeDeleteSaveFunction = (params: {
   /**
    * Record data before deletion.
    */
-  record: any, 
+  record: any,
   /**
    * Adminforth instance.
    */
   adminforth: IAdminForth,
   /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response?: IAdminForthHttpResponse,
-  /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -1106,12 +1015,6 @@ export type BeforeEditSaveFunction = (params: {
   * Fields to update in record.
   */
   updates: any,
-  /** 
-  * Record with updates
-  *
-  *  @deprecated. Will be removed in 4.0.0. Use updates instead.
-  */
-  record: any, // legacy, 'updates' should be used instead
   /**
    * Record data before update.
    */
@@ -1121,13 +1024,7 @@ export type BeforeEditSaveFunction = (params: {
    */
   adminforth: IAdminForth,
     /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response: IAdminForthHttpResponse,
-    /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string | null}>;
@@ -1144,26 +1041,18 @@ export type BeforeCreateSaveFunction = (params: {
   /**
   * Record data to create.
   */
-  record: any, 
+  record: any,
   /**
    * Adminforth instance.
    */
   adminforth: IAdminForth,
   /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
+   * Extra HTTP information.
    */
-  response: IAdminForthHttpResponse,
-
   extra?: HttpExtra,
 }) => Promise<{
-  ok: boolean, 
-  error?: string | null, 
-  /**
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use redirectToRecordId instead.
-   */
-  newRecordId?: string, 
+  ok: boolean,
+  error?: string | null,
   redirectToRecordId?: string
 }>;
 
@@ -1192,14 +1081,8 @@ export type AfterCreateSaveFunction = (params: {
    * Record with virtual columns after creation.
    */
   recordWithVirtualColumns?: any,
-  /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response: IAdminForthHttpResponse,
     /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -1224,19 +1107,13 @@ export type AfterDeleteSaveFunction = (params: {
   /**
    * Record data, that was deleted.
    */
-  record: any, 
+  record: any,
   /**
    * Adminforth instance.
    */
   adminforth: IAdminForth,
-  /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response: IAdminForthHttpResponse,
     /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -1258,13 +1135,7 @@ export type AfterEditSaveFunction = (params: {
   /**
   * Record updates.
   */
-  updates: any, 
-  /** 
-  * Record after update.
-  *
-  *  @deprecated. Will be removed in 4.0.0. Use updates instead.
-  */
-  record: any, // legacy, 'updates' should be used instead 
+  updates: any,
   /**
    * Record data before update.
    */
@@ -1273,14 +1144,8 @@ export type AfterEditSaveFunction = (params: {
    * Adminforth instance.
    */
   adminforth: IAdminForth,
-  /**
-   * HTTP response object.
-   *
-   * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-   */
-  response: IAdminForthHttpResponse,
     /**
-   * Extra HTTP information. Prefer using extra.response over the top-level response field.
+   * Extra HTTP information.
    */
   extra?: HttpExtra,
 }) => Promise<{ok: boolean, error?: string}>;
@@ -1294,17 +1159,11 @@ export type BeforeLoginConfirmationFunction = (params?: {
    */
     adminUser: AdminUser,
     /**
-     * HTTP response object.
-     *
-     * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-     */
-    response: IAdminForthHttpResponse,
-    /**
      * Adminforth instance.
      */
     adminforth: IAdminForth,
       /**
-     * Extra HTTP information. Prefer using extra.response over the top-level response field.
+     * Extra HTTP information.
      */
     extra?: HttpExtra,
       /**
@@ -1412,18 +1271,12 @@ export type AdminUserAuthorizeFunction = ((params?: {
    * Admin user performing the action.
    */
     adminUser: AdminUser,
-      /**
-     * HTTP response object.
-     *
-     * @deprecated Since 1.2.9. Will be removed in 4.0.0. Use extra.response instead.
-     */
-    response: IAdminForthHttpResponse,
     /**
      * Adminforth instance.
      */
     adminforth: IAdminForth,
       /**
-     * Extra HTTP information. Prefer using extra.response over the top-level response field.
+     * Extra HTTP information.
      */
     extra?: HttpExtra,
 }) => Promise<{
@@ -1869,11 +1722,6 @@ export interface AdminForthInputConfig {
       usersResourceId?: string,
 
       /**
-       * Legacy field left for backward compatibility. Use usersResourceId instead.
-       */
-      resourceId?: string,
-
-      /**
        * Field name (column name) in user resource which will be used as username for searching user in database during login.
        * Can be e.g. 'email' or 'username'
        */
@@ -2006,12 +1854,6 @@ export interface AdminForthInputConfig {
        * Example: "30d" for 30 days, "7d" for 7 days, "24h" for 24 hours.
        */ 
       rememberMeDuration?: string,
-
-      /**
-       * Old variable for remember me duration. Use rememberMeDuration instead.
-       * @deprecated Use rememberMeDuration instead.
-       */ 
-      rememberMeDays?: number,
 
       /**
        * Rate limits for login attempts.
@@ -2413,15 +2255,7 @@ export type AllowedActions = {
 /**
  * General options for resource.
  */
-export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'bulkActions' | 'actions'> {
-
-  /** 
-   * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
-   * using checkboxes.
-   * @deprecated Since 2.26.5. Will be removed in 4.0.0. Use `actions` instead.
-
-   */
-  bulkActions?: Array<AdminForthBulkAction>,
+export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourceInputCommon['options']>, 'allowedActions' | 'actions'> {
 
   /**
    * Allowed actions for resource.
@@ -2472,6 +2306,11 @@ export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourc
 export interface ResourceOptions extends Omit<ResourceOptionsInput, 'allowedActions'> {
   allowedActions: AllowedActions,
   actions?: Array<AdminForthActionInput>,
+
+  /**
+   * Built-in bulk actions (e.g. "Delete checked"). Filled by AdminForth, not configurable by user.
+   */
+  bulkActions: Array<AdminForthBulkAction>,
 }
 
 /**
@@ -2526,7 +2365,7 @@ export interface AdminForthResource extends Omit<AdminForthResourceInput, 'optio
        * If you need to show error on UI, set `error: \<error message\>` in response.
        * 
        * Typical use-cases:
-       * - Create record by custom code (return `{ ok: false, newRecordId: <id of created record from custom code> }`)
+       * - Create record by custom code (return `{ ok: false, redirectToRecordId: <id of created record from custom code> }`)
        * - Validate record before saving to database and interrupt execution if validation failed (return `{ ok: false, error: <validation error> }`), though `allowedActions.create` should be preferred in most cases
        * - fill-in adminUser as creator of record (set `record.<some field> = x; return \{ ok: true \}`) 
        * - Attach additional data to record before saving to database (mostly fillOnCreate should be used instead)
@@ -2585,8 +2424,8 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
    * Callback which will be called on backend when user clicks on action button.
    * It should return Promise which will be resolved when action is done.
    */
-  action: ({ resource, selectedIds, adminUser, response, tr }: { 
-    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, response: IAdminForthHttpResponse, tr: ITranslateFunction
+  action: ({ resource, selectedIds, adminUser, extra, tr }: {
+    resource: AdminForthResource, selectedIds: Array<any>, adminUser: AdminUser, extra: HttpExtra, tr: ITranslateFunction
   }) => Promise<{ ok: boolean, error?: string, successMessage?: string }>,
 
   /**
@@ -2623,31 +2462,6 @@ export interface AdminForthBulkAction extends AdminForthBulkActionCommon {
 
     /**
      * Allowed standard actions for current user resolved by calling allowedActions callbacks if they are passed.
-     * You can use this variable to rely on standard actions permissions. E.g. if you have custom actions "Mark as read", you 
-     * might want to allow it only for users who have "edit" action allowed:
-     * 
-     * Example:
-     * 
-     * ```ts
-     * 
-     * options: \{
-     *   bulkActions: [
-     *     \{
-     *       label: 'Mark as read',
-     *       action: async (\{ resource, recordIds \}) => \{
-     *         await markAsRead(recordIds);
-     *       \},
-     *       allowed: (\{ allowedActions \}) => allowedActions.edit,
-     *     \}
-     *   ],
-     *   allowedActions: \{
-     *     edit: (\{ resource, adminUser, recordIds \}) => \{
-     *       return adminUser.dbUser.role === 'superadmin';
-     *     \}
-     *   \}
-     * \}
-     * ```
-     * 
      */
     allowedActions: AllowedActionsResolved,
   }) => Promise<boolean>,
@@ -2664,18 +2478,14 @@ export interface AdminForthForeignResource extends AdminForthForeignResourceComm
   onDelete?: 'cascade' | 'setNull'
 }
 
-export type ShowInModernInput = {
+/**
+ * Object which describes on what pages should column be displayed on.
+ */
+export type ShowInInput = {
   [key in AdminForthResourcePages]?: AllowedActionValue
 } & {
   all?: AllowedActionValue;
 }
-
-export type ShowInLegacyInput = Array<AdminForthResourcePages | keyof typeof AdminForthResourcePages>;
-
-/**
- * Object which describes on what pages should column be displayed on.
- */
-export type ShowInInput = ShowInModernInput | ShowInLegacyInput;
 
 export type ShowIn = {
   [key in AdminForthResourcePages]: AllowedActionValue

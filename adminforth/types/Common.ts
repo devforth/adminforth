@@ -66,7 +66,7 @@ export enum ActionCheckSource {
   EditRequest = 'editRequest',
   CreateRequest = 'createRequest',
   DeleteRequest = 'deleteRequest',
-  BulkActionRequest = 'bulkActionRequest',  // @deprecated beacuse whole bulk action is deprecated in favor of custom actions, never use this value in new code
+  BulkActionRequest = 'bulkActionRequest',  // used only by built-in bulk actions (e.g. "Delete checked")
   CustomActionRequest = 'customActionRequest',
 }
 
@@ -364,7 +364,7 @@ export interface AdminForthBulkActionFront extends Omit<AdminForthBulkActionComm
 
 type AdminforthOptionsCommon = NonNullable<AdminForthResourceCommon['options']>;
 
-export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions' | 'bulkActions'> {
+export interface AdminForthOptionsForFrontend extends Omit<AdminforthOptionsCommon, 'actions'> {
   actions?: AdminForthActionFront[],
   bulkActions?: AdminForthBulkActionFront[],
   showNextButton?: boolean,
@@ -473,13 +473,6 @@ export interface AdminForthResourceInputCommon {
        * Custom actions list. Actions available in show, edit and create views. 
        */
       actions?: AdminForthActionInput[],
-      
-      /** 
-       * Custom bulk actions list. Bulk actions available in list view when user selects multiple records by
-       * using checkboxes.
-       * @deprecated in favor of defining .
-       */
-      bulkActions?: AdminForthBulkActionCommon[],
 
       /**
        * Allowed actions for resource.

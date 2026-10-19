@@ -149,7 +149,7 @@ export default {
     {
       name: "avatar",
       type: AdminForthDataTypes.STRING,
-      showIn: ["show", "edit", "create" ],
+      showIn: { all: false, show: true, edit: true, create: true },
     },
     {
       name: "is_active",

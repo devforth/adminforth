@@ -61,7 +61,6 @@ class FrontendAPI implements FrontendAPIInterface {
         return { error: 'Not implemented' }
       },
       setFilter: this.setListFilter.bind(this),
-      updateFilter: this.updateListFilter.bind(this),
       clearFilters: this.clearListFilters.bind(this),
     }
 
@@ -186,23 +185,6 @@ class FrontendAPI implements FrontendAPIInterface {
 
   clearListFilters(): void {
     this.filtersStore.clearFilters()
-  }
-
-  updateListFilter(filter: FilterParams): void {
-    if(this.listFilterValidation(filter)){
-      const index = this.filtersStore.filters.findIndex((f: FilterParams) => f.field === filter.field)
-      if(index === -1) {
-        this.filtersStore.setFilter(filter)
-      } else {
-        const filters = [...this.filtersStore.filters];
-        if (filter.value === undefined) {
-          filters.splice(index, 1);
-        } else {
-          filters[index] = filter;
-        }
-        this.filtersStore.setFilters(filters);
-      }
-    }
   }
 
 }

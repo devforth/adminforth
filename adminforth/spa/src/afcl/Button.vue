@@ -34,21 +34,18 @@ const props = withDefaults(defineProps<{
   variant?: ButtonVariant;
   size?: ButtonSize;
   iconOnly?: boolean;
-  /** @deprecated use variant instead of mode */
-  mode?: ButtonVariant;
   shadow?: boolean;
 }>(), {
+  variant: 'primary',
   loader: false,
   disabled: false,
   active: false,
   shadow: true,
 });
 
-const currentVariant = computed(() => props.variant ?? props.mode ?? 'primary');
-
 const buttonClasses = computed(() => getButtonClasses(
   {
-    variant: currentVariant.value,
+    variant: props.variant,
     size: props.size,
     iconOnly: props.iconOnly,
     shadow: props.shadow,

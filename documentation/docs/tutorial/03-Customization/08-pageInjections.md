@@ -44,10 +44,10 @@ Now create file `ApartsPie.vue` in the `custom` folder of your project:
               dataPointSelection: function (event, chartContext, config) {
                 if (config.selectedDataPoints[0].length) {
                   const selectedRoomsCount = data[config.dataPointIndex].rooms;
-                  adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
+                  adminforth.list.setFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});
                 } else {
                   // clear filter
-                  adminforth.list.updateFilter({field: 'number_of_rooms', value: undefined});
+                  adminforth.list.setFilter({field: 'number_of_rooms', operator: 'eq', value: undefined});
                 }
               }
             }
@@ -159,7 +159,7 @@ import * as z from 'zod';
 
 Install and import Zod before using this pattern: `pnpm add zod` or `npm install zod`, then `import * as z from 'zod';`. `admin.express.withSchema(...)` will convert the Zod schema to OpenAPI for you.
 
-> ☝️ Please note that we are using [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.updateFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
+> ☝️ Please note that we are using [Frontend API](/docs/api/FrontendAPI/interfaces/FrontendAPIInterface/) `adminforth.list.setFilter({field: 'number_of_rooms', operator: 'eq', value: selectedRoomsCount});` to set filter when we are located on apartments list page
 
 > ☝️ The outer `admin.express.withSchema(...)` wrapper makes this custom Express route appear in `/api/v1/openapi.json` and `/api-docs`.
 

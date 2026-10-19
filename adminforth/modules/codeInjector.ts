@@ -669,12 +669,6 @@ class CodeInjector implements ICodeInjector {
       process.env.HEAVY_DEBUG && console.log(`🪲⚙️ copyFileAtomic copy single file, ${src}, ${dest}`);
     }));
   }
-  async migrateLegacyCustomLayout(oldMeta) {
-    if (oldMeta.customLayout === true) {
-      oldMeta.sidebarAndHeader = "none";
-    }
-    return oldMeta;
-  }
   async prepareSources(): Promise<SpaDependencies> {
     // collects all files and folders into SPA_TMP_DIR
 
@@ -751,15 +745,14 @@ class CodeInjector implements ICodeInjector {
     };
     const registerCustomPages = (config) => {
       if (config.customization.customPages) {
-        config.customization.customPages.forEach(async (page) => {
-          const newMeta = await this.migrateLegacyCustomLayout(page?.component?.meta || {});
+        config.customization.customPages.forEach((page) => {
           routes += `{
             path: '${page.path}',
             name: '${page.path}',
             component: () => import('${page?.component?.file || page.component}'),
             meta: ${
                 JSON.stringify({
-                  ...newMeta,
+                  ...page?.component?.meta,
                   title: page.meta?.title || page.path.replace('/', '')
                 })
             }

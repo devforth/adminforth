@@ -39,7 +39,6 @@ export interface StorageAdapter {
    * This method should work even if the file does not exist yet (e.g. only presigned URL was generated).
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    */
-  markKeyForDeletation(key: string): Promise<void>; //TODO delete after one year
   markKeyForDeletion(key: string): Promise<void>;
 
 
@@ -48,7 +47,6 @@ export interface StorageAdapter {
    * This method should be used to cancel the deletion of the file if it was marked for deletion.
    * @param key - The key of the file to be uploaded e.g. "uploads/file.txt"
    */
-  markKeyForNotDeletation(key: string): Promise<void>; //TODO delete after one year
   markKeyForNotDeletion(key: string): Promise<void>;
 
 

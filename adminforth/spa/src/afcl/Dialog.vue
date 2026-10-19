@@ -4,8 +4,8 @@
     class="afcl-dialog"
     :aria-labelledby="header ? titleId : undefined"
     v-bind="$attrs"
-    :closeByClickOutside="clickToCloseOutside || closeByClickOutside"
-    :closeByEsc="closeByEsc || closable"
+    :closeByClickOutside="closeByClickOutside"
+    :closeByEsc="closeByEsc"
     :beforeCloseFunction="beforeCloseFunction"
     :beforeCancelFunction="beforeCancelFunction" 
     :beforeOpenFunction="beforeOpenFunction"
@@ -56,7 +56,6 @@
         :key="buttonIndex"
         v-bind="button.options"
         @click="button.onclick(dialog)"
-        :mode="button.options?.mode || 'primary'"
       >
         {{ button.label }}
       </Button>
@@ -93,12 +92,10 @@ const props = withDefaults(defineProps<DialogProps>(), {
   header: '',
   headerCloseButton: true,
   buttons: () => [],
-  clickToCloseOutside: false,
   closeByEsc: true,
   closeByClickOutside: true,
   beforeCloseFunction: null,
   beforeOpenFunction: null,
-  closable: false,
   askForCloseConfirmation: false,
   closeConfirmationText: 'Are you sure you want to close this dialog?',
   removeFromDomOnClose: false,
@@ -160,13 +157,6 @@ interface DialogProps {
   buttons?: DialogButton[]
 
   /**
-   * If true, clicking outside the dialog will close it. Default is true.
-   * 
-   * @deprecated Use `closeByClickOutside` instead
-   */
-  clickToCloseOutside?: boolean
-
-  /**
    * If true, pressing the Esc key will close the dialog. Default is true.
    */
   closeByEsc?: boolean
@@ -190,13 +180,6 @@ interface DialogProps {
   * Function that will be called before the dialog is canceled. 
   */
   beforeCancelFunction?: (() => void | Promise<void | boolean>) | null
-
-  /**
-   * Disables close on Ecs button
-   * 
-   * @deprecated Use `closeByEsc` or  instead
-   */
-  closable?: boolean
 
   /**
    * If true, the dialog will ask for confirmation before closing. Default is false.
