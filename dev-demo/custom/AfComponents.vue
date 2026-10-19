@@ -332,8 +332,8 @@
     <Toggle />
 
     <DatePicker
-      v-model:valueStart="valueStart"
-      :column="{ type: 'datetime' }"
+      v-model="valueStart"
+      type="datetime"
       label="Pick start"
     />
 

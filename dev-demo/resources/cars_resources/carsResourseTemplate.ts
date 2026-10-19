@@ -95,7 +95,8 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         name: 'created_at',
         type: AdminForthDataTypes.DATETIME,
         allowMinMaxQuery: true,
-        showIn: { create: false, edit: false },
+        // editable so date pickers can be tested on edit, filled on create
+        showIn: { create: false },
         fillOnCreate: ({ initialRecord, adminUser }) => (new Date()).toISOString(),
       },
       {
