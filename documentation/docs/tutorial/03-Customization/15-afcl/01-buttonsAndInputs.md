@@ -548,6 +548,8 @@ const enabled = ref(false)
 
 ## Date picker
 
+`type` sets the fields: `date` (default), `time`, or `datetime` with both side by side. `v-model` holds `2026-10-14` for a date, an ISO string in UTC for a datetime and `14:20:00` for a time. A date can be picked in the calendar or typed: parts in any order, a month as a word in the language of the admin or in English, e.g. `14 Jan 2026`, `Jan 14`, `14.01.2026`. Enter or leaving the field applies it, ArrowDown moves the focus into the calendar. `autoHide` closes the calendar once a day is picked, `readonly` disables the fields.
+
 ### Basic
 
 <AfclPreview id="date-picker">
@@ -561,8 +563,8 @@ const datePickerValue = ref()
 
 ```html
 <DatePicker
-  v-model:valueStart="datePickerValue"
-  :column="{ type: 'datetime' }"
+  v-model="datePickerValue"
+  type="datetime"
   label="Pick start"
 />
 ```

@@ -29,7 +29,7 @@ Apps restyle and test AdminForth by `af-*` and `afcl-*` classes. A restyle never
 
 The live examples of the docs render AFCL in shadow roots of the docs page (`documentation/afcl-preview/mount.ts`). Code which reaches out of the tree of a component breaks there, so an AFCL component:
 
-- teleports popups, modals, tooltips and pickers to `useTeleportTarget()` from `afcl/shadowRoot.ts`, never `to="body"`. The target is `body` in an app and an element of the shadow root in the docs, content teleported out of the root loses its styles. A library which appends its popup to `document.body` (the calendar of flowbite-datepicker in `DatePicker`) is moved to that target too;
+- teleports popups, modals, tooltips and pickers to `useTeleportTarget()` from `afcl/shadowRoot.ts`, never `to="body"`. The target is `body` in an app and an element of the shadow root in the docs, content teleported out of the root loses its styles;
 - takes the clicked or scrolled element as `e.composedPath()[0]` in `document` and `window` listeners (outside click, scroll), `e.target` there is the shadow host;
 - reads the focus with `activeElementIn(el)`, `document.activeElement` there is the shadow host as well;
 - finds its own elements by template refs, not by `document.getElementById` or `document.querySelector`.

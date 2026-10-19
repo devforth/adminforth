@@ -3,7 +3,7 @@
 export default {
   // no spaces inside the braces, otherwise extensions are expanded as "* js", "* ts" and
   // classes declared in plain .ts/.js files (e.g. afcl/buttonStyles.ts) are not generated
-  content:  ["./src/**/*.{vue,js,ts,tsx}","./src/*.{vue,js,ts,tsx}", "./index.html", "./node_modules/flowbite-datepicker/**/*.js"],
+  content:  ["./src/**/*.{vue,js,ts,tsx}","./src/*.{vue,js,ts,tsx}", "./index.html"],
   safelist: [
     /* IMPORTANT:ADMINFORTH TAILWIND SAFELIST */
   ],

@@ -1,10 +1,12 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import localeData from 'dayjs/plugin/localeData';
 import { useCoreStore } from '../stores/core';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(localeData);
 
 export const DEFAULT_DATES_FORMAT = 'YYYY-MM-DD';
 export const DEFAULT_TIME_FORMAT = 'HH:mm:ss';
@@ -50,8 +52,10 @@ export function formatTime(time: string | null | undefined): string {
   return dayjs(`0000-00-00 ${time}`).format(getTimeFormat());
 }
 
-/** Locale shape flowbite-datepicker passes to custom format functions. */
-type DatepickerLocale = { months: string[], monthsShort: string[] };
+/** A day picked in a date picker: "2026-10-14", without time and timezone. */
+export const PICKER_DAY_FORMAT = 'YYYY-MM-DD';
+/** A picked day in the field of a date picker, the month is a word so the order of the parts is never ambiguous. */
+const PICKER_DISPLAY_FORMAT = 'DD MMM YYYY';
 
 /** A run of letters or a run of digits, so "18Aug2003" and "Jun 23, 2022 ·" both tokenize cleanly. */
 const DATE_TOKEN_RE = /\p{L}+|\p{N}+/gu;
@@ -68,14 +72,29 @@ const CENTURY_PIVOT = 50;
 /** Shortest month abbreviation across locales; single letters would match random words. */
 const MIN_MONTH_NAME_LENGTH = 2;
 
-function findMonthIndex(name: string, locale: DatepickerLocale): number {
+/**
+ * Month names of the active dayjs locale (the i18n plugin switches it), full and short. "D MMMM" gives the form
+ * a month takes inside a date, in uk and ru it differs from the standalone one ("14 січня", "січень").
+ */
+function localeMonthNames(): string[][] {
+  const months = Array.from({ length: 12 }, (_, month) => dayjs().startOf('year').month(month));
+  const dayPrefix = months[0].format('D ');
+  return [
+    months.map(m => m.format('MMM')),
+    months.map(m => m.format('MMMM')),
+    months.map(m => m.format('D MMM').slice(dayPrefix.length)),
+    months.map(m => m.format('D MMMM').slice(dayPrefix.length)),
+  ];
+}
+
+function findMonthIndex(name: string): number {
   if (name.length < MIN_MONTH_NAME_LENGTH) {
     return -1;
   }
   const lowered = name.toLowerCase();
   const startsWithToken = (monthName: string) => monthName.toLowerCase().startsWith(lowered);
   // both short and full names, in the active language and in English (pasted dates are often English)
-  for (const names of [locale.monthsShort, locale.months, EN_MONTHS_SHORT, EN_MONTHS]) {
+  for (const names of [...localeMonthNames(), EN_MONTHS_SHORT, EN_MONTHS]) {
     const index = names.findIndex(startsWithToken);
     if (index >= 0) {
       return index;
@@ -93,10 +112,10 @@ function normalizeYear(year: number, digits: number): number {
 
 /**
  * Parses a human-typed or pasted date in whatever order the parts came in:
- * "18 Aug 2003", "Aug 18, 2003", "18.08.2003", "2003-08-18", "Jun 23, 2022 ·".
- * Returns a local-midnight timestamp, or NaN when the string is not a date.
+ * "18 Aug 2003", "Aug 18, 2003", "18.08.2003", "2003-08-18", "Jun 23, 2022 ·", "14 січня".
+ * Returns the day in PICKER_DAY_FORMAT, or null when the string is not a date.
  */
-export function parseFlexibleDate(dateStr: string, locale: DatepickerLocale): number {
+export function parseFlexibleDate(dateStr: string): string | null {
   const tokens = dateStr.replace(TIME_PART_RE, ' ').match(DATE_TOKEN_RE) || [];
 
   let month = -1;
@@ -105,7 +124,7 @@ export function parseFlexibleDate(dateStr: string, locale: DatepickerLocale): nu
     if (DIGITS_RE.test(token)) {
       numbers.push({ value: parseInt(token, 10), digits: token.length });
     } else if (month < 0) {
-      month = findMonthIndex(token, locale);
+      month = findMonthIndex(token);
     }
   }
 
@@ -128,7 +147,7 @@ export function parseFlexibleDate(dateStr: string, locale: DatepickerLocale): nu
     day = numbers.shift()!.value;
     month = new Date().getMonth();
   } else {
-    return NaN;
+    return null;
   }
 
   const leftover = numbers.shift();
@@ -141,17 +160,10 @@ export function parseFlexibleDate(dateStr: string, locale: DatepickerLocale): nu
   const date = new Date(year, month, day);
   date.setFullYear(year);
   // rejects impossible dates like "31 Feb" instead of silently rolling them over
-  return date.getMonth() === month && date.getDate() === day ? date.getTime() : NaN;
+  return date.getMonth() === month && date.getDate() === day ? dayjs(date).format(PICKER_DAY_FORMAT) : null;
 }
 
-/**
- * flowbite-datepicker format: renders as "18 Aug 2003" and accepts any parsable order on input.
- */
-export const FLEXIBLE_DATEPICKER_FORMAT = {
-  toDisplay(date: Date, format: unknown, locale: DatepickerLocale): string {
-    return `${String(date.getDate()).padStart(2, '0')} ${locale.monthsShort[date.getMonth()]} ${date.getFullYear()}`;
-  },
-  toValue(dateStr: string, format: unknown, locale: DatepickerLocale): number {
-    return parseFlexibleDate(dateStr, locale);
-  },
-};
+/** A picked day as the field of a date picker shows it: "14 Oct 2026", month names in the active language. */
+export function formatPickerDay(day: string): string {
+  return dayjs(day).format(PICKER_DISPLAY_FORMAT);
+}

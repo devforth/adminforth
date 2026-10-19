@@ -83,10 +83,10 @@
     <DatePicker
       v-else-if="['datetime', 'date', 'time'].includes(type || column.type)"
       ref="input"
-      :column="column"
-      :valueStart="value"
+      :type="type || column.type"
+      :modelValue="value"
       auto-hide
-      @update:valueStart="$emit('update:modelValue', $event)"
+      @update:modelValue="$emit('update:modelValue', $event)"
       :readonly="(column.editReadonly && source === 'edit') || readonly"
     />
     <Input

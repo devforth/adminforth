@@ -277,12 +277,15 @@ watch(() => props.show, (show) => {
 const onFilterInput = computed(() => {
   if (!props.columns) return {} as Record<string, any>;
 
-  return props.columns.reduce<Record<string, ReturnType<typeof debounce>>>((acc, c) => {
+  return props.columns.reduce<Record<string, (item: Parameters<typeof setFilterItem>[0]) => void>>((acc, c) => {
+    // a debounce per operator: both ends of a date range set within the debounce time must not drop the first one
+    const byOperator: Partial<Record<AdminForthFilterOperators, ReturnType<typeof debounce>>> = {};
     return {
       ...acc,
-      [c.name]: debounce(({ column, operator, value }) => {
-        setFilterItem({ column, operator, value });
-      }, c.filterOptions?.debounceTimeMs || 10),
+      [c.name]: (item: Parameters<typeof setFilterItem>[0]) => {
+        byOperator[item.operator] ??= debounce(setFilterItem, c.filterOptions?.debounceTimeMs || 10);
+        byOperator[item.operator]!(item);
+      },
     };
   }, {});
 });

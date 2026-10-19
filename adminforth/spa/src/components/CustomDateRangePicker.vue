@@ -1,75 +1,34 @@
 <template>
-  <div>
-    <div class="mx-auto grid grid-cols-2 gap-2 mb-2" :class="{hidden: column.type === 'time'}">
-      <div class="relative">
-        <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-          <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
-        </div>
-
-        <input ref="datepickerStartEl" type="text"
-               class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
-               :placeholder="$t('From')">
-      </div>
-
-      <div class="relative">
-        <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-          <IconCalendar class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon"/>
-        </div>
-
-        <input ref="datepickerEndEl" type="text"
-               class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
-               :placeholder="$t('To')">
-      </div>
+  <div class="af-date-range-picker flex flex-col gap-2">
+    <div v-if="column.type !== 'time'" class="flex items-center" :class="PICKER_BOX_CLASSES">
+      <DateField v-model="startDate" bare class="flex-1 min-w-0 h-full" :placeholder="$t('From')" />
+      <IconArrowRight class="w-3.5 h-3.5 shrink-0 text-lightDatePickerIcon dark:text-darkDatePickerIcon rtl:rotate-180" aria-hidden="true" />
+      <DateField v-model="endDate" bare class="flex-1 min-w-0 h-full" :placeholder="$t('To')" />
     </div>
 
-    <div>
-      <div class="mx-auto grid grid-cols-2 gap-2 mb-2" :class="{hidden: !showTimeInputs}">
-        <div>
-          <div class="relative">
-            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconClock class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
-            </div>
-
-            <input v-model="startTime" type="time" id="start-time"
-                   class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
-                   value="00:00" required/>
-          </div>
-        </div>
-
-        <div>
-          <div class="relative">
-            <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-              <IconClock class="w-4 h-4 text-lightDatePickerIcon dark:text-darkDatePickerIcon bg-lightDatePickerButtonBackground dark:bg-darkDatePickerButtonBackground"/>
-            </div>
-
-            <input v-model="endTime" type="time" id="end-time"
-                   class="bg-lightDatePickerButtonBackground border border-lightDatePickerButtonBorder text-lightDatePickerButtonText placeholder-lightDatePickerPlaceHolder text-sm rounded-default shadow-customLight focus:outline-none focus:ring-[3px] focus:ring-lightInputFocusRing focus:border-lightInputFocusBorder block w-full px-2.5 py-1.5 leading-5 dark:bg-darkDatePickerButtonBackground dark:border-darkDatePickerButtonBorder dark:placeholder-darkDatePickerPlaceHolder dark:text-darkDatePickerButtonText dark:focus:ring-darkInputFocusRing dark:focus:border-darkInputFocusBorder"
-                   value="00:00" required/>
-          </div>
-        </div>
-      </div>
-
-      <button type="button"
-              class="text-lightPrimary dark:text-darkPrimary text-[13px] font-medium hover:underline p-0 inline-flex items-center gap-0.5 mb-2"
-              :class="{hidden: column.type !== 'datetime'}"
-              @click="toggleTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
-        <IconChevronDown class="w-4 h-4" :class="{'rotate-180': showTimeInputs}"/>
-      </button>
+    <div v-if="showTimeInputs" class="grid grid-cols-2 gap-2">
+      <TimeField v-model="startTime" />
+      <TimeField v-model="endTime" />
     </div>
+
+    <button type="button"
+            v-if="column.type === 'datetime'"
+            class="self-start inline-flex items-center gap-0.5 p-0 rounded-sm text-[13px] font-medium hover:underline focus:outline-none focus-visible:ring-[3px] focus-visible:ring-lightFocusRing dark:focus-visible:ring-darkFocusRing text-lightDatePickerExpandText dark:text-darkDatePickerExpandText"
+            @click="showTimeInputs = !showTimeInputs">{{ showTimeInputs ? $t('Hide time') : $t('Show time') }}
+      <IconChevronDown class="w-4 h-4" :class="{'rotate-180': showTimeInputs}" aria-hidden="true"/>
+    </button>
   </div>
 </template>
 <script setup>
-import {ref, computed, onMounted, watch, onBeforeUnmount} from 'vue';
+import {ref, computed, watch} from 'vue';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 
-import {useCoreStore} from '@/stores/core';
-import {FLEXIBLE_DATEPICKER_FORMAT} from '@/utils';
+import {PICKER_DAY_FORMAT} from '@/utils';
+import DateField from '@/afcl/DateField.vue';
+import TimeField from '@/afcl/TimeField.vue';
+import {PICKER_BOX_CLASSES} from '@/afcl/pickerStyles';
 
-import { IconCalendar, IconChevronDown, IconClock } from '@iconify-prerendered/vue-lucide';
-
-const coreStore = useCoreStore();
-dayjs.extend(utc)
+import { IconArrowRight, IconChevronDown } from '@iconify-prerendered/vue-lucide';
 
 const props = defineProps({
   valueStart: {
@@ -85,19 +44,17 @@ const props = defineProps({
 
 const emit = defineEmits(['update:valueStart', 'update:valueEnd']);
 
-const datepickerStartEl = ref();
-const datepickerEndEl = ref();
+// a range from the start of a day to its end needs no time, the time fields stay hidden for it
+const DAY_START = '00:00:00';
+const DAY_END = '23:59:59';
 
 const showTimeInputs = ref(props.column?.type === 'time');
 
-const startDate = ref('');
-const endDate = ref('');
+const startDate = ref(null);
+const endDate = ref(null);
 
 const startTime = ref('');
 const endTime = ref('');
-
-const datepickerStartObject = ref('')
-const datepickerEndObject = ref('')
 
 const start = computed(() => {
   if (props.column?.type === 'time') {
@@ -136,59 +93,36 @@ const end = computed(() => {
     return date.format('YYYY-MM-DD');
   }
 
-  if (endTime.value) {
-    date = addTimeToDate(formatTime(endTime.value), date)
-  } else {
-    date = addTimeToDate('23:59:59', date)
-  }
+  date = addTimeToDate(endTime.value ? formatTime(endTime.value) : DAY_END, date);
 
   return date.utc().toISOString();
 })
 
-function updateFromProps() {
-  if (!props.valueStart) {
-    datepickerStartEl.value.value = '';
-    startTime.value = '';
-  } else if (props.column.type === 'time') {
-    startTime.value = props.valueStart;
-  } else {
-    const date = dayjs(props.valueStart);
-    datepickerStartEl.value.value = date.format('DD MMM YYYY');
-    if (date.format('HH:mm') !== '00:00') {
-      startTime.value = date.format('HH:mm');
-      showTimeInputs.value = true;
-    } else {
-      startTime.value = '';
-    }
-    startDate.value = date.toString();
-  }
+// the time of a datetime bound for the time field, empty when the bound is the start or the end of its day
+function boundTime(date, dayEdge) {
+  return props.column.type === 'datetime' && date.format('HH:mm:ss') !== dayEdge ? date.format('HH:mm') : '';
+}
 
-  if (!props.valueEnd) {
-    datepickerEndEl.value.value = '';
-    endTime.value = '';
-    endDate.value = '';
+// shows a bound of the range from its prop. Each bound follows only its own prop: the other one may still wait
+// in the debounce of the filters, resetting it here would drop it
+function showBound(value, dayEdge, date, time) {
+  if (!value) {
+    date.value = null;
+    time.value = '';
   } else if (props.column.type === 'time') {
-    endTime.value = props.valueEnd;
+    time.value = value;
   } else {
-    const date = dayjs(props.valueEnd);
-    datepickerEndEl.value.value = date.format('DD MMM YYYY');
-    if (date.format('HH:mm') !== '00:00') {
-      endTime.value = date.format('HH:mm');
-      showTimeInputs.value = true;
-    } else {
-      endTime.value = '';
-    }
-    endDate.value = date.toString();
+    const parsed = dayjs(value);
+    date.value = parsed.format(PICKER_DAY_FORMAT);
+    time.value = boundTime(parsed, dayEdge);
+  }
+  if (time.value) {
+    showTimeInputs.value = true;
   }
 }
 
-onMounted(() => {
-  updateFromProps();
-
-  watch(() => [props.valueStart, props.valueEnd], (value) => {
-    updateFromProps();
-  });
-})
+watch(() => props.valueStart, (value) => showBound(value, DAY_START, startDate, startTime), { immediate: true });
+watch(() => props.valueEnd, (value) => showBound(value, DAY_END, endDate, endTime), { immediate: true });
 
 watch(start, () => {
   emit('update:valueStart', start.value)
@@ -198,45 +132,6 @@ watch(end, () => {
   emit('update:valueEnd', end.value)
 })
 
-async function initDatepickers() {
-  const { default: Datepicker } = await import(
-    'flowbite-datepicker/Datepicker'
-  );
-
-  if (!datepickerStartEl.value || !datepickerEndEl.value) {
-    return;
-  }
-
-  const LS_LANG_KEY = `afLanguage`;
-  const options = {format: FLEXIBLE_DATEPICKER_FORMAT, language: localStorage.getItem(LS_LANG_KEY)};
-  datepickerStartObject.value = new Datepicker(datepickerStartEl.value, options);
-  datepickerEndObject.value = new Datepicker(datepickerEndEl.value, options);
-  addChangeDateListener();
-}
-
-function addChangeDateListener() {
-  datepickerStartEl.value.addEventListener('changeDate', setStartDate)
-  datepickerEndEl.value.addEventListener('changeDate', setEndDate)
-}
-
-function removeChangeDateListener() {
-  datepickerStartEl.value.removeEventListener('changeDate', setStartDate);
-  datepickerEndEl.value.removeEventListener('changeDate', setEndDate);
-}
-
-function destroyDatepickerElement() {
-  datepickerStartObject.value?.destroy?.();
-  datepickerEndObject.value?.destroy?.();
-}
-
-function setStartDate(event) {
-  startDate.value = event.detail.date
-}
-
-function setEndDate(event) {
-  endDate.value = event.detail.date
-}
-
 function formatTime(time) {
   return time.split(':').map(Number).length === 2 ? time + ':00' : time;
 }
@@ -245,17 +140,4 @@ function addTimeToDate(time, date) {
   const [hours, minutes, seconds] = time.split(':').map(Number)
   return date.hour(hours).minute(minutes).second(seconds)
 }
-
-const toggleTimeInputs = () => {
-  showTimeInputs.value = !showTimeInputs.value
-}
-
-onMounted(() => {
-  initDatepickers();
-});
-
-onBeforeUnmount(() => {
-  removeChangeDateListener();
-  destroyDatepickerElement();
-})
 </script>

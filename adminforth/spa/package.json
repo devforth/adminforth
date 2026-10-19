@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "i18n:extract": "echo {} > i18n-empty.json && vue-i18n-extract report --vueFiles \"./src/**/*.{js,vue,ts}\" --output ./i18n-messages.json --languageFiles \"i18n-empty.json\" --add"
   },
+  "//": "TODO next major: remove flowbite-datepicker (with it flowbite), core does not import it, only @adminforth/i18n up to 3.1.7 does",
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",

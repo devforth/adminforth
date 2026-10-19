@@ -56,7 +56,7 @@ The cards of the landing gallery (`documentation/src/pages/index.tsx`) show eith
 
 ## Left in core
 
-- `afcl/DatePicker.vue` and `components/CustomDateRangePicker.vue` use `flowbite-datepicker`, the last flowbite package of core. `flowbite` itself is gone with its auto-init of `data-*` attributes (`data-tooltip-target`, `data-dropdown-toggle`, …), which ran only once on window `load`, so in the SPA it never reached elements rendered later.
+- `flowbite-datepicker` is not used by core any more: `DatePicker` and the date range filter show AFCL `Calendar` in a popover (`afcl/DateField.vue`). It stays in `spa/package.json` only for `@adminforth/i18n` up to 3.1.7, which imports it to register calendar locales, and brings `flowbite` along as its dependency; only that i18n code bundles it, core does not. Remove it at the next major of core, `TODO next major` marks it in `spa/package.json`. `flowbite` itself is gone from core with its auto-init of `data-*` attributes (`data-tooltip-target`, `data-dropdown-toggle`, …), which ran only once on window `load`, so in the SPA it never reached elements rendered later.
 - Palette classes instead of tokens in `views/PageNotFound.vue`, `views/LoginView.vue`, `views/ListView.vue` (action badge), `renderers/URL.vue`, `afcl/BarChart.vue` (axis labels), the HTML in `utils/utils.ts` and a commented line in `components/Sidebar.vue`.
 
 ## Targets
