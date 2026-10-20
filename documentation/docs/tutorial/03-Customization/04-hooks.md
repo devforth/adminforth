@@ -205,6 +205,34 @@ When you enrich records with extra fields for display, declare a matching [virtu
 Reusing the same name keeps the enriched value tied to a column the rest of AdminForth knows about. In particular, the [Agent plugin](/docs/tutorial/Plugins/agent/) selects records by column name when answering questions — if the hook writes to a different field than the virtual column, the agent selects the (empty) virtual column and never sees your enriched value.
 :::
 
+### Aggregations
+
+The `aggregate` API, which agents and [MCP clients](/docs/tutorial/Plugins/mcp/) use for counts, sums and other statistics, reads the same records as the list, so it runs the same `list.beforeDatasourceRequest` and `list.afterDatasourceResponse` hooks. Filters added in `list.beforeDatasourceRequest`, like the `realtor_id` filter above, limit aggregations too, so a user can't count or sum records the list hides from them.
+
+`list.afterDatasourceResponse` gets aggregation rows in `response` instead of records, for example `[{ group: 'Kyiv', total: 12 }]`. If your hook changes record fields, skip aggregation requests, they are the only ones with `query.aggregations`:
+
+```ts title='./resources/apartments.ts'
+{
+  ...
+  hooks: {
+    list: {
+      afterDatasourceResponse: async ({ query, response }: { query: any, response: any }) => {
+//diff-add
+        if (query.aggregations) {
+//diff-add
+          return { ok: true };
+//diff-add
+        }
+        response.forEach((r: any) => {
+          r.price = `$${r.price}`;
+        });
+        return { ok: true };
+      },
+    },
+  },
+}
+```
+
 ### Dropdown list of foreignResource
 
 By default if there is `foreignResource` like we use for demo on `realtor_id` column, the filter will suggest a

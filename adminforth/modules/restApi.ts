@@ -1889,14 +1889,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     server.endpoint({
       method: 'POST',
       path: '/aggregate',
-      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation. Requires list and show access to the resource, and only accepts columns the user can read on the show view: backend-only columns and columns hidden from the show view are rejected.',
+      description: 'Performs aggregation queries (sum, count, avg, min, max, median) on a resource, with optional grouping by field value or date truncation. Requires list and show access to the resource, and only accepts columns the user can read on the show view: backend-only columns and columns hidden from the show view are rejected. Runs the resource list.beforeDatasourceRequest and list.afterDatasourceResponse hooks.',
       agent: {
         onlyReadsData: true,
       },
       request_schema: aggregateRequestSchema,
       response_schema: aggregateResponseSchema,
-      handler: async ({ body, adminUser, headers }) => {
-        const { resourceId, aggregations, filters, groupBy } = body;
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
+        const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
         }
@@ -1907,7 +1907,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
-        const rawFilterError = rejectApiRawFilters(filters);
+        const rawFilterError = rejectApiRawFilters(body.filters);
         if (rawFilterError) {
           return rawFilterError;
         }
@@ -1966,7 +1966,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           return null;
         };
 
-        for (const [alias, rule] of Object.entries((aggregations || {}) as { [alias: string]: IAggregationRule })) {
+        for (const [alias, rule] of Object.entries((body.aggregations || {}) as { [alias: string]: IAggregationRule })) {
           // plain count does not reference any column
           if (!rule?.field) {
             continue;
@@ -1977,7 +1977,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        const groupByRules = Array.isArray(groupBy) ? groupBy : (groupBy ? [groupBy] : []);
+        const groupByRules = Array.isArray(body.groupBy) ? body.groupBy : (body.groupBy ? [body.groupBy] : []);
         for (const groupByRule of groupByRules) {
           if (!groupByRule?.field) {
             continue;
@@ -1988,10 +1988,31 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        const backendOnlyFilterError = await rejectBackendOnlyFilters(filters, columnCtx);
+        const backendOnlyFilterError = await rejectBackendOnlyFilters(body.filters, columnCtx);
         if (backendOnlyFilterError) {
           return backendOnlyFilterError;
         }
+
+        // aggregation reads the same set of records as the list, so the list hooks scope it
+        for (const hook of listify(resource.hooks?.list?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
+          const filterTools = filtersTools.get(body);
+          body.filtersTools = filterTools;
+          const resp = await (hook as BeforeDataSourceRequestFunction)({
+            resource,
+            query: body,
+            adminUser,
+            filtersTools: filterTools,
+            extra: {
+              body, query, headers, cookies, requestUrl
+            },
+            adminforth: this.adminforth,
+          });
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
+          }
+        }
+        const { aggregations, filters, groupBy } = body;
 
         // normalize filters same way as get_resource_data
         const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
@@ -2011,25 +2032,45 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        try {
-          const userTimeZone = headers['X-TimeZone'];
-          const applyUserTimeZone = (groupByRule: any) => groupByRule?.type === 'date_trunc' && userTimeZone
-            ? { ...groupByRule, timezone: userTimeZone }
-            : groupByRule;
-          const aggregateGroupBy = Array.isArray(groupBy)
-            ? groupBy.map(applyUserTimeZone)
-            : applyUserTimeZone(groupBy);
+        const userTimeZone = headers['X-TimeZone'];
+        const applyUserTimeZone = (groupByRule: any) => groupByRule?.type === 'date_trunc' && userTimeZone
+          ? { ...groupByRule, timezone: userTimeZone }
+          : groupByRule;
+        const aggregateGroupBy = Array.isArray(groupBy)
+          ? groupBy.map(applyUserTimeZone)
+          : applyUserTimeZone(groupBy);
 
-          const data = await this.adminforth.connectors[resource.dataSource].aggregate({
+        let data;
+        try {
+          data = await this.adminforth.connectors[resource.dataSource].aggregate({
             resource,
             filters: normalizedFilters as IAdminForthAndOrFilter,
             aggregations,
             groupBy: aggregateGroupBy,
           });
-          return { data };
         } catch (e) {
           return { error: e.message };
         }
+
+        // hooks get the aggregation rows as response, they can tell this call by query.aggregations
+        for (const hook of listify(resource.hooks?.list?.afterDatasourceResponse)) {
+          const resp = await hook({
+            resource,
+            query: body,
+            response: data,
+            adminUser,
+            extra: {
+              body, query, headers, cookies, requestUrl
+            },
+            adminforth: this.adminforth,
+          });
+          const hookRespError = hookResponseError(resp);
+          if (hookRespError) {
+            return hookRespError;
+          }
+        }
+
+        return { data };
       },
     });
 
