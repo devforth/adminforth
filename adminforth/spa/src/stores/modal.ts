@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, markRaw } from 'vue'
 import { defineStore } from 'pinia'
 
  type ModalContentType = {
@@ -9,11 +9,12 @@ import { defineStore } from 'pinia'
   acceptText?: string;
   cancelText?: string;
   dangerous?: boolean;
+  icon?: object;
  }
 
 
 export const useModalStore = defineStore('modal', () => {
-  const modalContent = ref({
+  const modalContent = ref<ModalContentType>({
     title: 'title',
     guardMessage: 'guardMessage',
     content: '',
@@ -21,6 +22,7 @@ export const useModalStore = defineStore('modal', () => {
     acceptText: 'acceptText',
     cancelText: 'cancelText',
     dangerous: false,
+    icon: undefined,
   });  
   const isOpened = ref(false);
   const onAcceptFunction: any = ref(()=>{});
@@ -43,6 +45,7 @@ export const useModalStore = defineStore('modal', () => {
       acceptText: content.acceptText || 'acceptText',
       cancelText: content.cancelText || 'cancelText',
       dangerous: content.dangerous ?? false,
+      icon: content.icon && markRaw(content.icon),
     };
   }
   function resetmodalState() {
@@ -55,6 +58,7 @@ export const useModalStore = defineStore('modal', () => {
       acceptText: 'acceptText',
       cancelText: 'cancelText',
       dangerous: false,
+      icon: undefined,
     };
     setOnAcceptFunction(()=>{});
 

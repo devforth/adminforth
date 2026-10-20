@@ -707,29 +707,25 @@ export function generateMessageHtmlForRecordChange(changedFields: Record<string,
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   };
 
+  const labelClass = 'font-medium text-lightDialogHeaderText dark:text-darkDialogHeaderText';
   const items = Object.keys(changedFields || {}).map(key => {
     const column = coreStore.resource?.columns?.find((c: any) => c.name === key);
     const label = column?.label || key;
     if (column?.masked) {
-      return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <em>${escapeHtml(t('changed'))}</em></li>`;
+      return `<li class="truncate"><strong class="${labelClass}">${escapeHtml(label)}</strong>: <em>${escapeHtml(t('changed'))}</em></li>`;
     }
     const oldV = escapeHtml(changedFields[key].oldValue);
     const newV = escapeHtml(changedFields[key].newValue);
-    return `<li class="truncate"><strong>${escapeHtml(label)}</strong>: <span class="af-old-value text-muted">${oldV}</span> &#8594; <span class="af-new-value">${newV}</span></li>`;
+    return `<li class="truncate"><strong class="${labelClass}">${escapeHtml(label)}</strong>: <span class="af-old-value text-lightInputIconColor dark:text-darkInputIconColor">${oldV}</span> &#8594; <span class="af-new-value">${newV}</span></li>`;
   }).join('');
 
-  const listHtml = items ? `<ul class="mt-2 list-disc list-inside">${items}</ul>` : '';
-  const messageHtml = `
-    <div class="flex flex-col gap-y-2 text-center">
-      <div class="text-gray-500 dark:text-gray-400">
-        ${listHtml}
-      </div>
-      <p class="font-medium text-gray-900 dark:text-white mt-4"> 
-        ${escapeHtml(t('Are you sure you want to leave this page?'))}
-      </p>
+  const listHtml = items ? `<ul class="flex flex-col gap-1">${items}</ul>` : '';
+  return `
+    <div class="flex flex-col gap-3">
+      ${listHtml}
+      <p class="${labelClass}">${escapeHtml(t('Are you sure you want to leave this page?'))}</p>
     </div>
   `;
-  return messageHtml; 
 }
 
 export function getTimeAgoString(date: Date): string {

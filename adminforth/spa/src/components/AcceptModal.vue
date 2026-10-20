@@ -1,93 +1,86 @@
 <template>
-  <Teleport to="body">
-    <Modal 
-      ref="modalRef"
-      :beforeCloseFunction="()=>{modalStore.onAcceptFunction(false);modalStore.isOpened=false}"
-      backgroundCustomClasses="z-[998]"
-      modalCustomClasses="z-[999] flex items-center justify-center" 
-    >
-      <div class="relative p-6 sm:w-[420px] rounded-[inherit] bg-lightAcceptModalBackground dark:bg-darkAcceptModalBackground" >
-        
-        <button type="button" @click="modalStore.togleModal()" class="absolute top-3 right-3 p-1.5 rounded-default text-lightAcceptModalCloseIcon hover:text-lightAcceptModalCloseIconHover hover:bg-lightAcceptModalCloseIconHoverBackground dark:text-darkAcceptModalCloseIcon dark:hover:text-darkAcceptModalCloseIconHover dark:hover:bg-darkAcceptModalCloseIconHoverBackground transition-colors" >
-          <IconX class="w-4 h-4" />
-        </button>
-
-        <div class="text-center flex flex-col">
-          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-xl mb-4 relative"
-            :class="modalStore.modalContent.dangerous ? 'bg-lightDangerSoft dark:bg-darkDangerSoft' : 'bg-lightSecondaryDarken dark:bg-darkSecondaryLighten'">
-            <IconClipboardList class="w-6 h-6"
-              :class="modalStore.modalContent.dangerous ? 'text-lightAcceptModalWarningIcon dark:text-darkAcceptModalWarningIcon' : 'text-lightButtonsBackground dark:text-darkButtonsBackground'" />
-            <div class="absolute -bottom-1 -right-1 rounded-full w-[18px] h-[18px] flex items-center justify-center border-2 border-lightAcceptModalBackground dark:border-darkAcceptModalBackground"
-              :class="modalStore.modalContent.dangerous ? 'bg-lightAcceptModalConfirmButtonBackground dark:bg-darkAcceptModalConfirmButtonBackground' : 'bg-lightButtonsBackground dark:bg-darkButtonsBackground'">
-                <span class="text-lightButtonsText dark:text-darkButtonsText text-[10px] font-medium">!</span>
-            </div>
-          </div>
-          
-          <div class="flex flex-col gap-3">
-            <h3 v-if="modalStore?.modalContent?.title" class="text-lg font-semibold tracking-tight text-lightDialogHeaderText dark:text-darkDialogHeaderText">
-              {{ modalStore.modalContent.title }}
-            </h3>
-            
-            <div class="text-sm text-lightAcceptModalText dark:text-darkAcceptModalText">
-              <div v-if="modalStore?.modalContent?.contentHTML" v-html="modalStore.modalContent.contentHTML"></div>
-              <p v-else-if="modalStore?.modalContent?.content">{{ modalStore.modalContent.content }}</p>
-            </div>
-          </div>
-
-          <hr class="border-t border-lightDialogBreakLine dark:border-darkDialogBreakLine my-5">
-
-          <div class="flex justify-center gap-2 w-full">
-            <Button @click="()=>{modalStore.onAcceptFunction(false);modalStore.togleModal()}" type="button" variant="secondary" class="flex-1">
-                {{ modalStore?.modalContent?.cancelText }}
-            </Button>
-            
-            <Button
-              @click="()=>{ modalStore.onAcceptFunction(true);modalStore.togleModal()}"
-              type="button"
-              class="flex-1"
-              :variant="modalStore.modalContent.dangerous ? 'danger' : 'primary'">
-                {{ modalStore?.modalContent?.acceptText }}
-            </Button>
-          </div>
-
-          <div v-if="modalStore?.modalContent?.guardMessage" class="flex items-center justify-center mt-5 text-xs text-lightAcceptModalText dark:text-darkAcceptModalText gap-1.5 font-medium">
-            <IconShieldCheck class="w-4 h-4" />
-            <span> {{ modalStore?.modalContent?.guardMessage }}</span>
-          </div>
-
+  <Modal
+    ref="modalRef"
+    class="w-full sm:w-[400px]"
+    :role="dangerous ? 'alertdialog' : 'dialog'"
+    :aria-labelledby="titleId"
+    :beforeCloseFunction="() => { modalStore.onAcceptFunction(false); modalStore.isOpened = false; }"
+    backgroundCustomClasses="z-[998]"
+  >
+    <div class="flex flex-col gap-3 px-5 py-[18px]">
+      <div class="flex items-start gap-3">
+        <span
+          v-if="dangerous"
+          class="flex w-9 h-9 shrink-0 items-center justify-center rounded-lg bg-lightDangerSoft text-lightDanger dark:bg-darkDangerSoft dark:text-darkDanger"
+        >
+          <component :is="icon" class="w-5 h-5" aria-hidden="true" />
+        </span>
+        <div class="flex-1 min-w-0 flex flex-col gap-1" :class="dangerous ? 'pt-1.5' : ''">
+          <h3 :id="titleId" class="text-base font-semibold tracking-[-0.01em] text-lightDialogHeaderText dark:text-darkDialogHeaderText">
+            {{ title }}
+          </h3>
+          <p v-if="subtitle" class="text-sm leading-5 text-lightDialogBodyText dark:text-darkDialogBodyText">{{ subtitle }}</p>
         </div>
+        <Button
+          v-if="!dangerous"
+          type="button"
+          variant="ghost"
+          size="sm"
+          iconOnly
+          class="-mt-0.5 -me-1.5 text-lightDialogCloseButton hover:text-lightDialogCloseButtonHover hover:bg-lightDialogCloseButtonHoverBackground dark:text-darkDialogCloseButton dark:hover:text-darkDialogCloseButtonHover dark:hover:bg-darkDialogCloseButtonHoverBackground"
+          :aria-label="t('Close Modal')"
+          @click="answer(false)"
+        >
+          <IconX aria-hidden="true" />
+        </Button>
       </div>
-    </Modal>
-  </Teleport>
+
+      <div v-if="modalContent.contentHTML" class="text-sm text-lightDialogBodyText dark:text-darkDialogBodyText" v-html="modalContent.contentHTML"></div>
+
+      <p v-if="modalContent.guardMessage" class="flex items-center gap-1.5 text-xs font-medium text-lightInputIconColor dark:text-darkInputIconColor">
+        <IconShieldCheck class="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+        {{ modalContent.guardMessage }}
+      </p>
+    </div>
+
+    <div :class="dialogFooterClasses">
+      <Button type="button" variant="secondary" @click="answer(false)">{{ modalContent.cancelText }}</Button>
+      <Button type="button" :variant="dangerous ? 'danger' : 'primary'" @click="answer(true)">{{ modalContent.acceptText }}</Button>
+    </div>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import { watch, ref } from 'vue';
+import { watch, ref, computed, useId, type Component } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useI18n } from 'vue-i18n';
 import { useModalStore } from '@/stores/modal';
 import { Button, Modal } from '@/afcl';
-import { IconClipboardList, IconShieldCheck, IconX } from '@iconify-prerendered/vue-lucide';
+import { dialogFooterClasses } from '@/afcl/dialogStyles';
+import { IconShieldCheck, IconTriangleAlert, IconX } from '@iconify-prerendered/vue-lucide';
 
-
+const { t } = useI18n();
 const modalRef = ref();
+const titleId = useId();
 const modalStore = useModalStore();
+const { modalContent } = storeToRefs(modalStore);
 
-watch( () => modalStore.isOpened, (newVal) => {
-    if (newVal) {
-        open();
-    } else {
-        close();
-    }
+const dangerous = computed(() => modalContent.value.dangerous);
+const icon = computed(() => (modalContent.value.icon ?? IconTriangleAlert) as Component);
+// a call with only a message shows it as the title, a call with a title shows the message under it
+const title = computed(() => modalContent.value.title || modalContent.value.content);
+const subtitle = computed(() => modalContent.value.title ? modalContent.value.content : '');
+
+function answer(accepted: boolean) {
+  modalStore.onAcceptFunction(accepted);
+  modalStore.togleModal();
+}
+
+watch(() => modalStore.isOpened, (opened) => {
+  if (opened) {
+    modalRef.value.open();
+  } else {
+    modalRef.value.close();
   }
-);
-
-
-
-function open() {
-  modalRef.value.open();
-}
-
-function close() {
-  modalRef.value.close();
-}
-
+});
 </script>

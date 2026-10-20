@@ -178,6 +178,11 @@ export type ConfirmParams = {
      */
     dangerous?: boolean;
 
+    /**
+     * Vue component of the icon shown beside the title of a dangerous dialog, e.g. IconTrash2 from `@iconify-prerendered/vue-lucide`.
+     * Without it a dangerous dialog shows an alert triangle. Not used when dangerous is false.
+     */
+    icon?: object;
 }
 
 export type AlertParams = {

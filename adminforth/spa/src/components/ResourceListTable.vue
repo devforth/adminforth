@@ -682,6 +682,7 @@ async function deleteRecord(row: any) {
     yes: t('Delete'),
     no: t('Cancel'),
     dangerous: true,
+    icon: IconTrash2,
   });
   if (data) {
     try {

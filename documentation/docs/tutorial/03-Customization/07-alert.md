@@ -75,6 +75,21 @@ const { confirm } = useAdminforth();
 const isConfirmed = await confirm({message: 'Are you sure?', yes: 'Yes', no: 'No'})
 ```
 
+For a destructive action pass `dangerous: true`: the dialog gets a red icon beside the title and a red main button. `title` is shown above `message`, `guardMessage` is a short muted line with a shield icon under it. The icon is an alert triangle, pass a Vue component in `icon` for a more specific one:
+
+```ts
+import { IconTrash2 } from '@iconify-prerendered/vue-lucide';
+
+const isConfirmed = await confirm({
+  title: 'Delete this car?',
+  message: 'Photos stored in S3 are removed too.',
+  yes: 'Delete',
+  no: 'Cancel',
+  dangerous: true,
+  icon: IconTrash2,
+})
+```
+
 ## Usage example
 
 Create a Vue component in the custom directory of your project, e.g. `Alerts.vue`:
