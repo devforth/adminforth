@@ -57,7 +57,7 @@
           />
           <Spinner
             v-if="actionLoadingStates[action.id!]"
-            class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+            class="w-4 h-4"
           />
           {{ action.name }}
         </span>

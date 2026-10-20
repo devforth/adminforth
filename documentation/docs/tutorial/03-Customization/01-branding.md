@@ -106,6 +106,45 @@ const admin = new AdminForth({
 Here is how it looks:
 ![AdminForth Themes](image-10.png)
 
+### Action buttons in the brand color
+
+The main action button of a screen (Save, Create, every AFCL `Button` of the `primary` variant) is ink: near-black in the light theme, near-white in the dark one. The `primary` color goes to the accents around it: links, focus rings, checkboxes, toggles, progress bars. If you want these buttons in your brand color too, point the button tokens at `primary`:
+
+```ts title='./index.ts'
+const admin = new AdminForth({
+  ...
+  customization: {
+    styles: {
+      colors: {
+        light: {
+          primary: '#b400b8',
+          buttons: {
+            background: 'alias:lightPrimary',
+            border: 'alias:lightPrimary',
+            hover: 'alias:lightPrimary darken',
+            borderHover: 'alias:lightPrimary darken',
+            // black or white, whichever reads better on the primary color
+            text: 'alias:lightPrimary inverse',
+          },
+        },
+        dark: {
+          buttons: {
+            background: 'alias:darkPrimary',
+            border: 'alias:darkPrimary',
+            hover: 'alias:darkPrimary lighten',
+            borderHover: 'alias:darkPrimary lighten',
+            text: 'alias:darkPrimary inverse',
+          },
+        },
+      }
+    }
+  },
+  ...
+});
+```
+
+A value `alias:<token>` copies another token. The token name is the flattened key from [styles.ts](https://github.com/devforth/adminforth/blob/main/adminforth/modules/styles.ts): `light.buttons.background` is `lightButtonsBackground`. An alias takes modifiers: `opacity:0.3`, `darken`, `lighten` and `inverse`, which gives black or white depending on how bright the aliased color is.
+
 ## Single theme
 
 If you want to enforce a consistent theme and disable the theme switcher, you can configure AdminForth to use only one theme variant. 

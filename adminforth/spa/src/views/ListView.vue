@@ -62,7 +62,7 @@
               class="w-4 h-4 transition duration-75"></component>
               <Spinner
                 v-if="bulkActionLoadingStates[action.id!]"
-                class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+                class="w-4 h-4"
               />
             {{ `${action.label} (${checkboxes.length})` }}
             <div v-if="action.badge" class="inline-flex items-center h-[1.125rem] px-1.5 ml-1 rounded-full bg-purple-600 text-white text-[11px] font-semibold">
@@ -85,7 +85,7 @@
               class="w-4 h-4 transition duration-75"></component>
               <Spinner
                 v-if="customActionLoadingStates[action.id!]"
-                class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+                class="w-4 h-4"
               />
               {{ `${action.name} (${checkboxes.length})` }}
           </Button>

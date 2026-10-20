@@ -21,7 +21,9 @@
       </div>
     </teleport>
   </div>
-  <div v-else ref="viewerEl" class="afcl-json-viewer group relative flex items-start gap-2 font-mono text-xs leading-5">
+  <!-- the line width comes from the measured width of the viewer; inline-size containment keeps that width from depending on the
+       lines, otherwise in a shrink-to-fit parent (a flex-wrap item, a cell of an auto table) every re-wrap resizes the parent and loops -->
+  <div v-else ref="viewerEl" class="afcl-json-viewer group relative flex items-start gap-2 font-mono text-xs leading-5 [contain:inline-size]">
     <span ref="charEl" class="invisible absolute" aria-hidden="true">0</span>
     <div class="min-w-0">
       <JsonViewerNode :value="value" :depth="0" :last="true" :expandDepth="expandDepth" :lineWidth="lineWidth" />
