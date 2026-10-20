@@ -17,14 +17,12 @@ const spaDir = path.join(previewDir, '../../adminforth/spa');
 const spaSrc = path.join(spaDir, 'src');
 const afclDir = path.join(spaSrc, 'afcl');
 const stubs = path.join(previewDir, 'stubs.ts');
-const shadowStyles = path.join(previewDir, 'shadowStyles.ts');
 
 const PREVIEW_RE = /<AfclPreview id="([^"]+)"[^>]*>([\s\S]*?)<\/AfclPreview>/g;
 const CODE_BLOCK_RE = /```(\w+)[^\n]*\n([\s\S]*?)```/g;
 const DIFF_MARKER_RE = /^\s*\/\/\s*diff-(add|remove)\s*$/;
 const AFCL_IMPORT_RE = /^import \{([^}]+)\} from '@\/afcl';?$/gm;
 const COMPONENT_TAG_RE = /<([A-Z]\w*)/g;
-const CSS_IMPORT_RE = /^import ["']([^"']+\.css)["'];?$/gm;
 
 // code blocks may show a change with //diff-add and //diff-remove lines, the example renders the result
 function applyDiff(code: string) {
@@ -77,31 +75,11 @@ function docsExamples(): Plugin {
   };
 }
 
-// a component which imports plain CSS (JsonViewer imports the CSS of vue3-json-viewer) would put it into document.head,
-// out of reach of the shadow roots of the examples, the CSS goes to their shared styles instead
-function componentCssToShadowRoots(): Plugin {
-  return {
-    name: 'afcl-component-css-to-shadow-roots',
-    enforce: 'post',
-    transform(code, id) {
-      if (!id.startsWith(spaSrc)) {
-        return;
-      }
-      let n = 0;
-      const result = code.replace(CSS_IMPORT_RE, (_, css: string) => {
-        const name = `__afclCss${n++}`;
-        return `import ${name} from '${css}?inline';\nimport { adoptComponentCss as ${name}Adopt } from '${shadowStyles}';\n${name}Adopt(${name});`;
-      });
-      return n ? result : undefined;
-    },
-  };
-}
-
 export default defineConfig({
   // mount.js is loaded by the docs pages, so the URLs of its chunks and fonts are absolute
   base: '/afcl-preview/',
   // custom element mode puts the styles of a component into the component, Vue adds them to the shadow root of the example
-  plugins: [docsExamples(), vue({ customElement: true }), componentCssToShadowRoots()],
+  plugins: [docsExamples(), vue({ customElement: true })],
   resolve: {
     alias: [
       // the core store and frontend API bring the router and API client along, previews get stand-ins

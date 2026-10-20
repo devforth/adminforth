@@ -495,6 +495,8 @@ async function loadPageData(data, abortSignal) {
 
 ## Json Viewer
 
+The Json Viewer lays a JSON value out like Prettier: a node which fits in a line (up to 60 characters, fewer in a narrow place) stays on one line, a longer one breaks by keys. A chevron on the left folds a node, a folded node shows its value in one line and its size. Nodes deeper than `expandDepth` (default `1`) start folded. The copy button appears on hover.
+
 ### Basic
 
 <AfclPreview id="json-viewer">
@@ -520,6 +522,25 @@ import { JsonViewer } from '@/afcl'
     }
   ]" 
   :expandDepth="2" 
+/>
+```
+
+</AfclPreview>
+
+### Inline
+
+`inline` shows the value in one line for table cells, a click opens the whole value in a popover. The list page of AdminForth shows JSON columns this way.
+
+<AfclPreview id="json-viewer-inline">
+
+```js
+import { JsonViewer } from '@/afcl'
+```
+
+```html
+<JsonViewer
+  inline
+  :value="{ campaign: 'cs2026', channel: 'linkedin', touches: 3, verified: true }"
 />
 ```
 

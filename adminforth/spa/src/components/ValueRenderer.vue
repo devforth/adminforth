@@ -103,9 +103,12 @@
     <span v-else-if="column.type === 'decimal'">
       {{ checkEmptyValues(record[column.name] && parseFloat(record[column.name]), route.meta.type as "show" | "list") }}
     </span>
-    <span v-else-if="column.type === 'json'">
-      <JsonViewer class="min-w-[6rem]" :value="record[column.name]" :expandDepth="column.extra?.jsonCollapsedLevel" copyable sort :theme="coreStore.theme"/>
-    </span>
+    <JsonViewer
+      v-else-if="column.type === 'json' && record[column.name] !== null && record[column.name] !== undefined"
+      :value="record[column.name]"
+      :expandDepth="column.extra?.jsonCollapsedLevel"
+      :inline="route.meta.type === 'list'"
+    />
     <span v-else>
       {{ checkEmptyValues(record[column.name], route.meta.type as "show" | "list") }}
     </span>
@@ -117,20 +120,17 @@
 
 import {checkEmptyValues, formatDate, formatDateTime, formatTime} from '@/utils';
 import { useRoute, useRouter } from 'vue-router';
-import "vue3-json-viewer/dist/vue3-json-viewer.css";
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
 import { IconCheck } from '@iconify-prerendered/vue-lucide';
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
-const JsonViewer = defineAsyncComponent(() => import('vue3-json-viewer').then(module => module.JsonViewer))
+import { JsonViewer } from '@/afcl';
 
-import { useCoreStore } from '@/stores/core';
 import type { any } from 'zod';
 
 const BADGE_CLASSES = 'inline-flex items-center whitespace-nowrap me-2 px-2 h-5 rounded-full border text-xs font-medium';
 const TRUE_BADGE_CLASSES = 'bg-lightSuccessSoft text-lightSuccess border-lightSuccessBorder dark:bg-darkSuccessSoft dark:text-darkSuccess dark:border-darkSuccessBorder';
 const FALSE_BADGE_CLASSES = 'bg-lightSecondaryDarken text-lightInputIconColor border-transparent dark:bg-darkSecondaryLighten dark:text-darkInputIconColor';
 
-const coreStore = useCoreStore();
 const route = useRoute();
 
 const props = defineProps<{
@@ -179,23 +179,4 @@ function getArrayItemDisplayValue(value: any, column: AdminForthResourceColumnCo
   }
 
 } 
-</style>
-
-<style lang="scss" >
-
-.jv-container .jv-code {
-  padding: 10px 10px;
-  white-space: pre-wrap;  
-}
-
-.jv-container .jv-button[class] {
-  @apply text-lightPrimary;
-  @apply dark:text-darkPrimary;
-
-}
-
-.jv-container.jv-dark {
-  background: transparent;
-}
-
 </style>

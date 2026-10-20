@@ -5,7 +5,7 @@ import { AFCL_TELEPORT_TARGET } from '@/afcl/shadowRoot';
 import geistCss from '@fontsource-variable/geist?inline';
 import geistMonoCss from '@fontsource-variable/geist-mono?inline';
 import { coreStore } from './stubs';
-import { addShadowRoot, removeShadowRoot } from './shadowStyles';
+import { addShadowRoot } from './shadowStyles';
 
 // <AfclPreview> of the docs calls mountExample() to render its example right in the page: a custom element with a
 // shadow root keeps the styles of the docs and of AFCL apart, while Vue, AFCL and their CSS load once per page
@@ -68,7 +68,6 @@ export async function mountExample(id: string, host: HTMLElement) {
   host.append(el);
   return () => {
     examples.delete(el);
-    removeShadowRoot(el.shadowRoot!);
     el.remove();
   };
 }

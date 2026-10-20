@@ -2501,29 +2501,35 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
   </section>
 
   <section class="sec">
-    <div class="sec-head"><span class="sec-name">&lt;JsonViewer&gt;</span><span class="t-sm t-muted">collapsible tree, mono 12px, one accent for strings</span></div>
+    <div class="sec-head"><span class="sec-name">&lt;JsonViewer&gt;</span><span class="t-sm t-muted">laid out like Prettier, folds in the gutter, mono 12px, one accent for strings, copy on hover</span></div>
     <div class="grid5">
       <div class="tile">
         <div class="tile-stage top">
           <div class="js">
-            <div><span class="tw"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><span class="p">{</span></div>
-            <div style="padding-left: 16px"><span class="k">"trim"</span><span class="p">: </span><span class="s">"Base"</span><span class="p">,</span></div>
-            <div style="padding-left: 16px"><span class="k">"segment"</span><span class="p">: </span><span class="s">"c"</span><span class="p">,</span></div>
-            <div style="padding-left: 16px"><span class="k">"doors"</span><span class="p">: </span><span class="n">4</span><span class="p">,</span></div>
-            <div style="padding-left: 16px"><span class="k">"certified"</span><span class="p">: </span><span class="b">true</span></div>
-            <div><span class="p">}</span></div>
+            <div style="display: flex"><span class="tw"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><span style="padding-left: 0ch"><span class="p">{</span></span></div>
+            <div style="display: flex"><span class="tw"></span><span style="padding-left: 2ch"><span class="k">"trim"</span><span class="p">: </span><span class="s">"Base"</span><span class="p">,</span></span></div>
+            <div style="display: flex"><span class="tw"></span><span style="padding-left: 2ch"><span class="k">"photos"</span><span class="p">: </span><span class="p">[</span><span class="s">"front.jpg"</span><span class="p">, </span><span class="s">"side.jpg"</span><span class="p">],</span></span></div>
+            <div style="display: flex"><span class="tw"></span><span style="padding-left: 2ch"><span class="k">"doors"</span><span class="p">: </span><span class="n">4</span><span class="p">,</span></span></div>
+            <div style="display: flex"><span class="tw"></span><span style="padding-left: 2ch"><span class="k">"certified"</span><span class="p">: </span><span class="b">true</span></span></div>
+            <div style="display: flex"><span class="tw"></span><span style="padding-left: 0ch"><span class="p">}</span></span></div>
           </div>
         </div>
-        <div class="tile-cap"><b>Expanded</b><code>:expandDepth="1"</code></div>
+        <div class="tile-cap"><b>Expanded</b><code>a node within 60 chars stays on one line</code></div>
       </div>
       <div class="tile">
         <div class="tile-stage top">
-          <div class="js">
-            <div><span class="tw"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span class="k">specifications</span><span class="p">: {…}</span> <span class="badge badge-muted" style="height: 18px; font-size: 11px; font-family: Geist">7 keys</span></div>
-            <div><span class="tw"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span class="k">photos</span><span class="p">: […]</span> <span class="badge badge-muted" style="height: 18px; font-size: 11px; font-family: Geist">2 items</span></div>
+          <div class="js" style="width: 100%">
+            <div style="display: flex; align-items: center"><span class="tw"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0"><span class="k">"specifications"</span><span class="p">: </span><span class="p">{</span><span class="k">"engine"</span><span class="p">: </span><span class="s">"2.0 TDI"</span><span class="p">, </span><span class="k">"power"</span><span class="p">: </span><span class="n">150</span><span class="p">, …}</span></span>&nbsp;<span class="badge badge-muted" style="height: 18px; font-size: 11px; font-family: Geist">7 keys</span></div>
+            <div style="display: flex; align-items: center"><span class="tw"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0"><span class="k">"photos"</span><span class="p">: </span><span class="p">[</span><span class="s">"front.jpg"</span><span class="p">, </span><span class="s">"side.jpg"</span><span class="p">, …]</span></span>&nbsp;<span class="badge badge-muted" style="height: 18px; font-size: 11px; font-family: Geist">5 items</span></div>
           </div>
         </div>
-        <div class="tile-cap"><b>Collapsed</b><code>summary chips</code></div>
+        <div class="tile-cap"><b>Folded</b><code>the value in one line + its size</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage">
+          <div class="js" style="display: flex; align-items: center; gap: 6px; max-width: 100%"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0"><span class="p">{</span><span class="k">"campaign"</span><span class="p">: </span><span class="s">"cs2026"</span><span class="p">, </span><span class="k">"channel"</span><span class="p">: </span><span class="s">"linkedin"</span><span class="p">, …}</span></span><span class="badge badge-muted" style="height: 18px; font-size: 11px; font-family: Geist">4 keys</span></div>
+        </div>
+        <div class="tile-cap"><b>Inline</b><code>inline · a click opens it in a popover</code></div>
       </div>
     </div>
   </section>

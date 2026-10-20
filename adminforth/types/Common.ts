@@ -794,11 +794,12 @@ export interface AdminForthResourceColumnInputCommon {
   extra?: {
 
     /**
-     * How many levels of JSON should be collapsed. 
-     * `0` means - root level will be already collapsed e.g. `{a:1}` will show `{...}` where `'...'` is clickable
-     * `1` means - root level will be shown, but next sub-level will be collapsed e.g. `{a: {b: 1}}` will show `{a: ...}` where `'...'` is clickable
-     * 
-     * Default is 1. 
+     * How many levels of JSON are open on the show page and in the popover of a list cell, deeper nodes start folded.
+     * `0` means - the root is folded into one line, a click opens it
+     * `1` means - the keys of the root are shown, their values are folded into one line each
+     * A node which fits in one line (up to 60 characters) is always shown whole.
+     *
+     * Default is 1.
      */
     jsonCollapsedLevel?: number
   }
