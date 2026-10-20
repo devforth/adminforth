@@ -5,7 +5,7 @@
     :disabled="props.disabled"
     :class="buttonClasses"
   >
-    <Spinner v-if="props.loader" class="w-4 h-4 text-lightButtonsText dark:text-darkButtonsText fill-lightPrimary dark:fill-darkPrimary" />
+    <Spinner v-if="props.loader" class="w-4 h-4" />
     <!-- the spinner takes the place of the icon in a square button -->
     <slot v-if="!(props.iconOnly && props.loader)"></slot>
   </button>

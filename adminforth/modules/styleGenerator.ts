@@ -314,34 +314,40 @@ export class StylesGenerator {
       return plainCustomStyles;
     }
    
-    private changeAlias(str:any, mergedStyles:any){
-      const {aliasMatch,opacityMatch,darkenMatch,lightenMatch, inverseMatch} = parseColorForAliases(str);
+    // a token may alias a token which is itself an alias further down the list, so the target is resolved first;
+    // `chain` is the tokens being resolved above this one and catches a cycle such as a -> b -> a
+    private resolveColor(key: string, colors: Record<string, string>, chain: string[] = []): string {
+      const { aliasMatch, opacityMatch, darkenMatch, lightenMatch, inverseMatch } = parseColorForAliases(colors[key]);
       if (!aliasMatch) {
-        return str;
-      } else {
-        const alias = aliasMatch[1];
-        let opacity = opacityMatch ? parseFloat(opacityMatch[1]) : 1;
-        const color = mergedStyles[alias];
-        if (darkenMatch) {
-          return darkenRGBA(createRGBA(color, opacity))
-        }
-        if (lightenMatch){
-          return lightenRGBA(createRGBA(color, opacity))
-        }
-        if (inverseMatch){
-          return inverseRGBA(createRGBA(color, opacity))
-        }
-        return createRGBA(color, opacity);
+        return colors[key];
       }
-    }  
-  
-    mergeStyles() {
-      let mergedStyles = deepMerge(this.defaultStyles, this.generatePlainStyles(this.styleConfig));
-      let colors = mergedStyles.colors;
-      Object.entries(colors).forEach(([key,value])=>{
+      const alias = aliasMatch[1];
+      if (!(alias in colors)) {
+        throw new Error(`Styles color ${key} aliases unknown token ${alias}`);
+      }
+      if (alias === key || chain.includes(alias)) {
+        throw new Error(`Styles color alias cycle: ${[...chain, key, alias].join(' -> ')}`);
+      }
+      const opacity = opacityMatch ? parseFloat(opacityMatch[1]) : 1;
+      const color = createRGBA(this.resolveColor(alias, colors, [...chain, key]), opacity);
+      if (darkenMatch) {
+        return darkenRGBA(color);
+      }
+      if (lightenMatch) {
+        return lightenRGBA(color);
+      }
+      if (inverseMatch) {
+        return inverseRGBA(color);
+      }
+      return color;
+    }
 
-        colors[key] =  this.changeAlias(value,colors)
-      })
+    mergeStyles() {
+      const mergedStyles = deepMerge(this.defaultStyles, this.generatePlainStyles(this.styleConfig));
+      const colors = mergedStyles.colors;
+      Object.keys(colors).forEach((key) => {
+        colors[key] = this.resolveColor(key, colors);
+      });
       return mergedStyles;
     }
   }

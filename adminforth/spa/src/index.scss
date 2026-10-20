@@ -33,6 +33,12 @@ body {
   box-shadow: 0 1px 1px rgb(24 24 27 / 0.05);
 }
 
+// a spinner inside a button is drawn in the text color of the button, so it reads on ink and on a brand color alike
+.afcl-button .af-spinner, .afcl-link-button .af-spinner {
+  .af-spinner-arc { fill: currentColor; }
+  .af-spinner-track { fill: currentColor; opacity: 0.2; }
+}
+
 *{
   -moz-user-select: none;
 }

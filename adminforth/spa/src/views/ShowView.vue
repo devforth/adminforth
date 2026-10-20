@@ -18,7 +18,7 @@
         class="h-[2.125rem] text-lightListViewButtonText dark:text-darkListViewButtonText px-3"
         variant="secondary"
       >
-        <Spinner v-if="isFetchingNextPage" class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText" />
+        <Spinner v-if="isFetchingNextPage" class="w-4 h-4" />
         {{ $t('Next') }}
       </LinkButton>
 
@@ -44,7 +44,7 @@
               />
               <Spinner
                 v-if="actionLoadingStates[action.id!]"
-                class="w-4 h-4 text-lightSkeletonBackgroundColor dark:text-darkSkeletonBackgroundColor fill-lightListTableText dark:fill-darkListTableText"
+                class="w-4 h-4"
               />
               {{ action.name }}
             </Button>
