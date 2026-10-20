@@ -106,8 +106,16 @@ export const admin = new AdminForth({
     styles:{
       colors: {
         light: {
-          // color for buttons, links, etc.
+          // color for links, focus rings and other accents
           primary: '#16537e',
+          // the action buttons follow the brand color instead of ink
+          buttons: {
+            // background: 'alias:lightPrimary',
+            // border: 'alias:lightPrimary',
+            // hover: 'alias:lightPrimary darken',
+            // borderHover: 'alias:lightPrimary darken',
+            // text: 'alias:lightPrimary inverse',
+          },
           // color for sidebar and text
           sidebar: {
             main:'#232323', 
@@ -126,6 +134,13 @@ export const admin = new AdminForth({
           },
           announcementBG: '#262626',
           announcementText: '#E5E5E5',
+          buttons: {
+            background: 'alias:darkPrimary',
+            border: 'alias:darkPrimary',
+            hover: 'alias:darkPrimary darken',
+            borderHover: 'alias:darkPrimary darken',
+            text: 'alias:darkPrimary inverse',
+          },
         }
       }
     }
