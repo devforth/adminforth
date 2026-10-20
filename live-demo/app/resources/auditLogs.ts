@@ -10,7 +10,7 @@ const auditLogsResource: AdminForthResourceInput = {
   dataSource: 'maindb', 
   table: 'audit_logs',
   columns: [
-    { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => randomUUID(), showIn: ['show'] },
+    { name: 'id', primaryKey: true, required: false, fillOnCreate: ({initialRecord}: any) => randomUUID(), showIn: { all: false, show: true } },
     { name: 'created_at', required: false },
     { name: 'resource_id', required: false },
     { name: 'user_id', required: false, 
@@ -18,7 +18,7 @@ const auditLogsResource: AdminForthResourceInput = {
       resourceId: 'users',
     } },
     { name: 'action', required: false },
-    { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: ['show'] },
+    { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: { all: false, show: true } },
     { name: 'record_id', required: false },
     { name: 'ip_address', required: false, showIn: {all: false}, backendOnly: true },
   ],

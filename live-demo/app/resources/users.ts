@@ -44,7 +44,7 @@ const usersResource: AdminForthResourceInput = {
       label: 'Identifier',
       primaryKey: true,
       fillOnCreate: ({ initialRecord, adminUser }: any) => randomUUID(),
-      showIn: ['list', 'filter', 'show'],
+      showIn: { all: false, list: true, filter: true, show: true },
     },
     { 
       name: 'email', 
@@ -61,7 +61,7 @@ const usersResource: AdminForthResourceInput = {
     {
       name: 'created_at', 
       type: AdminForthDataTypes.DATETIME,
-      showIn: ['list', 'filter', 'show'],
+      showIn: { all: false, list: true, filter: true, show: true },
       fillOnCreate: ({initialRecord, adminUser}: any) => (new Date()).toISOString(),
     },
     {
@@ -78,11 +78,11 @@ const usersResource: AdminForthResourceInput = {
       editingNote: { edit: 'Leave empty to keep password unchanged' },
       minLength: 4,
       type: AdminForthDataTypes.STRING,
-      showIn: ['create', 'edit'], // to show field only on create and edit pages
+      showIn: { all: false, create: true, edit: true }, // to show field only on create and edit pages
       masked: true, // to show stars in input field
     },
-    { name: 'password_hash', backendOnly: true, showIn: []},
-    { name: 'secret2fa', backendOnly: true, showIn: []}
+    { name: 'password_hash', backendOnly: true, showIn: { all: false }},
+    { name: 'secret2fa', backendOnly: true, showIn: { all: false }}
   ],
   hooks: {
     create: {

@@ -49,7 +49,7 @@ const apartmentsResource: AdminForthResourceInput = {
     { 
       name: 'title',
       required: true,
-      showIn: ['list', 'create', 'edit', 'filter', 'show'],  // all available options
+      showIn: { all: true },  // all available options
       maxLength: 255,  // you can set max length for string fields
       minLength: 3,  // you can set min length for string fields
     },
@@ -115,7 +115,7 @@ const apartmentsResource: AdminForthResourceInput = {
       name: 'created_at',
       type: AdminForthDataTypes.DATETIME ,
       allowMinMaxQuery: true,
-      showIn: ['list', 'filter', 'show', 'edit'],
+      showIn: { all: false, list: true, filter: true, show: true, edit: true },
       fillOnCreate: ({initialRecord, adminUser}) => (new Date()).toISOString(),
     },
     { 
@@ -146,7 +146,7 @@ const apartmentsResource: AdminForthResourceInput = {
       name: 'description',
       type: AdminForthDataTypes.TEXT,
       sortable: false,
-      showIn: ['show', 'edit', 'create', 'filter'],
+      showIn: { all: false, show: true, edit: true, create: true, filter: true },
         components: {
         list: "@/renderers/RichText.vue",
         show: "@/renderers/RichText.vue",

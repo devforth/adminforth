@@ -109,12 +109,12 @@ const translationsResource: AdminForthResourceInput = {
     },
     {
       name: "source",
-      showIn: ['filter', 'show'],
+      showIn: { all: false, filter: true, show: true },
       type: AdminForthDataTypes.STRING,
     },
     {
       name: "category",
-      showIn: ['filter', 'show', 'list'],
+      showIn: { all: false, filter: true, show: true, list: true },
       type: AdminForthDataTypes.STRING,
     }
   ],
