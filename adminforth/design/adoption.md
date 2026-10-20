@@ -15,12 +15,12 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/dashboard | ✓ |
 | @adminforth/email-invite | ✓ |
 | @adminforth/email-password-reset | ✓ |
-| @adminforth/foreign-inline-list |  |
-| @adminforth/foreign-inline-show | |
+| @adminforth/foreign-inline-list | ✓ |
+| @adminforth/foreign-inline-show | ✓ |
 | @adminforth/i18n | ✓ |
 | @adminforth/i18n-static | ✓ |
 | @adminforth/import-export | ✓ |
-| @adminforth/json-form | |
+| @adminforth/json-form | ✓ |
 | @adminforth/list-in-place-edit | ✓ |
 | @adminforth/login-captcha | |
 | @adminforth/many2many | ✓ |
@@ -35,7 +35,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/universal-search | ✓ |
 | @adminforth/upload | ✓ |
 | @adminforth/user-sessions | ✓ |
-| @adminforth/user-soft-delete | |
+| @adminforth/user-soft-delete | ✓ |
 
 ## Releasing an adapted plugin
 
@@ -62,4 +62,4 @@ The cards of the landing gallery (`documentation/src/pages/index.tsx`) show a st
 
 - If simple - get of flowbite, prefer pure AFCL + Tailwind, move features we luck to AFCL
 - Existing icon fonts apart lucide - try to get rid of them if not complex
-- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: foreign-inline-list, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.
+- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.
