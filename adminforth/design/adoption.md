@@ -22,7 +22,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/import-export | ✓ |
 | @adminforth/json-form | ✓ |
 | @adminforth/list-in-place-edit | ✓ |
-| @adminforth/login-captcha | |
+| @adminforth/login-captcha | ✓ |
 | @adminforth/many2many | ✓ |
 | @adminforth/markdown | ✓ |
 | @adminforth/mcp | ✓ |
