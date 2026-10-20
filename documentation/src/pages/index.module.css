@@ -673,15 +673,11 @@
   flex-direction: column;
 }
 
-.gcard img,
+/* a drawn screen is a picture: no focus, clicks and scroll stay with the page */
 .gcard iframe {
   display: block;
   width: 100%;
   border-bottom: 1px solid var(--line);
-}
-
-/* a drawn screen is a picture: no focus, clicks and scroll stay with the page */
-.gcard iframe {
   aspect-ratio: 16 / 10;
   border-top: 0;
   border-right: 0;

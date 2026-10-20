@@ -4,7 +4,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError } from './modules/utils.js';
+import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError, removedInV4 } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -825,6 +825,9 @@ class AdminForth implements IAdminForth {
           `Note: Return { ok: false, error: null, redirectToRecordId } to stop creation and redirect to an existing record.`
         );
       }
+      if ('newRecordId' in resp) {
+        throw new Error(removedInV4(`Resource "${resource.resourceId}" hooks.create.beforeSave result "newRecordId"`, 'redirectToRecordId'));
+      }
       if (resp.ok === false && !resp.error) {
         const { error, redirectToRecordId } = resp;
         return {
@@ -886,6 +889,9 @@ class AdminForth implements IAdminForth {
   async updateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult> {
+    if ('record' in params) {
+      throw new Error(removedInV4('updateResourceRecord param "record"', 'updates'));
+    }
     const { resource, recordId, oldRecord, adminUser, extra, updates } = params;
     normalizeRecordValues(resource, updates);
     const err = this.validateRecordValues(resource, updates, 'edit');

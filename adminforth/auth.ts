@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import AdminForth from './index.js';
 import { AdminUserAuthorizationResult, AdminUserAuthorizeFunction, AfterSessionCreatedFunction, HttpExtra, IAdminForthAuth, IAdminForthHttpResponse } from './types/Back.js';
 import { AdminUser } from './types/Common.js';
-import { listify } from './modules/utils.js';
+import { listify, removedInV4 } from './modules/utils.js';
 import { afLogger } from './modules/logger.js';
 import { Address4, Address6 } from 'ip-address';
 
@@ -130,6 +130,9 @@ class AdminForthAuth implements IAdminForthAuth {
   setCustomCookie({ response, payload }: {
     response: any, payload: { name: string, value: string, expirySeconds?: number, httpOnly: boolean, sessionBased?: boolean }
   }) {
+    if ('expiry' in payload) {
+      throw new Error(removedInV4('setCustomCookie payload "expiry"', 'expirySeconds'));
+    }
     const { name, value, httpOnly, expirySeconds = 24 * 60 * 60, sessionBased } = payload; // default 1 day
     const expiryMs = expirySeconds * 1000;
     const brandSlug = this.adminforth.config.customization.brandNameSlug;

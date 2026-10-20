@@ -97,9 +97,9 @@ const usersResource: AdminForthResourceInput = {
     edit: {
       beforeSave: [
         blockDemoUsers,
-        async ({ record, adminUser, resource}: any) => {
-            if (record.password) {
-                record.password_hash = await AdminForth.Utils.generatePasswordHash(record.password);
+        async ({ updates }: any) => {
+            if (updates.password) {
+                updates.password_hash = await AdminForth.Utils.generatePasswordHash(updates.password);
             }
             return { ok: true }
         },

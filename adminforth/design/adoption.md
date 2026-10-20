@@ -20,7 +20,6 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 | @adminforth/i18n | ✓ |
 | @adminforth/i18n-static | ✓ |
 | @adminforth/import-export | ✓ |
-| @adminforth/inline-create | |
 | @adminforth/json-form | |
 | @adminforth/list-in-place-edit | ✓ |
 | @adminforth/login-captcha | |
@@ -46,7 +45,7 @@ Which packages follow the [design concepts](./system-concepts.md): tokens instea
 
 ## Landing page previews
 
-The cards of the landing gallery (`documentation/src/pages/index.tsx`) show either a PNG screenshot (`original`) or a static HTML page of `documentation/static/landing-previews` (`preview: '<file>'`) drawn in the design system. A plugin moves to `preview` once it is adapted.
+The cards of the landing gallery (`documentation/src/pages/index.tsx`) show a static HTML page of `documentation/static/landing-previews` (`preview: '<file>'`) drawn in the design system.
 
 - Draw the screen of the plugin's core feature, not the whole page: keep one key element (an open menu, a form field, a dialog) and drop the columns, fields and buttons which don't explain the feature. A card is about 440px wide, so a screen with every column of the real page is unreadable.
 - Copy the closest page (a list, an edit form, a settings tab) and take the markup, texts, Lucide icons and tokens from the components of the plugin, the shared classes are in `previews.css`.
@@ -63,4 +62,4 @@ The cards of the landing gallery (`documentation/src/pages/index.tsx`) show eith
 
 - If simple - get of flowbite, prefer pure AFCL + Tailwind, move features we luck to AFCL
 - Existing icon fonts apart lucide - try to get rid of them if not complex
-- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: foreign-inline-list, inline-create, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.
+- Core uses only Lucide icons and `flag-icons` flags (`afcl/CountryFlag.vue`). `vue-flowbite` and `vue-heroicons` stay in `spa/package.json` while plugins import them (flowbite: foreign-inline-list, user-soft-delete, and dashboard only for `flowbite:chart-pie-solid`, the old default menu icon which stored dashboard configs may name; no plugin imports heroicons any more). After plugins rework it they should disappear.

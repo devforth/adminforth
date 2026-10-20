@@ -64,8 +64,8 @@ const FEATURED_ON = [
 
 type PluginItem = {name: string; slug: string; description: string; standard?: string};
 type PluginGroup = {title: string; items: PluginItem[]};
-// a card shows a screenshot (original) or a page of static/landing-previews drawn in the design system (preview)
-type GalleryItem = {title: string; link: string; description: string; original?: string; preview?: string};
+// a card shows a page of static/landing-previews drawn in the design system
+type GalleryItem = {title: string; link: string; description: string; preview: string};
 
 const images: GalleryItem[] = [
   {
@@ -158,12 +158,6 @@ const images: GalleryItem[] = [
     title: 'List in-place edit Plugin for quick edit', 
     link: '/docs/tutorial/Plugins/list-in-place-edit/',
     description: 'Edit some oftenly used fields in list directly without opening edit page. Decide which fields to be editable in list view'
-  },
-  {
-    original: require('@site/static/img/previews/inplace-create.png').default,
-    title: 'Inline create Plugin for quick create',
-    link: '/docs/tutorial/Plugins/inline-create/',
-    description: 'For tables with small fields number which should be created massively, use inline create plugin to create records directly in list view'
   },
   {
     preview: 'import-export',
@@ -264,7 +258,6 @@ const PLUGIN_GROUPS: PluginGroup[] = [
       {name: 'Markdown', slug: 'markdown', description: 'Author and preview Markdown, stored as Markdown'},
       {name: 'JSON form', slug: 'json-form', description: 'A real form for a JSON column, generated from your schema', standard: 'JSON Schema'},
       {name: 'Uploads', slug: 'upload', description: 'S3, S3-compatible or local storage under your own keys', standard: 'S3 API'},
-      {name: 'Inline create', slug: 'inline-create', description: 'Add a row without leaving the list'},
       {name: 'List in-place edit', slug: 'list-in-place-edit', description: 'Edit cells where you read them'},
       {name: 'Clone row', slug: 'clone-row', description: 'Duplicate a record into a prefilled form'},
       {name: 'Many-to-many', slug: 'many2many', description: 'Link tables managed as one ordinary field'},
@@ -544,16 +537,12 @@ function Gallery(): JSX.Element {
       <div className={styles.gallery}>
         {images.map((item, index) => (
           <div className={styles.gcard} key={`feature${index}`}>
-            {item.preview ? (
-              <iframe
-                src={withBaseUrl(`/landing-previews/${item.preview}.html`)}
-                title={item.title}
-                loading="lazy"
-                tabIndex={-1}
-              />
-            ) : (
-              <img src={item.original} alt={item.title} title={item.title} loading="lazy" />
-            )}
+            <iframe
+              src={withBaseUrl(`/landing-previews/${item.preview}.html`)}
+              title={item.title}
+              loading="lazy"
+              tabIndex={-1}
+            />
             <div className={styles.gcardBody}>
               <Heading as="h3" className={styles.gcardTitle}>{item.title}</Heading>
               <p>{item.description}</p>

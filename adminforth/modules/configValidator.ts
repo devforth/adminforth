@@ -18,7 +18,7 @@ import { compositePkValues, isCompositePrimaryKey } from './recordId.js';
 
 import fs from 'fs';
 import path from 'path';
-import { guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString } from './utils.js';
+import { guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString, removedInV4 } from './utils.js';
 import { 
   AdminForthSortDirections,
   type AdminForthComponentDeclarationFull,
@@ -179,6 +179,9 @@ export default class ConfigValidator implements IConfigValidator {
     customization.customPages.forEach((page) => {
       page.component = this.validateComponent(page.component, errors);
       const meta = page.component.meta || {};
+      if ('customLayout' in meta) {
+        errors.push(removedInV4(`Custom page "${page.path}" meta.customLayout`, `meta.sidebarAndHeader: 'none'`));
+      }
       if (meta.sidebarAndHeader === undefined) {
         meta.sidebarAndHeader = 'default';
       }
@@ -337,7 +340,9 @@ export default class ConfigValidator implements IConfigValidator {
     // an invalid showIn is reported with the other config errors, the column is normalized as if it had none
     // so the checks after this one do not crash on an undefined showIn before the errors are thrown
     const showInIsObject = column.showIn && !Array.isArray(column.showIn) && typeof column.showIn === 'object';
-    if (column.showIn && !showInIsObject) {
+    if (Array.isArray(column.showIn)) {
+      errors.push(removedInV4(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn as an array`, 'an object, e.g. showIn: { list: true, edit: false }'));
+    } else if (column.showIn && !showInIsObject) {
       errors.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn must be an object`);
     }
 
@@ -875,6 +880,9 @@ export default class ConfigValidator implements IConfigValidator {
         });
       }
 
+      if (resInput.options && 'bulkActions' in resInput.options) {
+        errors.push(removedInV4(`Resource "${res.resourceId}" options.bulkActions`, 'options.actions with bulkHandler'));
+      }
       const options: Partial<AdminForthResource['options']> = {...resInput.options, bulkActions: undefined, allowedActions: undefined};
 
       options.allowedActions = this.validateAndNormalizeAllowedActions(resInput, errors);
@@ -1158,6 +1166,9 @@ export default class ConfigValidator implements IConfigValidator {
     // AUTH checks
 
     if (newConfig.auth) {
+      if ('resourceId' in newConfig.auth) {
+        throw new Error(removedInV4('auth.resourceId', 'auth.usersResourceId'));
+      }
       if (!newConfig.auth.usersResourceId) {
         throw new Error('No config.auth.usersResourceId defined');
       }
@@ -1180,6 +1191,10 @@ export default class ConfigValidator implements IConfigValidator {
           this.validateComponent({file: page.component}, errors);
           page.slug = page.slug ?? slugifyString(page.pageLabel);
         }
+      }
+
+      if ('rememberMeDays' in newConfig.auth) {
+        errors.push(removedInV4('auth.rememberMeDays', `auth.rememberMeDuration: "${newConfig.auth.rememberMeDays}d"`));
       }
 
       if (newConfig.auth.rememberMeDuration !== undefined) {

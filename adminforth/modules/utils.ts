@@ -99,6 +99,13 @@ export function suggestIfTypo(names: string[], name: string): string {
 }
 
 
+/**
+ * Message for an option or param removed in AdminForth 4, names what to use instead
+ */
+export function removedInV4(what: string, replacement: string): string {
+  return `${what} is no longer supported in AdminForth 4+, use ${replacement} instead`;
+}
+
 export function md5hash(str:string) {
   return crypto.createHash('md5').update(str).digest('hex');
 }
