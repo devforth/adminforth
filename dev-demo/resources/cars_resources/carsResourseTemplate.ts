@@ -7,7 +7,6 @@ import AuditLogPlugin from '../../../plugins/adminforth-audit-log/index.js';
 import RichEditorPlugin from '../../../plugins/adminforth-rich-editor/index.js';
 import TextCompletePlugin from '../../../plugins/adminforth-text-complete/index.js';
 import importExport from '../../../plugins/adminforth-import-export/index.js';
-import InlineCreatePlugin from '../../../plugins/adminforth-inline-create/index.js';
 import ListInPlaceEditPlugin from "../../../plugins/adminforth-list-in-place-edit/index.js";
 import BulkAiFlowPlugin from '../../../plugins/adminforth-bulk-ai-flow/index.js';
 import ForeignInlineShowPlugin from '../../../plugins/adminforth-foreign-inline-show/index.js';
@@ -280,7 +279,6 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           storageAdapter: s3StorageAdapter as any
         }
       }),
-      // new InlineCreatePlugin({}),
       new ListInPlaceEditPlugin({
         columns: ["model", "engine_type", "price"],
       }),

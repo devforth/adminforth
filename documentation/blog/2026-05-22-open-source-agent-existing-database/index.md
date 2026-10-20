@@ -77,7 +77,7 @@ AdminForth starts where serious systems usually end up:
 - AI completion and AI automation
 - developer-native Vue 3 customization
 
-And around that core sits a growing plugin arsenal for real operations: Agent, Two-Factor Authentication, Foreign Inline List, Foreign Inline Show, Audit Log, Upload, Markdown, Rich Editor, Email Password Reset, Email Invite, Import Export, Open Signup, i18n, OAuth Authentication, Inline Create, List In-Place Edit, Text Complete, Bulk AI Flow, Universal Search, Quick Filters, Login Captcha, User Soft Delete, Clone Row, Many2Many, Background Jobs, and Auto Remove.
+And around that core sits a growing plugin arsenal for real operations: Agent, Two-Factor Authentication, Foreign Inline List, Foreign Inline Show, Audit Log, Upload, Markdown, Rich Editor, Email Password Reset, Email Invite, Import Export, Open Signup, i18n, OAuth Authentication, List In-Place Edit, Text Complete, Bulk AI Flow, Universal Search, Quick Filters, Login Captcha, User Soft Delete, Clone Row, Many2Many, Background Jobs, and Auto Remove.
 
 ## A short path from existing database to working back office
 

@@ -20,7 +20,6 @@ vars:
     - "adminforth-upload"
     - "adminforth-oauth"
     - "adminforth-list-in-place-edit"
-    - "adminforth-inline-create"
     - "adminforth-markdown"
     - "adminforth-foreign-inline-show"
     - "adminforth-email-invite"
