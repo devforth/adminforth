@@ -334,12 +334,14 @@ export default class ConfigValidator implements IConfigValidator {
   }
 
   validateAndNormalizeShowIn(resInput: AdminForthResourceInput, column: AdminForthResourceColumnInput, errors: string[]): ShowIn {
-    if (column.showIn && (Array.isArray(column.showIn) || typeof column.showIn !== 'object')) {
+    // an invalid showIn is reported with the other config errors, the column is normalized as if it had none
+    // so the checks after this one do not crash on an undefined showIn before the errors are thrown
+    const showInIsObject = column.showIn && !Array.isArray(column.showIn) && typeof column.showIn === 'object';
+    if (column.showIn && !showInIsObject) {
       errors.push(`Resource "${resInput.resourceId || resInput.table}" column "${column.name}" showIn must be an object`);
-      return;
     }
 
-    const showInTransformedToObject: ShowInInput = column.showIn || { all: true };
+    const showInTransformedToObject: ShowInInput = showInIsObject ? column.showIn : { all: true };
 
     // by default copy from 'all' key if present or show on all pages
     for (const key of Object.keys(AdminForthResourcePages)) {
