@@ -103,7 +103,7 @@
       </div>
 
       <table class="w-full text-sm text-left table-fixed border-collapse">
-        <colgroup>
+        <colgroup class="hidden md:table-column-group">
           <col class="md:w-56">
           <col>
         </colgroup>

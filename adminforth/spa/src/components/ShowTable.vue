@@ -6,7 +6,7 @@
         {{ groupName }}
         </div>
       <table class="w-full text-sm text-left rtl:text-right text-lightShowTableBodyText dark:text-darkShowTableBodyText table-fixed">
-        <colgroup>
+        <colgroup class="hidden md:table-column-group">
           <col class="md:w-56">
           <col>
         </colgroup>
