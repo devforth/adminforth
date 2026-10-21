@@ -491,7 +491,7 @@ watch(valueStart, (newVal) => {
 
 function doSmth(){
   alert({message: 'Hello world', variant: 'success'})
-  adminforth.alert({message: 'You clicked the button!', variant: 'success' })
+  // adminforth.alert({message: 'You clicked the button!', variant: 'success' })
 }
 
 async function loadPageData(data) {  

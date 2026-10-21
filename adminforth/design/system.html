@@ -332,6 +332,9 @@
 .toast .i { margin-top: 1px; }
 .toast-title { font-weight: 500; color: var(--text); }
 .toast-text { color: var(--muted); }
+.toast-stack { display: grid; width: 100%; max-width: 384px; padding-top: 24px; }
+.toast-stack > .toast { position: relative; grid-area: 1 / 1; transform-origin: top; }
+.toast-stack > .toast.behind > * { visibility: hidden; }
 .dlg { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-pop); overflow: hidden; }
 .dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 6px; }
 .dlg-body { padding: 6px 20px 18px; color: var(--muted); font-size: 13.5px; line-height: 20px; }
@@ -2752,6 +2755,20 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
           <div class="toast" role="status" style="position: relative; overflow: hidden"><span class="spin accent"></span><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">Exporting 248 rows…</span><span class="toast-text">Closes when the file is ready</span></div><span class="toast-prog" style="width: 46%"></span></div>
         </div>
         <div class="tile-cap"><b>Pending</b><code>timeout bar</code></div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top: 16px">
+      <div class="tile">
+        <div class="tile-stage soft center">
+          <div class="toast-stack"><div class="toast behind" role="alert" style="transform: translateY(-24px) scale(.9)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--success)"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">Car created</span><span class="toast-text">Aether Nimbus S</span></div><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Dismiss" style="width: 22px; height: 22px; margin: -2px -4px 0 0"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div><div class="toast behind" role="alert" style="transform: translateY(-12px) scale(.95)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--warning)"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">3 rows skipped</span><span class="toast-text">Duplicate identifiers</span></div><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Dismiss" style="width: 22px; height: 22px; margin: -2px -4px 0 0"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div><div class="toast" role="alert"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--danger)"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">Couldn’t save</span><span class="toast-text">Price must be greater than 0</span></div><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Dismiss" style="width: 22px; height: 22px; margin: -2px -4px 0 0"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div></div>
+        </div>
+        <div class="tile-cap"><b>Stack</b><code>newest in front, 2 more peek 12px</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage soft center">
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 384px"><div class="toast" role="alert"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--success)"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">Car created</span><span class="toast-text">Aether Nimbus S</span></div><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Dismiss" style="width: 22px; height: 22px; margin: -2px -4px 0 0"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div><div class="toast" role="alert"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--warning)"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">3 rows skipped</span><span class="toast-text">Duplicate identifiers</span></div><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Dismiss" style="width: 22px; height: 22px; margin: -2px -4px 0 0"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div><div class="toast" role="alert"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--danger)"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg><div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span class="toast-title">Couldn’t save</span><span class="toast-text">Price must be greater than 0</span></div><button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Dismiss" style="width: 22px; height: 22px; margin: -2px -4px 0 0"><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div></div>
+        </div>
+        <div class="tile-cap"><b>Stack, hover</b><code>8px gap, max 50vh, scrolls, timers paused</code></div>
       </div>
     </div>
   </section>

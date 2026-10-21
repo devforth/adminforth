@@ -3,8 +3,6 @@
 
 <div class="afcl-toast flex items-center w-full p-3 pe-4 rounded-lg shadow-popover dark:shadow-darkPopover dark:text-darkToastText dark:bg-darkToastBackground bg-lightToastBackground text-lightToastText"
     role="alert"
-    @mouseenter="pauseTimer"
-    @mouseleave="resumeTimer"
 >
     <div class="relative w-8 h-8 flex items-center justify-center">
         <div class="absolute af-toast-icon inline-flex items-center justify-center flex-shrink-0 rounded-lg w-full h-full" :class="variantConfig.iconClass">
@@ -48,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ref } from 'vue';
+import { onUnmounted, computed, ref, watch } from 'vue';
 import { useToastStore } from '@/stores/toast';
 import { IconInfo, IconCircleX, IconTriangleAlert, IconCircleCheck, IconX } from '@iconify-prerendered/vue-lucide';
 
@@ -62,7 +60,8 @@ const props = defineProps<{
         id: string;
         timeout?: number|'unlimited';
         buttons?: { value: any; label: string }[];
-    }
+    };
+    paused: boolean;
 }>();
 
 const VARIANT_CONFIGS = {
@@ -134,9 +133,7 @@ function onButtonClick(value: any) {
     emit('close');
 }
 
-onMounted(() => {
-    resumeTimer();
-});
+watch(() => props.paused, (paused) => paused ? pauseTimer() : resumeTimer(), { immediate: true });
 
 onUnmounted(() => {
     if (rafId !== null) cancelAnimationFrame(rafId);

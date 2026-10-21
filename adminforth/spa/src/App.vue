@@ -131,15 +131,7 @@
       </div>
     </div>
     <AcceptModal />
-    <div v-if="toastStore.toasts.length>0" class="fixed bottom-5 flex gap-1 flex-col-reverse z-[100]" :style="{ right: `calc(${appPaddingRight}px + 1.25rem)` }">
-      <transition-group
-        name="fade"
-        tag="div"
-        class="flex flex-col-reverse gap-1"
-      >
-        <Toast :toast="t" @close="toastStore.removeToast(t)" v-for="(t,i) in toastStore.toasts" :key="`t-${t.id}`" ></Toast>
-      </transition-group>
-    </div>
+    <ToastStack :style="{ right: `${appPaddingRight}px` }" />
 
 
     <div v-if="sideBarOpen"
@@ -171,22 +163,6 @@
     animation: blink 2s ease-in-out infinite;
   }
 
-  .fade-leave-active {
-    @apply transition-opacity duration-500;
-  }
-  .fade-leave-to {
-    @apply opacity-0;
-  }
-  .fade-enter-active {
-    @apply transition-opacity duration-500;
-  }
-  .fade-enter-from {
-    @apply opacity-0;
-  }
-  .fade-enter-to {
-    @apply opacity-100;
-  }
-
   @media (max-width: 640px) {
     .af-content-wrapper {
       margin-left: 0 !important;
@@ -209,15 +185,13 @@ import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { createHead } from 'unhead'
 import { getCustomComponent, handleNotAuthorized } from '@/utils';
-import Toast from './components/Toast.vue';
-import {useToastStore} from '@/stores/toast';
+import ToastStack from './components/ToastStack.vue';
 import adminforth, { initFrontedAPI, useAdminforth } from '@/adminforth';
 import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
 import { Tooltip, Spinner, DropdownMenu, DropdownMenuItem } from '@/afcl'
 import { USER_MENU_ITEM_CLASSES } from '@/utils/userMenu';
 
 const coreStore = useCoreStore();
-const toastStore = useToastStore();
 const userStore = useUserStore();
 
 const { menu } = useAdminforth();
