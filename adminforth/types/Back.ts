@@ -70,6 +70,10 @@ export type AgentToolMeta = {
   onlyReadsData?: boolean;
 };
 
+export type AgentResourceMeta = {
+  hiddenFromAgents?: boolean;
+};
+
 export interface IAdminForthEndpointOptionsBase {
   method: string,
   path: string,
@@ -2301,6 +2305,11 @@ export interface ResourceOptionsInput extends Omit<NonNullable<AdminForthResourc
    * ```
    */
   actions?: Array<AdminForthActionInput>,
+
+  /**
+   * AdminForth agent metadata of the resource.
+   */
+  agent?: AgentResourceMeta,
 };
 
 export interface ResourceOptions extends Omit<ResourceOptionsInput, 'allowedActions'> {
