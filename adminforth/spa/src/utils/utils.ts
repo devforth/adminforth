@@ -5,7 +5,6 @@ import router from "../router";
 import { useCoreStore } from '../stores/core';
 import { useUserStore } from '../stores/user';
 import adminforth, { useAdminforth } from '../adminforth';
-import DOMPurify  from 'dompurify'
 import debounce from 'debounce';
 import type { AdminForthActionFront, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, Predicate } from '@/types/Common';
 import { i18nInstance } from '../i18n'
@@ -336,27 +335,31 @@ export function verySimpleHash(str: string): string {
 
 export { humanifySize } from '../afcl/fileSize';
 
-export function protectAgainstXSS(value: string) {
-  return DOMPurify.sanitize(value, {
-    ALLOWED_TAGS: [
-      "address","article","aside","footer","header","h1","h2","h3","h4",
-      "h5","h6","hgroup","main","nav","section","blockquote","dd","div",
-      "dl","dt","figcaption","figure","hr","li","ol","p","pre",
-      "ul","a","abbr","b","bdi","bdo","br","cite","code","data","dfn",
-      "em","i","kbd","mark","q","rb","rp","rt","rtc","ruby","s","samp",
-      "small","span","strong","sub","sup","time","u","var","wbr","caption",
-      "col","colgroup","table","tbody","td","tfoot","th","thead","tr",
-      "img","video","source"
-    ],
-    ALLOWED_ATTR: [
-      "data-list",
-      "src","srcset","alt","title","width","height","loading",
-      "controls","autoplay","loop","muted","poster","playsinline","type",
-      "class","style"
-    ],
-    ALLOW_DATA_ATTR: true,
-    ALLOW_ARIA_ATTR: true
-  });
+const PROTECT_AGAINST_XSS_MOVED = `protectAgainstXSS is no longer exported from '@/utils'. It moved to its own module, so DOMPurify is loaded only by the components which sanitize HTML and not on the first screen of every page.
+
+Until you change the import, the HTML is shown as plain text with its tags escaped, not rendered.
+
+In your custom component replace
+  import { protectAgainstXSS } from '@/utils';
+with
+  import { protectAgainstXSS } from '@/utils/protectAgainstXSS';
+
+If the same import also brings other helpers, keep them in the '@/utils' import and move only protectAgainstXSS, e.g.
+  import { callApi, protectAgainstXSS } from '@/utils';
+becomes
+  import { callApi } from '@/utils';
+  import { protectAgainstXSS } from '@/utils/protectAgainstXSS';`;
+
+/**
+ * @deprecated import it from '@/utils/protectAgainstXSS'. Re-exporting the real one here would put DOMPurify back into the
+ * first screen, its module runs code when it loads. TODO next major: remove this stub.
+ */
+export function protectAgainstXSS(value: string): string {
+  console.error(PROTECT_AGAINST_XSS_MOVED);
+  // never hand the unsanitized HTML back, show it as text instead
+  const el = document.createElement('div');
+  el.textContent = value;
+  return el.innerHTML;
 }
 
 export function isPolymorphicColumn(column: any): boolean {

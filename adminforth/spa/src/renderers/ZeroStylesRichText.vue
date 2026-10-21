@@ -5,7 +5,7 @@
   <script setup lang="ts">
   import { nextTick, onMounted, ref, watch } from 'vue'
   import type { AdminForthResourceColumnCommon, AdminForthResourceFrontend, AdminUser } from '@/types/Common'
-  import { protectAgainstXSS } from '@/utils'
+  import { protectAgainstXSS } from '@/utils/protectAgainstXSS'
   
   const props = defineProps<{
     column: AdminForthResourceColumnCommon
