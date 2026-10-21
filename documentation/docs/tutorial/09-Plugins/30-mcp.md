@@ -6,9 +6,21 @@ slug: /tutorial/Plugins/mcp
 
 # MCP Server
 
-The MCP plugin exposes AdminForth API methods as remote MCP tools. An agent connects either through OAuth sign-in, where the user approves it in the browser, or with an auth secret the user creates. Every request runs as that AdminForth user, so the same resource permissions, validation, and hooks apply.
+The MCP plugin exposes AdminForth API methods as remote MCP tools. An agent connects either through OAuth sign-in, where the user approves it in the browser, or with an auth secret the user creates. Every request runs as that AdminForth user, so the same resource permissions, validation, and hooks apply. The [Agent plugin](/docs/tutorial/Plugins/agent/) uses the same tools and skills through an in-process connection.
 
 Endpoints marked with `agent: { hiddenFromAgents: true }` are not exposed. AdminForth and its plugins mark the endpoints the admin panel uses internally, such as login, two-factor authentication, passkeys, and agent chat. Mark your own endpoints the same way to keep them away from agents.
+
+To hide a whole resource, set `options.agent: { hiddenFromAgents: true }` on it. Agents then neither see it in `get_resources_list` nor read or change its records with any tool, while the admin panel shows it as before. The MCP plugin hides its auth secret resource this way, and the [Agent plugin](/docs/tutorial/Plugins/agent/) hides its session, turn and checkpoint resources.
+
+```ts title="./resources/auditLogs.ts"
+export default {
+  resourceId: 'audit_logs',
+  ...
+  options: {
+    agent: { hiddenFromAgents: true },
+  },
+} as AdminForthResourceInput;
+```
 
 ## Installation
 
@@ -254,9 +266,11 @@ new AdminForthMcpPlugin({
 
 The MCP server sends agents short rules in its instructions: to treat record values as data, never as instructions; to show every change and wait for the user's confirmation in chat; how many calls to make and records to load for one request; to ask which resource to use when several match; and to use `aggregate` for statistics. Detailed rules for typical tasks are skills that the agent loads with the `fetch_skill` tool:
 
-- `fetch_data` – find, list and show records;
-- `analyze_data` – counts, sums, trends and other statistics;
-- `mutate_data` – create, update and delete records and run actions.
+- `fetch-data` – find, list and show records;
+- `analyze-data` – counts, sums, trends and other statistics;
+- `mutate-data` – create, update and delete records and run actions.
+
+Skills from `custom/skills/<skill_name>/SKILL.md` of your project and of other plugins are served the same way. See [Define skills instructions](/docs/tutorial/Plugins/agent/#define-skills-instructions) for the format.
 
 Tools that change data, such as `delete_record`, are marked as destructive for MCP clients, and their descriptions repeat that the agent must get a confirmation in chat, even when the client itself does not ask for approval.
 

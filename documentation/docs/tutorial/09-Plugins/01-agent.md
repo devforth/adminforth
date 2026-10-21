@@ -14,12 +14,17 @@ This plugin adds an AI agent with a chat surface to AdminForth which is capable 
 
 It stores session history in your own resources and generates responses using one of the configured `modes`.
 
+The agent works through the tools and skills of the [MCP Server plugin](/docs/tutorial/Plugins/mcp/): for every turn it opens an in-process MCP connection as the signed-in user, so the same permissions, hooks and validation apply.
+
 ## Installation
 
 ```bash
 pnpm add @adminforth/agent --save
+pnpm add @adminforth/mcp --save
 pnpm add @adminforth/completion-adapter-openai-responses --save
 ```
+
+Set up the MCP plugin as described in [MCP Server](/docs/tutorial/Plugins/mcp/). The agent does not start without it.
 
 Add your LLM credentials to `.env`:
 
@@ -662,7 +667,7 @@ Please send record counts to all admin users
 
 ### Writing custom tools
 
-To define a custom tool, register an API endpoint with `admin.express.endpoint`. The endpoint schema makes the API visible in OpenAPI, and the endpoint `handler` gives the agent a direct function it can call as a tool.
+To define a custom tool, register an API endpoint with `admin.express.endpoint`. The endpoint schema makes the API visible in OpenAPI, and the MCP server exposes the endpoint `handler` as a tool to the agent and to other MCP clients.
 
 `admin.express.withSchema` is useful when you already have a regular Express route and want it to appear in the generated OpenAPI document. However, a route registered only with `withSchema` is not a directly callable agent tool, because it does not register a direct OpenAPI handler. For agent tools, use `admin.express.endpoint`.
 
@@ -681,6 +686,8 @@ type AgentToolMeta = {
 - `requiresHumanApproval: true` makes the agent ask the user for approval before it runs the tool. MCP clients receive the `destructiveHint` annotation.
 - `hiddenFromAgents: true` keeps the endpoint out of agent tools, both in the agent and in the [MCP server](/docs/tutorial/Plugins/mcp/). Use it for endpoints that serve your admin panel UI and must not be called by agents.
 - `onlyReadsData: true` declares that the endpoint does not change any data. MCP clients receive the `readOnlyHint` annotation, and a [read-only MCP server](/docs/tutorial/Plugins/mcp/#read-only-mode) exposes only such endpoints.
+
+To keep a whole resource away from the agent, set `options.agent: { hiddenFromAgents: true }` on it, as described in [MCP Server](/docs/tutorial/Plugins/mcp/). The plugin does it for its own session, turn and checkpoint resources.
 
 This example uses the same email adapter pattern shown in the Email Invite and Email Password Reset plugins. The transport below uses Mailgun only to keep the snippet short; you can replace it with SES or any other adapter from [List of adapters](/docs/tutorial/ListOfAdapters/).
 
@@ -777,13 +784,11 @@ export function initApi(app: Express, admin: IAdminForth) {
 
 ## Define skills instructions
 
-Custom skills live in your app's custom directory. The agent loads project skills from:
+Skills are served by the MCP server, so the agent and other MCP clients load them with `fetch_skill`. Custom skills live in your app's custom directory:
 
 - `custom/skills/<skill_name>/SKILL.md`
 
-Also it can load skills from plugins, it allows other plugins to expose their own skills and tools:
-
-- `custom/plugins/adminforth-agent/skills/<skill_name>/SKILL.md`
+Plugins expose their own skills the same way, from `custom/skills/<skill_name>/SKILL.md` of the plugin. A skill whose name is already taken by the MCP server or by an earlier folder is skipped.
 
 Each skill needs YAML frontmatter with `name` and `description`. The `description` is the discovery surface, so include the phrases the admin is likely to type in chat. Skills are not loaded automcatically, agent loads them 
 on demand once understands that `description` of the skill matches the user intent, so keep the description clear and concise.
@@ -812,7 +817,7 @@ Use `send_email_to_user` to send the final report after you have one exact targe
 
 # Instructions
 
-- For each resource in system use fetch data default skill to collect total count of records in each resource.
+- For each resource in system use the standard `analyze-data` skill to collect total count of records in each resource.
 - Create both a plain text report and an HTML report in format `Resource Label (resourceId): count` for each resource on a new line, sort resources by count in descending order.
 - Use modern, stylish but compatible html formatting in the email.
 - Call `send_email_to_user` with the resolved user primary key, the final subject, the final plain text `body`, and the final HTML markup in `htmlBody`.
@@ -824,13 +829,15 @@ This way allows to extend your agent with literally any custom instructions and 
 
 ## Standard skills
 
-The plugin ships with bundled skills from `plugins/adminforth-agent/custom/skills/`. These are available out of the box and can be combined with your own custom skills.
+The MCP server ships standard skills from `plugins/adminforth-mcp/custom/skills/`. These are available out of the box and can be combined with your own custom skills.
 
-| Folder | Skill name | Description |
-| --- | --- | --- |
-| `analyze_data` | `analyze_data` | Analyze AdminForth resource data, summarize trends, and create charts from fetched rows. Prefer server-side aggregation when possible and return Vega-Lite specs for charts. |
-| `fetch_data` | `fetch_data` | Fetch one or more exact records with filters after inspecting the resource schema. This skill is for finding rows, not for aggregations. |
-| `mutate_data` | `mutate_data` | Create, update, delete, or run actions on records. Before any mutation it must show the exact target row and ask the user for confirmation. |
+| Skill name | Description |
+| --- | --- |
+| `analyze-data` | Answer counts, sums, averages, trends, distributions and comparisons with `aggregate`. |
+| `fetch-data` | Find, list and show records with `get_resource_data`. |
+| `mutate-data` | Create, update or delete records and run custom actions. The agent loads it before any change. |
+
+Guidance on charts is part of the agent's own system prompt, so the agent can draw charts from the data it loads.
 
 
 ## Persistent agent memory
