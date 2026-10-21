@@ -651,7 +651,8 @@ class CodeInjector implements ICodeInjector {
     for (const plugin of this.adminforth.activatedPlugins) {
       const pluginPublicFolderPath = path.join(plugin.customFolderPath, 'public');
       if (fs.existsSync(pluginPublicFolderPath)) {
-        this.publicFoldersToSync[pluginPublicFolderPath] = `./plugins/${plugin.className}/`;
+        // under assets/, because in production express serves only assets/* as files and answers index.html to other paths
+        this.publicFoldersToSync[pluginPublicFolderPath] = `./assets/plugins/${plugin.className}/`;
       }
     }
   }
