@@ -66,8 +66,8 @@ importers:
         specifier: ^1.1.7
         version: 1.1.7(adminforth@4.12.4(@types/node@26.6.5)(express@5.3.0))
       '@adminforth/rich-editor':
-        specifier: ^3.0.3
-        version: 3.0.3(adminforth@4.12.4(@types/node@26.6.5)(express@5.3.0))
+        specifier: ^3.0.4
+        version: 3.0.4(adminforth@4.12.4(@types/node@26.6.5)(express@5.3.0))
       '@adminforth/storage-adapter-amazon-s3':
         specifier: ^1.2.2
         version: 1.2.2(adminforth@4.12.4(@types/node@26.6.5)(express@5.3.0))
@@ -206,8 +206,8 @@ packages:
     peerDependencies:
       adminforth: ^4.7.3
 
-  '@adminforth/rich-editor@3.0.3':
-    resolution: {integrity: sha512-LYVJfvU3wM7VNJ0Vkvc77MXUF/Ofs8YHVrajcza1CSN/4G8Y6OAjeMNwET72kroLNdJ3EpBxowhSiR6DWF12fg==}
+  '@adminforth/rich-editor@3.0.4':
+    resolution: {integrity: sha512-0UFw9n0nz86zymVukJKY+yR7jqNwqjyWRSczcwoPkMfChCotzGRO5NqEx4LaR9g7zqm0PKwv57isc2piNsfObA==}
     peerDependencies:
       adminforth: ^4.7.3
 
@@ -3531,7 +3531,7 @@ snapshots:
     dependencies:
       adminforth: 4.12.4(@types/node@26.6.5)(express@5.3.0)
 
-  '@adminforth/rich-editor@3.0.3(adminforth@4.12.4(@types/node@26.6.5)(express@5.3.0))':
+  '@adminforth/rich-editor@3.0.4(adminforth@4.12.4(@types/node@26.6.5)(express@5.3.0))':
     dependencies:
       adminforth: 4.12.4(@types/node@26.6.5)(express@5.3.0)
       cheerio: 1.2.0
