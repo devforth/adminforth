@@ -74,6 +74,20 @@ model turns {
   checkpoint_id String?
 }
 
+model mcp_auth_secrets {
+  id                 String   @id
+  name               String
+  secret_hash        String   @unique
+  user_id            String
+  created_at         DateTime
+  last_used_at       DateTime?
+  last_used_by_agent String?
+  read_only          Boolean  @default(false)
+  oauth_client_id    String?
+
+  @@index([user_id])
+}
+
 model agent_checkpoints {
   id                    String   @id
   thread_id             String

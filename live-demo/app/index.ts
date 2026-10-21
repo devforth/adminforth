@@ -11,10 +11,11 @@ import auditLogsResource from "./resources/auditLogs"
 import sessionsResource from './resources/agent_resources/sessions';
 import turnsResource from './resources/agent_resources/turns';
 import checkpointsResource from './resources/agent_resources/checkpoints';
+import mcpAuthSecretsResource from './resources/mcp_auth_secrets';
 import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
-import { adminForthAgent } from './globalPlugins';
+import { adminForthAgent, adminForthMcp } from './globalPlugins';
 import I18nStaticPlugin from '@adminforth/i18n-static';
 
 let db;
@@ -71,6 +72,7 @@ new AdminForth({
     sessionsResource,
     turnsResource,
     checkpointsResource,
+    mcpAuthSecretsResource,
     jobs_resource,
   ],
   menu: [
@@ -132,6 +134,7 @@ new AdminForth({
     },
   ],
   globalPlugins: [
+    adminForthMcp,
     adminForthAgent,
     new I18nStaticPlugin({
       supportedLanguages: [

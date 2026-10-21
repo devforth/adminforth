@@ -1,4 +1,5 @@
 import AdminForthAgent from '@adminforth/agent';
+import AdminForthMcpPlugin from '@adminforth/mcp';
 import { getLocalizedPlaceholderMessages } from './resources/agent_resources/placeholderMessages';
 import OpenAIAudioAdapter from '@adminforth/audio-adapter-openai'
 import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
@@ -21,6 +22,22 @@ const createCompletionAdapter = (
 const balancedCompletionAdapter = createCompletionAdapter('gpt-6-luna', 'medium');
 const fastCompletionAdapter = createCompletionAdapter('gpt-6-luna', 'low');
 // const smartThinkingCompletionAdapter = createCompletionAdapter('gpt-5.4', 'xhigh');
+
+export const adminForthMcp = new AdminForthMcpPlugin({
+  adminPanelOrigin: process.env.NODE_ENV === 'production' ? 'https://demo.adminforth.dev' : 'http://localhost:3500',
+  authSecretResource: {
+    resourceId: 'mcp_auth_secrets',
+    idField: 'id',
+    nameField: 'name',
+    secretHashField: 'secret_hash',
+    userIdField: 'user_id',
+    createdAtField: 'created_at',
+    lastUsedAtField: 'last_used_at',
+    lastUsedByAgentField: 'last_used_by_agent',
+    readOnlyField: 'read_only',
+    oauthClientIdField: 'oauth_client_id',
+  },
+});
 
 export const adminForthAgent = new AdminForthAgent({
   audioAdapter: new OpenAIAudioAdapter({
