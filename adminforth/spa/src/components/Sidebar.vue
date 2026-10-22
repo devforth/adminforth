@@ -70,8 +70,8 @@
           <div v-else-if="item.type === 'heading'" class="flex items-center justify-left px-3 pt-3 pb-1 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
           ">{{ item.label }}</div>
           <li v-else-if="item.children" class="af-sidebar-expand-container">
-            <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button flex items-center w-full px-3 py-1.5 text-sm text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
-                :class="opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
+            <button @click="clickOnMenuItem(item)" type="button" class="af-sidebar-expand-button flex items-center w-full px-3 py-1.5 text-sm text-lightSidebarText rounded-default transition duration-75  group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
+                :class="isGroupOpened(item) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed'"
                 :aria-controls="`dropdown-example${i}`"
             >
               <component v-if="item.icon" :is="getIcon(item.icon)" class="w-4 h-4 text-lightSidebarIcons group-hover:text-lightSidebarIconsHover transition duration-75 dark:group-hover:text-darkSidebarIconsHover dark:text-darkSidebarIcons" ></component>
@@ -90,12 +90,12 @@
                 </span>
               </span>
 
-              <IconChevronDown :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
+              <IconChevronDown :class="{'rotate-180':  isGroupOpened(item) }" class="w-3 h-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
             </button>
 
             <div class="grid transition-[grid-template-rows,opacity] duration-200 ease-in-out"
-              :class="opened.includes(i) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
-              :inert="!opened.includes(i)"
+              :class="isGroupOpened(item) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
+              :inert="!isGroupOpened(item)"
             >
               <div class="min-h-0 overflow-hidden">
                 <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown mt-0.5 ml-[1.25rem] pl-2 border-l border-lightSidebarDevider dark:border-darkSidebarDevider space-y-0.5">
@@ -119,9 +119,9 @@
             ">{{ item.label }}</div>
             <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="opacity-0 w-1 h-8">{{ item.label }}</div>
             <li v-else-if="item.children" class="af-sidebar-expand-container">
-                <button @click="clickOnMenuItem(i)" type="button" class="af-sidebar-expand-button relative flex items-center h-9 py-2 text-sm text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
+                <button @click="clickOnMenuItem(item)" type="button" class="af-sidebar-expand-button relative flex items-center h-9 py-2 text-sm text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
                     :class="[
-                      opened.includes(i) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed',
+                      isGroupOpened(item) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed',
                       isSidebarIconOnly && !isSidebarHovering ? 'w-10 ml-1 px-3' : 'w-full px-3'
                     ]"
                     :aria-controls="`dropdown-example${i}`"
@@ -155,10 +155,10 @@
                         </span>
                     </span>
 
-                    <IconChevronDown :class="{'rotate-180':  opened.includes(i) }" class="w-3 h-3 ml-2 absolute right-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
+                    <IconChevronDown :class="{'rotate-180':  isGroupOpened(item) }" class="w-3 h-3 ml-2 absolute right-3 text-lightSidebarIcons dark:text-darkSidebarIcons transition-transform duration-200" aria-hidden="true" />
                 </button>
 
-                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-0.5 space-y-0.5" :class="{ 'hidden': !opened.includes(i) }">
+                <ul :id="`dropdown-example${i}`" role="none" class="af-sidebar-dropdown pt-0.5 space-y-0.5" :class="{ 'hidden': !isGroupOpened(item) }">
                     <template v-for="(child, j) in item.children" :key="`menu-${i}-${j}`">
                         <li class="af-sidebar-menu-link">
                             <MenuLink :item="child" isChild="true" @click="$emit('hideSidebar')" :isSidebarIconOnly="isSidebarIconOnly" :isSidebarHovering="isSidebarHovering"/>
@@ -314,7 +314,7 @@ import MenuLink from './MenuLink.vue';
 import { IconPanelLeftClose, IconPanelLeftOpen, IconChevronDown, IconX, IconCircleAlert } from '@iconify-prerendered/vue-lucide';
 import { getIcon, verySimpleHash, loadFile, getCustomComponent } from '@/utils';
 import { Tooltip } from '@/afcl';
-import type { AnnouncementBadgeResponse } from '@/types/Common';
+import type { AnnouncementBadgeResponse, AdminForthConfigMenuItem } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
 import { useI18n } from 'vue-i18n';
 
@@ -338,8 +338,9 @@ const emit = defineEmits<{
 
 const coreStore = useCoreStore();
 
-//create a ref to store the opened menu items with ts type;
-const opened = ref<(string|number)[]>([]);
+const OPENED_GROUPS_LS_KEY = 'afSidebarOpenedGroups';
+// expanded/collapsed state of groups toggled by user, by itemId, untouched groups fall back to item.open
+const openedGroups = ref<Record<string, boolean>>(JSON.parse(localStorage.getItem(OPENED_GROUPS_LS_KEY) || '{}'));
 const sidebarAside = ref(null);
 
 const smQuery = window.matchMedia('(min-width: 640px)');
@@ -390,21 +391,14 @@ function toggleSidebar() {
   }, 100);
 }
 
-function clickOnMenuItem(label: string | number) {
-  if (opened.value.includes(label)) {
-    opened.value = opened.value.filter((item) => item !== label);
-  } else {
-    opened.value.push(label);
-  }
+function isGroupOpened(item: AdminForthConfigMenuItem) {
+  return openedGroups.value[item.itemId!] ?? item.open;
 }
 
-watch(()=>coreStore.menu, () => {
-    coreStore.menu.forEach((item, i) => {
-    if (item.open) {
-      opened.value.push(i);
-    };
-  });
-})
+function clickOnMenuItem(item: AdminForthConfigMenuItem) {
+  openedGroups.value[item.itemId!] = !isGroupOpened(item);
+  localStorage.setItem(OPENED_GROUPS_LS_KEY, JSON.stringify(openedGroups.value));
+}
 
 
 
@@ -455,11 +449,6 @@ onMounted(() => {
     isSidebarIconOnly.value = false;
   }
 
-  coreStore.menu.forEach((item, i) => {
-    if (item.open) {
-      opened.value.push(i);
-    };
-  });
   // Emit initial state
   emit('sidebarStateChange', { isSidebarIconOnly: isSidebarIconOnly.value, isSidebarHovering: isSidebarHovering.value });
 })

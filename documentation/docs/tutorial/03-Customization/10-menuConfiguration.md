@@ -57,6 +57,8 @@ E.g. create group "Blog" with Items who link to resource "posts" and "categories
 
 If it is rare Group you can make it `open: false` so it would not take extra space in menu, but admin users will be able to open it by clicking on the group name.
 
+`open` sets only the default state: once a user expands or collapses a group, their choice is saved in the browser local storage and kept after page reloads.
+
 ## Adding menu items from plugins
 
 Plugins can add top-level menu items without mutating the user-defined `config.menu`. This keeps the application menu owned by the app configuration, while plugins can contribute their own entries.
