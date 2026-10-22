@@ -549,6 +549,42 @@ To format your date fields to display the elapsed time, you can utilize the Rela
     ...
 ```
 
+### Enum Badge
+
+Renders the value of a column with `enum` as a badge with the label of its enum option. Give a variant to the values which should stand out, the other values get the `default` one. Variants are `default`, `success`, `warning`, `danger`, `accent` and `muted`, the same as of the AFCL [Badge](./15-afcl/03-dataDisplay.md#badge). Empty values render as an empty cell.
+
+```ts title='./resources/orders.ts'
+  columns: [
+    ...
+    {
+      name: 'status',
+      enum: [
+        { value: 'new', label: 'New' },
+        { value: 'paid', label: 'Paid' },
+        { value: 'cancelled', label: 'Cancelled' },
+      ],
+  //diff-add
+      components: {
+  //diff-add
+        list: {
+  //diff-add
+          file: '@/renderers/EnumBadge.vue',
+  //diff-add
+          meta: {
+  //diff-add
+            variants: { new: 'accent', paid: 'success', cancelled: 'muted' },
+  //diff-add
+          },
+  //diff-add
+        },
+  //diff-add
+      },
+      ...
+    }
+```
+
+Set the same component for `show` to render the badge on the show page too.
+
 ### Rich text and Zero-style Rich text
 
 If you have some field which holds HTML content you can use `RichText` renderer to render it as HTML.

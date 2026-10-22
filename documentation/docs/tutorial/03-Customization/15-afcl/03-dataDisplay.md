@@ -579,6 +579,31 @@ import { CountryFlag } from '@/afcl'
 
 </AfclPreview>
 
+## Badge
+
+A Badge labels a status or a category. Variants are `default`, `success`, `warning`, `danger`, `accent` (the `primary` color of the theme) and `muted`.
+
+<AfclPreview id="badge">
+
+```js
+import { Badge } from '@/afcl'
+```
+
+```html
+<div class="flex flex-wrap items-center gap-2">
+  <Badge>Default</Badge>
+  <Badge variant="success">Paid</Badge>
+  <Badge variant="warning">Pending</Badge>
+  <Badge variant="danger">Failed</Badge>
+  <Badge variant="accent">New</Badge>
+  <Badge variant="muted">Archived</Badge>
+</div>
+```
+
+</AfclPreview>
+
+To render values of an enum column as badges in the list or show view, use the [Enum Badge](../02-customFieldRendering.md#enum-badge) renderer.
+
 ## ProgressBar
 
 <AfclPreview id="progress-bar">

@@ -58,27 +58,29 @@
     </span>
         
     <span v-else-if="column.type === 'boolean'">
-      <span v-if="record[column.name] === true" class="af-true-value-icon gap-1" :class="[BADGE_CLASSES, TRUE_BADGE_CLASSES]"><IconCheck class="w-3 h-3" aria-hidden="true" />{{ $t('Yes') }}</span>
-      <span v-else-if="record[column.name] === false" class="af-false-value-icon" :class="[BADGE_CLASSES, FALSE_BADGE_CLASSES]">{{ $t('No') }}</span>
-      <span v-else class="border-dashed text-lightInputIconColor border-lightInputBorder dark:text-darkInputIconColor dark:border-darkInputBorder" :class="BADGE_CLASSES">{{ $t('Unset') }}</span>
+      <Badge v-if="record[column.name] === true" variant="success" class="af-true-value-icon me-2"><IconCheck class="w-3 h-3" aria-hidden="true" />{{ $t('Yes') }}</Badge>
+      <Badge v-else-if="record[column.name] === false" variant="muted" class="af-false-value-icon me-2">{{ $t('No') }}</Badge>
+      <Badge v-else class="me-2 border-dashed bg-transparent text-lightInputIconColor border-lightInputBorder dark:bg-transparent dark:text-darkInputIconColor dark:border-darkInputBorder">{{ $t('Unset') }}</Badge>
     </span>
     <span
       v-else-if="column.type === 'json' && column.isArray?.enabled"
       class="flex flex-wrap"
     >
       <template v-for="(arrayItem, arrayItemIndex) in record[column.name]">
-        <span
+        <Badge
           v-if="column.isArray.itemType === 'boolean' && arrayItem"
           :key="`${column.name}-${arrayItemIndex}-true`"
-          class="af-true-value-icon gap-1" :class="[BADGE_CLASSES, TRUE_BADGE_CLASSES]">
+          variant="success"
+          class="af-true-value-icon me-2">
           {{ $t('Yes') }}
-        </span>
-        <span
+        </Badge>
+        <Badge
           v-else-if="column.isArray.itemType === 'boolean'"
           :key="`${column.name}-${arrayItemIndex}-false`"
-          class="af-false-value-icon" :class="[BADGE_CLASSES, FALSE_BADGE_CLASSES]">
+          variant="muted"
+          class="af-false-value-icon me-2">
           {{ $t('No') }}
-        </span>
+        </Badge>
         <span
           v-else
           :key="`${column.name}-${arrayItemIndex}`"
@@ -123,13 +125,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { IconCheck } from '@iconify-prerendered/vue-lucide';
 import type { AdminForthResourceColumnCommon } from '@/types/Common';
-import { JsonViewer } from '@/afcl';
+import { JsonViewer, Badge } from '@/afcl';
 
 import type { any } from 'zod';
 
-const BADGE_CLASSES = 'inline-flex items-center whitespace-nowrap me-2 px-2 h-5 rounded-full border text-xs font-medium';
-const TRUE_BADGE_CLASSES = 'bg-lightSuccessSoft text-lightSuccess border-lightSuccessBorder dark:bg-darkSuccessSoft dark:text-darkSuccess dark:border-darkSuccessBorder';
-const FALSE_BADGE_CLASSES = 'bg-lightSecondaryDarken text-lightInputIconColor border-transparent dark:bg-darkSecondaryLighten dark:text-darkInputIconColor';
 
 const route = useRoute();
 
