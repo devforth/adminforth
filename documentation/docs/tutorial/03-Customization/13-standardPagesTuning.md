@@ -1054,7 +1054,9 @@ If `beforeDatasourceRequest` or `afterDatasourceResponse` hooks are set for poly
 In cases when column values must follow certain format, you can add `validation` to it.
 `validation` is an array of rules, each containing `regExp` or `validator function` that defines a format for a value and `message` that will be displayed in case when entered value does not pass the check.
 
-### Frontend validation
+The create and edit forms check `validation`, `required`, `minLength`/`maxLength`, `minValue`/`maxValue`, `enum` values and `isArray` rules while the user types. The server checks all of them again when the record is saved, so a request sent past the form cannot store an invalid value. `required` columns hidden by `showIn` or `showIf` are not required. Records created or updated from code with `createResourceRecord`/`updateResourceRecord` go through the same checks except `required`.
+
+### RegExp validation
 We recommend to use this validation with regExp, because it validates fields in real time
 
 ```typescript title="./resources/adminuser.ts"
@@ -1085,8 +1087,8 @@ export default {
   ],
 ```
 
-### Backend validation
-There might be rare cases, when you want to have your own validation function. For this you can use `validator` callback:
+### Custom validator
+There might be rare cases, when you want to have your own validation function. For this you can use `validator` callback. It runs on the server: the form calls it to show the error next to the field, and the server calls it again when the record is saved. `record` is the whole record, on edit it is the stored record with the changed values applied:
 ```typescript title="./resources/adminuser.ts"
 export default {
       name: 'adminuser',

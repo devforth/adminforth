@@ -616,7 +616,7 @@ export function checkShowIf(c: AdminForthResourceColumnInputCommon, record: Reco
         if ("$nincludes" in condition)
           return (
             Array.isArray(recordValue) &&
-            !recordValue.includes(condition.$nicludes)
+            !recordValue.includes(condition.$nincludes)
           );
 
         return true;

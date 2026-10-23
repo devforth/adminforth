@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Fuse from 'fuse.js';
 import crypto from 'crypto';
-import { AdminForthConfig, AdminForthResource, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
+import { AdminForthConfig, AdminForthResource, AdminForthResourceColumn, AdminForthResourceColumnInputCommon,Filters, IAdminForth, Predicate } from '../index.js';
 import { RateLimiterMemory, RateLimiterAbstract } from "rate-limiter-flexible";
 import { encodeRecordId, isCompositePrimaryKey } from './recordId.js';
 import { PERIOD_UNITS, type PeriodString, type PeriodUnit, type HttpExtra } from '../types/Back.js';
@@ -334,6 +334,70 @@ export function applyRegexValidation(value, validation) {
       }
     }
   }
+}
+
+/**
+ * Server copy of checkShowIf from spa/src/utils/utils.ts: the server must skip the same columns the form hides
+ */
+export function checkShowIf(c: AdminForthResourceColumn, record: Record<string, any>, allColumns: AdminForthResourceColumn[]) {
+  if (!c.showIf) return true;
+  const recordCopy = { ...record };
+  for (const col of allColumns) {
+    if (!recordCopy[col.name]) {
+      recordCopy[col.name] = null;
+    }
+  }
+  const evaluatePredicate = (predicate: Predicate): boolean => {
+    const results: boolean[] = [];
+
+    if ("$and" in predicate) {
+      results.push(predicate.$and.every(evaluatePredicate));
+    }
+
+    if ("$or" in predicate) {
+      results.push(predicate.$or.some(evaluatePredicate));
+    }
+
+    const fieldEntries = Object.entries(predicate).filter(([key]) => !key.startsWith('$'));
+    if (fieldEntries.length > 0) {
+      const fieldResult = fieldEntries.every(([field, condition]) => {
+        const recordValue = recordCopy[field];
+
+        if (condition === undefined) {
+          return true;
+        }
+        if (typeof condition !== "object" || condition === null) {
+          return recordValue === condition;
+        }
+
+        if ("$eq" in condition) return recordValue === condition.$eq;
+        if ("$not" in condition) return recordValue !== condition.$not;
+        if ("$gt" in condition) return recordValue > condition.$gt;
+        if ("$gte" in condition) return recordValue >= condition.$gte;
+        if ("$lt" in condition) return recordValue < condition.$lt;
+        if ("$lte" in condition) return recordValue <= condition.$lte;
+        if ("$in" in condition) return (Array.isArray(condition.$in) && condition.$in.includes(recordValue));
+        if ("$nin" in condition) return (Array.isArray(condition.$nin) && !condition.$nin.includes(recordValue));
+        if ("$includes" in condition)
+          return (
+            Array.isArray(recordValue) &&
+            recordValue.includes(condition.$includes)
+          );
+        if ("$nincludes" in condition)
+          return (
+            Array.isArray(recordValue) &&
+            !recordValue.includes(condition.$nincludes)
+          );
+
+        return true;
+      });
+      results.push(fieldResult);
+    }
+
+    return results.every(result => result);
+  };
+
+  return evaluatePredicate(c.showIf);
 }
 
 export function formatHugePluginError(message: string) {
