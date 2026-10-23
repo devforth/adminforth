@@ -312,7 +312,7 @@ import { computed, ref, watch, nextTick, onMounted, onUnmounted, type Ref } from
 import { useCoreStore } from '@/stores/core';
 import MenuLink from './MenuLink.vue';
 import { IconPanelLeftClose, IconPanelLeftOpen, IconChevronDown, IconX, IconCircleAlert } from '@iconify-prerendered/vue-lucide';
-import { getIcon, verySimpleHash, loadFile, getCustomComponent } from '@/utils';
+import { getIcon, verySimpleHash, loadFile, getCustomComponent, lsKey } from '@/utils';
 import { Tooltip } from '@/afcl';
 import type { AnnouncementBadgeResponse, AdminForthConfigMenuItem } from '@/types/Common';
 import { useAdminforth } from '@/adminforth';
@@ -338,7 +338,7 @@ const emit = defineEmits<{
 
 const coreStore = useCoreStore();
 
-const OPENED_GROUPS_LS_KEY = 'afSidebarOpenedGroups';
+const OPENED_GROUPS_LS_KEY = lsKey('sidebarOpenedGroups');
 // expanded/collapsed state of groups toggled by user, by itemId, untouched groups fall back to item.open
 const openedGroups = ref<Record<string, boolean>>(JSON.parse(localStorage.getItem(OPENED_GROUPS_LS_KEY) || '{}'));
 const sidebarAside = ref(null);
@@ -357,7 +357,7 @@ function handleBreakpointChange(e: MediaQueryListEvent) {
   } else {
     if (props.forceIconOnly === true) {
       isSidebarIconOnly.value = true;
-    } else if (iconOnlySidebarEnabled.value && localStorage.getItem('afIconOnlySidebar') === 'true') {
+    } else if (iconOnlySidebarEnabled.value && localStorage.getItem(lsKey('iconOnlySidebar')) === 'true') {
       isSidebarIconOnly.value = true;
     } else {
       isSidebarIconOnly.value = false;
@@ -404,7 +404,7 @@ function clickOnMenuItem(item: AdminForthConfigMenuItem) {
 
 watch(isSidebarIconOnly, (isIconOnly) => {
   if (!isMobile.value && iconOnlySidebarEnabled.value && !props.forceIconOnly) {
-    localStorage.setItem('afIconOnlySidebar', isIconOnly.toString());
+    localStorage.setItem(lsKey('iconOnlySidebar'), isIconOnly.toString());
   }
   emit('sidebarStateChange', { isSidebarIconOnly: isIconOnly, isSidebarHovering: isSidebarHovering.value });
 })
@@ -425,7 +425,7 @@ const ctaBadge: Ref<(AnnouncementBadgeResponse & { hash: string; }) | null> = co
     return null;
   }
   const hash = badge.closable ? verySimpleHash(JSON.stringify(badge)) : '';
-  if (badge.closable && window.localStorage.getItem(`ctaBadge-${hash}`)) {
+  if (badge.closable && window.localStorage.getItem(lsKey(`ctaBadge-${hash}`))) {
     return null;
   }
   return {...badge, hash};
@@ -436,7 +436,7 @@ function closeCTA() {
     return;
   }
   const hash = ctaBadge.value.hash;
-  window.localStorage.setItem(`ctaBadge-${hash}`, '1');
+  window.localStorage.setItem(lsKey(`ctaBadge-${hash}`), '1');
   nextTick( async() => {
     emit('loadMenu');
     await coreStore.fetchMenuBadges();
@@ -469,7 +469,7 @@ watch(() => props.forceIconOnly, (force) => {
   }
   if (props.forceIconOnly === true) {
     isSidebarIconOnly.value = true;
-  } else if (iconOnlySidebarEnabled.value && localStorage.getItem('afIconOnlySidebar') === 'true') {
+  } else if (iconOnlySidebarEnabled.value && localStorage.getItem(lsKey('iconOnlySidebar')) === 'true') {
     isSidebarIconOnly.value = true;
   } else {
     isSidebarIconOnly.value = false;

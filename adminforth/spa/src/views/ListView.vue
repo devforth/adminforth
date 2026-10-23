@@ -205,7 +205,7 @@ import { useFiltersStore } from '@/stores/filters';
 import { callAdminForthApi, currentQuery, getIcon, setQuery, formatComponent, executeCustomBulkAction } from '@/utils';
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { getCustomComponent, getList, startBulkAction } from '@/utils';
+import { getCustomComponent, getList, startBulkAction, lsKey } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Tooltip, Spinner, Button, LinkButton } from '@/afcl'
 import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
@@ -255,7 +255,7 @@ const pageSize = ref(DEFAULT_PAGE_SIZE);
 
 const syncPageSize = () => {
   const resourceId = route.params.resourceId;
-  const savedSize = localStorage.getItem(`pageSize_${resourceId}`);
+  const savedSize = localStorage.getItem(lsKey(`pageSize_${resourceId}`));
 
   if (savedSize) {
     pageSize.value = parseInt(savedSize);

@@ -29,6 +29,8 @@ const tokenVars = (colors: Record<string, string>, theme: 0 | 1) =>
 
 function renderPage(adminforth: IAdminForth, title: string, body: string) {
   const { colors, fontFamily } = new StylesGenerator(adminforth.config.customization.styles).mergeStyles();
+  // same key as lsKey('theme') in the SPA
+  const themeLsKey = `af_${adminforth.config.customization.brandNameSlug}_theme`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +38,7 @@ function renderPage(adminforth: IAdminForth, title: string, body: string) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
   <script>
-    document.documentElement.classList.toggle('dark', (${JSON.stringify(adminforth.config.customization.singleTheme ?? null)} ?? localStorage.getItem('af__theme')) === 'dark');
+    document.documentElement.classList.toggle('dark', (${JSON.stringify(adminforth.config.customization.singleTheme ?? null)} ?? localStorage.getItem(${JSON.stringify(themeLsKey)})) === 'dark');
   </script>
   <style>
     :root { ${tokenVars(colors, 0)} color-scheme: light; }

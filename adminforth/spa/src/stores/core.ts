@@ -1,6 +1,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { defineStore } from 'pinia'
-import { callAdminForthApi, handleNotAuthorized } from '@/utils';
+import { callAdminForthApi, handleNotAuthorized, lsKey } from '@/utils';
 import { isCompositePrimaryKey, recordIdFilters } from '@/utils/recordId';
 import websocket from '@/websocket';
 import { useAdminforth } from '@/adminforth';
@@ -13,7 +13,7 @@ import type { Ref } from 'vue'
 export const useCoreStore = defineStore('core', () => {
   const { alert } = useAdminforth();
   const resourceById: Ref<Record<string, ResourceVeryShort>> = ref({});
-  const theme: Ref<'light'| 'dark'> = ref(window.localStorage.getItem('af__theme') as ('light'|'dark') || 'light');
+  const theme: Ref<'light'| 'dark'> = ref(window.localStorage.getItem(lsKey('theme')) as ('light'|'dark') || 'light');
 
   const menu: Ref<AdminForthConfigMenuItem[]> = ref([]);
   const config: Ref<AdminForthConfigForFrontend | null> = ref(null);
@@ -76,7 +76,7 @@ export const useCoreStore = defineStore('core', () => {
 
     document.documentElement.setAttribute('data-theme', theme.value);
     theme.value = theme.value;
-    window.localStorage.setItem('af__theme', theme.value);
+    window.localStorage.setItem(lsKey('theme'), theme.value);
   }
 
 

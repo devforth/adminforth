@@ -404,6 +404,7 @@ class CodeInjector implements ICodeInjector {
 
     const env = {
       VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
+      VITE_ADMINFORTH_BRAND_SLUG: this.adminforth.config.customization.brandNameSlug,
       FORCE_COLOR: '1',
       ...process.env,
       ...envOverrides,
@@ -1538,6 +1539,7 @@ class CodeInjector implements ICodeInjector {
       }
       const env = {
         VITE_ADMINFORTH_PUBLIC_PATH: this.adminforth.config.baseUrl,
+        VITE_ADMINFORTH_BRAND_SLUG: this.adminforth.config.customization.brandNameSlug,
         FORCE_COLOR: '1',
         ...process.env,
       }; 
