@@ -184,7 +184,7 @@ import AcceptModal from './components/AcceptModal.vue';
 import Sidebar from './components/Sidebar.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { createHead } from 'unhead'
-import { getCustomComponent, handleNotAuthorized } from '@/utils';
+import { getCustomComponent, handleNotAuthorized, lsKey } from '@/utils';
 import ToastStack from './components/ToastStack.vue';
 import adminforth, { initFrontedAPI, useAdminforth } from '@/adminforth';
 import UserMenuSettingsButton from './components/UserMenuSettingsButton.vue';
@@ -214,7 +214,7 @@ adminforth.closeUserMenuDropdown = () => {
 const routerIsReady = ref(false);
 const loginRedirectCheckIsReady = ref(false);
 
-const isSidebarIconOnly = ref(localStorage.getItem('afIconOnlySidebar') === 'true');
+const isSidebarIconOnly = ref(localStorage.getItem(lsKey('iconOnlySidebar')) === 'true');
 
 const loggedIn = computed(() => !!coreStore?.adminUser);
 
@@ -370,14 +370,14 @@ onUnmounted(() => {
 })
 
 onBeforeMount(()=>{
-  theme.value = window.localStorage.getItem('af__theme') || 'light';
+  theme.value = window.localStorage.getItem(lsKey('theme')) || 'light';
   document.documentElement.classList.toggle('dark', theme.value === 'dark');
 })
 
 watch(() => coreStore.config?.singleTheme, (singleTheme) => {
   if (singleTheme) {
     theme.value = singleTheme;
-    window.localStorage.setItem('af__theme', singleTheme);
+    window.localStorage.setItem(lsKey('theme'), singleTheme);
     document.documentElement.classList.toggle('dark', theme.value === 'dark');
   }
 }, { immediate: true })

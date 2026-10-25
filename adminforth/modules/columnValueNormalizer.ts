@@ -4,10 +4,18 @@ export function normalizeColumnValue(column: AdminForthResourceColumn, value: an
   return column.normalize ? column.normalize(value) : value;
 }
 
+function toLowerCase(value: any): any {
+  if (Array.isArray(value)) {
+    return value.map(toLowerCase);
+  }
+  return typeof value === 'string' ? value.toLowerCase() : value;
+}
+
 export function normalizeRecordValues(resource: AdminForthResource, record: Record<string, any>): void {
   for (const column of resource.columns) {
     if (column.name in record) {
-      record[column.name] = normalizeColumnValue(column, record[column.name]);
+      const value = column.enforceLowerCase ? toLowerCase(record[column.name]) : record[column.name];
+      record[column.name] = normalizeColumnValue(column, value);
     }
   }
 }

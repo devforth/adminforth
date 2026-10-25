@@ -364,12 +364,13 @@
         {{ $t('Rows per page') }} 
       </span> 
       <Select 
-        v-model="pageSizeInternal" 
+        :modelValue="pageSize"
+        @update:modelValue="selectPageSize"
         :options="pageSizeOptionsComputed" 
         :searchDisabled="true" 
         :disableTogleOfSelectedItem="true"  
         :style="{ width: selectDynamicWidth }"
-        :placeholder="pageSizeInternal?.toString()"        
+        :placeholder="pageSize.toString()"
         class="text-sm min-w-20 af-page-size-button" 
         classesForInput="
         af-page-size-btn h-7 min-h-0 py-1 pl-2.5 pr-7 text-left text-sm font-medium transition-all 
@@ -394,7 +395,7 @@ import { getCustomComponent, formatComponent } from '@/utils';
 import { useCoreStore } from '@/stores/core';
 import { showSuccesTost, showErrorTost } from '@/composables/useFrontendApi';
 import SkeleteLoader from '@/components/SkeleteLoader.vue';
-import { getIcon } from '@/utils';
+import { getIcon, lsKey } from '@/utils';
 import {
   IconEye,
   IconPencil,
@@ -478,24 +479,17 @@ const pageSizeOptionsComputed = computed(() => {
   }));
 });
 
-const pageSizeInternal = ref<number | null>(null);
+const selectDynamicWidth = computed(() => `${props.pageSize.toString().length + 5}ch`);
 
-const selectDynamicWidth = computed(() => {
-  const length = pageSizeInternal.value?.toString().length || 2;
-  return `${length + 5}ch`;
-})
-
-watch(() => props.pageSize, (newVal) => {
-  pageSizeInternal.value = newVal;
-});
-
-watch(() => pageSizeInternal.value, (newSize) => {
-  if (newSize) {
-    localStorage.setItem(`pageSize_${props.resource?.resourceId}`, newSize.toString());
-    emits('update:pageSize', newSize);
-    page.value = 1;
+function selectPageSize(newSize: number) {
+  // Select emits again when the already selected option is clicked
+  if (newSize === props.pageSize) {
+    return;
   }
-});
+  localStorage.setItem(lsKey(`pageSize_${props.resource?.resourceId}`), newSize.toString());
+  emits('update:pageSize', newSize);
+  page.value = 1;
+}
 
 
 const checkboxesInternal: Ref<any[]> = ref([]);

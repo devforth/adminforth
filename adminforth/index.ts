@@ -41,6 +41,7 @@ import OperationalResource from './modules/operationalResource.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
+import { isEmptyColumnValue, runRecordValidators, validateColumnValue } from './modules/columnValueValidator.js';
 import { createRequire } from 'module';
 import path from 'path';
 import { pathToFileURL } from 'url';
@@ -452,33 +453,11 @@ class AdminForth implements IAdminForth {
       }
     }
 
-    // check if record with minValue or maxValue is within limits
-    for (const column of resource.columns.filter((col) => col.name in record
-      && ['integer', 'decimal', 'float'].includes(col.isArray?.enabled ? col.isArray.itemType : col.type)
-      && (col.minValue !== undefined || col.maxValue !== undefined))) {
-      if (column.isArray?.enabled) {
-        const error = record[column.name].reduce((err, item) => {
-          if (err) return err;
-
-          if (column.minValue !== undefined && item < column.minValue) {
-            return `Value in "${column.name}" must be greater than ${column.minValue}`;
-          }
-          if (column.maxValue !== undefined && item > column.maxValue) {
-            return `Value in "${column.name}" must be less than ${column.maxValue}`;
-          }
-
-          return null;
-        }, null);
-        if (error) {
-          return error;
-        }
-      } else {
-        if (column.minValue !== undefined && record[column.name] && record[column.name] < column.minValue) {
-          return `Value in "${column.name}" must be greater than ${column.minValue}`;
-        }
-        if (column.maxValue !== undefined && record[column.name] && record[column.name] > column.maxValue) {
-          return `Value in "${column.name}" must be less than ${column.maxValue}`;
-        }
+    // empty values are checked by required rules
+    for (const column of resource.columns.filter((col) => col.name in record && !isEmptyColumnValue(col, record[col.name]))) {
+      const error = validateColumnValue(column, record[column.name]);
+      if (error) {
+        return error;
       }
     }
 
@@ -802,7 +781,8 @@ class AdminForth implements IAdminForth {
 
     normalizeRecordValues(resource, record);
 
-    const err = this.validateRecordValues(resource, record, 'create');
+    const err = this.validateRecordValues(resource, record, 'create')
+      ?? await runRecordValidators(resource, record, record, this);
     if (err) {
       return { error: err };
     }
@@ -894,7 +874,8 @@ class AdminForth implements IAdminForth {
     }
     const { resource, recordId, oldRecord, adminUser, extra, updates } = params;
     normalizeRecordValues(resource, updates);
-    const err = this.validateRecordValues(resource, updates, 'edit');
+    const err = this.validateRecordValues(resource, updates, 'edit')
+      ?? await runRecordValidators(resource, updates, { ...oldRecord, ...updates }, this);
     if (err) {
       return { error: err };
     }

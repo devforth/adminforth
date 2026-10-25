@@ -25,6 +25,40 @@ type AdminForthFilterNormalizationResult = {
   normalizedFilters?: AdminForthFilterInput;
 };
 
+function polymorphicFilterableFields(resource: AdminForthResource): Set<string> | null {
+  const resources = global.adminforth?.config?.resources;
+  if (!resources) {
+    return null;
+  }
+  const siblingResourceIds = new Set<string>();
+  let isTarget = false;
+  for (const res of resources) {
+    for (const col of res.dataSourceColumns) {
+      const polymorphicResources = col.foreignResource?.polymorphicResources;
+      if (polymorphicResources?.some((pr) => pr.resourceId === resource.resourceId)) {
+        isTarget = true;
+        for (const pr of polymorphicResources) {
+          if (pr.resourceId) {
+            siblingResourceIds.add(pr.resourceId);
+          }
+        }
+      }
+    }
+  }
+  if (!isTarget) {
+    return null;
+  }
+  const fields = new Set<string>();
+  for (const res of resources) {
+    if (res.resourceId === resource.resourceId || siblingResourceIds.has(res.resourceId)) {
+      for (const col of res.dataSourceColumns) {
+        fields.add(col.name);
+      }
+    }
+  }
+  return fields;
+}
+
 async function publishShowPageUpdate(resource: AdminForthResource, recordId: string, updates: Record<string, any>) {
   await global.adminforth.websocket.publish(`/showPage/${resource.resourceId}/${String(recordId)}`, 
     {
@@ -271,23 +305,16 @@ export default class AdminForthBaseConnector implements IAdminForthDataSourceCon
         }
 
         const similar = suggestIfTypo(resource.dataSourceColumns.map((col) => col.name), normalizedFilter.field);
-        
-        let isPolymorphicTarget = false;
-        if (global.adminforth?.config?.resources) {
-          isPolymorphicTarget = global.adminforth.config.resources.some(res => 
-            res.dataSourceColumns.some(col => 
-              col.foreignResource?.polymorphicResources?.some(pr => 
-                pr.resourceId === resource.resourceId
-              )
-            )
-          );
-        }
-        if (isPolymorphicTarget) {
-          afLogger.trace(`⚠️  Field '${normalizedFilter.field}' not found in polymorphic target resource '${resource.resourceId}', allowing query to proceed.`);
+
+        const polymorphicFields = polymorphicFilterableFields(resource);
+        const rightFieldAllowed = !comparingWithRightField
+          || resource.dataSourceColumns.some((col) => col.name == normalizedFilter.rightField)
+          || !!polymorphicFields?.has(normalizedFilter.rightField as string);
+        if (polymorphicFields?.has(normalizedFilter.field) && rightFieldAllowed) {
+          afLogger.trace(`Field '${normalizedFilter.field}' not in resource '${resource.resourceId}' but valid on a polymorphic sibling, allowing query to proceed.`);
           return { ok: true, error: '', normalizedFilters: normalizedFilter };
-        } else {
-          throw new Error(`Field '${normalizedFilter.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
         }
+        throw new Error(`Field '${normalizedFilter.field}' not found in resource '${resource.resourceId}'. ${similar ? `Did you mean '${similar}'?` : ''}`);
       }
       // value normalization
       if (comparingWithRightField) {

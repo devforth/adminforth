@@ -26,7 +26,7 @@ import { encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames } from './
 
 import { afLogger } from "./logger.js";
 
-import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter } from './utils.js';
+import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter, checkShowIf } from './utils.js';
 
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
@@ -37,6 +37,7 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
 import { normalizeColumnValue } from './columnValueNormalizer.js';
+import { isEmptyColumnValue, runColumnValidators } from './columnValueValidator.js';
 
 
 async function resolveBoolOrFn(
@@ -125,16 +126,6 @@ const actionIdentifierSchema: AnySchemaObject = {
     { type: 'string' },
     { type: 'number' },
   ],
-};
-
-const namedColumnSchema: AnySchemaObject = {
-  title: 'AdminForthNamedColumn',
-  type: 'object',
-  required: ['name'],
-  properties: {
-    name: { type: 'string' },
-  },
-  additionalProperties: true,
 };
 
 const validationResultSchema: AnySchemaObject = {
@@ -489,14 +480,10 @@ const getMinMaxForColumnsResponseSchema: AnySchemaObject = createErrorOrSuccessS
 
 const createRecordRequestSchema: AnySchemaObject = {
   type: 'object',
-  required: ['resourceId', 'record', 'requiredColumnsToSkip'],
+  required: ['resourceId', 'record'],
   properties: {
     resourceId: { type: 'string' },
     record: genericObjectSchema,
-    requiredColumnsToSkip: {
-      type: 'array',
-      items: namedColumnSchema,
-    },
     meta: genericObjectSchema,
   },
   additionalProperties: true,
@@ -2346,19 +2333,24 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               return { error };
             }
 
-            const { record, requiredColumnsToSkip } = body;
+            const { record } = body;
 
-            // todo if showIn.create is function, code below will be buggy (will not detect required fact)
+            const ctxCreate = {
+              adminUser,
+              resource,
+              meta: { requestBody: body },
+              source: ActionCheckSource.CreateRequest,
+              adminforth: this.adminforth,
+            };
+
             for (const column of resource.columns) {
               if (
-                  (column.required as {create?: boolean, edit?: boolean})?.create &&
-                  record[column.name] === undefined &&
-                  column.showIn.create
+                column.required.create &&
+                isEmptyColumnValue(column, record[column.name]) &&
+                await isShown(column, 'create', ctxCreate) &&
+                checkShowIf(column, record, resource.columns)
               ) {
-                  const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
-                  if (!shouldWeSkipColumn) {
-                    return { error: `Column '${column.name}' is required`, ok: false };
-                  }
+                return { error: `Column '${column.name}' is required`, ok: false };
               }
             }
 
@@ -2381,26 +2373,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
                 if (existingRecord) {
                   return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
-                }
-              }
-            }
-
-            const ctxCreate = {
-              adminUser,
-              resource,
-              meta: { requestBody: body },
-              source: ActionCheckSource.CreateRequest,
-              adminforth: this.adminforth,
-            };
-
-            for (const column of resource.columns) {
-              if ((column.required as { create?: boolean })?.create) {
-                const shown = await isShown(column, 'create', ctxCreate);
-                const shouldWeSkipColumn = requiredColumnsToSkip.find(reqColumnToSkip => reqColumnToSkip.name === column.name);
-                if (!shouldWeSkipColumn) {
-                  if (shown && record[column.name] === undefined) {
-                    return { error: `Column '${column.name}' is required`, ok: false };
-                  }
                 }
               }
             }
@@ -2599,6 +2571,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                     error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`,
                     ok: false,
                   };
+                }
+
+                if (
+                  column.required.edit &&
+                  shown &&
+                  isEmptyColumnValue(column, record[fieldName]) &&
+                  checkShowIf(column, { ...oldRecord, ...record }, resource.columns)
+                ) {
+                  return { error: `Column '${fieldName}' is required`, ok: false };
                 }
               }
             }
@@ -2888,17 +2869,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const columnConfig = resource.columns.find((c) => c.name === col.name);
           if (columnConfig && columnConfig.validation)  {
             customColumnValidatorsFunctions.push(async ()=>{
-              for (const val of columnConfig.validation) {
-                if (val.validator) {
-                  const result = await val.validator(col.value, record, this.adminforth);
-                  if (typeof result === 'object' && result.isValid === false) {
-                    validationResults[col.name] = {
-                      isValid: result.isValid,
-                      message: result.message,
-                    }
-                    break;
-                  }
-                }
+              const failedResult = await runColumnValidators(columnConfig, col.value, record, this.adminforth);
+              if (failedResult) {
+                validationResults[col.name] = failedResult;
               }
             })
           }

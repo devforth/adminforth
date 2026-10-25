@@ -36,7 +36,6 @@ describe('POST /create_record', () => {
         "color": "Blue",
         "body_type": "sedan"
     },
-    "requiredColumnsToSkip": [],
     "meta": {}
   };
 
@@ -104,7 +103,7 @@ describe('POST /create_record', () => {
   });
 
   let createdRecordId: string;
-  it('should skip required column (NEEDS TO BE FIXED)', async () => {
+  it('does not skip required columns the client asks to skip', async () => {
     const res = await agent
       .set('Cookie', authCookie)
       .post('/adminapi/v1/create_record')
@@ -117,12 +116,17 @@ describe('POST /create_record', () => {
         },
         requiredColumnsToSkip: [{name: 'mileage', }],
       });
-    createdRecordId = res.body.newRecordId;
     expect(res.status).toEqual(200);
-    expect(res.body.error).toBeUndefined();
+    expect(res.body.error).toBe("Column 'mileage' is required");
   });
 
   it('lists only requested data source columns through the operational API', async () => {
+    const res = await agent
+      .set('Cookie', authCookie)
+      .post('/adminapi/v1/create_record')
+      .send(requestBody);
+    createdRecordId = res.body.newRecordId;
+
     const records = await admin.resource('cars_sl').list(
       [Filters.EQ('id', createdRecordId)],
       1,
@@ -322,7 +326,6 @@ describe('POST /update_record', () => {
         "color": "Blue",
         "body_type": "sedan"
     },
-    "requiredColumnsToSkip": [],
     "meta": {}
   };
 
@@ -647,7 +650,6 @@ describe('POST /get_resource_data', () => {
         "color": "Blue",
         "body_type": "sedan"
     },
-    "requiredColumnsToSkip": [],
     "meta": {}
   };
 
@@ -892,7 +894,6 @@ describe('POST /get_resource_data', () => {
           record_id: createdRecordId,
           image_path: 'test-image.png',
         },
-        requiredColumnsToSkip: [],
         meta: {},
       });
 
@@ -1115,7 +1116,6 @@ describe('POST /delete_record', () => {
         "color": "Blue",
         "body_type": "sedan"
     },
-    "requiredColumnsToSkip": [],
     "meta": {}
   };
 

@@ -79,7 +79,7 @@ import BreadcrumbsWithButtons from '@/components/BreadcrumbsWithButtons.vue';
 import ResourceForm from '@/components/ResourceForm.vue';
 import SingleSkeletLoader from '@/components/SingleSkeletLoader.vue';
 import { useCoreStore } from '@/stores/core';
-import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, checkShowIf, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent, atob_function } from '@/utils';
+import { callAdminForthApi, getCustomComponent,checkAcessByAllowedActions, compareOldAndNewRecord, onBeforeRouteLeaveCreateEditViewGuard, leaveGuardActiveClass, formatComponent, atob_function } from '@/utils';
 import { IconSave } from '@iconify-prerendered/vue-lucide';
 import { onMounted, onBeforeMount, onBeforeUnmount, ref  } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -192,9 +192,6 @@ async function saveRecord() {
     route
   );
 
-  const requiredColumns = coreStore.resource?.columns.filter(c => c.required?.create === true) || [];
-  const requiredColumnsToSkip = requiredColumns.filter(c => checkShowIf(c, record.value, coreStore.resource?.columns || []) === false);  
-
   const interceptorConfirmationResult = (interceptorsResult.extra as Record<string, any>)?.confirmationResult;
   const response = await callAdminForthApi({
     method: 'POST',
@@ -202,7 +199,6 @@ async function saveRecord() {
     body: {
       resourceId: route.params.resourceId,
       record: record.value,
-      requiredColumnsToSkip,
       meta: {
         ...(interceptorConfirmationResult ? { confirmationResult: interceptorConfirmationResult } : {}),
       },
