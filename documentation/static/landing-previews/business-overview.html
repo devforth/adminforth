@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Northstar overview</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .widget { padding: 14px 16px; }
+  .widget h3 { font-size: 13px; line-height: 20px; font-weight: 500; color: var(--muted); }
+  .kpi { margin-top: 4px; font-size: 26px; line-height: 32px; font-weight: 600; letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
+  .kpi-note { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px; color: var(--muted); }
+  .pair { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 13.5px; }
+  .at td { padding: 10px 16px; }
+  @container screen (max-width: 760px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pair { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+<!-- Northstar Services (made-up example): the overview page of the whole business, built with the dashboard plugin -->
+<div class="screen app biz" style="width: 1040px; height: 620px">
+  <aside class="side" data-menu="northstar" data-active="Overview" data-brand="Northstar Services" data-logo="northstar"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="ph">
+        <div><h2>Overview</h2><p>Everything that needs you today</p></div>
+        <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#pencil"/></svg>Edit</span>
+      </div>
+      <div class="kpis">
+        <div class="card widget"><h3>Open requests</h3><p class="kpi">23</p><p class="kpi-note"><span class="badge badge-success">+4</span>this week</p></div>
+        <div class="card widget"><h3>Overdue follow-ups</h3><p class="kpi" style="color: var(--danger-fg)">2</p><p class="kpi-note"><span class="badge badge-danger">Maya, Priya</span></p></div>
+        <div class="card widget"><h3>Jobs this week</h3><p class="kpi">14</p><p class="kpi-note">3 today</p></div>
+        <div class="card widget"><h3>Unpaid invoices</h3><p class="kpi">$12,480</p><p class="kpi-note"><span class="badge badge-warning">2 overdue</span>of 5</p></div>
+      </div>
+      <div class="pair">
+        <div class="card">
+          <div class="card-head">Today's jobs<span class="t-xs t-muted" style="font-weight: 400">3 jobs</span></div>
+          <table class="at rows" style="border: 0; border-radius: 0">
+            <tbody>
+              <tr><td class="num t-muted" style="width: 1%">09:00</td><td><div class="title">HVAC filter replacement</div><div class="minor">Lindqvist Dental · Tom</div></td><td><span class="badge badge-success">On site</span></td></tr>
+              <tr><td class="num t-muted">11:30</td><td><div class="title">Window cleaning, 3 floors</div><div class="minor">Atlas Coworking · Priya</div></td><td><span class="badge">Scheduled</span></td></tr>
+              <tr><td class="num t-muted">14:00</td><td><div class="title">Leaking roof inspection</div><div class="minor">Brightside School · Tom</div></td><td><span class="badge">Scheduled</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-head">Low stock<span class="t-xs t-muted" style="font-weight: 400">Reorder</span></div>
+          <table class="at rows" style="border: 0; border-radius: 0">
+            <tbody>
+              <tr><td><div class="title">HVAC filter F7</div><div class="minor">Reorder at 10</div></td><td style="text-align: right"><span class="badge badge-warning">4 left</span></td></tr>
+              <tr><td><div class="title">Squeegee blades</div><div class="minor">Reorder at 6</div></td><td style="text-align: right"><span class="badge badge-danger">1 left</span></td></tr>
+              <tr><td><div class="title">Roof sealant</div><div class="minor">Reorder at 5</div></td><td style="text-align: right"><span class="badge badge-warning">5 left</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

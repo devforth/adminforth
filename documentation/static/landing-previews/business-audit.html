@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Who changed what, and which agent</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .at td { vertical-align: top; padding: 10px 14px; }
+  .at td:nth-child(5) { white-space: nowrap; }
+  .at th { padding: 10px 14px; }
+  .via { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .via img { width: 16px; height: 16px; }
+  .via .mono { color: var(--text-2); }
+  .chg { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; line-height: 18px; }
+  .chg del { color: var(--danger-fg); text-decoration: line-through; }
+  .chg ins { color: var(--success-fg); text-decoration: none; }
+  @container screen (max-width: 640px) {
+    .at th:nth-child(1), .at td:nth-child(1), .at th:nth-child(n+5), .at td:nth-child(n+5) { display: none; }
+    .via { max-width: 100%; overflow: hidden; }
+    .via .mono { overflow: hidden; text-overflow: ellipsis; }
+  }
+</style>
+</head>
+<body>
+<!-- Northstar Services (made-up example): the audit log of the Audit Log plugin with resourceExecutedByColumnName, so an agent's change names the agent -->
+<div class="screen app biz" style="width: 1040px; height: 560px">
+  <aside class="side rail" data-menu="northstar" data-active="Audit log" data-logo="northstar"></aside>
+  <div class="page">
+    <header class="topbar">
+      <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#bot"/></svg>Agent</span>
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="avatar"><svg class="i"><use href="icons.svg#user"/></svg></span>
+    </header>
+    <main class="content">
+      <div class="list-head">
+        <nav class="crumbs"><svg class="i"><use href="icons.svg#house"/></svg><svg class="i sep"><use href="icons.svg#chevron-right"/></svg><h1>Audit log</h1></nav>
+        <div class="btns">
+          <span class="btn btn-secondary"><svg class="i"><use href="icons.svg#list-filter"/></svg>Filter</span>
+          <span class="btn btn-secondary btn-icon"><svg class="i"><use href="icons.svg#ellipsis"/></svg></span>
+        </div>
+      </div>
+      <table class="at rows">
+        <thead>
+          <tr><th>When</th><th>Who</th><th>Through</th><th>Action</th><th>Record</th><th>Change</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num" style="white-space: nowrap">Today 09:04</td>
+            <td><span class="who"><span class="ava maya">M</span>Maya</span></td>
+            <td><span class="via"><img src="agents/codex.svg" alt=""><span class="mono">codex@0.46 · Maya’s laptop</span></span></td>
+            <td><span class="badge badge-accent">Update</span></td>
+            <td><span class="link-u">REQ-1042</span><div class="minor">Requests</div></td>
+            <td class="chg">next_action: <del>Confirm quote received</del> <ins>Call to confirm the quote</ins><br>due: <del>Oct 23</del> <ins>Oct 25 10:00</ins></td>
+          </tr>
+          <tr>
+            <td class="num" style="white-space: nowrap">Today 08:51</td>
+            <td><span class="who"><span class="ava tom">T</span>Tom</span></td>
+            <td><span class="t-muted">Browser</span></td>
+            <td><span class="badge badge-success">Create</span></td>
+            <td><span class="link-u">FU-311</span><div class="minor">Follow-ups</div></td>
+            <td class="chg"><ins>Book a site visit · REQ-1038 · today</ins></td>
+          </tr>
+          <tr>
+            <td class="num" style="white-space: nowrap">Yesterday 17:20</td>
+            <td><span class="who"><span class="ava priya">P</span>Priya</span></td>
+            <td><span class="via"><img src="agents/claude-code.svg" alt=""><span class="mono">claude-code@2.1 · Priya’s Mac</span></span></td>
+            <td><span class="badge badge-accent">Update</span></td>
+            <td><span class="link-u">REQ-1031</span><div class="minor">Requests</div></td>
+            <td class="chg">status: <del>Estimate</del> <ins>Waiting for reply</ins></td>
+          </tr>
+          <tr>
+            <td class="num" style="white-space: nowrap">Yesterday 16:02</td>
+            <td><span class="who"><span class="ava maya">M</span>Maya</span></td>
+            <td><span class="via"><img src="agents/codex.svg" alt=""><span class="mono">codex@0.46 · Maya’s laptop</span></span></td>
+            <td><span class="badge badge-success">Create</span></td>
+            <td><span class="link-u">REQ-1047</span><div class="minor">Requests</div></td>
+            <td class="chg"><ins>Kitchen extractor service · Oak &amp; Ember Bistro · owner Tom</ins></td>
+          </tr>
+          <tr>
+            <td class="num" style="white-space: nowrap">Yesterday 11:38</td>
+            <td><span class="who"><span class="ava tom">T</span>Tom</span></td>
+            <td><span class="t-muted">Browser</span></td>
+            <td><span class="badge badge-accent">Update</span></td>
+            <td><span class="link-u">INV-0922</span><div class="minor">Invoices</div></td>
+            <td class="chg">status: <del>Sent</del> <ins>Paid</ins></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

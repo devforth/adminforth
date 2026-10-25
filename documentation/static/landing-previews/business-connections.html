@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agents connected to Northstar</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  .agent { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .agent img { width: 20px; height: 20px; }
+  .note { margin-top: 2px; font-size: 12px; color: var(--muted); }
+  @container screen (max-width: 640px) {
+    .settings-tabs { display: none; }
+    .at th:nth-child(2), .at td:nth-child(2) { display: none; }
+  }
+</style>
+</head>
+<body>
+<!-- Northstar Services (made-up example): Maya's MCP settings, one connection per agent, each revocable on its own -->
+<div class="screen biz" style="width: 960px; height: 560px">
+  <div class="page" style="height: 100%">
+    <header class="topbar">
+      <span class="btn btn-ghost btn-icon"><svg class="i"><use href="icons.svg#moon"/></svg></span>
+      <span class="who" style="gap: 8px; padding-left: 8px; font-size: 13px"><span class="ava maya" style="width: 30px; height: 30px; font-size: 13px">M</span><span><b style="font-weight: 500">Maya</b><span class="minor" style="display: block; margin: 0">Owner</span></span></span>
+    </header>
+    <div style="padding: 24px">
+      <div class="settings" style="height: 560px">
+        <div class="settings-tabs">
+          <div style="padding: 0 10px 16px">
+            <h1 style="font-size: 15px; line-height: 22px; font-weight: 600">Settings</h1>
+            <p class="t-xs t-muted" style="margin-top: 2px">Signed in as Maya</p>
+          </div>
+          <div class="vt"><svg class="i"><use href="icons.svg#monitor-smartphone"/></svg>Active sessions</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#key-round"/></svg>Two-factor auth</div>
+          <div class="vt"><svg class="i"><use href="icons.svg#lock"/></svg>Passkeys</div>
+          <div class="vt is-on"><svg class="i"><use href="icons.svg#bot"/></svg>Agents</div>
+        </div>
+        <div class="settings-body">
+          <div class="ph">
+            <div>
+              <h2>Agents</h2>
+              <p>Each agent connects on its own. It works with your permissions and can be revoked without touching the others.</p>
+            </div>
+            <span class="btn btn-primary"><svg class="i"><use href="icons.svg#plus"/></svg>Connect agent</span>
+          </div>
+          <table class="at zebra" style="margin-top: 24px">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Last used</th>
+                <th style="text-align: right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="agent"><img src="agents/codex.svg" alt=""><span><p style="font-weight: 500; color: var(--text)">Maya’s laptop</p><p class="note">Codex · signed in with OAuth</p></span></div></td>
+                <td><p>2 minutes ago</p><p class="note">codex@0.46</p></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><div class="agent"><img src="agents/claude-code.svg" alt=""><span><p style="font-weight: 500; color: var(--text)">Claude on my phone</p><p class="note">Claude Code · signed in with OAuth</p></span></div></td>
+                <td><p>Yesterday</p><p class="note">claude-code@2.1</p></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><div class="agent"><svg class="i i-lg" style="color: var(--muted)"><use href="icons.svg#file-spreadsheet"/></svg><span><p style="display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text)">Monthly report<span class="badge badge-muted">Read only</span></p><p class="note">Auth secret</p></span></div></td>
+                <td><p>Oct 1</p><p class="note">reporting script</p></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-secondary btn-sm">Revoke</span></div></td>
+              </tr>
+              <tr>
+                <td><div class="agent"><img src="agents/gemini.svg" alt=""><span><p style="font-weight: 500; color: var(--text)">Old laptop</p><p class="note">Gemini CLI · auth secret</p></span></div></td>
+                <td><p>Sep 12</p><p class="note">gemini@0.9</p></td>
+                <td><div style="display: flex; justify-content: flex-end"><span class="btn btn-danger btn-sm">Revoked</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="previews.js"></script>
+</body>
+</html>

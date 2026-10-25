@@ -390,6 +390,9 @@ function Hero(): JSX.Element {
             </Link>
           </div>
           <Terminal note="# Postgres &middot; MySQL &middot; SQLite &middot; Mongo" />
+          <p className={styles.forBusiness}>
+            Running a business, not a dev team? <Link to="/business/">AdminForth for business &rarr;</Link>
+          </p>
         </div>
         <PanelPreview />
       </div>

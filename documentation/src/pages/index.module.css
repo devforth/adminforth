@@ -161,6 +161,18 @@
   color: var(--signal-ink);
 }
 
+.forBusiness {
+  margin: 18px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.landing .forBusiness a {
+  color: var(--signal-ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* --- terminal ------------------------------------------------------------- */
 
 .term {
