@@ -48,7 +48,7 @@ export const DAILY_PROMPTS = [
   'Which invoices are unpaid for more than 30 days?',
 ];
 
-export function buildPrompt(b: Brief): string {
+export function buildPrompt(b: Brief, startUrl: string): string {
   const source = SOURCES.find((s) => s.value === b.source).prompt;
   return `Help me build a small business application with AdminForth. Work with me in
 plain language. I don't have a developer: tell me exactly what to do myself,
@@ -68,8 +68,9 @@ through my agent; screens are for checking. Keep the first version small and
 ready for more parts later (orders, jobs, stock, invoices).
 
 START HERE
-Read https://adminforth.dev/docs/tutorial/gettingStarted/ and
-https://adminforth.dev/llms.txt first. Use AdminForth as the framework: reuse
+Read ${startUrl} first, then
+https://adminforth.dev/docs/tutorial/gettingStarted/ and
+https://adminforth.dev/llms.txt. Use AdminForth as the framework: reuse
 its screens, forms, filters and access rules, don't build a separate stack.
 Use pnpm and Node.js 24. For a new local example use SQLite, the documented
 create-app flow and Prisma migrations. Read the generated AGENTS.md, CLAUDE.md

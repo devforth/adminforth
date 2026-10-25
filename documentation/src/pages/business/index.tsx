@@ -1,10 +1,11 @@
-import {useState, type FormEvent, type ReactNode} from 'react';
+import {useEffect, useState, type FormEvent} from 'react';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 import clsx from 'clsx';
 import styles from './business.module.css';
 import {buildPrompt, DAILY_PROMPTS, EXAMPLES, SOURCES, type Brief, type Source} from './_brief';
+import {sessionId, track} from '../../track';
 
 // The business landing (/business/) for founders who run their business with AI agents. It has its own
 // header instead of the docs navbar, so it is not wrapped in the theme Layout. The screens are the drawn
@@ -15,6 +16,7 @@ const PAGE_DESCRIPTION = 'Agent-first business admin. Your coding agent builds t
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap';
 const BOOKING_URL = 'https://talk.devforth.io/book/30-minute-meeting';
 const GITHUB_URL = 'https://github.com/devforth/adminforth';
+const START_URL = 'https://devforth.io/admin/api/af-start/business/';
 
 const PAINS = [
   {
@@ -411,7 +413,10 @@ function BriefBuilder(): JSX.Element {
   const [state, setState] = useState<ResultState>('idle');
   const [expanded, setExpanded] = useState(false);
   const [agent, setAgent] = useState<'claude' | 'codex'>('claude');
-  const prompt = buildPrompt(brief);
+  // the session id is in the browser only, the server render gets the link without it
+  const [startUrl, setStartUrl] = useState(START_URL);
+  useEffect(() => setStartUrl(`${START_URL}?s=${sessionId()}`), []);
+  const prompt = buildPrompt(brief, startUrl);
 
   const apply = (id: string) => {
     const {label: _label, ...fields} = EXAMPLES[id];
@@ -427,18 +432,21 @@ function BriefBuilder(): JSX.Element {
   };
   const prepare = (e: FormEvent) => {
     e.preventDefault();
+    track('brief_prepared');
     setState('ready');
     document.getElementById('brief-ready-title')?.focus();
   };
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(prompt);
+      track('build_prompt_copied');
       setState('copied');
     } catch {
       setState('manual');
     }
   };
   const download = () => {
+    track('brief_downloaded');
     const url = URL.createObjectURL(new Blob([prompt], {type: 'text/markdown'}));
     const a = Object.assign(document.createElement('a'), {href: url, download: 'my-business-brief.md'});
     a.click();

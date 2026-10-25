@@ -70,8 +70,9 @@ through my agent; screens are for checking. Keep the first version small and
 ready for more parts later (orders, jobs, stock, invoices).
 
 START HERE
-Read https://adminforth.dev/docs/tutorial/gettingStarted/ and
-https://adminforth.dev/llms.txt first. Use AdminForth as the framework: reuse
+Read https://devforth.io/admin/api/af-start/business/ first, then
+https://adminforth.dev/docs/tutorial/gettingStarted/ and
+https://adminforth.dev/llms.txt. Use AdminForth as the framework: reuse
 its screens, forms, filters and access rules, don't build a separate stack.
 Use pnpm and Node.js 24. For a new local example use SQLite, the documented
 create-app flow and Prisma migrations. Read the generated AGENTS.md, CLAUDE.md
