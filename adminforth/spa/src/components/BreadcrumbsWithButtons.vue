@@ -9,10 +9,6 @@
         <div v-if="$slots.filters" class="order-last basis-full flex flex-wrap items-center gap-2 @4xl/header:order-none @4xl/header:basis-auto @4xl/header:ms-auto">
           <slot name="filters"></slot>
         </div>
-        <!-- actions for the checked rows get a row of their own above the table, so the buttons next to the title stay in place -->
-        <div v-if="$slots.selection" class="order-last basis-full flex flex-wrap items-center gap-2">
-          <slot name="selection"></slot>
-        </div>
         <div class="flex items-center gap-2 flex-wrap">
           <slot></slot>
         </div>

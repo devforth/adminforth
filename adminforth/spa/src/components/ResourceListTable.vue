@@ -273,8 +273,9 @@
   </div>
   <!-- pagination
   totalRows in v-if is used to not hide page input during loading when user puts cursor into it and edit directly (rows gets null there during edit)
+  hidden pagination keeps its room, e.g. the bar of checked rows covers it
   -->
-  <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3">
+  <div class="af-pagination-container flex flex-row items-center mt-4 xs:flex-row xs:justify-between xs:items-center gap-3" :class="{ invisible: hidePagination }">
     
     <!-- one hairline frame around 26px buttons split by lighter dividers, the current page is an inset field -->
     <div class="af-pagination-buttons-container af-button-shadow inline-flex overflow-hidden rounded-default border border-lightListTablePaginationBorder bg-lightListTablePaginationBackgoround divide-x rtl:divide-x-reverse divide-lightListTablePaginationBorder/60 dark:border-darkListTablePaginationBorder dark:bg-darkListTablePaginationBackgoround dark:divide-darkListTablePaginationBorder/60"
@@ -433,6 +434,7 @@ const props = withDefaults(defineProps<{
   checkboxes: any[],
   sort: any[],
   noRoundings?: boolean,
+  hidePagination?: boolean,
   customActionsInjection?: any[],
   tableBodyStartInjection?: any[],
   containerHeight?: number,

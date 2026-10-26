@@ -805,7 +805,7 @@ The header lays out by its own width, not by the width of the screen, because th
 - below 896px the injected components take a full row under the title and the buttons;
 - from 896px the title, the injected components and the buttons share one row, the components stand to the left of the buttons.
 
-Buttons of bulk actions show up in a row of their own above the table when rows are checked, so they never push the components or the buttons around.
+Buttons of bulk actions show up in a floating bar in place of the pagination when rows are checked, so they never push the components, the buttons or the table around.
 
 The header is a Tailwind [size container](https://github.com/tailwindlabs/tailwindcss-container-queries) named `header`, so a component can follow it with `@4xl/header:` variants. For example, a search input fills its row on a narrow header and gets a fixed width in the single row of a wide one:
 

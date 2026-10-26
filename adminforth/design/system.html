@@ -438,6 +438,21 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
 :where(#list) .dr>.dc:nth-child(9){flex-basis:104px}
 :where(#list) .dr>.dc:nth-child(10){flex-basis:120px}
 :where(#list) .dr>.dc:nth-child(11){flex-basis:136px}
+/* the bar takes the place of the invisible pagination: a zero-height sticky line under it, the negative margin cancels the gap of the column */
+:where(#list) .bulk-bar-wrap{position:sticky;bottom:16px;z-index:3;height:0;margin-top:-16px}
+:where(#list) .bulk-bar-row{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 16px}
+/* all actions stay in sight: on a narrow screen they wrap between the count and Clear, the dividers take their height */
+:where(#list) .bulk-bar{display:flex;align-items:center;gap:4px;max-width:100%;padding:4px 4px 4px 14px;border-radius:8px;background:var(--ink);color:var(--on-ink);box-shadow:var(--shadow-pop)}
+:where(#list) .bulk-bar .count{flex:none;margin-right:6px;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+:where(#list) .bulk-bar .vr{flex:none;align-self:stretch;width:1px;margin:4px;background:color-mix(in oklab,var(--on-ink) 20%,transparent)}
+:where(#list) .bulk-bar .acts{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+:where(#list) .bulk-bar .af-bulk-actions-clear-button{flex:none}
+:where(#list) .bulk-bar .btn,:where(#list) .bulk-bar .btn:hover{color:var(--on-ink)}
+:where(#list) .bulk-bar .btn:hover{background:color-mix(in oklab,var(--on-ink) 10%,transparent)}
+:where(#list) .bulk-bar .btn .i{color:inherit}
+/* the bar inverts with the theme, a destructive action takes the danger color of the opposite one */
+:where(#list) .bulk-bar .btn.is-danger{color:#FF9592}
+:where(#list) .dark .bulk-bar .btn.is-danger{color:#B42318}
 
 :where(#create) a{color:inherit}
 :where(#create) a:hover{color:inherit}
@@ -1211,6 +1226,54 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
 
 
 
+</div>
+  </div>
+  <!-- the bottom of the list with checked rows: the bar of bulk actions takes the place of the pagination, which turns invisible and keeps its room -->
+  <div class="ds-frame" style="margin-top: 16px">
+<div class="af" style="--accent: #16537E; padding: 24px 32px; display: flex; flex-direction: column; gap: 16px">
+    <div class="tbl-box">
+      <div class="tbl-scroll">
+        <div class="dt" role="table" aria-label="Cars">
+          <div class="dbody">
+              <div class="dr is-sel" role="row">
+                <div class="dc" role="cell"><input class="cb" type="checkbox" aria-label="Select row" checked></div>
+                <div class="dc" role="cell"><span class="mono t-muted">b71e0d93</span></div>
+                <div class="dc" role="cell"><a class="link-u" href="#" style="font-weight: 500">Borealis Aurora X</a></div>
+                <div class="dc r num" role="cell" style="color: var(--text)">$8,950</div>
+                <div class="dc" role="cell">Hybrid</div>
+                <div class="dc r num" role="cell">218 hp</div>
+                <div class="dc num" role="cell">2024</div>
+                <div class="dc" role="cell"><span class="badge badge-success"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Yes</span></div>
+                <div class="dc r num" role="cell">6,120 km</div>
+                <div class="dc t-muted" role="cell">Oct 14, 2026</div>
+                <div class="dc r" role="cell">
+                  <span class="row-actions">
+                    <a class="btn btn-ghost btn-icon btn-sm" href="#" aria-label="Show"><svg class="i af-show-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg></a>
+                    <a class="btn btn-ghost btn-icon btn-sm" href="#" aria-label="Edit"><svg class="i af-edit-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"></path><path d="m15 5 4 4"></path></svg></a>
+                    <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete"><svg class="i af-delete-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg></button>
+                    <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="More"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+                  </span>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="af-pagination-container" style="visibility: hidden; height: 28px" aria-hidden="true"></div>
+    <div class="bulk-bar-wrap af-bulk-actions-bar-container">
+      <div class="bulk-bar-row">
+        <div class="bulk-bar af-bulk-actions-bar" role="toolbar" aria-label="Bulk actions">
+          <span class="count af-bulk-actions-count">1 selected</span>
+          <span class="vr" aria-hidden="true"></span>
+          <div class="acts">
+            <button class="btn btn-ghost btn-sm af-bulk-action-button" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>Generate description</button>
+            <button class="btn btn-ghost btn-sm af-bulk-action-button is-danger" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>Delete</button>
+          </div>
+          <span class="vr" aria-hidden="true"></span>
+          <button class="btn btn-ghost btn-sm af-bulk-actions-clear-button" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>Clear</button>
+        </div>
+      </div>
+    </div>
 </div>
   </div>
 </section>

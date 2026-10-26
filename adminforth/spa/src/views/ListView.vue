@@ -32,65 +32,6 @@
           :clearCheckboxes="clearCheckboxes"
         />
       </template>
-      <template v-if="isResourceReady && checkboxes.length" #selection>
-        <Button
-          @click="()=>{checkboxes = []}"
-          variant="secondary"
-          iconOnly
-        >
-            <Tooltip>
-              <IconBan class="w-4 h-4"/>
-                <template #tooltip >
-                    Remove selection
-                </template>
-            </Tooltip>
-        </Button>
-
-        <div 
-          v-for="(action,i) in coreStore.resource?.options?.bulkActions?.filter(a => !a.showInThreeDotsDropdown)" 
-        >
-          <Button
-            :key="action.id"
-            @click="startBulkActionInner(action.id!)"
-            class="h-[2.125rem] px-2.5"
-            :class="action.buttonCustomCssClass || ''"
-            variant="secondary"
-          >
-            <component
-              v-if="action.icon && !bulkActionLoadingStates[action.id!]"
-              :is="getIcon(action.icon)"
-              class="w-4 h-4 transition duration-75"></component>
-              <Spinner
-                v-if="bulkActionLoadingStates[action.id!]"
-                class="w-4 h-4"
-              />
-            {{ `${action.label} (${checkboxes.length})` }}
-            <div v-if="action.badge" class="inline-flex items-center h-[1.125rem] px-1.5 ml-1 rounded-full bg-purple-600 text-white text-[11px] font-semibold">
-              {{ action.badge }}
-            </div>
-          </Button>
-        </div>
-        <div
-          v-for="(action,i) in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)" 
-        >
-          <Button
-            :key="action.id"
-            @click="startCustomBulkActionInner(action.id!)"
-            class="h-[2.125rem] px-2.5"
-            variant="secondary"
-          >
-            <component
-              v-if="action.icon && !customActionLoadingStates[action.id!]"
-              :is="getIcon(action.icon)"
-              class="w-4 h-4 transition duration-75"></component>
-              <Spinner
-                v-if="customActionLoadingStates[action.id!]"
-                class="w-4 h-4"
-              />
-              {{ `${action.name} (${checkboxes.length})` }}
-          </Button>
-        </div>
-      </template>
       <template v-if="isResourceReady">
         <LinkButton v-if="coreStore.resource?.options?.allowedActions?.create"
           :to="{ name: 'resource-create', params: { resourceId: $route.params.resourceId } }"
@@ -183,7 +124,76 @@
       :item-height="52.5"
       :buffer-size="listBufferSize"
       :isVirtualScrollEnabled="isVirtualScrollEnabled"
+      :hidePagination="checkboxes.length > 0"
     />
+
+    <Transition
+      enter-from-class="opacity-0 translate-y-2"
+      enter-active-class="transition duration-150 ease-out"
+      leave-active-class="transition duration-100 ease-in"
+      leave-to-class="opacity-0 translate-y-2"
+    >
+      <!--
+        the bar of checked rows takes the place of the pagination, which keeps its room: changing the page drops the checked rows anyway.
+        So it takes no room itself and covers no rows, over a long table it sticks to the bottom of the screen.
+        All actions stay in sight: on a narrow screen they wrap between the count and Clear, and the bar grows up over the last rows
+      -->
+      <div v-if="isResourceReady && checkboxes.length" class="af-bulk-actions-bar-container sticky bottom-4 z-30 h-0">
+        <div class="absolute inset-x-0 bottom-0 flex justify-center px-4 pointer-events-none">
+          <div
+            role="toolbar"
+            :aria-label="$t('Bulk actions')"
+            class="af-bulk-actions-bar pointer-events-auto flex items-center gap-1 max-w-full p-1 ps-3.5 rounded-lg bg-lightTooltipBackground text-lightTooltipText shadow-popover dark:bg-darkTooltipBackground dark:text-darkTooltipText dark:shadow-darkPopover"
+          >
+            <span class="af-bulk-actions-count shrink-0 me-1.5 text-[13px] font-medium tabular-nums whitespace-nowrap">{{ $t('{count} selected', { count: checkboxes.length }) }}</span>
+            <!-- dividers take the height of the wrapped actions -->
+            <span class="shrink-0 self-stretch w-px my-1 mx-1 bg-lightTooltipText/20 dark:bg-darkTooltipText/20" aria-hidden="true"></span>
+            <div class="flex flex-wrap items-center gap-1">
+              <Button
+                v-for="action in coreStore.resource?.options?.bulkActions?.filter(a => !a.showInThreeDotsDropdown)"
+                :key="action.id"
+                @click="startBulkActionInner(action.id!)"
+                :loader="bulkActionLoadingStates[action.id!]"
+                variant="ghost"
+                size="sm"
+                class="af-bulk-action-button"
+                :class="[BULK_BAR_BUTTON_CLASSES, action.dangerous && BULK_BAR_DANGER_CLASSES, action.buttonCustomCssClass]"
+              >
+                <component v-if="action.icon && !bulkActionLoadingStates[action.id!]" :is="getIcon(action.icon)" class="w-4 h-4" />
+                {{ action.label }}
+                <span v-if="action.badge" class="inline-flex items-center h-[1.125rem] px-1.5 rounded-full text-[11px] font-semibold bg-lightPrimary text-lightPrimaryContrast dark:bg-darkPrimary dark:text-darkPrimaryContrast">
+                  {{ action.badge }}
+                </span>
+              </Button>
+              <Button
+                v-for="action in coreStore.resource?.options?.actions?.filter(a => a.showIn?.bulkButton)"
+                :key="action.id"
+                @click="startCustomBulkActionInner(action.id!)"
+                :loader="customActionLoadingStates[action.id!]"
+                variant="ghost"
+                size="sm"
+                class="af-bulk-action-button"
+                :class="[BULK_BAR_BUTTON_CLASSES, action.bulkDangerous && BULK_BAR_DANGER_CLASSES]"
+              >
+                <component v-if="action.icon && !customActionLoadingStates[action.id!]" :is="getIcon(action.icon)" class="w-4 h-4" />
+                {{ action.name }}
+              </Button>
+            </div>
+            <span class="shrink-0 self-stretch w-px my-1 mx-1 bg-lightTooltipText/20 dark:bg-darkTooltipText/20" aria-hidden="true"></span>
+            <Button
+              @click="clearCheckboxes"
+              variant="ghost"
+              size="sm"
+              class="af-bulk-actions-clear-button shrink-0"
+              :class="BULK_BAR_BUTTON_CLASSES"
+            >
+              <IconX class="w-4 h-4" />
+              {{ $t('Clear') }}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <component 
       v-for="c in coreStore?.resourceOptions?.pageInjections?.list?.bottom as AdminForthComponentDeclaration[] || []"
@@ -207,12 +217,11 @@ import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getCustomComponent, getList, startBulkAction, lsKey } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
-import { Tooltip, Spinner, Button, LinkButton } from '@/afcl'
+import { Button, LinkButton } from '@/afcl'
 import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
 import { useI18n } from 'vue-i18n';
 
 import {
-  IconBan,
   IconListFilter,
   IconPlus,
   IconX
@@ -232,6 +241,11 @@ const route = useRoute();
 // previous resource stays in the store until the new one is applied, its injections must not render here
 const isResourceReady = computed(() => coreStore.resource?.resourceId === route.params.resourceId);
 const beforeActionButtons = computed(() => (coreStore.resourceOptions?.pageInjections?.list?.beforeActionButtons || []) as AdminForthComponentDeclaration[]);
+
+// ghost buttons on the bar of checked rows take its text color, the bar is dark in the light theme and light in the dark one
+const BULK_BAR_BUTTON_CLASSES = 'text-lightTooltipText hover:bg-lightTooltipText/10 hover:text-lightTooltipText dark:text-darkTooltipText dark:hover:bg-darkTooltipText/10 dark:hover:text-darkTooltipText';
+// so a destructive action on it takes the danger color of the opposite theme
+const BULK_BAR_DANGER_CLASSES = 'text-darkDanger hover:text-darkDanger dark:text-lightDanger dark:hover:text-lightDanger';
 
 const page = ref(1);
 const columnsMinMax = ref({});

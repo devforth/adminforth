@@ -109,7 +109,7 @@ If your operation can be expressed more efficiently as a single batched query (e
 
 | Option | Type | Description |
 |---|---|---|
-| `showIn.bulkButton` | `boolean` | Show as a bulk action button in the list toolbar. |
+| `showIn.bulkButton` | `boolean` | Show as a button in the floating bar which takes the place of the list pagination when rows are checked. |
 | `bulkHandler` | `async ({ recordIds, adminUser, adminforth, resource, response, tr }) => { ok, error?, message? }` | Called with all selected IDs at once. Falls back to calling `action` per record in parallel if omitted. |
 | `bulkConfirmationMessage` | `string` | Confirmation dialog text shown before the bulk action executes. |
 | `bulkSuccessMessage` | `string` | Success message shown after the bulk operation. Defaults to `"N out of M items processed successfully"`. |
