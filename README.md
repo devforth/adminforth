@@ -1,75 +1,179 @@
-# AdminForth - powerfull Agent-first Typescript admin panel framework
-
-
-<a href="https://adminforth.dev"><img src="https://img.shields.io/badge/website-adminforth.dev-blue" style="height:24px"/></a> <a href="https://adminforth.dev"><img src="https://img.shields.io/npm/dw/adminforth" style="height:24px"/></a> <a href="https://devforth.io"><img src="https://raw.githubusercontent.com/devforth/OnLogs/e97944fffc24fec0ce2347b205c9bda3be8de5c5/.assets/df_powered_by.svg" style="height:28px"/></a>
-
-[![Ask AI](http://tluma.ai/badge)](http://tluma.ai/ask-ai/devforth/adminforth)
-
-* [Try live demo](https://demo.adminforth.dev/) 
-
-* [YouTube video: build agentic admin panel in a minutes](https://www.youtube.com/watch?v=4tB8uzY__uk)
-
-* [Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted) with AdminForth
-
-* [Tutorial](https://adminforth.dev/docs/tutorial/Customization/branding/)
-
-<br/>
-
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/69335f14-c5be-4ddc-806a-a25ce54a8215"
- alt="AdminForth Agent" width="90%">
+
+<a href="https://adminforth.dev"><img src="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/logo.svg" width="64" height="64" alt="AdminForth"></a>
+
+# AdminForth — agent-first business admin
+
+**The back office your coding agent builds and your agents run. Your data, your server, your rules. A change history that names the agent.**
+
+[Website](https://adminforth.dev) · [Start with your agent](#start-with-your-agent) · [Documentation](https://adminforth.dev/docs/tutorial/gettingStarted/) · [For developers](#for-developers)
+
 </div>
 
+You already work with AI agents. AdminForth is the admin they run your business through: customers, orders, jobs, stock and invoices in your own database, built by your coding agent, used by you and your team through Claude Code, Codex or any agent that speaks MCP. The panel is one way in; your agent is another. Screens are there when you want to look.
 
-<br/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/readme/business-agent-chat-dark.png">
+  <img src="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/readme/business-agent-chat-light.png" width="100%" alt="An agent connected to an example business app through MCP: asked which follow-ups are overdue, it lists two requests, then updates the next action of REQ-1042 on the owner's request.">
+</picture>
 
-Why AdminForth:
+<p align="center"><sub>Maya’s agent works on her company’s app through MCP, with her permissions. Northstar Services and its data are made up.</sub></p>
 
-* Init AdminForth project with `npx adminforth create-app` and pass your database URL, import the tables you wish to see in admin using `npx adminforth resource`, and get fully functional UI for your data (filter, create, edit, remove)
-* Modern look and simple Tailwind-ish ability to adjust it
-* Supports Postgres, MySQL, Mongo, SQLite, Clickhouse
-* Define Vue components to change look of various parts of admin using `npx adminforth component` (edit data cells, edit fields, add something above the table, inject something to header or sidebar, add custom page with charts or custom components)
-* Build-in Components library (AdminForth AFCL) with premade easy-to-use build-blocks which follow your theme
-* Define express APIs and call them from your components and pages
-* Use various modern back-office-must-have plugins like audit log, files/image upload, TOTP 2FA, I18N, Copilot-style AI writing and image generation and many more
-* AdminForth is always free and open-source (no paid versions, no cloud subscriptions sh*t)
+<p align="center">
+  <a href="https://www.npmjs.com/package/adminforth"><img src="https://img.shields.io/npm/dw/adminforth" alt="npm downloads"></a>
+  <a href="https://github.com/devforth/adminforth/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+  <a href="https://github.com/devforth/adminforth/stargazers"><img src="https://img.shields.io/github/stars/devforth/adminforth?style=flat" alt="GitHub stars"></a>
+  <a href="http://tluma.ai/ask-ai/devforth/adminforth"><img src="http://tluma.ai/badge" alt="Ask AI"></a>
+</p>
 
+## What it gives you
+
+1. **Your data stays yours, and stays patched.** Records live in your own database on your server. Agents get in through one locked door: sign-in, a separate revocable key per agent, two-factor and passkeys for people. The security parts come from AdminForth, one framework our team maintains; updating is a version bump your agent runs.
+2. **Your team and their agents work inside your rules.** Each person, and each of their agents, sees and changes only what their role allows. The server checks every request. The audit log names the person and the agent for every change.
+3. **Screens, optional.** Ask your agent for the day’s work. Open a screen or a dashboard when you want to see it all.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/readme/business-audit-dark.png">
+  <img src="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/readme/business-audit-light.png" width="100%" alt="The audit log of the example app: Maya through Codex updated REQ-1042, Tom created a follow-up in the browser, Priya through Claude Code changed a status. Each row shows the old and the new value.">
+</picture>
+
+<p align="center"><sub>Who changed what, when, through which agent, and what it was before.</sub></p>
+
+> **8 of the 10 biggest months for software vulnerabilities ever recorded happened in 2026.** [One in five of all vulnerabilities ever registered](https://cvetodo.com/cve-statistics) were published this year, and the year isn’t over ([monthly data](https://craci.com/resources/CVE-publication-trends)). Exploitation in the wild [nearly doubled](https://cloud.google.com/blog/topics/threat-intelligence/vulnerability-discovery-and-exploitation-trends-in-the-ai-era). An app your agent generated last month, with hundreds of packages nobody updates, sits right in that path. AdminForth, one framework maintained by our team, doesn’t.
+
+## Start with your agent
+
+1. Install [Claude Code](https://code.claude.com/docs/en/desktop-quickstart) or [Codex](https://learn.chatgpt.com/docs/quickstart) and sign in.
+2. Create a folder for the project, for example `my-business`, and open the agent in it.
+3. Paste the build instructions below. Change the lines under `MY BUSINESS BRIEF` to your own process first.
+
+The agent builds the first part with sample data, runs the app, connects itself to it through MCP and shows you one operation end to end. From then on, you talk to your business.
+
+<details>
+<summary><b>Build instructions for your coding agent</b></summary>
+
+```text
+Help me build a small business application with AdminForth. Work with me in
+plain language. I don't have a developer: tell me exactly what to do myself,
+step by step.
+
+MY BUSINESS BRIEF
+BUSINESS_PROCESS: Customer requests for my maintenance business.
+CURRENT_PROBLEM: We send quotes and forget to follow up.
+TEAM_ACCESS: Me and two managers. Each manager handles their own requests.
+CURRENT_DATA: A spreadsheet. Start this example with synthetic data.
+
+WHAT I WANT
+A web app on AdminForth that my agent and my team's agents work with through
+MCP, with sign-in, permissions and an audit log. I will mostly talk to it
+through my agent; screens are for checking. Keep the first version small and
+ready for more parts later (orders, jobs, stock, invoices).
+
+START HERE
+Read https://devforth.io/admin/api/af-start/business/ first, then
+https://adminforth.dev/docs/tutorial/gettingStarted/ and
+https://adminforth.dev/llms.txt. Use AdminForth as the framework: reuse
+its screens, forms, filters and access rules, don't build a separate stack.
+Use pnpm and Node.js 24. For a new local example use SQLite, the documented
+create-app flow and Prisma migrations. Read the generated AGENTS.md, CLAUDE.md
+and skills before changing anything. If something can't run here, tell me what
+I must do instead of pretending it works.
+
+Show me a short plain-language outline (records, roles, the first operation)
+and ask only about decisions that change the data or the access rules.
+
+BUILD
+1. Records and relationships for my process, named so my team understands
+   them, with a small set of fictional sample records.
+2. Access rules on the server: I manage everything; every other person works
+   only with what their role allows, including direct record requests, lists
+   and relationships. A hidden button is not an access rule.
+3. The MCP plugin (https://adminforth.dev/docs/tutorial/Plugins/mcp/) so I can
+   connect my agent, and the Audit Log plugin
+   (https://adminforth.dev/docs/tutorial/Plugins/audit-log/) with its
+   executed-by column, so every change names the person and the agent.
+4. No production data, emails or payments in this first version.
+
+SHOW ME
+Run the app and give me the local address and sign-in. Connect my agent with
+the command from the Agents settings page, then do one operation through the
+agent: find a record that needs attention, add its next action, and show me the
+audit log entry. Show one action my agent is allowed and one a teammate's agent
+would be refused. Say which checks you actually performed.
+
+Write five prompts for my daily work with this app, in the words of my process.
+Explain where the code and data are, how to reopen the app tomorrow, how to
+update AdminForth and its plugins later, and what remains before my team uses
+it: hosting, real data, backups, access review.
+```
+
+</details>
+
+Prompts for the first day, with the example above:
+
+- `What needs my attention today?`
+- `Which follow-ups are overdue, and whose?`
+- `Add a request from Harbor Café: office maintenance quote. Owner Maya, next action: send the quote by Friday.`
+- `Which invoices are unpaid for more than 30 days?`
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/readme/business-overview-dark.png">
+  <img src="https://raw.githubusercontent.com/devforth/adminforth/main/documentation/static/img/readme/business-overview-light.png" width="100%" alt="The Overview page of the example app: open requests, overdue follow-ups, jobs this week, unpaid invoices, today's jobs and items low in stock.">
+</picture>
+
+<p align="center"><sub>When you want to look: the overview of the whole business, built with the dashboard plugin.</sub></p>
+
+> [!NOTE]
+> The framework is free and MIT-licensed. Coding-agent access, model usage, hosting and paid services you connect have their own costs. Check each change in the app before your team relies on it.
+
+⭐ **Star AdminForth** to find it again when your agents need an admin to work in.
+
+## For developers
+
+AdminForth is a TypeScript and Vue 3 framework for back-office and business applications. Declare resources over your database and get list, show, create and edit screens with filters, validation and access control, plus the same resources as MCP tools for agents. Everything else is code you own:
+
+- **Data sources:** Postgres, MySQL, SQLite, MongoDB, ClickHouse.
+- **Agents:** the [MCP server plugin](https://adminforth.dev/docs/tutorial/Plugins/mcp/) with OAuth 2.1 sign-in or per-user revocable secrets, every call under the user’s permissions, validation and hooks; the [in-app agent](https://adminforth.dev/docs/tutorial/Plugins/agent/); resources and endpoints you can hide from agents; [audit log](https://adminforth.dev/docs/tutorial/Plugins/audit-log/) with agent attribution.
+- **Security plugins:** TOTP and passkeys, OAuth SSO, user sessions with revoke, login captcha, signed password-reset tokens.
+- **Extend in code:** hooks, custom actions, Express endpoints, Vue components injected into any part of the page, custom pages and the AFCL component library, styled with Tailwind.
+- **More plugins:** import and export (CSV, XLSX), uploads to S3, i18n, rich editor, background jobs, dashboards and [more](https://adminforth.dev/docs/tutorial/ListOfPlugins/).
+- **Made for coding agents:** generated apps ship `AGENTS.md`, `CLAUDE.md` and skills; the docs publish [`llms.txt`](https://adminforth.dev/llms.txt).
+
+[Hello world in 5 minutes](https://adminforth.dev/docs/tutorial/gettingStarted/) · [Live demo](https://demo.adminforth.dev/) · [Tutorial](https://adminforth.dev/docs/tutorial/Customization/branding/) · [YouTube: an agentic admin panel in minutes](https://www.youtube.com/watch?v=4tB8uzY__uk)
 
 ## Project initialisation
 
 AdminForth supports Node.js 22.12+, 24, and 26. Node.js 20 and 21 are no longer supported. We recommend Node.js 24 LTS for production.
 
-AdminForth supports two setup paths:
-
 ### Path 1: Existing database
 
-Use this path when you already have a database and your own schema or migrations. Provide your database URL with `--db`, or enter it when the CLI asks `Please specify the database URL to use`.
+Provide your database URL with `--db`, or enter it when the CLI asks `Please specify the database URL to use`:
 
 ```bash
-npx adminforth create-app --app-name myadmin --db "postgresql://user:password@localhost:5432/dbname"
+pnpm dlx adminforth@latest create-app --app-name myadmin --db "postgresql://user:password@localhost:5432/dbname"
 cd myadmin
 ```
 
-When you provide your own database URL, AdminForth connects to your database but does not create Prisma schema or migrations for it. The generated project README includes the SQL or schema notes needed to add the required `adminuser` table with your own migration tool.
+The CLI inspects the database. When it already has tables, AdminForth connects to it without generating Prisma migrations, and the generated project README includes the SQL for the required `adminuser` table, to add with your own migration tool. When the database is empty, you can let AdminForth manage its schema with Prisma migrations.
 
-After project creation, generate AdminForth resource files from your existing tables:
+Then generate AdminForth resource files from your existing tables:
 
 ```bash
-npx adminforth resource
+pnpm exec adminforth resource
 ```
 
 ### Path 2: New database
 
-Use this path when you want AdminForth to scaffold a standalone app with a new local SQLite database. Omit `--db`, or accept the default `sqlite://.db.sqlite` value in the interactive prompt:
+Omit `--db`, or accept the default `sqlite://.db.sqlite` value in the interactive prompt, and choose Prisma migrations:
 
 ```bash
-npx adminforth create-app --app-name myadmin
+pnpm dlx adminforth@latest create-app --app-name myadmin
 cd myadmin
 pnpm makemigration --name init && pnpm migrate:local
 pnpm dev
 ```
 
-For the new database path, the CLI can scaffold Prisma files and migration scripts for the default `sqlite://.db.sqlite` database. Please follow [getting started](https://adminforth.dev/docs/tutorial/gettingStarted/) for the full guide.
+Please follow [getting started](https://adminforth.dev/docs/tutorial/gettingStarted/) for the full guide.
 
 # For AdminForth developers
 
@@ -156,3 +260,9 @@ This will always run latest version of adminforth package.
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=devforth/adminforth&type=date&legend=top-left)](https://www.star-history.com/#devforth/adminforth&type=date&legend=top-left)
+
+## Want to talk through your process?
+
+[Book a free 30-minute consultation](https://talk.devforth.io/book/30-minute-meeting) about whether an admin built on AdminForth is a good fit for your business and what a useful first version could look like. The consultation is free; implementation and hosting are separate.
+
+<a href="https://devforth.io"><img src="https://raw.githubusercontent.com/devforth/OnLogs/e97944fffc24fec0ce2347b205c9bda3be8de5c5/.assets/df_powered_by.svg" height="28" alt="Powered by Devforth"></a>

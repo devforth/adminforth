@@ -6,6 +6,7 @@ type OutboundDestination = {
 const OUTBOUND_DESTINATIONS = new Map<string, OutboundDestination>([
   ['github.com', {id: 'github', name: 'GitHub'}],
   ['demo.adminforth.dev', {id: 'live_demo', name: 'Live demo'}],
+  ['talk.devforth.io', {id: 'consultation', name: 'Consultation booking'}],
 ]);
 
 declare global {

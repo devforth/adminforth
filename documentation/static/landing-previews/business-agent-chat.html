@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>An agent works through MCP</title>
+<link rel="stylesheet" href="previews.css">
+<style>
+  /* a neutral agent window, not a copy of any client's interface: title bar, the conversation, the prompt box */
+  .win { display: flex; flex-direction: column; height: 100%; background: var(--surface); }
+  .win-bar { flex: none; display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+  .win-bar b { font-weight: 500; color: var(--text); }
+  .win-bar .srv { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; }
+  .win-bar .srv .dot { background: var(--success); }
+  .msgs { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 20px 22px; overflow: hidden; font-size: 14px; line-height: 21px; color: var(--text-2); }
+  .me { align-self: flex-end; max-width: 78%; padding: 9px 14px; border-radius: 14px 14px 4px 14px; background: var(--surface-2); color: var(--text); }
+  .tool { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); font-size: 13px; }
+  .tool .srvname { color: var(--muted); }
+  .tool .ok { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--success-soft); color: var(--success); }
+  .tool .no { width: 16px; height: 16px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--danger-soft); color: var(--danger); }
+  .tool .ok .i, .tool .no .i { width: 11px; height: 11px; }
+  .tool .args { margin-left: auto; color: var(--muted); white-space: nowrap; }
+  .ans b { font-weight: 500; color: var(--text); }
+  .ans ul { margin: 6px 0 0; padding-left: 20px; }
+  .ans li { margin-bottom: 3px; }
+  .ans .late { color: var(--danger-fg); font-weight: 500; }
+  .err { padding: 9px 12px; border-radius: 8px; background: var(--danger-soft); border: 1px solid var(--danger-line); color: var(--danger-fg); font-size: 13px; }
+  .prompt { flex: none; margin: 0 16px 16px; padding: 10px 14px; border: 1px solid var(--border-strong); border-radius: 12px; display: flex; align-items: center; gap: 10px; color: var(--faint); }
+  .prompt .send { margin-left: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: grid; place-items: center; }
+  .tool .srvname { white-space: nowrap; }
+  [data-scene] { display: none; }
+  @container screen (max-width: 640px) {
+    .tool .args { display: none; }
+    .msgs { padding: 16px; }
+    .me { max-width: 90%; }
+  }
+</style>
+</head>
+<body>
+<!-- Northstar Services (made-up example): the owner's agent, connected through the MCP plugin, finds the overdue follow-ups and changes one record;
+     ?scene=denied shows a manager's agent refused on a record that is not his -->
+<div class="screen biz" style="width: 760px; height: 560px">
+  <div class="win">
+    <div class="win-bar"><svg class="i"><use href="icons.svg#bot"/></svg><b id="who">Maya</b>· my agent<span class="srv"><span class="dot"></span>northstar · MCP</span></div>
+    <div class="msgs" data-scene="update">
+      <p class="me">Which follow-ups are overdue, and whose?</p>
+      <div class="tool"><span class="ok"><svg class="i"><use href="icons.svg#check"/></svg></span><span class="srvname">northstar ›</span><span class="mono" style="color: var(--text)">get_resource_data</span><span class="args">follow-ups · due &lt; today · 2 records</span></div>
+      <div class="ans">Two follow-ups are overdue:
+        <ul>
+          <li><b>REQ-1042</b> Harbor Café: confirm quote received, Maya, <span class="late">due yesterday</span></li>
+          <li><b>REQ-1031</b> Brightside School: call the facilities manager, Priya, <span class="late">due 2 days ago</span></li>
+        </ul>
+      </div>
+      <p class="me">For REQ-1042 set the next action to “Call to confirm the quote”, tomorrow 10:00. Keep me as owner.</p>
+      <div class="tool"><span class="ok"><svg class="i"><use href="icons.svg#check"/></svg></span><span class="srvname">northstar ›</span><span class="mono" style="color: var(--text)">update_record</span><span class="args">requests · REQ-1042</span></div>
+      <p class="ans">Done. <b>REQ-1042</b> now has the next action “Call to confirm the quote”, due tomorrow at 10:00, owner Maya. The change is in the audit log under your name and this agent.</p>
+    </div>
+    <div class="msgs" data-scene="denied">
+      <p class="me">Open the Harbor Café request and move it to Won.</p>
+      <div class="tool"><span class="no"><svg class="i"><use href="icons.svg#x"/></svg></span><span class="srvname">northstar ›</span><span class="mono" style="color: var(--text)">get_record</span><span class="args">requests · REQ-1042</span></div>
+      <p class="err">Not allowed: REQ-1042 is assigned to Maya. Managers work only with their own requests.</p>
+      <p class="ans">I can’t open <b>REQ-1042</b>: it belongs to Maya, and your access covers your own requests. I can list yours, or you can ask Maya to change it.</p>
+      <p class="me">Show mine that are due today.</p>
+      <div class="tool"><span class="ok"><svg class="i"><use href="icons.svg#check"/></svg></span><span class="srvname">northstar ›</span><span class="mono" style="color: var(--text)">get_resource_data</span><span class="args">requests · owner = Tom · due = today · 1 record</span></div>
+      <p class="ans">One: <b>REQ-1038</b> Lindqvist Dental, HVAC filter replacement, next action “Book a site visit”, due today.</p>
+    </div>
+    <div class="prompt">Ask about your business…<span class="send"><svg class="i"><use href="icons.svg#arrow-up"/></svg></span></div>
+  </div>
+</div>
+<script>
+  const scene = new URLSearchParams(location.search).get('scene') ?? 'update';
+  document.querySelector(`[data-scene="${scene}"]`).style.display = 'flex';
+  if (scene === 'denied') document.getElementById('who').textContent = 'Tom';
+</script>
+<script src="previews.js"></script>
+</body>
+</html>

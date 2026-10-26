@@ -275,3 +275,23 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
 .vt .i { color: var(--muted); }
 .vt.is-on { background: var(--surface-3); color: var(--text); font-weight: 500; }
 .vt.is-on .i { color: var(--text); }
+
+/* AFCL Badge variants which the plugin cards did not need before */
+.badge-warning { background: var(--warning-soft); border-color: var(--warning-line); color: var(--warning-fg); }
+.badge-accent { background: color-mix(in oklab, var(--accent) 10%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 30%, var(--surface)); color: var(--accent-fg); }
+
+/* the Northstar Services example of the business landing (pages/business): people and their avatars, phones get the page without the sidebar */
+.biz { container: screen / inline-size; }
+.biz .card { overflow: hidden; }
+.who { display: inline-flex; align-items: center; gap: 8px; color: var(--text); white-space: nowrap; }
+.ava { width: 22px; height: 22px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: #FFFFFF; }
+.ava.maya { background: var(--c3); }
+.ava.tom { background: var(--c1); }
+.ava.priya { background: var(--c5); }
+.minor { margin-top: 2px; font-size: 12px; line-height: 16px; color: var(--muted); }
+.title { color: var(--text); font-weight: 500; }
+@container screen (max-width: 640px) {
+  .biz .side { display: none; }
+  .biz .topbar { padding: 0 12px; }
+  .biz .content { padding: 16px; }
+}

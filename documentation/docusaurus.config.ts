@@ -222,6 +222,7 @@ const config: Config = {
           label: 'API',
         },
         { to: '/blog', label: 'Blog', position: 'left'},
+        { to: '/business/', label: 'For business', position: 'left'},
         {
           href: 'https://demo.adminforth.dev/',
           label: 'Live Demo',
