@@ -7,6 +7,8 @@
     "node": "^22.12.0 || ^24.0.0 || ^26.0.0"
   },
   "scripts": {
+    "dev": "pnpm setup-live-demo && pnpm start",
+    "setup-live-demo": "[ -f .env ] || (cp .env.example .env && echo 'Created .env from .env.example, put OPENAI_API_KEY into it and run again' && exit 1) && pnpm install && pnpm migrate",
     "start": "tsx --env-file=.env --watch index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
