@@ -13,6 +13,9 @@
 /afcl-preview/examples
 /static/afcl-preview
 
+# logos of AI agents, copied from the SPA of adminforth by `pnpm copy:agent-logos`
+/static/landing-previews/agents
+
 # Misc
 .DS_Store
 .env.local

@@ -68,6 +68,7 @@ The show, create and edit views list fields as a two-column table on a card: a 2
 - 16px (`w-4 h-4`) in controls and menus. Icons are muted (`text-lightInputIconColor`), destructive items color their icon too.
 - Don't add icons from other sets; replace flowbite, heroicons and humbleicons icons with Lucide when you touch a component. The old sets stay installed because apps and older plugins still import them.
 - Don't draw icons with inline `<svg>` or keep them as own `.vue` files, take the Lucide component. Inline SVG is only for graphics which are not icons: the two-tone `Spinner` ring, the `Toast` timer ring, charts.
+- Logos of AI agents (Claude Code, Codex, Gemini) are brand colored SVGs, not icons. They live once in `spa/src/assets/agents/`: plugins import them from `@/assets/agents/`, the docs copy them to `static/landing-previews/agents/` on `pnpm start` and `pnpm build`. Don't keep own copies in plugins or docs.
 
 ## Country flags and lazy loading
 
