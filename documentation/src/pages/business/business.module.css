@@ -107,6 +107,59 @@
   white-space: nowrap;
 }
 
+.processPreview {
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+}
+
+.processTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.processTop > svg { width: 24px; height: 24px; }
+.processTop > span { margin-left: auto; color: var(--muted); font-size: 11px; }
+.processIntro { padding: 20px; }
+.processIntro h3 { font-size: 22px; font-weight: 600; letter-spacing: -.5px; }
+.processIntro p { color: var(--muted); font-size: 13px; }
+.processRecords { margin: 0 16px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.processRecord { display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px; padding: 15px 14px; }
+.processRecord + .processRecord { border-top: 1px solid var(--line); }
+.processRecord > div { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.processRecord b { font-size: 13px; font-weight: 500; line-height: 1.5; }
+.processId { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.processRecord small { color: var(--muted); font-size: 11px; }
+.processStatus { background: var(--surface-2); padding: 3px 7px; border-radius: 4px; font-size: 11px; }
+.processAttention { color: var(--warning); background: var(--warning-soft); }
+.processChat { padding: 20px; }
+.processChat > span { color: var(--accent-ink); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; }
+.processChat > p { margin-top: 7px; font-size: 15px; font-weight: 500; }
+.processChat > div { display: flex; gap: 10px; margin-top: 12px; padding: 12px; background: var(--accent-soft); border-radius: var(--radius); color: var(--ink-2); }
+.processChat .ic { color: var(--accent); flex-shrink: 0; margin-top: 3px; }
+.processPreview figcaption { padding: 0 20px 16px; font-size: 10px; color: var(--muted); }
+.processSteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.processSteps > li { padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.processSteps h3 { margin-block: 12px; font-size: 20px; }
+.processSteps p { color: var(--ink-2); font-size: 15px; }
+.processSteps + .note { margin-block: 24px; }
+
+@media (max-width: 800px) {
+  .processSteps { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .processRecord { gap: 8px; padding: 12px 10px; }
+  .processRecords { margin-inline: 10px; }
+  .processIntro, .processChat { padding: 16px; }
+}
+
 .wrap {
   width: 100%;
   max-width: 1200px;

@@ -1,55 +1,37 @@
 import {useEffect, useState, type FormEvent} from 'react';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
+import {useLocation} from '@docusaurus/router';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 import clsx from 'clsx';
 import styles from './business.module.css';
 import {buildPrompt, DAILY_PROMPTS, EXAMPLES, SOURCES, type Brief, type Source} from './_brief';
 import {sessionId, track} from '../../track';
+import {BUSINESS_VARIANTS, businessVariant, type BusinessVariant} from './_campaigns';
+
+const BUSINESS_EXAMPLES = {...EXAMPLES, ...Object.fromEntries(BUSINESS_VARIANTS.map((v) => [v.id, {label: v.label, ...v.brief}]))};
 
 // The business landing (/business/) for founders who run their business with AI agents. It has its own
 // header instead of the docs navbar, so it is not wrapped in the theme Layout. The screens are the drawn
 // pages of static/landing-previews, pinned to the dark theme.
 
 const PAGE_TITLE = 'Run your business with agents, on data you control';
-const PAGE_DESCRIPTION = 'Agent-first business admin. Your coding agent builds the admin your business runs on: your data in your own database, sign-in, team permissions and a change history that names the agent. Open-source AdminForth, no development team needed.';
+const PAGE_DESCRIPTION = 'Turn your business process into your own app with AdminForth and a coding agent. Shared records, team permissions and change history. Start with one process.';
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap';
 const BOOKING_URL = 'https://talk.devforth.io/book/30-minute-meeting';
 const GITHUB_URL = 'https://github.com/devforth/adminforth';
 const START_URL = 'https://devforth.io/admin/api/af-start/business/';
 
 const PAINS = [
-  {
-    was: '“My customers and orders live in chats and spreadsheets. The agent can’t reach them, or reaches them with no control.”',
-    title: 'One back office, one locked door.',
-    body: 'Your data in your own database. Every agent connects with its own key, under one person’s permissions.',
-  },
-  {
-    was: '“An app my agent generated is a hole waiting to be found.”',
-    title: 'The security parts come from a maintained framework.',
-    body: 'Sign-in, sessions, two-factor, permissions, audit: not generated once and forgotten. One framework, maintained by us.',
-  },
-  {
-    was: '“If my team’s agents can change anything, who stops a wrong change?”',
-    title: 'Rules on the server, for people and agents alike.',
-    body: 'A manager’s agent sees the manager’s requests. Nothing else, no matter how it asks.',
-  },
-  {
-    was: '“An agent changed something and nobody knows what.”',
-    title: 'A change history that names the agent.',
-    body: 'Who, when, through which agent, old value and new value.',
-  },
-  {
-    was: '“I don’t have developers, and I don’t want to depend on one.”',
-    title: 'Your agent builds it. You own it.',
-    body: 'Open source, MIT, your server. The next change is a sentence to your agent.',
-  },
+  {was: '“Who can change this?”', title: 'You set the access rules.', body: 'Each teammate and their agent work within the permissions you set.'},
+  {was: '“What happened to that record?”', title: 'See who changed what.', body: 'The audit log records the person, the agent, and the old and new values.'},
+  {was: '“Will I be stuck with it?”', title: 'Your code. Your database.', body: 'AdminForth is open source. Ask your coding agent to change the app as your process changes.'},
 ];
 
 const FAQ = [
   {
     q: 'Do I need a developer?',
-    a: 'No. You describe the work, your agent writes the code on AdminForth, and you check the result in the browser. You still decide when a change is ready for your team. Hosting and backups are set up with the agent, and you own them.',
+    a: 'You can start with a coding agent and check its work in your browser. A live business app still needs reviewed access rules, hosting and backups. Complex integrations may need developer help.',
   },
   {
     q: 'Is this a ready-made CRM?',
@@ -194,7 +176,62 @@ function Header(): JSX.Element {
   );
 }
 
-function Hero(): JSX.Element {
+function ProcessPreview({variant}: {variant: BusinessVariant}): JSX.Element {
+  return (
+    <figure className={styles.processPreview} data-process-preview={variant.id}>
+      <div className={styles.processTop}><BrandMark /><b>{variant.recordType}</b><span>Example app</span></div>
+      <div className={styles.processIntro}><h3>{variant.recordType} at a glance</h3><p>Owner, stage and next action — in one place.</p></div>
+      <div className={styles.processRecords}>
+        {variant.records.map((record) => (
+          <div className={styles.processRecord} key={record.id}>
+            <div><span className={styles.processId}>{record.id}</span><b>{record.name}</b></div>
+            <div><span className={clsx(styles.processStatus, record.attention && styles.processAttention)}>{record.stage}</span><small>{record.owner} · Due {record.due.toLowerCase()}</small></div>
+          </div>
+        ))}
+      </div>
+      <div className={styles.processChat}><span>YOU → YOUR AGENT</span><p>{variant.question}</p><div><Icon name="bot" /><p>{variant.answer}</p></div></div>
+      <figcaption>Illustrative AdminForth app · Fictional records</figcaption>
+    </figure>
+  );
+}
+
+function ProcessWorkflow({variant}: {variant: BusinessVariant}): JSX.Element {
+  return (
+    <section className={styles.sec} id="workflow" aria-labelledby="process-title">
+      <div className={styles.wrap}>
+        <header className={styles.secHead}>
+          <p className={styles.eyebrow}>From a scattered spreadsheet to a shared process</p>
+          <h2 className={styles.h2} id="process-title">Find what is stuck. Give it a next step.</h2>
+          <p className={styles.lede}>Build this around your own fields, stages and team.</p>
+        </header>
+        <ol className={styles.processSteps}>
+          <li><span className={styles.eyebrow}>1 · Find</span><h3 className={styles.h3}>{variant.question}</h3><p>{variant.answer}</p></li>
+          <li><span className={styles.eyebrow}>2 · Act</span><h3 className={styles.h3}>{variant.operation}</h3><p>{variant.result}</p></li>
+          <li><span className={styles.eyebrow}>3 · Check</span><h3 className={styles.h3}>Your team’s rules still apply.</h3><p>Your access rules apply to agents too. Check who changed what in the audit log.</p></li>
+        </ol>
+        <p className={styles.note}>Example with fictional data. Start locally; add real data and team hosting when you’re ready.</p>
+        <a className={clsx(styles.btn, styles.btnPrimary)} href="#start">{variant.cta}<Icon name="arrow-right" /></a>
+      </div>
+    </section>
+  );
+}
+
+function Hero({variant}: {variant?: BusinessVariant}): JSX.Element {
+  if (variant) return (
+    <section className={styles.hero}>
+      <div className={clsx(styles.wrap, styles.heroWrap, styles.heroGrid)}>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>Your {variant.label.toLowerCase()} · Your own app</p>
+          <h1 className={styles.h1}>{variant.heading}</h1>
+          <p className={styles.lede}>{variant.description}</p>
+          <ul className={styles.facts}><li><Icon name="database" />Your own database</li><li><Icon name="users" />Team access rules</li><li><Icon name="history" />Change history</li></ul>
+          <div className={styles.cta}><a className={clsx(styles.btn, styles.btnPrimary)} href="#start">{variant.cta}</a><a className={clsx(styles.btn, styles.btnGhost)} href="#workflow">See an example</a></div>
+          <p className={styles.note}>Start with a brief for your coding agent. First build: sample data on your computer.</p>
+        </div>
+        <div className={styles.heroVisual}><ProcessPreview variant={variant} /></div>
+      </div>
+    </section>
+  );
   return (
     <section className={styles.hero}>
       <div className={clsx(styles.wrap, styles.heroWrap, styles.heroGrid)}>
@@ -206,12 +243,12 @@ function Hero(): JSX.Element {
             <li><Icon name="database" />Your own database</li>
             <li><Icon name="key-round" />One revocable key per agent</li>
           </ul>
-          <p className={styles.lede}>Your coding agent builds the admin on AdminForth: customers, orders, jobs and money in your own database, with sign-in, team permissions and a change history that names the agent. Then you and your team work through Claude Code, Codex or any agent that speaks MCP. Screens are there when you want to look.</p>
+          <p className={styles.lede}>Customers in chats. Orders in spreadsheets. Turn one messy process into your own app with AdminForth and a coding agent. Then work through your agent or the app’s screens.</p>
           <div className={styles.cta}>
             <a className={clsx(styles.btn, styles.btnPrimary)} href="#start">Build it with my agent</a>
             <a className={clsx(styles.btn, styles.btnGhost)} href="#workflow">See it work</a>
           </div>
-          <p className={styles.note}>No development team. Open source, MIT, on your server.</p>
+          <p className={styles.note}>Free, open-source framework. Your agent and hosting are paid separately.</p>
         </div>
         <div className={styles.heroVisual}>
           <Shot
@@ -239,22 +276,16 @@ function Pillars(): JSX.Element {
       <div className={styles.wrap}>
         <header className={styles.secHead}>
           <p className={styles.eyebrow}>What AdminForth gives you</p>
-          <h2 className={styles.h2} id="why-title">Your agents can already do the work. This is what keeps it safe.</h2>
+          <h2 className={styles.h2} id="why-title">A foundation you can keep building on.</h2>
         </header>
         <div className={styles.pillars}>
           <div className={styles.pillar}>
             <div className={styles.pillarText}>
               <p className={styles.n}>01 · Security</p>
-              <h3 className={styles.h3}>Your data stays yours, and stays patched.</h3>
-              <p>Your records live in your own database on your server. Agents get in through one locked door: sign-in, a separate key per agent that you can revoke, two-factor and passkeys for people.</p>
-              <p>The parts you can’t review yourself come from AdminForth, one framework our team maintains. Security fixes ship with its updates. Updating is a version bump your agent runs; skills tell it how.</p>
-              <div className={styles.alert}>
-                <b>8 of the 10 biggest months for software vulnerabilities ever recorded happened in 2026.</b>
-                <span>One in five of all vulnerabilities ever registered were published this year, and the year isn’t over. Exploitation in the wild nearly doubled. An app your agent generated last month, with hundreds of packages nobody updates, sits right in that path. AdminForth, one framework maintained by our team, doesn’t.</span>
-                <span className={styles.src}>
-                  <a href="https://craci.com/resources/CVE-publication-trends" target="_blank" rel="noopener">CVE publications by month</a> · <a href="https://cvetodo.com/cve-statistics" target="_blank" rel="noopener">2026 CVE count</a> · <a href="https://cloud.google.com/blog/topics/threat-intelligence/vulnerability-discovery-and-exploitation-trends-in-the-ai-era" target="_blank" rel="noopener">Google Threat Intelligence, Oct 2026</a>
-                </span>
-              </div>
+              <h3 className={styles.h3}>Your data. Your access rules.</h3>
+              <p>Your records live in your database. Give each agent its own connection, and revoke it when needed.</p>
+              <p>AdminForth maintains the sign-in and permission components. Your agent can help apply updates; you still review and test your app.</p>
+
             </div>
             <Shot
               bar="northstar.app/settings/agents"
@@ -268,9 +299,9 @@ function Pillars(): JSX.Element {
           <div className={styles.pillar}>
             <div className={styles.pillarText}>
               <p className={styles.n}>02 · Your team and their agents</p>
-              <h3 className={styles.h3}>Everyone works inside your rules, and you see who did what.</h3>
-              <p>Your team uses agents too, on the same records. Each person, and each of their agents, sees and changes only what their role allows. The server checks every request, from a browser or from an agent.</p>
-              <p>The audit log names the person and the agent for every change. When something looks wrong, you know who, when, through what, and what it was before.</p>
+              <h3 className={styles.h3}>Know who changed what.</h3>
+              <p>Your team and their agents use the same records. The server enforces the access rules you configure.</p>
+              <p>The audit log shows the person, the agent, and the values before and after a change.</p>
             </div>
             <Shot
               bar="northstar.app/audit-log"
@@ -285,7 +316,7 @@ function Pillars(): JSX.Element {
             <div className={styles.pillarText}>
               <p className={styles.n}>03 · Screens, optional</p>
               <h3 className={styles.h3}>Ask your agent. Open a screen when you want to look.</h3>
-              <p>The admin is where your business is administered: records, rules, access, history. The panel is one way in; your agent is another. Most days you won’t click through forms: you ask, the agent does it. The screens and dashboards are still there, for the overview, for a teammate who prefers them, and for checking what the agent did.</p>
+              <p>Ask your agent to find or update a record. Open the app for an overview, or let teammates use its forms.</p>
             </div>
             <Shot
               bar="northstar.app/overview"
@@ -308,7 +339,7 @@ function Pains(): JSX.Element {
       <div className={styles.wrap}>
         <header className={styles.secHead}>
           <p className={styles.eyebrow}>Sound familiar?</p>
-          <h2 className={styles.h2} id="pains-title">What stops a founder from letting agents run the business.</h2>
+          <h2 className={styles.h2} id="pains-title">Keep control as your team grows.</h2>
         </header>
         <ul className={styles.fixes}>
           {PAINS.map((pain) => (
@@ -319,44 +350,6 @@ function Pains(): JSX.Element {
             </li>
           ))}
         </ul>
-      </div>
-    </section>
-  );
-}
-
-function Equation(): JSX.Element {
-  return (
-    <section className={styles.sec} aria-labelledby="eq-title">
-      <div className={styles.wrap}>
-        <header className={styles.secHead}>
-          <p className={styles.eyebrow}>How it gets built</p>
-          <h2 className={styles.h2} id="eq-title">You don’t need a development team. You need these three.</h2>
-        </header>
-        <ol className={styles.eq}>
-          <li className={styles.eqPart}>
-            <span className={styles.eqIcon}><Icon name="user" /></span>
-            <h3 className={styles.h3}>You</h3>
-            <p>Describe the work in plain words: what you track, who does what, what keeps slipping. Check the result in your browser.</p>
-          </li>
-          <li className={styles.eqOp} aria-hidden="true">+</li>
-          <li className={styles.eqPart}>
-            <span className={styles.eqIcon}><Icon name="bot" /></span>
-            <h3 className={styles.h3}>Your AI agent</h3>
-            <p>Claude Code or Codex writes the code, runs the app and connects itself to it. Afterwards it is how you work with the data.</p>
-          </li>
-          <li className={styles.eqOp} aria-hidden="true">+</li>
-          <li className={styles.eqPart}>
-            <span className={styles.eqIcon}><BrandMark /></span>
-            <h3 className={styles.h3}>AdminForth</h3>
-            <p>The maintained foundation: sign-in, permissions, audit log, MCP, record screens. One framework and its plugins, maintained by us.</p>
-          </li>
-          <li className={styles.eqOp} aria-hidden="true">=</li>
-          <li className={clsx(styles.eqPart, styles.eqResult)}>
-            <span className={styles.eqIcon}><Icon name="layout-dashboard" /></span>
-            <h3 className={styles.h3}>Your business admin</h3>
-            <p>Your records, your rules, your server. Agents and people work in it; the history shows who did what.</p>
-          </li>
-        </ol>
       </div>
     </section>
   );
@@ -402,10 +395,10 @@ function Workflow(): JSX.Element {
 
 type ResultState = 'idle' | 'ready' | 'copied' | 'manual';
 
-function BriefBuilder(): JSX.Element {
-  const [example, setExample] = useState('followups');
+function BriefBuilder({variant}: {variant?: BusinessVariant}): JSX.Element {
+  const [example, setExample] = useState(variant?.id ?? 'followups');
   const [brief, setBrief] = useState<Brief>(() => {
-    const {label: _label, ...fields} = EXAMPLES.followups;
+    const {label: _label, ...fields} = BUSINESS_EXAMPLES[variant?.id ?? 'followups'];
     return fields;
   });
   const [edited, setEdited] = useState(false);
@@ -419,7 +412,7 @@ function BriefBuilder(): JSX.Element {
   const prompt = buildPrompt(brief, startUrl);
 
   const apply = (id: string) => {
-    const {label: _label, ...fields} = EXAMPLES[id];
+    const {label: _label, ...fields} = BUSINESS_EXAMPLES[id];
     setBrief(fields);
     setExample(id);
     setEdited(false);
@@ -432,21 +425,21 @@ function BriefBuilder(): JSX.Element {
   };
   const prepare = (e: FormEvent) => {
     e.preventDefault();
-    track('brief_prepared');
+    track('brief_prepared', {brief_example: example, brief_edited: String(edited)});
     setState('ready');
     document.getElementById('brief-ready-title')?.focus();
   };
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(prompt);
-      track('build_prompt_copied');
+      track('build_prompt_copied', {brief_example: example, brief_edited: String(edited)});
       setState('copied');
     } catch {
       setState('manual');
     }
   };
   const download = () => {
-    track('brief_downloaded');
+    track('brief_downloaded', {brief_example: example, brief_edited: String(edited)});
     const url = URL.createObjectURL(new Blob([prompt], {type: 'text/markdown'}));
     const a = Object.assign(document.createElement('a'), {href: url, download: 'my-business-brief.md'});
     a.click();
@@ -461,14 +454,14 @@ function BriefBuilder(): JSX.Element {
           <fieldset>
             <legend className={styles.label}>Start from an example</legend>
             <div className={styles.chips}>
-              {Object.entries(EXAMPLES).map(([id, ex]) => (
+              {Object.entries(BUSINESS_EXAMPLES).map(([id, ex]) => (
                 <button type="button" className={styles.chip} key={id} aria-pressed={id === example} onClick={() => pick(id)}>{ex.label}</button>
               ))}
             </div>
           </fieldset>
           {pending && (
             <div className={styles.confirm}>
-              <p>Replace your text with the <b>{EXAMPLES[pending].label}</b> example?</p>
+              <p>Replace your text with the <b>{BUSINESS_EXAMPLES[pending].label}</b> example?</p>
               <button type="button" className={clsx(styles.btn, styles.btnSm, styles.btnPrimary)} onClick={() => apply(pending)}>Replace</button>
               <button type="button" className={clsx(styles.btn, styles.btnSm, styles.btnGhost)} onClick={() => setPending(null)}>Keep mine</button>
             </div>
@@ -504,7 +497,7 @@ function BriefBuilder(): JSX.Element {
               </div>
             </div>
           </details>
-          <p className={styles.micro}>Describe the process without customer names, passwords or account details. Nothing is sent anywhere: the page fills in a template.</p>
+          <p className={styles.micro}>Your answers stay in this browser. Use a fictional example, not private customer data.</p>
           <button type="submit" className={clsx(styles.btn, styles.btnPrimary)}>Prepare my instructions</button>
         </form>
       </li>
@@ -576,24 +569,24 @@ function BriefBuilder(): JSX.Element {
   );
 }
 
-function Start(): JSX.Element {
+function Start({variant}: {variant?: BusinessVariant}): JSX.Element {
   return (
     <section className={styles.sec} id="start" aria-labelledby="start-title">
       <div className={styles.wrap}>
         <header className={styles.secHead}>
           <p className={styles.eyebrow}>Start with your agent</p>
-          <h2 className={styles.h2} id="start-title">Describe one part of your business. Your agent builds the rest.</h2>
-          <p className={styles.lede}>Fill in three lines, copy the build instructions, and give them to Claude Code or Codex in a project folder on your computer. The instructions include MCP and the audit log from day one.</p>
+          <h2 className={styles.h2} id="start-title">{variant ? variant.cta : 'Describe one part of your business. Your agent builds the rest.'}</h2>
+          <p className={styles.lede}>Adjust the example. Copy your instructions. Give them to Claude Code or Codex to build a first version on your computer.</p>
         </header>
         <ol className={styles.steps}>
-          <BriefBuilder />
+          <BriefBuilder variant={variant} />
           <li className={styles.step}>
             <div className={styles.stepHead}><span className={styles.stepN}>3</span><h3 className={styles.h3}>Connect and work</h3></div>
             <div className={styles.try}>
               <div>
-                <p>The agent builds the first part with sample data, runs the app and connects itself to it. From then on you talk to your business. Prompts for the first day, with the example above:</p>
+                <p>Have your agent open the app and connect to it. Try these with the sample records:</p>
                 <ul className={styles.daily}>
-                  {DAILY_PROMPTS.map((text) => (
+                  {(variant?.prompts ?? DAILY_PROMPTS).slice(0, 3).map((text) => (
                     <li key={text}><span>{text}</span><CopyButton text={text} /></li>
                   ))}
                 </ul>
@@ -649,7 +642,7 @@ function Consultation(): JSX.Element {
           </div>
           <div className={styles.consultBody}>
             <h2 className={clsx(styles.h2, styles.consultTitle)} id="con-title">Bring one messy process. Let’s map a better way to run it.</h2>
-            <p>Book a free 30-minute consultation about your business workflow. We’ll discuss what you track today, where work gets stuck, and whether an admin built on AdminForth is a good fit.</p>
+            <p>Show us where work gets stuck. We’ll help you choose a small first app and see whether AdminForth fits.</p>
             <ul className={styles.topics}>
               <li>What should your agents and your team be able to do?</li>
               <li>Which part could you build first?</li>
@@ -680,8 +673,11 @@ function Footer(): JSX.Element {
 }
 
 export default function Business(): JSX.Element {
+  const location = useLocation();
+  const [variant, setVariant] = useState<BusinessVariant>();
+  useEffect(() => setVariant(businessVariant(new URLSearchParams(location.search).get('utm_campaign'))), [location.search]);
   return (
-    <div className={styles.page} id="top">
+    <div className={styles.page} id="top" data-landing-variant={variant?.id ?? 'general'}>
       <Head>
         <title>{PAGE_TITLE} · AdminForth</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
@@ -693,12 +689,11 @@ export default function Business(): JSX.Element {
       </Head>
       <Header />
       <main>
-        <Hero />
-        <Pillars />
+        <Hero variant={variant} />
+        {variant ? <ProcessWorkflow variant={variant} /> : <Workflow />}
+        <Start key={variant?.id ?? 'general'} variant={variant} />
         <Pains />
-        <Equation />
-        <Workflow />
-        <Start />
+        {!variant && <Pillars />}
         <Faq />
         <Consultation />
       </main>
