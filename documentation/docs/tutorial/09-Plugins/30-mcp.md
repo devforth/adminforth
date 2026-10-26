@@ -363,4 +363,4 @@ new AuditLogPlugin({
 });
 ```
 
-MCP actions store the agent, version, and auth secret name, for example `codex@1.2.3 | Production Codex`. Actions from `@adminforth/agent` store `af-agent`. Regular user actions leave the field empty. If the mapping is omitted, Audit Log behavior remains unchanged.
+MCP actions store the agent, version, and auth secret name, for example `codex@1.2.3 | Production Codex`. Actions from `@adminforth/agent` store `af-agent`. Regular user actions leave the field empty. If the mapping is omitted, Audit Log behavior remains unchanged. Audit Log shows the value with the logo of the agent, see [Logging actions executed by agents](./04-AuditLog.md#logging-actions-executed-by-agents).

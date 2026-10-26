@@ -3,6 +3,11 @@ import AuditLogPlugin from "../../plugins/adminforth-audit-log/index.js";
 import { AdminForthDataTypes } from "../../adminforth/index.js";
 import { randomUUID } from "crypto";
 
+const actionBadge = {
+  file: '@/renderers/EnumBadge.vue',
+  meta: { variants: { create: 'success', edit: 'accent', delete: 'danger' } },
+};
+
 export default {
   dataSource: 'sqlite', 
   table: 'audit_logs',
@@ -20,7 +25,21 @@ export default {
         foreignResource: {
         resourceId: 'adminuser',
       } },
-    { name: 'action', required: false },
+    { name: 'action', required: false,
+      enum: [
+        { value: 'create', label: 'Create' },
+        { value: 'edit', label: 'Edit' },
+        { value: 'delete', label: 'Delete' },
+        // logged by the import-export plugin
+        { value: 'import', label: 'Import' },
+        { value: 'export', label: 'Export' },
+        // custom action of the cars resources
+        { value: 'visitedDashboard', label: 'Visited dashboard' },
+      ],
+      components: {
+        list: actionBadge,
+        show: actionBadge,
+      } },
     { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
         list: false,
         edit: false,

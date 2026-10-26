@@ -63,6 +63,11 @@ import AuditLogPlugin from "@adminforth/audit-log/index.js";
 import { AdminForthDataTypes } from "adminforth";
 import { randomUUID } from "crypto";
 
+const actionBadge = {
+  file: '@/renderers/EnumBadge.vue',
+  meta: { variants: { create: 'success', edit: 'accent', delete: 'danger' } },
+};
+
 export default {
   dataSource: 'maindb', 
   table: 'audit_logs',
@@ -80,7 +85,16 @@ export default {
         foreignResource: {
         resourceId: 'adminuser',
       } },
-    { name: 'action', required: false },
+    { name: 'action', required: false,
+      enum: [
+        { value: 'create', label: 'Create' },
+        { value: 'edit', label: 'Edit' },
+        { value: 'delete', label: 'Delete' },
+      ],
+      components: {
+        list: actionBadge,
+        show: actionBadge,
+      } },
     { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
         list: false,
         edit: false,
@@ -112,6 +126,8 @@ export default {
   ],
 }
 ```
+
+The action is shown as a colored badge by the [Enum Badge](../03-Customization/02-customFieldRendering.md#enum-badge) renderer. The `enum` of the `action` column must list every action which gets logged: a log record with an action out of the `enum` fails validation and is not saved. Add the ids of your [custom actions](#logging-custom-actions), and `import` and `export` if you use the [Import Export](./08-import-export.md) plugin.
 
 Then you need to import `./resources/auditLogs`:
 
@@ -186,10 +202,12 @@ plugins: [
 
 `@adminforth/agent` records `af-agent`. `@adminforth/mcp` records the detected client, its version, and the auth secret name, for example `codex@1.2.3 | Production Codex`. Regular user actions leave the column empty. Existing configurations without `resourceExecutedByColumnName` keep their current behavior.
 
+The list and the show page render the column with the logo of the agent: Claude Code, Codex or Gemini, or a bot icon for `af-agent` and other MCP clients, e.g. `codex@1.2.3 · Production Codex` with the Codex logo. Set your own `components` on the column to render it differently.
+
 
 ## Logging custom actions
 
-Audit log is able to catch only standard actions like `create`, `update`, `delete` or custom bulk actions.
+Audit log is able to catch only standard actions like `create`, `edit`, `delete` or custom bulk actions.
 
 If you have a custom, self coded actions in your API, you can log them by calling `logCustomAction` method of `AuditLogPlugin` instance:
 
@@ -215,6 +233,20 @@ app.get(`${ADMIN_BASE_URL}/api/dashboard/`,
 
       ....
 
+```
+
+Add the `actionId` to the `enum` of the `action` column, otherwise the log record is not saved:
+
+```ts title='./resources/auditLogs.ts'
+    { name: 'action', required: false,
+      enum: [
+        { value: 'create', label: 'Create' },
+        { value: 'edit', label: 'Edit' },
+        { value: 'delete', label: 'Delete' },
+//diff-add
+        { value: 'visitedDashboard', label: 'Visited dashboard' },
+      ],
+      ...
 ```
 
 ## Logging client ip address
@@ -251,13 +283,6 @@ Also, update the resource configuration in `./resources/auditLogs.ts`:
     table: 'audit_logs',
     columns: [
       ...
-      { name: 'action', required: false },
-      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
-          list: false,
-          edit: false,
-          create: false,
-          filter: false,
-        } },
       { name: 'record_id', required: false },
       //diff-add
       { name: 'ip_address', required: false },
@@ -317,13 +342,6 @@ Update the resource configuration in `./resources/auditLogs.ts`:
     table: 'audit_logs',
     columns: [
       ...
-      { name: 'action', required: false },
-      { name: 'diff', required: false, type: AdminForthDataTypes.JSON, showIn: {
-          list: false,
-          edit: false,
-          create: false,
-          filter: false,
-        } },
       { name: 'record_id', required: false },
       { name: 'ip_address', required: false },
        //diff-add
