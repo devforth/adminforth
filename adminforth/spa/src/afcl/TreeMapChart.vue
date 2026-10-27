@@ -125,5 +125,15 @@ onUnmounted(() => {
   .apexcharts-legend-text {
     color: var(--afcl-treemap-text) !important;
   }
+
+  // the light apexcharts tooltip has a white background but no text color, so in the dark theme
+  // it inherits the light page text; the tooltip is an ink layer and takes the Tooltip tokens
+  .apexcharts-tooltip.apexcharts-theme-light {
+    @apply border-none rounded-md text-lightTooltipText bg-lightTooltipBackground shadow-popover dark:text-darkTooltipText dark:bg-darkTooltipBackground dark:shadow-darkPopover;
+
+    .apexcharts-tooltip-title {
+      @apply bg-transparent border-b-lightTooltipText/10 dark:border-b-darkTooltipText/10;
+    }
+  }
 }
 </style>
