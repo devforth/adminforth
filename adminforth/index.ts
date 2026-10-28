@@ -36,7 +36,8 @@ import {
 
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI, { rejectApiRawFilters } from './modules/restApi.js';
+import AdminForthRestAPI from './modules/restApi.js';
+import { rejectApiRawFilters } from './modules/filterSecurity.js';
 import { interpretResource } from './modules/resourceAccess.js';
 import OperationalResource from './modules/operationalResource.js';
 import UserScopedResource from './modules/userScopedResource.js';

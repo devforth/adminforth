@@ -2,7 +2,7 @@ import OperationalResource from '../../adminforth/modules/operationalResource.js
 import UserScopedResource from '../../adminforth/modules/userScopedResource.js';
 import AdminForthRestAPI from '../../adminforth/modules/restApi.js';
 import AdminForth from '../../adminforth/index.js';
-import { authorizeResourceOperation, RESOURCE_ACCESS_GRANT } from '../../adminforth/modules/resourceAccess.js';
+import { authorizeResourceOperation, consumeResourceAccessGrant, RESOURCE_ACCESS_GRANT } from '../../adminforth/modules/resourceAccess.js';
 import { ActionCheckSource, AllowedActionsEnum } from '../../adminforth/types/Common.js';
 
 function singleFilters(filters: any): any[] {
@@ -259,6 +259,34 @@ describe('OperationalResource access tiers', () => {
     expect(userRecords).toEqual([{ id: 1, name: 'John' }]);
     expect(bare.calls).toMatchObject({ acl: 0, beforeList: 0, afterList: 0 });
     expect(scoped.calls).toMatchObject({ acl: 1, beforeList: 1, afterList: 1 });
+  });
+
+  it('normalizes scoped hook filters to arrays for list, aggregate, and count', async () => {
+    const { resource } = setup();
+    const hookFiltersSeen: any[] = [];
+    resource.resourceConfig.hooks.list.beforeDatasourceRequest = [async ({ query }) => {
+      hookFiltersSeen.push(query.filters);
+      query.filters.push({ field: 'tenant', operator: 'eq', value: 't1' });
+      return { ok: true };
+    }];
+    const scoped = resource.asUser({} as any, { meta: { allowed: true } });
+
+    await scoped.list({ operator: 'and', subFilters: [{ field: 'name', operator: 'eq', value: 'John' }] } as any);
+    await scoped.aggregate({ operator: 'and', subFilters: [] } as any, { total: { operation: 'count' } } as any);
+    await scoped.count();
+
+    expect(hookFiltersSeen).toHaveLength(3);
+    expect(hookFiltersSeen.every(Array.isArray)).toBe(true);
+  });
+
+  it('rejects raw filters before scoped read hooks run', async () => {
+    const { calls, resource } = setup();
+
+    await expect(resource.asUser({} as any, { meta: { allowed: true } }).list([
+      { insecureRawSQL: '1 = 1' },
+    ] as any)).rejects.toThrow('insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests');
+
+    expect(calls).toMatchObject({ beforeList: 0, connectorGetData: 0 });
   });
 
   it('rejects denied deletes and leaves the connector untouched', async () => {
@@ -568,6 +596,18 @@ describe('OperationalResource access tiers', () => {
     await expect(scoped.create(record)).resolves.toMatchObject({ ok: true });
     await expect(scoped.create(record)).resolves.toMatchObject({ ok: false, error: 'Action is not allowed' });
     expect(calls.createExecutor).toBe(1);
+  });
+
+  it('fails closed for an unknown grant even when adminUser is undefined', () => {
+    const { resource } = setup();
+
+    expect(consumeResourceAccessGrant(
+      {} as any,
+      undefined as any,
+      resource.resourceConfig,
+      AllowedActionsEnum.create,
+      {},
+    )).toBe(false);
   });
 
   it('applies the full user-scoped update path to an empty update', async () => {

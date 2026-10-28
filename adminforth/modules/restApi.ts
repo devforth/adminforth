@@ -34,6 +34,8 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
 import { filtersTools } from "../modules/filtersTools.js";
 import { normalizeColumnValue } from './columnValueNormalizer.js';
 import { isEmptyColumnValue, runColumnValidators } from './columnValueValidator.js';
+import { rejectApiRawFilters } from './filterSecurity.js';
+export { rejectApiRawFilters } from './filterSecurity.js';
 import {
   filterColumnsReadableError,
   isBackendOnly,
@@ -194,31 +196,6 @@ const commonFiltersSchema: AnySchemaObject = {
     { $ref: '#/$defs/filterNode' },
   ],
 };
-
-function hasApiRawFilter(filters: any): boolean {
-  if (!filters || typeof filters !== 'object') {
-    return false;
-  }
-
-  if (Array.isArray(filters)) {
-    return filters.some(hasApiRawFilter);
-  }
-
-  if (
-    Object.prototype.hasOwnProperty.call(filters, 'insecureRawSQL') ||
-    Object.prototype.hasOwnProperty.call(filters, 'insecureRawNoSQL')
-  ) {
-    return true;
-  }
-
-  return Array.isArray(filters.subFilters) && filters.subFilters.some(hasApiRawFilter);
-}
-
-export function rejectApiRawFilters(filters: any): { error: string } | undefined {
-  if (hasApiRawFilter(filters)) {
-    return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
-  }
-}
 
 function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
   return {
@@ -1762,10 +1739,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
-        }
-        const rawFilterError = rejectApiRawFilters(body.filters);
-        if (rawFilterError) {
-          return rawFilterError;
         }
 
         const { aggregations, filters, groupBy } = body;

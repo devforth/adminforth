@@ -28,6 +28,7 @@ import {
 } from './columnAccess.js';
 import { consumeResourceAccessGrant, interpretResource, RESOURCE_ACCESS_GRANT } from './resourceAccess.js';
 import { filtersTools } from './filtersTools.js';
+import { rejectApiRawFilters } from './filterSecurity.js';
 import { hookResponseError, listify } from './utils.js';
 import { resolvePolymorphicReferences } from './polymorphicReferences.js';
 import type OperationalResource from './operationalResource.js';
@@ -47,6 +48,15 @@ const OPERATION_ACCESS = {
 } as const;
 
 type GuardedOperation = keyof typeof OPERATION_ACCESS;
+
+function hookFilters(
+  filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> | undefined,
+): Array<IAdminForthSingleFilter | IAdminForthAndOrFilter> {
+  if (!filter) {
+    return [];
+  }
+  return Array.isArray(filter) ? filter : [filter];
+}
 
 /** Hook-running write paths, supplied by AdminForth. */
 export interface ResourceHookExecutors {
@@ -199,7 +209,12 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(filterError);
     }
 
-    const query = { filters: filter, limit: 1, offset: 0, sort: [] };
+    const rawFilterError = rejectApiRawFilters(filter);
+    if (rawFilterError) {
+      throw new Error(rawFilterError.error);
+    }
+
+    const query = { filters: hookFilters(filter), limit: 1, offset: 0, sort: [] };
     await this.runReadHooks('show', 'beforeDatasourceRequest', query);
     const record = await this.data.get(query.filters);
     const records = record ? [record] : [];
@@ -231,6 +246,11 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(filterError);
     }
 
+    const rawFilterError = rejectApiRawFilters(filter);
+    if (rawFilterError) {
+      throw new Error(rawFilterError.error);
+    }
+
     const sortError = await sortColumnsReadableError(
       this.columnCtx(ActionCheckSource.ListRequest),
       sort,
@@ -239,7 +259,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(sortError);
     }
 
-    const query = { filters: filter, limit, offset, sort };
+    const query = { filters: hookFilters(filter), limit, offset, sort };
     await this.runReadHooks('list', 'beforeDatasourceRequest', query);
     const data = await this.data.list(query.filters, query.limit, query.offset, query.sort, columns);
 
@@ -271,11 +291,16 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(columnError);
     }
 
+    const rawFilterError = rejectApiRawFilters(filter);
+    if (rawFilterError) {
+      throw new Error(rawFilterError.error);
+    }
+
     // An aggregation reads the same rows a list does, so the row-scoping hooks have to narrow
     // it too, or groupBy/min/max/sum report across every tenant. They run after the column check
     // above, so that check still sees the caller's own filters. The response hooks get the
     // aggregation rows, they can tell this call by query.aggregations.
-    const query = { filters: filter, aggregations, groupBy, limit: null, offset: 0, sort: [] };
+    const query = { filters: hookFilters(filter), aggregations, groupBy, limit: null, offset: 0, sort: [] };
     await this.runReadHooks('list', 'beforeDatasourceRequest', query);
 
     const rows = await this.data.aggregate(query.filters, aggregations, groupBy);
@@ -297,8 +322,13 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(filterError);
     }
 
+    const rawFilterError = rejectApiRawFilters(filter);
+    if (rawFilterError) {
+      throw new Error(rawFilterError.error);
+    }
+
     // a count is a list the caller only learns the size of, so it is row-scoped the same way
-    const query = { filters: filter, limit: null, offset: 0, sort: [] };
+    const query = { filters: hookFilters(filter), limit: null, offset: 0, sort: [] };
     await this.runReadHooks('list', 'beforeDatasourceRequest', query);
 
     return this.data.count(query.filters);

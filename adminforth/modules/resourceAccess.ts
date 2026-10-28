@@ -94,7 +94,10 @@ export function consumeResourceAccessGrant(
   }
   const granted = grantedOperations.get(grant);
   grantedOperations.delete(grant);
-  return granted?.adminUser === adminUser
+  if (!granted) {
+    return false;
+  }
+  return granted.adminUser === adminUser
     && granted.resource === resource
     && granted.action === action
     && granted.record === record
