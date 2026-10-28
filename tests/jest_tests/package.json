@@ -16,8 +16,10 @@
     "jest": "^30.3.0"
   },
   "devDependencies": {
+    "@adminforth/connector-sqlite": "^1.0.9",
     "@types/jest": "^30.0.0",
     "@types/supertest": "^7.2.0",
+    "adminforth": "link:../../adminforth",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"

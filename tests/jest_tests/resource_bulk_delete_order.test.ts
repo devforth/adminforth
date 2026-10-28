@@ -73,9 +73,9 @@ function setup(parentBeforeSave: () => Promise<{ ok: boolean; error?: string }>)
   const executors = {
     create: (params: any) => admin.executeCreateResourceRecord(params),
     update: (params: any) => admin.executeUpdateResourceRecord(params),
-    delete: (params: any, cascadeChildren?: boolean, bulkHooks?: boolean) => {
+    delete: (params: any, cascadeChildren?: boolean) => {
       scopedDeleteCalls += 1;
-      return admin.executeDeleteResourceRecord(params, cascadeChildren, bulkHooks);
+      return admin.executeDeleteResourceRecord(params, cascadeChildren);
     },
   };
   const operationalResource = (resource: any) => new OperationalResource(
@@ -127,7 +127,7 @@ describe('default bulk delete', () => {
     ]);
   });
 
-  it('runs every beforeSave hook when one vetoes deletion', async () => {
+  it('stops at the first beforeSave veto, same as a single delete', async () => {
     const { events, parent, deleteChecked } = setup(async () => ({ ok: false, error: 'blocked' }));
     parent.hooks.delete.beforeSave.push(async () => {
       events.push('parent-before-second');
@@ -135,10 +135,10 @@ describe('default bulk delete', () => {
     });
 
     await expect(deleteChecked()).resolves.toMatchObject({ ok: false, error: 'blocked' });
-    expect(events).toEqual(['parent-before', 'parent-before-second']);
+    expect(events).toEqual(['parent-before']);
   });
 
-  it('runs every afterSave hook and ignores returned errors', async () => {
+  it('reports an afterSave error, same as a single delete', async () => {
     const { events, parent, deleteChecked } = setup(async () => ({ ok: true }));
     parent.hooks.delete.afterSave[0] = async () => {
       events.push('parent-after');
@@ -149,9 +149,9 @@ describe('default bulk delete', () => {
       return { ok: true };
     });
 
-    await expect(deleteChecked()).resolves.toMatchObject({ ok: true });
-    expect(events).toContain('parent-after-second');
+    await expect(deleteChecked()).resolves.toMatchObject({ ok: false, error: 'after failed' });
     expect(events).toContain('parent-delete');
+    expect(events).not.toContain('parent-after-second');
   });
 
   it('passes bulk request context to the row-scope hook using a list-shaped body', async () => {

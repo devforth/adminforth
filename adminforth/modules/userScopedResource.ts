@@ -62,7 +62,7 @@ function hookFilters(
 export interface ResourceHookExecutors {
   create(params: CreateResourceRecordParams): Promise<CreateResourceRecordResult>;
   update(params: UpdateResourceRecordParams): Promise<UpdateResourceRecordResult>;
-  delete(params: DeleteResourceRecordParams, cascadeChildren?: boolean, bulkHooks?: boolean): Promise<DeleteResourceRecordResult>;
+  delete(params: DeleteResourceRecordParams, cascadeChildren?: boolean): Promise<DeleteResourceRecordResult>;
 }
 
 
@@ -365,6 +365,11 @@ export default class UserScopedResource implements IScopedOperationalResource {
 
   async update(primaryKey: any, record: any): Promise<any> {
     const currentRecord = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    // edit permission callbacks read meta.oldRecord, so they only ever see an existing record
+    if (!currentRecord) {
+      const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
+      return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
+    }
     const meta = { ...this.meta, newRecord: record, oldRecord: currentRecord, pk: primaryKey };
     const accessError = consumeResourceAccessGrant(
       this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
@@ -374,10 +379,6 @@ export default class UserScopedResource implements IScopedOperationalResource {
       return { ok: false, error: accessError };
     }
 
-    if (!currentRecord) {
-      const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
-      return { ok: false, error: `Record with ${primaryKeyColumn.name} ${primaryKey} not found` };
-    }
     const scopedRecord = await this.findScopedRecord(primaryKey, currentRecord);
     if (!scopedRecord) {
       const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
@@ -409,6 +410,10 @@ export default class UserScopedResource implements IScopedOperationalResource {
 
   async delete(primaryKey: any): Promise<boolean> {
     const currentRecord = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    // delete permission callbacks read meta.record, so they only ever see an existing record
+    if (!currentRecord) {
+      return false;
+    }
     const accessError = consumeResourceAccessGrant(
       this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
       AllowedActionsEnum.delete, this.options.record ?? currentRecord, primaryKey,
@@ -417,9 +422,6 @@ export default class UserScopedResource implements IScopedOperationalResource {
       throw new Error(accessError);
     }
 
-    if (!currentRecord) {
-      return false;
-    }
     const scopedRecord = await this.findScopedRecord(primaryKey, currentRecord);
     if (!scopedRecord) {
       return false;
@@ -432,7 +434,7 @@ export default class UserScopedResource implements IScopedOperationalResource {
       record,
       adminUser: this.adminUser,
       extra: this.options.extra,
-    }, true, this.options.bulkDeleteHooks);
+    }, true);
     if (error) {
       throw new Error(error);
     }

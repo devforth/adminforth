@@ -30,12 +30,12 @@ it('does not report a successful REST deletion when the row is outside user scop
   expect(result).toEqual({ error: 'Record with item-1 not found' });
 });
 
-it('checks delete permission before reporting that a REST record is missing', async () => {
+it('reports a missing REST delete target without calling the record-based delete permission', async () => {
   const endpoints: Record<string, any> = {};
   const resource = {
     resourceId: 'items',
     dataSource: 'main',
-    options: { allowedActions: { delete: false } },
+    options: { allowedActions: { delete: ({ meta }) => meta.record.owner === 'me' } },
   };
   const adminforth = {
     config: { auth: { rateLimit: [] }, resources: [resource] },
@@ -51,15 +51,16 @@ it('checks delete permission before reporting that a REST record is missing', as
     adminUser: {}, query: {}, headers: {}, cookies: [], requestUrl: '', response: {},
   });
 
-  expect(result).toEqual({ error: 'Action is not allowed' });
+  expect(result).toEqual({ error: 'Record with missing not found' });
 });
 
-it('checks edit permission before reporting that a REST record is missing', async () => {
+it('reports a missing REST update target without calling the record-based edit permission', async () => {
   const endpoints: Record<string, any> = {};
   const resource = {
     resourceId: 'items',
     dataSource: 'main',
-    options: { allowedActions: { edit: false } },
+    columns: [{ name: 'id', primaryKey: true }],
+    options: { allowedActions: { edit: ({ meta }) => meta.oldRecord.owner === 'me' } },
   };
   const adminforth = {
     config: { auth: { rateLimit: [] }, resources: [resource] },
@@ -75,5 +76,5 @@ it('checks edit permission before reporting that a REST record is missing', asyn
     adminUser: {}, query: {}, headers: {}, cookies: [], requestUrl: '', response: {},
   });
 
-  expect(result).toEqual({ error: 'Action is not allowed' });
+  expect(result).toEqual({ error: 'Record with id missing not found' });
 });

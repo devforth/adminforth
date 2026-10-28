@@ -2279,8 +2279,6 @@ export interface IOperationalResource {
 export interface OperationalResourceContextOptions {
   meta?: any;
   extra?: HttpExtra;
-  /** Preserve the legacy default bulk action's hook result contract. */
-  bulkDeleteHooks?: boolean;
 
   /**
    * Snapshot passed to edit save hooks when the caller has already loaded the record.

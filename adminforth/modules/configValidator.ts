@@ -281,7 +281,6 @@ export default class ConfigValidator implements IConfigValidator {
                 .asUser(adminUser, {
                   meta: { requestBody: extra.body },
                   extra,
-                  bulkDeleteHooks: true,
                 })
                 .delete(recordId);
               if (!deleted) {

@@ -2136,6 +2136,11 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const recordId = body['recordId'];
             const connector = this.adminforth.connectors[resource.dataSource];
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
+            // edit permission callbacks read meta.oldRecord, so they only ever see an existing record
+            if (!oldRecord) {
+                const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
+                return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
+            }
             const record = body['record'];
 
             // Check before revealing whether another record has the requested key.
@@ -2151,10 +2156,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             );
             if (editAccess.error) {
               return { error: editAccess.error };
-            }
-            if (!oldRecord) {
-                const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
-                return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
             }
 
             if (isCompositePrimaryKey(resource)) {
@@ -2248,6 +2249,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
             const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
+            // delete permission callbacks read meta.record, so they only ever see an existing record
+            if (!record) {
+              return { error: `Record with ${body['primaryKey']} not found` };
+            }
             const deleteAccess = await authorizeResourceOperation(
               adminUser,
               resource,
@@ -2260,9 +2265,6 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             );
             if (deleteAccess.error) {
               return { error: deleteAccess.error };
-            }
-            if (!record) {
-              return { error: `Record with ${body['primaryKey']} not found` };
             }
 
             try {

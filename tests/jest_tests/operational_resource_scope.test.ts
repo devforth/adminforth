@@ -135,8 +135,8 @@ function setup(resourceId = 'users') {
       seenWrites.update = { oldRecord, updates };
       return { error: null };
     },
-    delete: async ({ record }, cascadeChildren, bulkHooks) => {
-      seenWrites.delete = { record, cascadeChildren, bulkHooks };
+    delete: async ({ record }, cascadeChildren) => {
+      seenWrites.delete = { record, cascadeChildren };
       return { error: null };
     },
   } as any;
@@ -297,14 +297,14 @@ describe('OperationalResource access tiers', () => {
     expect(calls).toMatchObject({ acl: 1, connectorDelete: 0 });
   });
 
-  it('does not reveal whether a denied update or delete target exists', async () => {
+  it('reports a missing update or delete target before calling the permission callbacks', async () => {
     const { calls, resource } = setup();
     const scoped = resource.asUser({} as any, { meta: { allowed: false } });
 
     await expect(scoped.update('missing', { name: 'Jane' }))
-      .resolves.toMatchObject({ ok: false, error: 'Action is not allowed' });
-    await expect(scoped.delete('missing')).rejects.toThrow('Action is not allowed');
-    expect(calls).toMatchObject({ acl: 2, beforeList: 0, updateExecutor: 0, connectorDelete: 0 });
+      .resolves.toMatchObject({ ok: false, error: 'Record with id missing not found' });
+    await expect(scoped.delete('missing')).resolves.toBe(false);
+    expect(calls).toMatchObject({ acl: 0, beforeList: 0, updateExecutor: 0, connectorDelete: 0 });
   });
 
   it('passes the caller delete snapshot to hooks after the scoped lookup', async () => {
@@ -443,14 +443,6 @@ describe('OperationalResource access tiers', () => {
     const deleted = await resource.asUser({} as any, { meta: { allowed: true } }).delete(recordId);
     expect(deleted).toBe(true);
     expect(seenWrites.delete.record).toMatchObject(recordId);
-  });
-
-  it('passes the legacy bulk hook mode through scoped delete', async () => {
-    const { resource, seenWrites } = setup();
-
-    await resource.asUser({} as any, { meta: { allowed: true }, bulkDeleteHooks: true }).delete(1);
-
-    expect(seenWrites.delete).toMatchObject({ cascadeChildren: true, bulkHooks: true });
   });
 
   it('derives a hidden polymorphic discriminator after validating user fields', async () => {
