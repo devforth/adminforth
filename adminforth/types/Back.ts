@@ -626,16 +626,31 @@ export interface IAdminForth {
   
   tr(msg: string, category: string, lang: string, params: any, pluralizationNumber?: number): Promise<string>;
 
+  /**
+   * Creates a record and runs the resource create hooks, without checking permissions.
+   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   */
   createResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult>;
 
+  /**
+   * Updates a record and runs the resource edit hooks, without checking permissions.
+   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   */
   updateResourceRecord(
     params: UpdateResourceRecordParams,
   ): Promise<UpdateResourceRecordResult>;
 
+  /**
+   * Deletes a record and runs the resource delete hooks, without checking permissions.
+   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   * Pass `true` as the second argument to apply configured child deletion after the parent
+   * `beforeSave` hooks have allowed the deletion.
+   */
   deleteResourceRecord(
     params: DeleteResourceRecordParams,
+    cascadeChildren?: boolean,
   ): Promise<DeleteResourceRecordResult>;
 
   auth: IAdminForthAuth;
@@ -2192,7 +2207,17 @@ export class Sorts {
   }
 }
 
-export interface IOperationalResource {
+/**
+ * Resource API bound to an authenticated admin user by {@link IOperationalResource.asUser}.
+ * Every operation enforces the resource ACL and the column access rules, and runs the resource
+ * lifecycle hooks.
+ *
+ * Error contract: a denied or failed operation is always visible. `get`, `list`, `count`,
+ * `aggregate` and `delete` throw, since their return value carries no room for an error;
+ * `create` and `update` resolve to `{ ok: false, error }`. `delete` resolves to `false` when the
+ * record simply did not exist.
+ */
+export interface IScopedOperationalResource {
   get: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>) => Promise<any | null>;
 
   list: (filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>, limit?: number, offset?: number, sort?: IAdminForthSort | IAdminForthSort[], columns?: string[]) => Promise<any[]>;
@@ -2205,7 +2230,7 @@ export interface IOperationalResource {
     groupBy?: IGroupByRule | IGroupByRule[]
   ) => Promise<Array<{ group?: string, [key: string]: any }>>;
 
-  create: (record: any) => Promise<{ ok: boolean; createdRecord: any; error?: string; }>;
+  create: (record: any) => Promise<CreateResourceRecordResult & { ok: boolean; createdRecord: any }>;
 
   update: (primaryKey: any, record: any) => Promise<any>;
 
@@ -2213,6 +2238,63 @@ export interface IOperationalResource {
 
   dataConnector: IAdminForthDataSourceConnectorBase;
 }
+
+export interface IOperationalResource {
+  /**
+   * Returns a resource API scoped to an authenticated admin user. Operations enforce the
+   * resource ACL and the column access rules, run lifecycle hooks, and validate records.
+   * Use it for everything a user asked for.
+   */
+  asUser: (adminUser: AdminUser, options?: OperationalResourceUserOptions) => IScopedOperationalResource;
+
+  /**
+   * Plain data access: no permission checks, no column access rules, no lifecycle hooks.
+   * Writes are still normalized. Use it for internal bookkeeping the user did not
+   * ask for; to run hooks without permission checks, use {@link IAdminForth.createResourceRecord}
+   * and its siblings.
+   */
+  get: IScopedOperationalResource['get'];
+
+  /** Plain data access — see {@link IOperationalResource.get}. */
+  list: IScopedOperationalResource['list'];
+
+  /** Plain data access — see {@link IOperationalResource.get}. */
+  count: IScopedOperationalResource['count'];
+
+  /** Plain data access — see {@link IOperationalResource.get}. */
+  aggregate: IScopedOperationalResource['aggregate'];
+
+  /** Plain data access — see {@link IOperationalResource.get}. */
+  create: IScopedOperationalResource['create'];
+
+  /** Plain data access — see {@link IOperationalResource.get}. */
+  update: IScopedOperationalResource['update'];
+
+  /** Plain data access — see {@link IOperationalResource.get}. */
+  delete: IScopedOperationalResource['delete'];
+
+  dataConnector: IAdminForthDataSourceConnectorBase;
+}
+
+export interface OperationalResourceContextOptions {
+  meta?: any;
+  extra?: HttpExtra;
+
+  /**
+   * Snapshot passed to edit save hooks when the caller has already loaded the record.
+   * `update()` still performs a scoped lookup to confirm access to the current row.
+   */
+  oldRecord?: any;
+
+  /**
+   * Snapshot passed to delete save hooks when the caller has already loaded the record.
+   * `delete()` still performs a scoped lookup to confirm access to the current row.
+   */
+  record?: any;
+}
+
+export type OperationalResourceUserOptions = OperationalResourceContextOptions;
+
 
 
 

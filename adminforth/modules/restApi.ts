@@ -15,15 +15,11 @@ import {
   IAdminForthSort,
   HttpExtra,
   IAdminForthAndOrFilter,
-  IAggregationRule,
-  BackendOnlyInput,
   Filters,
 } from "../types/Back.js";
 import type { AnySchemaObject } from 'ajv';
 
-import {cascadeChildrenDelete} from './utils.js'
 import { encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames } from './recordId.js';
-
 import { afLogger } from "./logger.js";
 
 import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseError, parseLooseJson, RateLimiter, checkShowIf } from './utils.js';
@@ -31,59 +27,23 @@ import { ADMINFORTH_VERSION, listify, md5hash, getLoginPromptHTML, hookResponseE
 import AdminForthAuth from "../auth.js";
 import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumnInputCommon, AdminForthResourceFrontend, AdminForthResourcePages,
   AdminForthSortDirections,
-   AdminUser, AllowedActionsEnum, AllowedActionsResolved,
+   AdminUser, AllowedActionsEnum,
    AnnouncementBadgeResponse,
    GetConfigResponse,
    ShowInResolved} from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
 import { normalizeColumnValue } from './columnValueNormalizer.js';
 import { isEmptyColumnValue, runColumnValidators } from './columnValueValidator.js';
-
-
-async function resolveBoolOrFn(
-  val: BackendOnlyInput | undefined,
-  ctx: {
-    adminUser: AdminUser;
-    resource: AdminForthResource;
-    meta: any;
-    source: ActionCheckSource;
-    adminforth: IAdminForth;
-  }
-): Promise<boolean> {
-  if (typeof val === 'function') {
-    return !!(await (val)(ctx));
-  }
-  return !!val;
-}
-
-async function isBackendOnly(
-  col: AdminForthResource['columns'][number],
-  ctx: {
-    adminUser: AdminUser;
-    resource: AdminForthResource;
-    meta: any;
-    source: ActionCheckSource;
-    adminforth: IAdminForth;
-  }
-): Promise<boolean> {
-  return await resolveBoolOrFn(col.backendOnly, ctx);
-}
-
-async function isShown(
-  col: AdminForthResource['columns'][number],
-  page: 'list' | 'show' | 'edit' | 'create' | 'filter',
-  ctx: Parameters<typeof isBackendOnly>[1]
-): Promise<boolean> {
-  const s = (col.showIn as any) || {};
-  if (s[page] !== undefined) return await resolveBoolOrFn(s[page], ctx);
-  if (s.all !== undefined) return await resolveBoolOrFn(s.all, ctx);
-  return true;
-}
-
-async function isFilledOnCreate(  col: AdminForthResource['columns'][number] ): Promise<boolean> {
-  const fillOnCreate = !!col.fillOnCreate;
-  return fillOnCreate;
-}
+import { rejectApiRawFilters } from './filterSecurity.js';
+export { rejectApiRawFilters } from './filterSecurity.js';
+import {
+  filterColumnsReadableError,
+  isBackendOnly,
+  isShown,
+  sortColumnsReadableError,
+  stripReadForbiddenColumns,
+} from './columnAccess.js';
+import { authorizeResourceOperation, interpretResource, RESOURCE_ACCESS_GRANT } from './resourceAccess.js';
 
 function stripResourceColumnFrontendMeta(column: Record<string, any>) {
   const { default: _default, _baseTypeDebug, ...sanitizedColumn } = column;
@@ -236,70 +196,6 @@ const commonFiltersSchema: AnySchemaObject = {
     { $ref: '#/$defs/filterNode' },
   ],
 };
-
-function hasApiRawFilter(filters: any): boolean {
-  if (!filters || typeof filters !== 'object') {
-    return false;
-  }
-
-  if (Array.isArray(filters)) {
-    return filters.some(hasApiRawFilter);
-  }
-
-  if (
-    Object.prototype.hasOwnProperty.call(filters, 'insecureRawSQL') ||
-    Object.prototype.hasOwnProperty.call(filters, 'insecureRawNoSQL')
-  ) {
-    return true;
-  }
-
-  return Array.isArray(filters.subFilters) && filters.subFilters.some(hasApiRawFilter);
-}
-
-export function rejectApiRawFilters(filters: any): { error: string } | undefined {
-  if (hasApiRawFilter(filters)) {
-    return { error: 'insecureRawSQL and insecureRawNoSQL filters are not allowed in API requests' };
-  }
-}
-
-/**
- * Collects every column name referenced anywhere in a (possibly nested) filter tree,
- * so the caller can check those columns against the visibility rules.
- */
-function collectFilterFields(filters: any, fields: Set<string> = new Set()): Set<string> {
-  if (!filters || typeof filters !== 'object') {
-    return fields;
-  }
-
-  if (Array.isArray(filters)) {
-    filters.forEach((filter) => collectFilterFields(filter, fields));
-    return fields;
-  }
-
-  if (typeof filters.field === 'string') {
-    fields.add(filters.field);
-  }
-  if (typeof filters.rightField === 'string') {
-    fields.add(filters.rightField);
-  }
-  if (Array.isArray(filters.subFilters)) {
-    filters.subFilters.forEach((filter) => collectFilterFields(filter, fields));
-  }
-
-  return fields;
-}
-
-async function rejectBackendOnlyFilters(
-  filters: any,
-  ctx: Parameters<typeof isBackendOnly>[1]
-): Promise<{ error: string } | undefined> {
-  for (const fieldName of collectFilterFields(filters)) {
-    const column = ctx.resource.columns.find((col) => col.name === fieldName);
-    if (column && await isBackendOnly(column, ctx)) {
-      return { error: `Filter: column "${fieldName}" cannot be used (backendOnly is true).` };
-    }
-  }
-}
 
 function createErrorOrSuccessSchema(successSchema: AnySchemaObject): AnySchemaObject {
   return {
@@ -645,55 +541,6 @@ const validateColumnsResponseSchema: AnySchemaObject = createErrorOrSuccessSchem
   },
   additionalProperties: true,
 });
-
-export async function interpretResource(
-  adminUser: AdminUser, 
-  resource: AdminForthResource, 
-  meta: any, 
-  source: ActionCheckSource, 
-  adminforth: IAdminForth
-): Promise<{allowedActions: AllowedActionsResolved}> {
-  afLogger.trace(`🪲Interpreting resource, ${resource.resourceId}, ${source}, 'adminUser', ${adminUser}`);
-  const allowedActions = {} as AllowedActionsResolved;
-
-  // we need to compute only allowed actions for this source:
-  // 'show' needed for ActionCheckSource.showRequest and ActionCheckSource.editLoadRequest and ActionCheckSource.displayButtons
-  // 'edit' needed for ActionCheckSource.editRequest and ActionCheckSource.displayButtons
-  // 'delete' needed for ActionCheckSource.deleteRequest and ActionCheckSource.displayButtons and ActionCheckSource.bulkActionRequest
-  // 'list' needed for ActionCheckSource.listRequest
-  // 'create' needed for ActionCheckSource.createRequest and ActionCheckSource.displayButtons
-  // for bulk actions we need to check all actions because bulk action can use any of them e.g sync allowed with edit
-  const neededActions = {
-    [ActionCheckSource.ShowRequest]: ['show'],
-    [ActionCheckSource.EditRequest]: ['edit'],
-    [ActionCheckSource.EditLoadRequest]: ['show'],
-    [ActionCheckSource.DeleteRequest]: ['delete'],
-    [ActionCheckSource.ListRequest]: ['list'],
-    [ActionCheckSource.CreateRequest]: ['create'],
-    [ActionCheckSource.DisplayButtons]: ['show', 'edit', 'delete', 'create', 'filter'],
-    [ActionCheckSource.BulkActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
-    [ActionCheckSource.CustomActionRequest]: ['show', 'edit', 'delete', 'create', 'filter'],
-  }[source];
-
-  await Promise.all(
-    Object.entries(resource.options.allowedActions).map(
-      async ([key, value]: [string, AllowedActionValue]) => {
-        if (!neededActions.includes(key as AllowedActionsEnum)) {
-          allowedActions[key] = false;
-          return;
-        }
-      
-        // if callable then call
-        if (typeof value === 'function') {
-          allowedActions[key] = await value({ adminUser, resource, meta, source, adminforth });
-        } else {
-          allowedActions[key] = value;
-        }
-      })
-  );
-
-  return { allowedActions };
-}
 
 export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
@@ -1059,7 +906,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         }
 
         const usersResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
-        const defaultUserExists = await this.adminforth.resource(usersResource.resourceId).get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
+        const defaultUserExists = await this.adminforth
+          .resource(usersResource.resourceId)
+          .get(Filters.EQ(usernameField, 'adminforth')) ? true : false;
 
         const loggedInPart = {
           showBrandNameInSidebar: this.adminforth.config.customization.showBrandNameInSidebar,
@@ -1128,13 +977,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           source: ActionCheckSource.ShowRequest,
           adminforth: this.adminforth,
         };
-        for (const key of Object.keys(adminUser.dbUser)) {
-          const col = userResource.columns.find((c) => c.name === key);
-          const bo = col ? await isBackendOnly(col, ctx) : true;
-          if (!col || bo) {
-            delete adminUser.dbUser[key];
-          }
-        }
+        await stripReadForbiddenColumns(ctx, adminUser.dbUser);
 
         return {
           loggedIn: true,
@@ -1489,9 +1332,9 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!allowed) {
           return { error };
         }
-        const backendOnlyFilterError = await rejectBackendOnlyFilters(body.filters, columnCtx);
-        if (backendOnlyFilterError) {
-          return backendOnlyFilterError;
+        const filterError = await filterColumnsReadableError(columnCtx, body.filters);
+        if (filterError) {
+          return { error: filterError };
         }
         if (this.checkAbortSignal(abortSignal)) { return { error: 'Request aborted' }; }
         const hookSource = {
@@ -1569,6 +1412,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const col = resource.columns.find((col) => col.name === sortItem.field);
           return col && !col.virtual;
         });
+        const sortError = await sortColumnsReadableError(columnCtx, sortFiltered);
+        if (sortError) {
+          return { error: sortError };
+        }
 
         // after beforeDatasourceRequest hook, filter can be anything
         // so, we need to turn it into AndOr filter
@@ -1735,15 +1582,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         // remove all columns which are not defined in resources, or defined but backendOnly
         {
           for (const [i, item] of data.data.entries()) {
+            const encodedId = item._primaryKeyValue;
+            await stripReadForbiddenColumns(columnCtx, item);
+            if (encodedId !== undefined) {
+              item._primaryKeyValue = encodedId;
+            }
             const rawItem = rawItems[i];
-            for (const key of Object.keys(item)) {
-              if (key === '_primaryKeyValue') {
-                continue;
-              }
-              const col = resource.columns.find((c) => c.name === key);
-              const bo = col ? await isBackendOnly(col, columnCtx) : true;
-              if (!col || bo) {
-                delete item[key];
+            for (const key of Object.keys(rawItem)) {
+              if (!(key in item)) {
                 delete rawItem[key];
               }
             }
@@ -1882,7 +1728,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
       request_schema: aggregateRequestSchema,
       response_schema: aggregateResponseSchema,
-      handler: async ({ body, adminUser, headers, query, cookies, requestUrl }) => {
+      handler: async ({ body, adminUser, headers, query, cookies, requestUrl, response }) => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -1894,131 +1740,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         if (!resource) {
           return { error: `Resource ${resourceId} not found` };
         }
-        const rawFilterError = rejectApiRawFilters(body.filters);
-        if (rawFilterError) {
-          return rawFilterError;
-        }
 
-        const meta = { requestBody: body, pk: undefined };
-        const { allowedActions: listActions } = await interpretResource(
-          adminUser,
-          resource,
-          meta,
-          ActionCheckSource.ListRequest,
-          this.adminforth
-        );
-
-        // aggregation reads a whole set of records at once, so it needs list access
-        const { allowed, error } = checkAccess(AllowedActionsEnum.list, listActions);
-        if (!allowed) {
-          return { error };
-        }
-
-        // ...and min/max/groupBy return raw per-field values, which is what the show view does,
-        // so a resource with no reachable show view must not be aggregatable either.
-        // ListRequest resolves only 'list', so 'show' is resolved with its own source
-        const { allowedActions: showActions } = await interpretResource(
-          adminUser,
-          resource,
-          meta,
-          ActionCheckSource.ShowRequest,
-          this.adminforth
-        );
-        const { allowed: showAllowed, error: showError } = checkAccess(AllowedActionsEnum.show, showActions);
-        if (!showAllowed) {
-          return { error: showError };
-        }
-
-        const columnCtx = {
-          adminUser,
-          resource,
-          meta,
-          source: ActionCheckSource.ShowRequest,
-          adminforth: this.adminforth,
-        };
-
-        // a column may only take part in an aggregation if the user could have read the
-        // very same value from the show view
-        const columnExposureError = async (fieldName: string, context: string): Promise<string | null> => {
-          const column = resource.columns.find((col) => col.name === fieldName);
-          if (!column) {
-            return `${context}: unknown column "${fieldName}"`;
-          }
-          if (await isBackendOnly(column, columnCtx)) {
-            return `${context}: column "${fieldName}" cannot be aggregated (backendOnly is true).`;
-          }
-          if (!await isShown(column, 'show', columnCtx)) {
-            return `${context}: column "${fieldName}" cannot be aggregated (showIn.show is false).`;
-          }
-          return null;
-        };
-
-        for (const [alias, rule] of Object.entries((body.aggregations || {}) as { [alias: string]: IAggregationRule })) {
-          // plain count does not reference any column
-          if (!rule?.field) {
-            continue;
-          }
-          const fieldError = await columnExposureError(rule.field, `Aggregation "${alias}"`);
-          if (fieldError) {
-            return { error: fieldError };
-          }
-        }
-
-        const groupByRules = Array.isArray(body.groupBy) ? body.groupBy : (body.groupBy ? [body.groupBy] : []);
-        for (const groupByRule of groupByRules) {
-          if (!groupByRule?.field) {
-            continue;
-          }
-          const fieldError = await columnExposureError(groupByRule.field, 'GroupBy');
-          if (fieldError) {
-            return { error: fieldError };
-          }
-        }
-
-        const backendOnlyFilterError = await rejectBackendOnlyFilters(body.filters, columnCtx);
-        if (backendOnlyFilterError) {
-          return backendOnlyFilterError;
-        }
-
-        // aggregation reads the same set of records as the list, so the list hooks scope it
-        for (const hook of listify(resource.hooks?.list?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
-          const filterTools = filtersTools.get(body);
-          body.filtersTools = filterTools;
-          const resp = await (hook as BeforeDataSourceRequestFunction)({
-            resource,
-            query: body,
-            adminUser,
-            filtersTools: filterTools,
-            extra: {
-              body, query, headers, cookies, requestUrl
-            },
-            adminforth: this.adminforth,
-          });
-          const hookRespError = hookResponseError(resp);
-          if (hookRespError) {
-            return hookRespError;
-          }
-        }
         const { aggregations, filters, groupBy } = body;
-
-        // normalize filters same way as get_resource_data
-        const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
-        if (filters) {
-          if (typeof filters !== 'object') {
-            return { error: 'Filter should be an array or an object' };
-          }
-          if (Array.isArray(filters)) {
-            normalizedFilters.subFilters = filters;
-          } else if (filters.field) {
-            normalizedFilters.subFilters = [filters];
-          } else if (filters.subFilters) {
-            normalizedFilters.operator = filters.operator;
-            normalizedFilters.subFilters = filters.subFilters;
-          } else {
-            return { error: `Wrong filter object value: ${JSON.stringify(filters)}` };
-          }
-        }
-
         const userTimeZone = headers['X-TimeZone'];
         const applyUserTimeZone = (groupByRule: any) => groupByRule?.type === 'date_trunc' && userTimeZone
           ? { ...groupByRule, timezone: userTimeZone }
@@ -2027,37 +1750,18 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           ? groupBy.map(applyUserTimeZone)
           : applyUserTimeZone(groupBy);
 
-        let data;
         try {
-          data = await this.adminforth.connectors[resource.dataSource].aggregate({
-            resource,
-            filters: normalizedFilters as IAdminForthAndOrFilter,
-            aggregations,
-            groupBy: aggregateGroupBy,
-          });
+          const data = await this.adminforth
+            .resource(resource.resourceId)
+            .asUser(adminUser, {
+              meta: { requestBody: body, pk: undefined },
+              extra: { body, query, headers, cookies, requestUrl, response },
+            })
+            .aggregate(filters, aggregations, aggregateGroupBy);
+          return { data };
         } catch (e) {
           return { error: e.message };
         }
-
-        // hooks get the aggregation rows as response, they can tell this call by query.aggregations
-        for (const hook of listify(resource.hooks?.list?.afterDatasourceResponse)) {
-          const resp = await hook({
-            resource,
-            query: body,
-            response: data,
-            adminUser,
-            extra: {
-              body, query, headers, cookies, requestUrl
-            },
-            adminforth: this.adminforth,
-          });
-          const hookRespError = hookResponseError(resp);
-          if (hookRespError) {
-            return hookRespError;
-          }
-        }
-
-        return { data };
       },
     });
 
@@ -2112,15 +1816,15 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         // request filters are applied to the target resources, so their columns are what has to be readable
         for (const targetResource of targetResources) {
-          const backendOnlyFilterError = await rejectBackendOnlyFilters(body.filters, {
+          const filterError = await filterColumnsReadableError({
             adminUser,
             resource: targetResource,
             meta,
             source: ActionCheckSource.ListRequest,
             adminforth: this.adminforth,
-          });
-          if (backendOnlyFilterError) {
-            return backendOnlyFilterError;
+          }, body.filters);
+          if (filterError) {
+            return { error: filterError };
           }
         }
 
@@ -2324,13 +2028,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             if (!resource) {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
-            const { allowedActions } = await interpretResource(
-              adminUser, resource, { requestBody: body }, ActionCheckSource.CreateRequest, this.adminforth
+            // Check before revealing existing records or required columns. The scoped write
+            // consumes this one-use grant, so the ACL callback is not invoked twice.
+            const createAccess = await authorizeResourceOperation(
+              adminUser, resource, { requestBody: body }, ActionCheckSource.CreateRequest,
+              AllowedActionsEnum.create, this.adminforth, body.record,
             );
-
-            const { allowed, error } = checkAccess(AllowedActionsEnum.create, allowedActions);
-            if (!allowed) {
-              return { error };
+            if (createAccess.error) {
+              return { error: createAccess.error };
             }
 
             const { record } = body;
@@ -2370,87 +2075,28 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             } else {
               const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
               if (record[primaryKeyColumn.name] !== undefined) {
-                const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+                const existingRecord = await this.adminforth.resource(resource.resourceId)
+                  .get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
                 if (existingRecord) {
                   return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
                 }
               }
             }
 
-            for (const column of resource.columns) {
-              const fieldName = column.name;
-              if (fieldName in record) {
-                const shown = await isShown(column, 'create', ctxCreate); //
-                const bo = await isBackendOnly(column, ctxCreate);
-                const filledOnCreate = await isFilledOnCreate(column);
-                if (bo) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (backendOnly is true).`,
-                    ok: false,
-                  };
-                }
-
-                if (!shown && !filledOnCreate && !column.allowModifyWhenNotShowInCreate) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from creation (showIn.create is false). If you need to set this hidden field during creation, either configure column.fillOnCreate or set column.allowModifyWhenNotShowInCreate = true.`,
-                    ok: false,
-                  };
-                }
-              }
-            }
-          
-            // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
-            for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
-                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
-                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
-              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
-                const targetResources = {};
-                const targetConnectors = {};
-                const targetResourcePkFields = {};
-                column.foreignResource.polymorphicResources.forEach((pr) => {
-                  if (pr.resourceId === null) {
-                    return;
-                  }
-                  const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
-                  if (!targetResource) {
-                    return;
-                  }
-                  targetResources[pr.whenValue] = targetResource;
-                  targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
-                  targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
-                });
-
-                const targetData = (await Promise.all(Object.keys(targetResources).map((polymorphicOnValue) =>
-                  targetConnectors[polymorphicOnValue].getData({
-                    resource: targetResources[polymorphicOnValue],
-                    limit: 1,
-                    offset: 0,
-                    filters: { operator: AdminForthFilterOperators.AND, subFilters: [
-                      {
-                        field: targetResourcePkFields[polymorphicOnValue],
-                        operator: AdminForthFilterOperators.EQ,
-                        value: record[column.name],
-                      }
-                    ]},
-                    sort: [],
-                  })
-                ))).reduce((acc: any, td: any, tdi) => ({
-                  ...acc,
-                  [Object.keys(targetResources)[tdi]]: td.data,
-                }), {});
-                record[column.foreignResource.polymorphicOn] = Object.keys(targetData).find((tdk) => targetData[tdk].length);
-              }
-            }
             const jsonError = this.normalizeJsonColumns(resource, record);
             if (jsonError) {
               return { error: jsonError, ok: false };
             }
 
-            const createRecordResponse = await this.adminforth.createResourceRecord({
-              resource, record, adminUser,
-              extra: { body, query, headers, cookies, requestUrl, response }
-            });
+            const scopedCreateOptions = {
+              meta: ctxCreate.meta,
+              extra: { body, query, headers, cookies, requestUrl, response },
+              [RESOURCE_ACCESS_GRANT]: createAccess.grant,
+            };
+            const createRecordResponse = await this.adminforth
+              .resource(resource.resourceId)
+              .asUser(adminUser, scopedCreateOptions)
+              .create(record);
             if (createRecordResponse.error) {
               return {
                 error: createRecordResponse.error,
@@ -2490,23 +2136,26 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             const recordId = body['recordId'];
             const connector = this.adminforth.connectors[resource.dataSource];
             const oldRecord = await connector.getRecordByPrimaryKey(resource, recordId)
+            // edit permission callbacks read meta.oldRecord, so they only ever see an existing record
             if (!oldRecord) {
                 const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
                 return { error: `Record with ${isCompositePrimaryKey(resource) ? primaryKeyColumnNames(resource).join(', ') : primaryKeyColumn.name} ${recordId} not found` };
             }
             const record = body['record'];
 
-            const { allowedActions } = await interpretResource(
-              adminUser, 
-              resource, 
-              { requestBody: body, newRecord: record, oldRecord, pk: recordId }, 
+            // Check before revealing whether another record has the requested key.
+            const editAccess = await authorizeResourceOperation(
+              adminUser,
+              resource,
+              { requestBody: body, newRecord: record, oldRecord, pk: recordId },
               ActionCheckSource.EditRequest,
-              this.adminforth
+              AllowedActionsEnum.edit,
+              this.adminforth,
+              record,
+              recordId,
             );
-
-            const { allowed, error: allowedError } = checkAccess(AllowedActionsEnum.edit, allowedActions);
-            if (!allowed) {
-              return { error: allowedError };
+            if (editAccess.error) {
+              return { error: editAccess.error };
             }
 
             if (isCompositePrimaryKey(resource)) {
@@ -2532,7 +2181,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             } else {
               const primaryKeyColumn = resource.columns.find((col) => col.primaryKey);
               if (record[primaryKeyColumn.name] !== undefined) {
-                const existingRecord = await this.adminforth.resource(resource.resourceId).get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
+                const existingRecord = await this.adminforth.resource(resource.resourceId)
+                  .get([Filters.EQ(primaryKeyColumn.name, record[primaryKeyColumn.name])]);
                 if (existingRecord) {
                   return { error: `Record with ${primaryKeyColumn.name} '${record[primaryKeyColumn.name]}' already exists`, ok: false };
                 }
@@ -2546,102 +2196,33 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
               source: ActionCheckSource.EditRequest,
               adminforth: this.adminforth,
             };
-            
+
             for (const column of resource.columns) {
-              const fieldName = column.name;
-              if (fieldName in record) {
-                const shown = await isShown(column, 'edit', ctxEdit);
-                const bo = await isBackendOnly(column, ctxEdit);
-                if (bo) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (backendOnly is true).`,
-                    ok: false,
-                  };
-                }
-
-                if (column.editReadonly) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (editReadonly is true).`,
-                    ok: false,
-                  };
-                }
-
-                if (!shown && !column.allowModifyWhenNotShowInEdit) {
-                  return {
-                    error: `Field "${fieldName}" cannot be modified as it is restricted from editing (showIn.edit is false). If you need to allow updating this hidden field during editing, set column.allowModifyWhenNotShowInEdit = true.`,
-                    ok: false,
-                  };
-                }
-
-                if (
-                  column.required.edit &&
-                  shown &&
-                  isEmptyColumnValue(column, record[fieldName]) &&
-                  checkShowIf(column, { ...oldRecord, ...record }, resource.columns)
-                ) {
-                  return { error: `Column '${fieldName}' is required`, ok: false };
-                }
+              if (
+                column.name in record &&
+                column.required.edit &&
+                isEmptyColumnValue(column, record[column.name]) &&
+                await isShown(column, 'edit', ctxEdit) &&
+                checkShowIf(column, { ...oldRecord, ...record }, resource.columns)
+              ) {
+                return { error: `Column '${column.name}' is required`, ok: false };
               }
             }
-            // for polymorphic foreign resources, we need to find out the value for polymorphicOn column
-            for (const column of resource.columns) {
-              if (column.foreignResource?.polymorphicOn && record[column.name] === null) {
-                const systemResource = column.foreignResource.polymorphicResources.find(pr => pr.resourceId === null);
-                record[column.foreignResource.polymorphicOn] = systemResource.whenValue;
-              } else if (column.foreignResource?.polymorphicOn && record[column.name]) {
-                let newPolymorphicOnValue = null;
-                if (record[column.name]) {
-                  const targetResources = {};
-                  const targetConnectors = {};
-                  const targetResourcePkFields = {};
-                  column.foreignResource.polymorphicResources.forEach((pr) => {
-                    if (pr.resourceId === null) {
-                      return;
-                    }
-                    const targetResource = this.adminforth.config.resources.find((res) => res.resourceId == pr.resourceId);
-                    if (!targetResource) {
-                      return;
-                    }
-                    targetResources[pr.whenValue] = targetResource;
-                    targetConnectors[pr.whenValue] = this.adminforth.connectors[targetResources[pr.whenValue].dataSource];
-                    targetResourcePkFields[pr.whenValue] = targetResources[pr.whenValue].columns.find((col) => col.primaryKey).name;
-                  });
 
-                  const targetData = (await Promise.all(Object.keys(targetResources).map((polymorphicOnValue) =>
-                    targetConnectors[polymorphicOnValue].getData({
-                      resource: targetResources[polymorphicOnValue],
-                      limit: 1,
-                      offset: 0,
-                      filters: { operator: AdminForthFilterOperators.AND, subFilters: [
-                        {
-                          field: targetResourcePkFields[polymorphicOnValue],
-                          operator: AdminForthFilterOperators.EQ,
-                          value: record[column.name],
-                        }
-                      ]},
-                      sort: [],
-                    })
-                  ))).reduce((acc: any, td: any, tdi) => ({
-                    ...acc,
-                    [Object.keys(targetResources)[tdi]]: td.data,
-                  }), {});
-                  newPolymorphicOnValue = Object.keys(targetData).find((tdk) => targetData[tdk].length);
-                }
-                
-                if (oldRecord[column.foreignResource.polymorphicOn] !== newPolymorphicOnValue) {
-                  record[column.foreignResource.polymorphicOn] = newPolymorphicOnValue;
-                }
-              }
-            }
-            
             const jsonError = this.normalizeJsonColumns(resource, record);
             if (jsonError) {
               return { error: jsonError, ok: false };
             }
-            const { error } = await this.adminforth.updateResourceRecord({
-              resource, updates: record, adminUser, oldRecord, recordId,
-              extra: { body, query, headers, cookies, requestUrl, response }
-            });
+            const scopedEditOptions = {
+              meta: ctxEdit.meta,
+              oldRecord,
+              extra: { body, query, headers, cookies, requestUrl, response },
+              [RESOURCE_ACCESS_GRANT]: editAccess.grant,
+            };
+            const { error } = await this.adminforth
+              .resource(resource.resourceId)
+              .asUser(adminUser, scopedEditOptions)
+              .update(recordId, record);
             if (error) {
               return { error };
             }
@@ -2668,34 +2249,40 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
                 return { error: `Resource '${body['resourceId']}' not found` };
             }
             const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, body['primaryKey']);
-            if (!record){
-                return { error: `Record with ${body['primaryKey']} not found` };
+            // delete permission callbacks read meta.record, so they only ever see an existing record
+            if (!record) {
+              return { error: `Record with ${body['primaryKey']} not found` };
             }
-
-            const { allowedActions } = await interpretResource(
-              adminUser, 
-              resource, 
-              { requestBody: body, record: record }, 
+            const deleteAccess = await authorizeResourceOperation(
+              adminUser,
+              resource,
+              { requestBody: body, record },
               ActionCheckSource.DeleteRequest,
-              this.adminforth
+              AllowedActionsEnum.delete,
+              this.adminforth,
+              record,
+              body.primaryKey,
             );
-
-            const { allowed, error } = checkAccess(AllowedActionsEnum.delete, allowedActions);
-            if (!allowed) {
-              return { error };
+            if (deleteAccess.error) {
+              return { error: deleteAccess.error };
             }
 
-            const extra = { body, query, headers, cookies, requestUrl, response };
-            const { error: cascadeError } = await cascadeChildrenDelete(resource, body.primaryKey, { adminUser, extra }, this.adminforth);
-            if (cascadeError) {
-              return { error: cascadeError };
-            }
-
-            const { error: deleteError } = await this.adminforth.deleteResourceRecord({
-              resource, record, adminUser, recordId: body['primaryKey'], extra,
-            });
-            if (deleteError) {
-              return { error: deleteError };
+            try {
+              const scopedDeleteOptions = {
+                meta: { requestBody: body, record },
+                record,
+                extra: { body, query, headers, cookies, requestUrl, response },
+                [RESOURCE_ACCESS_GRANT]: deleteAccess.grant,
+              };
+              const deleted = await this.adminforth
+                .resource(resource.resourceId)
+                .asUser(adminUser, scopedDeleteOptions)
+                .delete(body.primaryKey);
+              if (!deleted) {
+                return { error: `Record with ${body.primaryKey} not found` };
+              }
+            } catch (error) {
+              return { error: (error as Error).message };
             }
             return {
               ok: true,

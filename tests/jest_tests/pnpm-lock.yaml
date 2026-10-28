@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  adminforth: link:../../adminforth
+
 importers:
 
   .:
@@ -12,12 +15,18 @@ importers:
         specifier: ^30.3.0
         version: 30.3.0(@types/node@25.5.0)
     devDependencies:
+      '@adminforth/connector-sqlite':
+        specifier: ^1.0.9
+        version: 1.0.9(adminforth@..+adminforth)
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
       '@types/supertest':
         specifier: ^7.2.0
         version: 7.2.0
+      adminforth:
+        specifier: link:../../adminforth
+        version: link:../../adminforth
       supertest:
         specifier: ^7.2.2
         version: 7.2.2
@@ -29,6 +38,12 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@adminforth/connector-sqlite@1.0.9':
+    resolution: {integrity: sha512-L1nsUsbuUsWjFaawi2O7vIGv9tQja02/tmXO040cIywrGUb29IM1JmpsBHNxmVhnqxyshiU6JIizLA+GooBI0g==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      adminforth: ^4.7.3
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -568,6 +583,10 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  better-sqlite3@13.0.3:
+    resolution: {integrity: sha512-RbOBxmLBG8uvFUc15X9+9SFemKcQ0WBuISBVkpuiaUB2qblC8UWlHEjdWVoZ8AdhSwmoEgsiXKfopX0CQxaACQ==}
+    engines: {node: '>=22'}
+
   brace-expansion@1.1.12:
     resolution: {integrity: sha512-9T9UjW3r0UW5c1Q7GTwllptXwhvYmEzFhzMfZ9H7FQWt+uZePjZPjBP/W1ZEyZ1twGWom5/56TF4lPcqjnDHcg==}
 
@@ -668,6 +687,9 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  dayjs@1.11.23:
+    resolution: {integrity: sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -1160,6 +1182,10 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
+  node-addon-api@8.9.2:
+    resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
+    engines: {node: ^18 || ^20 || >= 21}
+
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
@@ -1500,6 +1526,12 @@ packages:
     engines: {node: '>=10'}
 
 snapshots:
+
+  '@adminforth/connector-sqlite@1.0.9(adminforth@..+adminforth)':
+    dependencies:
+      adminforth: link:../../adminforth
+      better-sqlite3: 13.0.3
+      dayjs: 1.11.23
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -2164,6 +2196,10 @@ snapshots:
 
   baseline-browser-mapping@2.10.9: {}
 
+  better-sqlite3@13.0.3:
+    dependencies:
+      node-addon-api: 8.9.2
+
   brace-expansion@1.1.12:
     dependencies:
       balanced-match: 1.0.2
@@ -2255,6 +2291,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  dayjs@1.11.23: {}
 
   debug@4.4.3:
     dependencies:
@@ -2894,6 +2932,8 @@ snapshots:
   natural-compare@1.4.0: {}
 
   neo-async@2.6.2: {}
+
+  node-addon-api@8.9.2: {}
 
   node-int64@0.4.0: {}
 
