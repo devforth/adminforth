@@ -16,12 +16,31 @@ pnpm add @adminforth/storage-adapter-amazon-s3
 
 Stores uploaded files in [Amazon S3](https://aws.amazon.com/s3/), providing scalable cloud storage. 
 
+### Strict content type
+
+The upload plugin picks the content type of a file by its extension, e.g. `image/png` for `.png`. By default S3 does not check it on upload, so a client can store a file with any `Content-Type`, e.g. `text/html` under a `.png` key, and the browser will open it as a page. Set `strictContentType: true` to sign the content type into the upload URL, then an upload with another type is rejected:
+
+```ts
+new AdminForthAdapterS3Storage({
+  bucket: process.env.AWS_BUCKET_NAME as string,
+  region: process.env.AWS_REGION as string,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+  strictContentType: true,
+}),
+```
+
+Before turning it on, update `@adminforth/bulk-ai-flow`, `@adminforth/markdown`, `@adminforth/rich-editor` and `@adminforth/oauth`: their older versions send the type reported by the browser, and the upload fails when it differs from the one picked by the extension. Your own code that uploads files to the URL from the [upload plugin API](../09-Plugins/05-1-upload-api.md) has to send the `contentType` returned with the URL as well. While the option is off, the adapter logs a warning on start. It will be on by default in the next major version.
+
 ## S3 compatible adapter
 ```bash
 pnpm add @adminforth/storage-adapter-s3-compatible
 ```
 
 Provides S3 compatible interface for object storage services such as MinIO, Wasabi, Cloudflare R2 or other third-party S3 providers.
+
+It supports the same `strictContentType` option as the Amazon S3 adapter, see [Strict content type](#strict-content-type).
+
 ### How the adapter works
 
 The Amazon S3 adapter uses tagging to mark objects with the special tag `adminforth-candidate-for-cleanup`, and then creates a lifecycle rule that automatically expires objects with that tag.
