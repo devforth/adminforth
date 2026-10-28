@@ -14,7 +14,7 @@ import {
   ShowInInput,
   RateLimitString,
 } from "../types/Back.js";
-import { compositePkValues, isCompositePrimaryKey } from './recordId.js';
+import { isCompositePrimaryKey } from './recordId.js';
 
 import fs from 'fs';
 import path from 'path';
@@ -32,7 +32,6 @@ import {
 import AdminForth from "adminforth";
 import { AdminForthConfigMenuItem } from "adminforth";
 import { afLogger } from "./logger.js";
-import {cascadeChildrenDelete} from './utils.js'
 
 const DEBOUNCE_TIME_MS = 300;
 const DEFAULT_AUTH_RATE_LIMIT: RateLimitString[] = ['500/5m', '5000/1h', '10000/1d'];
@@ -272,59 +271,27 @@ export default class ConfigValidator implements IConfigValidator {
       dangerous: true,
       allowed: async ({ resource, adminUser, allowedActions }) => { return allowedActions.delete },
       action: async ({ selectedIds, adminUser, extra }) => {
-        const connector = this.adminforth.connectors[res.dataSource];
-
-        // for now if at least one error, stop and return error
         let error = null;
 
         await Promise.all(
           selectedIds.map(async (recordId) => {
-            const record = await connector.getRecordByPrimaryKey(res as AdminForthResource, recordId);
-
-            await Promise.all(
-              (res.hooks.delete.beforeSave).map(
-                async (hook) => {
-                  const resp = await hook({ 
-                    recordId: recordId,
-                    resource: res as AdminForthResource, 
-                    record, 
-                    adminUser,
-                    extra,
-                    adminforth: this.adminforth
-                  }); 
-                  if (!error && resp.error) {
-                    error = resp.error;
-                  }
-                }
-              )
-            )
-
-            if (error) {
-              return;
+            try {
+              const deleted = await this.adminforth
+                .resource(res.resourceId)
+                .asUser(adminUser, {
+                  meta: { requestBody: extra.body },
+                  extra,
+                  bulkDeleteHooks: true,
+                })
+                .delete(recordId);
+              if (!deleted) {
+                throw new Error(`Record with ${recordId} not found`);
+              }
+            } catch (e) {
+              if (!error) {
+                error = (e as Error).message;
+              }
             }
-            
-            await cascadeChildrenDelete(res as AdminForthResource, recordId, { adminUser, extra }, this.adminforth);
-            await connector.deleteRecord({
-              resource: res as AdminForthResource,
-              recordId,
-              pkValues: compositePkValues(connector, res as AdminForthResource, recordId),
-            });
-            
-            await Promise.all(
-              (res.hooks.delete.afterSave).map(
-                async (hook) => {
-                  await hook({ 
-                    resource: res as AdminForthResource, 
-                    record, 
-                    adminUser,
-                    recordId: recordId,
-                    extra,
-                    adminforth: this.adminforth,
-                  }); 
-                }
-              )
-            )
-            
           })
         );
 

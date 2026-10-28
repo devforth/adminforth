@@ -4,7 +4,7 @@ import CodeInjector from './modules/codeInjector.js';
 import ExpressServer from './servers/express.js';
 import OpenApiRegistry from './servers/openapi.js';
 // import FastifyServer from './servers/fastify.js';
-import { ADMINFORTH_VERSION, listify, suggestIfTypo, RateLimiter, RAMLock, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError, removedInV4 } from './modules/utils.js';
+import { ADMINFORTH_VERSION, cascadeChildrenDelete, listify, suggestIfTypo, RateLimiter, RAMLock, isProbablyUUIDColumn, convertPeriodToSeconds, hookResponseError, md5hash, applyRegexValidation, formatHugePluginError, removedInV4 } from './modules/utils.js';
 import { 
   type AdminForthConfig, 
   type IAdminForth, 
@@ -36,12 +36,15 @@ import {
 
 import AdminForthPlugin from './basePlugin.js';
 import ConfigValidator from './modules/configValidator.js';
-import AdminForthRestAPI, { interpretResource, rejectApiRawFilters } from './modules/restApi.js';
+import AdminForthRestAPI, { rejectApiRawFilters } from './modules/restApi.js';
+import { interpretResource } from './modules/resourceAccess.js';
 import OperationalResource from './modules/operationalResource.js';
+import UserScopedResource from './modules/userScopedResource.js';
+import { validateRecordValues } from './modules/recordValidator.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
 import { normalizeRecordValues } from './modules/columnValueNormalizer.js';
-import { isEmptyColumnValue, runRecordValidators, validateColumnValue } from './modules/columnValueValidator.js';
+import { runRecordValidators } from './modules/columnValueValidator.js';
 import { createRequire } from 'module';
 import path from 'path';
 import { pathToFileURL } from 'url';
@@ -431,37 +434,8 @@ class AdminForth implements IAdminForth {
     });
   }
 
-  validateRecordValues(resource: AdminForthResource, record: any,  mode: 'create' | 'edit'): any {
-    // check if record with validation is valid
-    for (const column of resource.columns.filter((col) => col.name in record && col.validation)) {
-      const required = typeof column.required === 'object'
-      ? column.required[mode]
-      : true;
-
-      if (!required && !record[column.name]) continue;
-
-      let error = null;
-      if (column.isArray?.enabled) {
-        error = record[column.name].reduce((err, item) => {
-          return err || AdminForth.Utils.applyRegexValidation(item, column.validation);
-        }, null);
-      } else {
-        error = AdminForth.Utils.applyRegexValidation(record[column.name], column.validation);
-      }
-      if (error) {
-        return error;
-      }
-    }
-
-    // empty values are checked by required rules
-    for (const column of resource.columns.filter((col) => col.name in record && !isEmptyColumnValue(col, record[col.name]))) {
-      const error = validateColumnValue(column, record[column.name]);
-      if (error) {
-        return error;
-      }
-    }
-
-    return null;
+  validateRecordValues(resource: AdminForthResource, record: any, mode: 'create' | 'edit'): string | null {
+    return validateRecordValues(resource, record, mode);
   }
 
   async tryToImportConnector(connectorName: string, doesUserHavePnpmLock: boolean) {
@@ -657,7 +631,21 @@ class AdminForth implements IAdminForth {
 
     this.operationalResources = {};
     this.config.resources.forEach((resource) => {
-      this.operationalResources[resource.resourceId] = new OperationalResource(this.connectors[resource.dataSource], resource);
+      this.operationalResources[resource.resourceId] = new OperationalResource(
+        this.connectors[resource.dataSource],
+        resource,
+        (data, adminUser, options) => new UserScopedResource(
+          data,
+          this,
+          {
+            create: (params) => this.executeCreateResourceRecord(params),
+            update: (params) => this.executeUpdateResourceRecord(params),
+            delete: (params, cascadeChildren, bulkHooks) => this.executeDeleteResourceRecord(params, cascadeChildren, bulkHooks),
+          },
+          adminUser,
+          options,
+        ),
+      );
     });
     
     const adminforthSecret = process.env.ADMINFORTH_SECRET;
@@ -770,18 +758,28 @@ class AdminForth implements IAdminForth {
   }
 
   /**
-   * Create record and execute hooks
+   * Create record and execute hooks.
+   * @deprecated Being replaced by the Data API. Use
+   * `adminforth.resource(id).asUser(adminUser, { meta }).create(record)` for anything a user
+   * requested, or `adminforth.resource(id).create(record)` for plain data access.
    * @param params - Parameters for record creation. See CreateResourceRecordParams.
    * @returns Result of record creation. See CreateResourceRecordResult.
    */
   async createResourceRecord(
     params: CreateResourceRecordParams,
   ): Promise<CreateResourceRecordResult> {
+    this.warnDeprecatedResourceMutation('createResourceRecord', params.resource.resourceId, 'create');
+    return this.executeCreateResourceRecord(params);
+  }
+
+  private async executeCreateResourceRecord(
+    params: CreateResourceRecordParams,
+  ): Promise<CreateResourceRecordResult> {
     const { resource, record, adminUser, extra } = params;
 
     normalizeRecordValues(resource, record);
 
-    const err = this.validateRecordValues(resource, record, 'create')
+    const err = validateRecordValues(resource, record, 'create')
       ?? await runRecordValidators(resource, record, record, this);
     if (err) {
       return { error: err };
@@ -862,9 +860,12 @@ class AdminForth implements IAdminForth {
   /**
    * record is partial record with only changed fields
    * 
-   * Update record by id and execute hooks
-    * @param params - Parameters for record update. See UpdateResourceRecordParams.
-    * @returns Result of record update. See UpdateResourceRecordResult.
+   * Update record by id and execute hooks.
+   * @deprecated Being replaced by the Data API. Use
+   * `adminforth.resource(id).asUser(adminUser, { meta }).update(pk, updates)` for anything a
+   * user requested, or `adminforth.resource(id).update(pk, updates)` for plain data access.
+   * @param params - Parameters for record update. See UpdateResourceRecordParams.
+   * @returns Result of record update. See UpdateResourceRecordResult.
    */
   async updateResourceRecord(
     params: UpdateResourceRecordParams,
@@ -872,9 +873,16 @@ class AdminForth implements IAdminForth {
     if ('record' in params) {
       throw new Error(removedInV4('updateResourceRecord param "record"', 'updates'));
     }
+    this.warnDeprecatedResourceMutation('updateResourceRecord', params.resource.resourceId, 'update');
+    return this.executeUpdateResourceRecord(params);
+  }
+
+  private async executeUpdateResourceRecord(
+    params: UpdateResourceRecordParams,
+  ): Promise<UpdateResourceRecordResult> {
     const { resource, recordId, oldRecord, adminUser, extra, updates } = params;
     normalizeRecordValues(resource, updates);
-    const err = this.validateRecordValues(resource, updates, 'edit')
+    const err = validateRecordValues(resource, updates, 'edit')
       ?? await runRecordValidators(resource, updates, { ...oldRecord, ...updates }, this);
     if (err) {
       return { error: err };
@@ -945,16 +953,31 @@ class AdminForth implements IAdminForth {
   }
 
   /**
-   * Delete record by id and execute hooks
+   * Delete record by id and execute hooks.
+   * @deprecated Being replaced by the Data API. Use
+   * `adminforth.resource(id).asUser(adminUser, { meta }).delete(pk)` for anything a user
+   * requested, or `adminforth.resource(id).delete(pk)` for plain data access.
    * @param params - Parameters for record deletion. See DeleteResourceRecordParams.
    * @returns Result of record deletion. See DeleteResourceRecordResult.
    */
   async deleteResourceRecord(
     params: DeleteResourceRecordParams,
+    cascadeChildren = false,
+  ): Promise<DeleteResourceRecordResult> {
+    if (!cascadeChildren) {
+      this.warnDeprecatedResourceMutation('deleteResourceRecord', params.resource.resourceId, 'delete');
+    }
+    return this.executeDeleteResourceRecord(params, cascadeChildren);
+  }
+
+  private async executeDeleteResourceRecord(
+    params: DeleteResourceRecordParams,
+    cascadeChildren = false,
+    bulkHooks = false,
   ): Promise<DeleteResourceRecordResult> {
     const { resource, recordId, adminUser, record, extra } = params;
-    // execute hook if needed
-    for (const hook of listify(resource.hooks?.delete?.beforeSave)) {
+    const beforeHooks = listify(resource.hooks?.delete?.beforeSave);
+    const runBeforeHook = async (hook: typeof beforeHooks[number]) => {
       const resp = await hook({
         resource,
         record,
@@ -963,17 +986,42 @@ class AdminForth implements IAdminForth {
         adminforth: this,
         extra,
       });
-      const hookRespError = hookResponseError(resp);
-      if (hookRespError) {
-        return hookRespError;
+      return bulkHooks ? resp.error : hookResponseError(resp)?.error;
+    };
+    if (bulkHooks) {
+      // The old default bulk action ran every beforeSave hook, even if one vetoed deletion.
+      const errors = await Promise.all(beforeHooks.map(runBeforeHook));
+      const error = errors.find(Boolean);
+      if (error) {
+        return { error };
+      }
+    } else {
+      for (const hook of beforeHooks) {
+        const error = await runBeforeHook(hook);
+        if (error) {
+          return { error };
+        }
+      }
+    }
+
+    if (cascadeChildren) {
+      const cascadeResult = await cascadeChildrenDelete(
+        resource,
+        recordId,
+        { adminUser, extra },
+        this,
+        (childParams) => this.executeDeleteResourceRecord(childParams),
+      );
+      if (cascadeResult.error) {
+        return cascadeResult;
       }
     }
 
     const connector = this.connectors[resource.dataSource];
     await connector.deleteRecord({ resource, recordId, pkValues: compositePkValues(connector, resource, recordId) });
 
-    // execute hook if needed
-    for (const hook of listify(resource.hooks?.delete?.afterSave)) {
+    const afterHooks = listify(resource.hooks?.delete?.afterSave);
+    const runAfterHook = async (hook: typeof afterHooks[number]) => {
       const resp = await hook({
         resource,
         record,
@@ -982,13 +1030,42 @@ class AdminForth implements IAdminForth {
         adminforth: this,
         extra,
       });
-      const hookRespError = hookResponseError(resp);
-      if (hookRespError) {
-        return hookRespError;
+      return bulkHooks ? null : hookResponseError(resp)?.error;
+    };
+    if (bulkHooks) {
+      // Returned afterSave errors never changed the legacy bulk action result.
+      await Promise.all(afterHooks.map(runAfterHook));
+    } else {
+      for (const hook of afterHooks) {
+        const error = await runAfterHook(hook);
+        if (error) {
+          return { error };
+        }
       }
     }
 
     return { error: null };
+  }
+
+  private warnedDeprecatedResourceMutations = new Set<string>();
+
+  private warnDeprecatedResourceMutation(
+    method: 'createResourceRecord' | 'updateResourceRecord' | 'deleteResourceRecord',
+    resourceId: string,
+    operation: 'create' | 'update' | 'delete',
+  ): void {
+    // these run on every CRUD action of every plugin, so warn once per resource and method
+    const warnKey = `${resourceId}.${method}`;
+    if (this.warnedDeprecatedResourceMutations.has(warnKey)) {
+      return;
+    }
+    this.warnedDeprecatedResourceMutations.add(warnKey);
+    afLogger.trace(
+      `${method} is deprecated and will be removed in the next major version. `
+      + `Use adminforth.resource('${resourceId}').asUser(adminUser, { meta }).${operation}(...) `
+      + `for anything a user requested, or adminforth.resource('${resourceId}').${operation}(...) `
+      + `for plain data access.`,
+    );
   }
 
   async runAction({
