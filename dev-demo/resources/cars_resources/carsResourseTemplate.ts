@@ -215,6 +215,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           region: process.env.AWS_REGION as string,
           accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          strictContentType: true,
           s3ACL: "public-read"
         }),
         pathColumnName: 'photos',
@@ -236,6 +237,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           region: process.env.AWS_REGION as string,
           accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
           secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+          strictContentType: true,
           s3ACL: "public-read"
         }),
         pathColumnName: 'promo_picture',
@@ -349,6 +351,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
               region: process.env.AWS_REGION as string,
               accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
               secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+              strictContentType: true,
               s3ACL: "public-read"
             }),
             
