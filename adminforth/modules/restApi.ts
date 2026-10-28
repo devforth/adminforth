@@ -2124,154 +2124,154 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           }
         }
 
-        const responses = (await Promise.all(
+        const responses = await Promise.all(
           targetResources.map(async (targetResource) => {
-            return new Promise(async (resolve) => {
-              for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
-                const filterTools = filtersTools.get(body);
-                body.filtersTools = filterTools;
-                const resp = await hook({
-                  query: body,
-                  adminUser,
-                  filtersTools: filterTools, 
-                  resource: targetResource,
-                  extra: {
-                    body, query, headers, cookies, requestUrl
-                  },
-                  adminforth: this.adminforth,
-                });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-                }
-
-                if (resp.error) {
-                  return { error: resp.error };
-                }
-              }
-              const { limit, offset, filters, sort } = body;
-
-              // after beforeDatasourceRequest hook, filter can be anything
-              // so, we need to turn it into AndOr filter
-              // (validation and normalization of individual filters will be done inside getData)
-              const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
-              if (filters) {
-                if (typeof filters !== 'object') {
-                  throw new Error(`Filter should be an array or an object`);
-                }
-                if (Array.isArray(filters)) {
-                  // if filters are an array, they will be connected with "AND" operator by default
-                  normalizedFilters.subFilters = filters;
-                } else if (filters.field) {
-                  // assume filter is a SingleFilter
-                  normalizedFilters.subFilters = [filters];
-                } else if (filters.subFilters) {
-                  // assume filter is a AndOr filter
-                  normalizedFilters.operator = filters.operator;
-                  normalizedFilters.subFilters = filters.subFilters;
-                } else {
-                  // wrong filter
-                  throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
-                }
-              }
-
-              if (search && search.trim() && columnConfig.foreignResource.searchableFields) {
-                const searchableFields = Array.isArray(columnConfig.foreignResource.searchableFields) 
-                  ? columnConfig.foreignResource.searchableFields 
-                  : [columnConfig.foreignResource.searchableFields];
-
-                const searchOperator = columnConfig.foreignResource.searchIsCaseSensitive 
-                  ? AdminForthFilterOperators.LIKE 
-                  : AdminForthFilterOperators.ILIKE;
-                const availableSearchFields = searchableFields.filter((fieldName) => {
-                  const fieldExists = targetResource.columns.some(col => col.name === fieldName);
-                  if (!fieldExists) {
-                    afLogger.trace(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
-                  }
-                  return fieldExists;
-                });
-
-                if (availableSearchFields.length === 0) {
-                  afLogger.trace(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
-                  resolve({ items: [] });
-                  return;
-                }
-                const searchFilters = availableSearchFields.map((fieldName) => {
-                  const filter = {
-                  field: fieldName,
-                  operator: searchOperator,
-                  value: search.trim(),
-                  };
-                  return filter;
-                });
-
-                if (searchFilters.length > 1) {
-                  normalizedFilters.subFilters.push({
-                    operator: AdminForthFilterOperators.OR,
-                    subFilters: searchFilters,
-                  });
-                } else if (searchFilters.length === 1) {
-                  normalizedFilters.subFilters.push(searchFilters[0]);
-                }
-              }
-              if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
-                const pkField = targetResource.columns.find((col) => col.primaryKey);
-                if (pkField) {
-                  normalizedFilters.subFilters.push({ field: pkField.name, operator: AdminForthFilterOperators.EQ, value: currentValue });
-                }
-              }
-              const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
+            for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.beforeDatasourceRequest as BeforeDataSourceRequestFunction[])) {
+              const filterTools = filtersTools.get(body);
+              body.filtersTools = filterTools;
+              const resp = await hook({
+                query: body,
+                adminUser,
+                filtersTools: filterTools, 
                 resource: targetResource,
-                limit,
-                offset,
-                filters: normalizedFilters as IAdminForthAndOrFilter,
-                sort: sort || [],
+                extra: {
+                  body, query, headers, cookies, requestUrl
+                },
+                adminforth: this.adminforth,
               });
-              const items = dbDataItems.data.map((item) => {
-                const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
-                const labler = targetResource.recordLabel;
-                return {
-                  value: pk,
-                  label: labler(item),
-                  _item: item, // user might need it in hook to form new label
-                }
-              });
-              const response = {
-                items
-              };
-
-              for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse as AfterDataSourceResponseFunction[])) {
-                const resp = await hook({
-                  response,
-                  adminUser,
-                  query: body,
-                  resource: targetResource,
-                  extra: {
-                    body, query, headers, cookies, requestUrl
-                  },
-                  adminforth: this.adminforth,
-                });
-                if (!resp || (!resp.ok && !resp.error)) {
-                  throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
-                }
-
-                if (resp.error) {
-                  return { error: resp.error };
-                }
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
               }
 
-              // remove _item from response (might expose sensitive data like backendOnly fields)
-              response.items.forEach((item) => {
-                delete item._item;
+              if (resp.error) {
+                return { error: resp.error };
+              }
+            }
+            const { limit, offset, filters, sort } = body;
+
+            // after beforeDatasourceRequest hook, filter can be anything
+            // so, we need to turn it into AndOr filter
+            // (validation and normalization of individual filters will be done inside getData)
+            const normalizedFilters = { operator: AdminForthFilterOperators.AND, subFilters: [] };
+            if (filters) {
+              if (typeof filters !== 'object') {
+                throw new Error(`Filter should be an array or an object`);
+              }
+              if (Array.isArray(filters)) {
+                // if filters are an array, they will be connected with "AND" operator by default
+                normalizedFilters.subFilters = filters;
+              } else if (filters.field) {
+                // assume filter is a SingleFilter
+                normalizedFilters.subFilters = [filters];
+              } else if (filters.subFilters) {
+                // assume filter is a AndOr filter
+                normalizedFilters.operator = filters.operator;
+                normalizedFilters.subFilters = filters.subFilters;
+              } else {
+                // wrong filter
+                throw new Error(`Wrong filter object value: ${JSON.stringify(filters)}`);
+              }
+            }
+
+            if (search && search.trim() && columnConfig.foreignResource.searchableFields) {
+              const searchableFields = Array.isArray(columnConfig.foreignResource.searchableFields) 
+                ? columnConfig.foreignResource.searchableFields 
+                : [columnConfig.foreignResource.searchableFields];
+
+              const searchOperator = columnConfig.foreignResource.searchIsCaseSensitive 
+                ? AdminForthFilterOperators.LIKE 
+                : AdminForthFilterOperators.ILIKE;
+              const availableSearchFields = searchableFields.filter((fieldName) => {
+                const fieldExists = targetResource.columns.some(col => col.name === fieldName);
+                if (!fieldExists) {
+                  afLogger.trace(`⚠️  Field '${fieldName}' not found in polymorphic target resource '${targetResource.resourceId}', skipping in search filter.`);
+                }
+                return fieldExists;
               });
 
-              resolve(response);
-            });
-          })
-        )).reduce((acc: any, response: any) => {
-          return [...acc, ...response.items];
-        }, []);
+              if (availableSearchFields.length === 0) {
+                afLogger.trace(`⚠️  No searchable fields available in polymorphic target resource '${targetResource.resourceId}', skipping resource.`);
+                return { items: [] };
+              }
+              const searchFilters = availableSearchFields.map((fieldName) => {
+                const filter = {
+                field: fieldName,
+                operator: searchOperator,
+                value: search.trim(),
+                };
+                return filter;
+              });
 
-        return { items: responses };
+              if (searchFilters.length > 1) {
+                normalizedFilters.subFilters.push({
+                  operator: AdminForthFilterOperators.OR,
+                  subFilters: searchFilters,
+                });
+              } else if (searchFilters.length === 1) {
+                normalizedFilters.subFilters.push(searchFilters[0]);
+              }
+            }
+            if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
+              const pkField = targetResource.columns.find((col) => col.primaryKey);
+              if (pkField) {
+                normalizedFilters.subFilters.push({ field: pkField.name, operator: AdminForthFilterOperators.EQ, value: currentValue });
+              }
+            }
+            const dbDataItems = await this.adminforth.connectors[targetResource.dataSource].getData({
+              resource: targetResource,
+              limit,
+              offset,
+              filters: normalizedFilters as IAdminForthAndOrFilter,
+              sort: sort || [],
+            });
+            const items = dbDataItems.data.map((item) => {
+              const pk = item[targetResource.columns.find((col) => col.primaryKey).name];
+              const labler = targetResource.recordLabel;
+              return {
+                value: pk,
+                label: labler(item),
+                _item: item, // user might need it in hook to form new label
+              }
+            });
+            const response = {
+              items
+            };
+
+            for (const hook of listify(columnConfig.foreignResource.hooks?.dropdownList?.afterDatasourceResponse as AfterDataSourceResponseFunction[])) {
+              const resp = await hook({
+                response,
+                adminUser,
+                query: body,
+                resource: targetResource,
+                extra: {
+                  body, query, headers, cookies, requestUrl
+                },
+                adminforth: this.adminforth,
+              });
+              if (!resp || (!resp.ok && !resp.error)) {
+                throw new Error(`Hook must return object with {ok: true} or { error: 'Error' } `);
+              }
+
+              if (resp.error) {
+                return { error: resp.error };
+              }
+            }
+
+            // remove _item from response (might expose sensitive data like backendOnly fields)
+            response.items.forEach((item) => {
+              delete item._item;
+            });
+
+            return response;
+          })
+        );
+
+        const errorResponse = responses.find((response: any) => response.error);
+        if (errorResponse) {
+          return errorResponse;
+        }
+
+        return { items: responses.flatMap((response: any) => response.items) };
       },
     });
 
