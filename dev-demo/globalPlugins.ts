@@ -107,6 +107,7 @@ export const globalPlugins = [
       responseField: 'response',
       debugField: 'dubbug',
       checkpointIdField: 'checkpoint_id',
+      attachmentsField: 'attachments',
     },
     checkpointResource: {
       resourceId: 'agent_checkpoints',
