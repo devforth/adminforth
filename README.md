@@ -6,12 +6,11 @@
 
 **The back office your coding agent builds and your agents run. Your data, your server, your rules. A change history that names the agent.**
 
-<img width="1806" height="985" alt="adminforth-agent-demo" src="https://github.com/user-attachments/assets/acc1a1b2-52c3-408a-a71d-14b0eeb5c149" />
-
-
 [Website](https://adminforth.dev) · [Start with your agent](#start-with-your-agent) · [Documentation](https://adminforth.dev/docs/tutorial/gettingStarted/) · [For developers](#for-developers)
 
 </div>
+
+<img width="1806" height="985" alt="adminforth-agent-demo" src="https://github.com/user-attachments/assets/acc1a1b2-52c3-408a-a71d-14b0eeb5c149" />
 
 You already work with AI agents. AdminForth is the admin they run your business through: customers, orders, jobs, stock and invoices in your own database, built by your coding agent, used by you and your team through Claude Code, Codex or any agent that speaks MCP. The panel is one way in; your agent is another. Screens are there when you want to look.
 
