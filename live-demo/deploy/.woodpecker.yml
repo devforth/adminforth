@@ -16,6 +16,7 @@ steps:
     commands:
       - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
 
+
   release:
     image: node:24-bookworm
     when:

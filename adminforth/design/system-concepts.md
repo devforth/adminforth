@@ -84,3 +84,5 @@ A floating layer is a `popover` element positioned by CSS anchor positioning, li
 ## SPA dependencies
 
 Fonts and icons are dependencies of `adminforth/spa`. Apps install the SPA with npm or pnpm, so a new SPA dependency goes to both `spa/package-lock.json` and `spa/pnpm-lock.yaml`.
+
+The SPA is also a project of the pnpm workspace of `adminforth`, and CI installs from there, so the dependency goes to `adminforth/pnpm-lock.yaml` as well: `pnpm add` inside `spa` updates only `spa/pnpm-lock.yaml`, run `pnpm install --lockfile-only` in `adminforth` after it. Before committing, check that `pnpm install --frozen-lockfile --lockfile-only` in `adminforth` passes, the same install CI runs.
