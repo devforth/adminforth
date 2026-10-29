@@ -4,6 +4,9 @@ import ResourceKeyValueAdapter from '../adapters/adminforth-key-value-adapter-re
 import RAMKeyValueAdapter from '../adapters/adminforth-key-value-adapter-ram/index.js';
 import AdminForthAdapterS3Storage from '../adapters/adminforth-storage-adapter-amazon-s3/index.js'; 
 
+// local user for coding agents, its password is the same as the email, it is exempt from 2FA
+export const AGENT_USER_EMAIL = 'agent';
+
 export const levelDbAdapter = new LevelDBKeyValueAdapter({
   dbPath: './testdb',
 });

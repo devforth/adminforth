@@ -10,6 +10,10 @@ Howeverer internally (e.g. in `codeInjector`) adminforth still supports both `np
 
 Never patch anything in `spa_tmp` (e.g. `/tmp/adminforth/<app>/spa_tmp`): no file edits, no `pnpm install`, no own vite or other commands there. `codeInjector` generates it from `adminforth/spa` and the custom components of the app and its plugins, a manual install there drops the packages it adds for plugins. After a change in `spa/package.json` or `spa/tailwind.config.js` the running app breaks until a restart, tell the user to restart it.
 
+## Dev demo login
+
+To log in to the local dev-demo (`http://localhost:3123`) use `agent` as username and `agent` as password. The user is created on start and is exempt from 2FA. Do not use `adminforth`, it may have 2FA set up in the local database.
+
 ## Package names rules
 
 

@@ -44,6 +44,7 @@ import mcpAuthSecretsResource from './resources/mcpAuthSecrets.js';
 import { logger } from '../adminforth/modules/logger.js';
 
 import { globalPlugins } from './globalPlugins.js';
+import { AGENT_USER_EMAIL } from './utils.js';
 
 const ADMIN_BASE_URL = '';
 
@@ -457,6 +458,13 @@ if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
       await admin.resource('adminuser').create({
         email: 'adminforth',
         password_hash: await AdminForth.Utils.generatePasswordHash('adminforth'),
+        role: 'superadmin',
+      });
+    }
+    if (await admin.resource('adminuser').count(Filters.EQ('email', AGENT_USER_EMAIL)) === 0) {
+      await admin.resource('adminuser').create({
+        email: AGENT_USER_EMAIL,
+        password_hash: await AdminForth.Utils.generatePasswordHash(AGENT_USER_EMAIL),
         role: 'superadmin',
       });
     }

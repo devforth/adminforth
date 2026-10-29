@@ -1,6 +1,7 @@
 import TwoFactorsAuthPlugin from "../../../plugins/adminforth-two-factors-auth/index.js";
 import KeyValueAdapterRam from '../../../adapters/adminforth-key-value-adapter-ram/index.js';
 import type { AdminUser } from '../../../adminforth/index.js';
+import { AGENT_USER_EMAIL } from '../../utils.js';
 
 
 
@@ -9,6 +10,7 @@ export default new TwoFactorsAuthPlugin (
         twoFaSecretFieldName: 'secret2fa', 
         timeStepWindow: 1,
         stepUpMfaGracePeriodSeconds: 300,
+        usersFilterToApply: (adminUser: AdminUser) => adminUser.dbUser.email !== AGENT_USER_EMAIL,
         usersFilterToAllowSkipSetup: (adminUser: AdminUser) => {
           // allow skip setup 2FA for users which email is 'adminforth' or 'adminguest'
           return (true);
