@@ -302,6 +302,81 @@ Each item in `modes` defines a user-selectable preset in the chat UI. The select
 
 The plugin adds a chat surface to the admin UI, keeps session history per admin user, and shows a mode picker when `modes` are configured.
 
+## Image attachments
+
+Users can paste, attach or drop images (PNG, JPEG, WebP) in the chat, up to 5 per message, and the agent sees them. The images are stored by the [Upload plugin](./05-0-upload.md) on a column of the turns resource.
+
+1. Add a nullable column for the paths of the images to the turns table and describe it as a string array:
+
+```ts title="./resources/turns.ts"
+{
+  name: 'attachments',
+  type: AdminForthDataTypes.JSON,
+  isArray: {
+    enabled: true,
+    itemType: AdminForthDataTypes.STRING,
+  },
+  showIn: { list: false, show: true, edit: false, create: false, filter: false },
+},
+```
+
+2. Install the Upload plugin on this column, with images only:
+
+```ts title="./resources/turns.ts"
+plugins: [
+  new UploadPlugin({
+    pathColumnName: 'attachments',
+    storageAdapter: new AdminForthAdapterS3Storage({
+      // ...bucket, region, credentials
+      strictContentType: true,
+    }),
+    allowedFileExtensions: ['png', 'jpg', 'jpeg', 'webp'],
+    filePath: ({ originalExtension }) => `agent_attachments/${randomUUID()}.${originalExtension}`,
+  }),
+],
+```
+
+With an S3 storage `strictContentType: true` is required: the browser uploads the image straight to the bucket, and without it any content can be stored under an image name, see [Strict content type](../06-Adapters/04-storage-adapters.md#strict-content-type). The option is available since `@adminforth/storage-adapter-amazon-s3` 1.3.0 and `@adminforth/storage-adapter-s3-compatible` 1.2.0.
+
+3. Make the turns and checkpoints resources read-only in the admin panel. The agent writes them itself, while create or edit rights on the turns resource would also let admins download any file of its storage through the Upload plugin:
+
+```ts title="./resources/turns.ts"
+options: {
+  allowedActions: {
+    create: false,
+    edit: false,
+    delete: false,
+  },
+},
+```
+
+4. Pass the column to the plugin:
+
+```ts
+turnResource: {
+  // ...
+  attachmentsField: 'attachments',
+},
+```
+
+Before the upload the browser scales an image down to fit 1920×1080 and converts it to WebP (to JPEG in a browser which can not encode WebP, e.g. Safari). The plugin accepts images up to 3.75 MB: the model gets them as base64, and the smallest per-image limit of the providers is 5 MB. Every image costs tokens on every model call, so the model sees an image for a while after it was sent, and only the latest few at once. Older images are replaced with a note, and the agent loads them again with the `view_image` tool when they matter for the answer.
+
+The limits are options of the plugin, each a whole number from 1:
+
+```ts
+new AdminForthAgent({
+  // ...
+  imageAttachments: {
+    // images one message can have, 5 by default
+    maxPerMessage: 5,
+    // minutes the model sees an image after it was sent or loaded again with view_image, 30 by default
+    visibleMinutes: 30,
+    // images the model sees at once, the latest ones, 5 by default
+    maxVisible: 5,
+  },
+}),
+```
+
 ## Chat surfaces (Telegram, etc.)
 
 By default, the Agent plugin exposes a chat surface inside the AdminForth admin UI.

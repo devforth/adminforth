@@ -8,6 +8,14 @@ export default {
   table: 'agent_checkpoints',
   resourceId: 'agent_checkpoints',
   label: 'Agent Checkpoints',
+  // written by the agent only; edits here would bypass its checks and its file bookkeeping
+  options: {
+    allowedActions: {
+      create: false,
+      edit: false,
+      delete: false,
+    },
+  },
   columns: [
     { name: 'id', primaryKey: true, type: AdminForthDataTypes.STRING },
     { name: 'thread_id', type: AdminForthDataTypes.STRING },

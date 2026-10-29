@@ -30,7 +30,7 @@ new AdminForthAdapterS3Storage({
 }),
 ```
 
-Before turning it on, update `@adminforth/bulk-ai-flow`, `@adminforth/markdown`, `@adminforth/rich-editor` and `@adminforth/oauth`: their older versions send the type reported by the browser, and the upload fails when it differs from the one picked by the extension. Your own code that uploads files to the URL from the [upload plugin API](../09-Plugins/05-1-upload-api.md) has to send the `contentType` returned with the URL as well. While the option is off, the adapter logs a warning on start. It will be on by default in the next major version.
+The option is available since `@adminforth/storage-adapter-amazon-s3` 1.3.0. Before turning it on, update `@adminforth/bulk-ai-flow`, `@adminforth/markdown`, `@adminforth/rich-editor` and `@adminforth/oauth`: their older versions send the type reported by the browser, and the upload fails when it differs from the one picked by the extension. Your own code that uploads files to the URL from the [upload plugin API](../09-Plugins/05-1-upload-api.md) has to send the `contentType` returned with the URL as well. While the option is off, the adapter logs a warning on start. It will be on by default in the next major version.
 
 ## S3 compatible adapter
 ```bash
@@ -39,7 +39,7 @@ pnpm add @adminforth/storage-adapter-s3-compatible
 
 Provides S3 compatible interface for object storage services such as MinIO, Wasabi, Cloudflare R2 or other third-party S3 providers.
 
-It supports the same `strictContentType` option as the Amazon S3 adapter, see [Strict content type](#strict-content-type).
+It supports the same `strictContentType` option as the Amazon S3 adapter since version 1.2.0, see [Strict content type](#strict-content-type).
 
 ### How the adapter works
 
