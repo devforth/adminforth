@@ -2279,13 +2279,15 @@ export interface OperationalResourceContextOptions {
   extra?: HttpExtra;
 
   /**
-   * Snapshot passed to edit save hooks when the caller has already loaded the record.
+   * Record the caller has already loaded. `update()` uses it instead of loading the record
+   * again, passes it to edit permission callbacks as `meta.oldRecord` and to edit save hooks.
    * `update()` still performs a scoped lookup to confirm access to the current row.
    */
   oldRecord?: any;
 
   /**
-   * Snapshot passed to delete save hooks when the caller has already loaded the record.
+   * Record the caller has already loaded. `delete()` uses it instead of loading the record
+   * again, passes it to delete permission callbacks as `meta.record` and to delete save hooks.
    * `delete()` still performs a scoped lookup to confirm access to the current row.
    */
   record?: any;

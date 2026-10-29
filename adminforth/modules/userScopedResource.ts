@@ -364,7 +364,8 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async update(primaryKey: any, record: any): Promise<any> {
-    const currentRecord = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    const currentRecord = this.options.oldRecord
+      ?? await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
     // edit permission callbacks read meta.oldRecord, so they only ever see an existing record
     if (!currentRecord) {
       const primaryKeyColumn = this.resourceConfig.columns.find((column) => column.primaryKey);
@@ -409,14 +410,15 @@ export default class UserScopedResource implements IScopedOperationalResource {
   }
 
   async delete(primaryKey: any): Promise<boolean> {
-    const currentRecord = await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
+    const currentRecord = this.options.record
+      ?? await this.dataConnector.getRecordByPrimaryKey(this.resourceConfig, primaryKey);
     // delete permission callbacks read meta.record, so they only ever see an existing record
     if (!currentRecord) {
       return false;
     }
     const accessError = consumeResourceAccessGrant(
       this.options[RESOURCE_ACCESS_GRANT], this.adminUser, this.resourceConfig,
-      AllowedActionsEnum.delete, this.options.record ?? currentRecord, primaryKey,
+      AllowedActionsEnum.delete, currentRecord, primaryKey,
     ) ? null : await this.accessError('delete', { ...this.meta, record: currentRecord, pk: primaryKey });
     if (accessError) {
       throw new Error(accessError);
