@@ -182,7 +182,7 @@ describe('Import-Export plugin', () => {
   });
 
   describe('JSON type fields', () => {
-    const colorObj = { hex: '#ffffff', name: 'white' };
+    const specsObj = { doors: '4', seats: '5' };
 
     it('exports JSON column object values as JSON strings', async () => {
       await admin.resource(RESOURCE_ID).create({
@@ -193,7 +193,7 @@ describe('Import-Export plugin', () => {
         engine_power: 100,
         listed: true,
         mileage: 1000,
-        color: colorObj,
+        specifications: specsObj,
       });
 
       const res = await agent
@@ -204,30 +204,29 @@ describe('Import-Export plugin', () => {
       expect(res.body.ok).toBe(true);
       expect(res.body.exportedCount).toEqual(1);
 
-      const colorIdx = res.body.data.fields.indexOf('color');
-      const exported = res.body.data.data[0][colorIdx];
+      const specsIdx = res.body.data.fields.indexOf('specifications');
+      const exported = res.body.data.data[0][specsIdx];
       expect(typeof exported).toEqual('string'); // object serialized for CSV
-      expect(JSON.parse(exported)).toEqual(colorObj);
+      expect(JSON.parse(exported)).toEqual(specsObj);
     });
 
     it('imports JSON column values supplied as JSON strings', async () => {
-      const importedColor = { hex: '#000000', name: 'black' };
+      const importedSpecs = { doors: '2', seats: '2' };
       const res = await agent
         .post(`${pluginBase}/import-csv`)
         .send({
           data: carData([
-            makeRow('ie-json-import', { color: JSON.stringify(importedColor) }),
+            makeRow('ie-json-import', { specifications: JSON.stringify(importedSpecs) }),
           ]),
         });
 
       expect(res.status).toEqual(200);
       expect(res.body.ok).toBe(true);
-      expect(res.body.importedCount).toEqual(1);
       expect(res.body.errors).toEqual([]);
+      expect(res.body.importedCount).toEqual(1);
 
       const [record] = await admin.resource(RESOURCE_ID).list([Filters.EQ('id', 'ie-json-import')]);
-      const stored = typeof record.color === 'string' ? JSON.parse(record.color) : record.color;
-      expect(stored).toEqual(importedColor);
+      expect(record.specifications).toEqual(importedSpecs);
     });
   });
 });

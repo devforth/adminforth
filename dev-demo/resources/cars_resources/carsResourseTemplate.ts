@@ -277,9 +277,11 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
       //   schema: carSpecificationsSchema,
       // }),
       new importExport({
-        exportViaUpload: {
-          storageAdapter: s3StorageAdapter as any
-        }
+        ...(s3StorageAdapter ? {
+          exportViaUpload: {
+            storageAdapter: s3StorageAdapter as any
+          }
+        } : {}),
       }),
       new ListInPlaceEditPlugin({
         columns: ["model", "engine_type", "price"],

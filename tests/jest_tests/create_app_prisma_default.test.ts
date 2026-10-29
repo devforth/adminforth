@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const createAppDir = path.resolve(currentDir, '../../adminforth/commands/createApp');
-// mock by absolute path: neither package resolves from this directory, both resolve from utils.js
+// mock by absolute path: inquirer does not resolve from this directory, it resolves from utils.js
 const cliRequire = createRequire(path.join(createAppDir, 'utils.js'));
 
 // the path `import` reaches, which is not the one require.resolve reports for a dual package
@@ -25,10 +25,13 @@ const prompt = jest.fn(async (questions: any[]) =>
 jest.unstable_mockModule(esmEntry('inquirer'), () => ({ default: { prompt } }));
 
 // a connector with no isDatabaseEmpty() is how version skew looks: the CLI cannot tell whether
-// the database already has tables
-jest.unstable_mockModule(esmEntry('@adminforth/connector-sqlite'), () => ({
+// the database already has tables. Connectors are installed by the app, not by adminforth, so the
+// CLI imports this one by bare name and it is mocked as a virtual module. jest looks up virtual
+// mocks of an ESM import in the CommonJS registry, so it is registered there too
+jest.mock('@adminforth/connector-sqlite', () => ({}), { virtual: true });
+jest.unstable_mockModule('@adminforth/connector-sqlite', () => ({
   default: class { async setupClient() {} async close() {} },
-}));
+}), { virtual: true });
 
 const utils = await (async () => {
   const argv = process.argv;

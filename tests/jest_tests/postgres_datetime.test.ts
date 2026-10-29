@@ -1,5 +1,5 @@
 import { AdminForthDataTypes } from '../../adminforth/index.js';
-import PostgresConnector from '../../adminforth/dataConnectors/postgres.js';
+import PostgresConnector from '../../connectors/adminforth-connector-postgres/index.js';
 
 describe('PostgresConnector DATETIME normalization', () => {
   const connector = new PostgresConnector();

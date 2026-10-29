@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { admin, agent, app, closeApplication } from './testApp';
+import { admin, agent, app, closeApplication, Filters } from './testApp';
 
 let authCookie: string;
 
