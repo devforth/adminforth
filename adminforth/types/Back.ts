@@ -799,8 +799,9 @@ export interface IAdminForthPlugin {
   /**
    * Optional method which will be called after AdminForth discovers all resources and their columns.
    * Can be used to validate types of columns, check if some columns are missing, etc.
+   * `resourceConfig` is the resource of a resource plugin; a global plugin gets no resource.
    */
-  validateConfigAfterDiscover?(adminforth: IAdminForth, resourceConfig: AdminForthResource): void;
+  validateConfigAfterDiscover?(adminforth: IAdminForth, resourceConfig?: AdminForthResource): void;
 
   /**
    * Here you can register custom endpoints for your plugin.
