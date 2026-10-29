@@ -579,6 +579,28 @@ import { CountryFlag } from '@/afcl'
 
 </AfclPreview>
 
+## Zoomable Image
+
+A Zoomable Image is an image which opens over the whole page on a click, and closes on a click, a scroll or Escape. The dark overlay covers the page and the docked agent chat. The Upload plugin shows its previews with it, the agent chat the images of messages.
+
+<AfclPreview id="zoomable-image">
+
+```js
+import { ZoomableImage } from '@/afcl'
+```
+
+```html
+<ZoomableImage
+  src="/img/preview_light.png"
+  alt="AdminForth admin panel"
+  class="max-w-64 rounded-default border border-lightListBorder dark:border-darkListBorder"
+/>
+```
+
+</AfclPreview>
+
+The image takes the attributes and classes of an `img`, e.g. `@error` or a size. A click on it does not reach its parents, so it can stay in a clickable block, e.g. a table row which opens the record.
+
 ## Badge
 
 A Badge labels a status or a category. Variants are `default`, `success`, `warning`, `danger`, `accent` (the `primary` color of the theme) and `muted`.

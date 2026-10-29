@@ -30,6 +30,7 @@
     "flowbite-datepicker": "^1.2.6",
     "javascript-time-ago": "^2.5.11",
     "lodash.debounce": "^4.0.8",
+    "medium-zoom": "^1.1.2",
     "pinia": "^4.1.0",
     "sanitize-html": "^2.17.4",
     "tailwind-merge": "^3.7.0",
