@@ -645,12 +645,9 @@ export interface IAdminForth {
   /**
    * Deletes a record and runs the resource delete hooks, without checking permissions.
    * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
-   * Pass `true` as the second argument to apply configured child deletion after the parent
-   * `beforeSave` hooks have allowed the deletion.
    */
   deleteResourceRecord(
     params: DeleteResourceRecordParams,
-    cascadeChildren?: boolean,
   ): Promise<DeleteResourceRecordResult>;
 
   auth: IAdminForthAuth;

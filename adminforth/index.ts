@@ -967,12 +967,9 @@ class AdminForth implements IAdminForth {
    */
   async deleteResourceRecord(
     params: DeleteResourceRecordParams,
-    cascadeChildren = false,
   ): Promise<DeleteResourceRecordResult> {
-    if (!cascadeChildren) {
-      this.warnDeprecatedResourceMutation('deleteResourceRecord', params.resource.resourceId, 'delete');
-    }
-    return this.executeDeleteResourceRecord(params, cascadeChildren);
+    this.warnDeprecatedResourceMutation('deleteResourceRecord', params.resource.resourceId, 'delete');
+    return this.executeDeleteResourceRecord(params);
   }
 
   private async executeDeleteResourceRecord(
