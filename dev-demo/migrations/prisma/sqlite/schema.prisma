@@ -164,6 +164,7 @@ model turns {
   response      String?
   dubbug        String?
   checkpoint_id String?
+  attachments   String?
 }
 
 model agent_checkpoints {

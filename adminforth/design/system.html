@@ -2388,7 +2388,7 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
       <h1 style="font-size: 32px; line-height: 38px; font-weight: 600; letter-spacing: -0.02em">Data display</h1>
       <p class="t-muted">White surfaces on the gray ground, 1px hairlines instead of shadows, muted headers and tabular numbers.</p>
     </div>
-    <div style="display: flex; flex-wrap: wrap; gap: 8px"><span class="badge">Table</span><span class="badge">Card</span><span class="badge">VerticalTabs</span><span class="badge">JsonViewer</span><span class="badge">CountryFlag</span><span class="badge">Badge</span></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px"><span class="badge">Table</span><span class="badge">Card</span><span class="badge">VerticalTabs</span><span class="badge">JsonViewer</span><span class="badge">CountryFlag</span><span class="badge">ZoomableImage</span><span class="badge">Badge</span></div>
   </div>
 
   <section class="sec">
@@ -2618,6 +2618,24 @@ body.ds-dark .ds-frame { border-color: #29292E; background: #0D0D0F; }
           <span style="display: inline-flex; align-items: center; gap: 8px" class="t-sm"><span class="fl fl-h" role="img" aria-label="Italy" style="width: 20px; height: 15px; border-radius: 2px"><span style="background: #009246"></span><span style="background: #FFFFFF"></span><span style="background: #CE2B37"></span></span>Italy</span>
         </div>
         <div class="tile-cap"><b>With label</b><code>country name</code></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head"><span class="sec-name">&lt;ZoomableImage&gt;</span><span class="t-sm t-muted">an img which opens over the page; medium-zoom, overlay black/80 in both themes</span></div>
+    <div class="grid5">
+      <div class="tile">
+        <div class="tile-stage">
+          <span style="display: block; width: 120px; height: 68px; border-radius: 6px; border: 1px solid #E4E4E7; background: linear-gradient(135deg, #D4D4D8, #A1A1AA); cursor: zoom-in"></span>
+        </div>
+        <div class="tile-cap"><b>Thumbnail</b><code>cursor zoom-in · size and border by class</code></div>
+      </div>
+      <div class="tile">
+        <div class="tile-stage" style="background: rgb(0 0 0 / 0.8); border-radius: 6px">
+          <span style="display: block; width: 180px; height: 102px; border-radius: 6px; background: linear-gradient(135deg, #D4D4D8, #A1A1AA); cursor: zoom-out"></span>
+        </div>
+        <div class="tile-cap"><b>Opened</b><code>z-50 over the docked chat · click, scroll or Esc closes</code></div>
       </div>
     </div>
   </section>

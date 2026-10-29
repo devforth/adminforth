@@ -629,6 +629,10 @@ class AdminForth implements IAdminForth {
     for (const res of this.config.resources) {
       this.configValidator.postProcessAfterDiscover(res);
     } 
+    // resource plugins are validated by postProcessAfterDiscover, global ones belong to no resource
+    for (const plugin of this.config.globalPlugins ?? []) {
+      plugin.validateConfigAfterDiscover?.(this);
+    }
 
     this.operationalResources = {};
     this.config.resources.forEach((resource) => {
