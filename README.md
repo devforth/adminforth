@@ -6,6 +6,9 @@
 
 **The back office your coding agent builds and your agents run. Your data, your server, your rules. A change history that names the agent.**
 
+<img width="1806" height="1000" alt="github_demo7" src="https://github.com/user-attachments/assets/d11b6e94-8450-46c7-8537-4e96b7f81638" />
+
+
 [Website](https://adminforth.dev) · [Start with your agent](#start-with-your-agent) · [Documentation](https://adminforth.dev/docs/tutorial/gettingStarted/) · [For developers](#for-developers)
 
 </div>
