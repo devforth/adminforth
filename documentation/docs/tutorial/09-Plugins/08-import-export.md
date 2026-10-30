@@ -122,6 +122,17 @@ Two things to keep in mind:
 
 `columnsToExport` affects export only. Import keeps accepting every column described in the resource, so a narrower export still imports back, and a file which still carries an exported virtual column imports cleanly too: virtual columns are dropped from every imported row, because there is no place in the database to store them.
 
+## Permissions
+
+An export reads the records the same way the list does for the user who started it: it needs the `list` permission of the resource, the row-scoping `list.beforeDatasourceRequest` hooks narrow it, so a user exports only the rows of their own list, and the `list.afterDatasourceResponse` hooks run on the exported records. A big export via upload reads as the user who started the job, and fails when that user cannot be resolved anymore.
+
+An import writes every row the same way the create and edit forms would for the user who started it. Each row is checked against the `create` or `edit` permission of the resource and against its row scope, so a row whose primary key belongs to a record the user cannot see fails with "not found" instead of overwriting it. The column rules of the forms apply too (`backendOnly`, `editReadonly`, `showIn.create` / `showIn.edit` with their `allowModifyWhenNotShowIn*` and `fillOnCreate` escapes):
+
+- An existing record gets only the cells which differ from what is stored, so columns hidden from the edit form, like the primary key or a creation date, import back unchanged without an error. Changing such a cell in the file fails that row.
+- A new record gets only its non-empty cells, empty cells take the column default. A filled cell of a column hidden from the create form fails that row, unless the column allows it with `fillOnCreate` or `allowModifyWhenNotShowInCreate`.
+
+Hooks and validation of the resource run for every imported row.
+
 ## Transforming records before they are written
 
 `hooks.export.beforeWrite` is called with every batch of records right before they are serialized into the file. Records are passed as a mutable array, so the hook fills virtual columns, rewrites values, or drops rows:

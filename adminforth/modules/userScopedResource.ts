@@ -55,7 +55,8 @@ function hookFilters(
   if (!filter) {
     return [];
   }
-  return Array.isArray(filter) ? filter : [filter];
+  // hooks push the row scope into query.filters, so they get a copy rather than the caller's array
+  return Array.isArray(filter) ? [...filter] : [filter];
 }
 
 /** Hook-running write paths, supplied by AdminForth. */
