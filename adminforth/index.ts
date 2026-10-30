@@ -40,7 +40,8 @@ import AdminForthRestAPI from './modules/restApi.js';
 import { rejectApiRawFilters } from './modules/filterSecurity.js';
 import { interpretResource } from './modules/resourceAccess.js';
 import OperationalResource from './modules/operationalResource.js';
-import UserScopedResource from './modules/userScopedResource.js';
+import UserScopedResource, { type ResourceHookExecutors } from './modules/userScopedResource.js';
+import SystemResource from './modules/systemResource.js';
 import { validateRecordValues } from './modules/recordValidator.js';
 import SocketBroker from './modules/socketBroker.js';
 import { afLogger } from './modules/logger.js';
@@ -634,22 +635,18 @@ class AdminForth implements IAdminForth {
       plugin.validateConfigAfterDiscover?.(this);
     }
 
+    const hookExecutors: ResourceHookExecutors = {
+      create: (params) => this.executeCreateResourceRecord(params),
+      update: (params) => this.executeUpdateResourceRecord(params),
+      delete: (params, cascadeChildren) => this.executeDeleteResourceRecord(params, cascadeChildren),
+    };
     this.operationalResources = {};
     this.config.resources.forEach((resource) => {
       this.operationalResources[resource.resourceId] = new OperationalResource(
         this.connectors[resource.dataSource],
         resource,
-        (data, adminUser, options) => new UserScopedResource(
-          data,
-          this,
-          {
-            create: (params) => this.executeCreateResourceRecord(params),
-            update: (params) => this.executeUpdateResourceRecord(params),
-            delete: (params, cascadeChildren) => this.executeDeleteResourceRecord(params, cascadeChildren),
-          },
-          adminUser,
-          options,
-        ),
+        (data, adminUser, options) => new UserScopedResource(data, this, hookExecutors, adminUser, options),
+        (data, options) => new SystemResource(data, hookExecutors, options),
       );
     });
     
@@ -766,7 +763,8 @@ class AdminForth implements IAdminForth {
    * Create record and execute hooks.
    * @deprecated Being replaced by the Data API. Use
    * `adminforth.resource(id).asUser(adminUser, { meta }).create(record)` for anything a user
-   * requested, or `adminforth.resource(id).create(record)` for plain data access.
+   * requested, `adminforth.resource(id).asSystem({ adminUser }).create(record)` to run hooks
+   * without permission checks, or `adminforth.resource(id).create(record)` for plain data access.
    * @param params - Parameters for record creation. See CreateResourceRecordParams.
    * @returns Result of record creation. See CreateResourceRecordResult.
    */
@@ -868,7 +866,9 @@ class AdminForth implements IAdminForth {
    * Update record by id and execute hooks.
    * @deprecated Being replaced by the Data API. Use
    * `adminforth.resource(id).asUser(adminUser, { meta }).update(pk, updates)` for anything a
-   * user requested, or `adminforth.resource(id).update(pk, updates)` for plain data access.
+   * user requested, `adminforth.resource(id).asSystem({ adminUser }).update(pk, updates)` to run
+   * hooks without permission checks, or `adminforth.resource(id).update(pk, updates)` for plain
+   * data access.
    * @param params - Parameters for record update. See UpdateResourceRecordParams.
    * @returns Result of record update. See UpdateResourceRecordResult.
    */
@@ -961,7 +961,8 @@ class AdminForth implements IAdminForth {
    * Delete record by id and execute hooks.
    * @deprecated Being replaced by the Data API. Use
    * `adminforth.resource(id).asUser(adminUser, { meta }).delete(pk)` for anything a user
-   * requested, or `adminforth.resource(id).delete(pk)` for plain data access.
+   * requested, `adminforth.resource(id).asSystem({ adminUser }).delete(pk)` to run hooks
+   * without permission checks, or `adminforth.resource(id).delete(pk)` for plain data access.
    * @param params - Parameters for record deletion. See DeleteResourceRecordParams.
    * @returns Result of record deletion. See DeleteResourceRecordResult.
    */
@@ -1042,7 +1043,8 @@ class AdminForth implements IAdminForth {
     afLogger.trace(
       `${method} is deprecated and will be removed in the next major version. `
       + `Use adminforth.resource('${resourceId}').asUser(adminUser, { meta }).${operation}(...) `
-      + `for anything a user requested, or adminforth.resource('${resourceId}').${operation}(...) `
+      + `for anything a user requested, adminforth.resource('${resourceId}').asSystem({ adminUser }).${operation}(...) `
+      + `to run hooks without permission checks, or adminforth.resource('${resourceId}').${operation}(...) `
       + `for plain data access.`,
     );
   }

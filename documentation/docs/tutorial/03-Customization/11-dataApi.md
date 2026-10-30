@@ -36,7 +36,7 @@ Here we will show you how to use the Data API with simple examples.
 
 ## Access levels
 
-Resource data can be reached at two levels, and the difference is who asked for
+Resource data can be reached at three levels, and the difference is who asked for
 the operation.
 
 ```ts
@@ -44,6 +44,9 @@ const users = admin.resource('adminuser');
 
 // a user asked for this
 await users.asUser(adminUser, { meta }).create(record);
+
+// the system writes on its own, but hooks still have to run
+await users.asSystem({ adminUser }).create(record);
 
 // plain data access the user did not ask for
 await users.create(record);
@@ -57,6 +60,14 @@ hooks — including the row-scoping `beforeDatasourceRequest` hooks that express
 multi-tenancy. Use it in plugin endpoints: you do not have to remember the
 individual checks, and you cannot forget one.
 
+`asSystem()` is the level for writes no user asked for, which still have to run
+the resource lifecycle: validation, save hooks and the `onDelete` strategy. It
+skips the ACL, the column access rules and the row scope. A typical case is an
+audit log entry written after a user changed a record. `adminUser` is optional;
+when it is set, hooks receive it as the user the write is done on behalf of.
+It has only `create`, `update` and `delete`: read hooks scope and shape data for
+a user, so a system read is a plain read with the bare methods.
+
 The bare methods are plain data access for internal bookkeeping: no permission
 checks, no column access rules, no hooks. Writes are still normalized; the
 connector remains responsible for its own constraints.
@@ -64,8 +75,11 @@ connector remains responsible for its own constraints.
 `admin.createResourceRecord`, `admin.updateResourceRecord` and
 `admin.deleteResourceRecord` are the older entry points which this API replaces.
 They still work and still run hooks, but they are deprecated: move calls to
-`asUser()` when a user asked for the operation, and to the bare methods when
-nothing did.
+`asUser()` when a user asked for the operation, to `asSystem()` when hooks have
+to run without permission checks, and to the bare methods when nothing did.
+
+`asSystem({ adminUser }).delete()` also applies the `onDelete` strategy of child
+resources, which `admin.deleteResourceRecord` did not.
 
 A denied or failed operation is always visible. `get`, `list`, `count`,
 `aggregate` and `delete` throw, since their return value carries no room for an
@@ -83,13 +97,14 @@ try {
 }
 ```
 
-When the caller has already loaded the record, pass its snapshot to the save
-hooks. ACL and row scope use the current record from a scoped lookup before
-mutating it:
+When the caller has already loaded the record, pass it so it is not loaded
+again. Permission callbacks and save hooks receive it; `asUser()` still checks
+the row scope against the current data before mutating it:
 
 ```ts
 await users.asUser(adminUser, { meta, oldRecord }).update(recordId, updates);
 await users.asUser(adminUser, { meta, record }).delete(recordId);
+await users.asSystem({ adminUser, oldRecord }).update(recordId, updates);
 ```
 
 

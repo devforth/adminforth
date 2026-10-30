@@ -628,7 +628,8 @@ export interface IAdminForth {
 
   /**
    * Creates a record and runs the resource create hooks, without checking permissions.
-   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   * @deprecated Use `resource(resourceId).asSystem({ adminUser })` for the same behavior, or
+   * `resource(resourceId).asUser(adminUser, { meta })` for an operation a user requested.
    */
   createResourceRecord(
     params: CreateResourceRecordParams,
@@ -636,7 +637,8 @@ export interface IAdminForth {
 
   /**
    * Updates a record and runs the resource edit hooks, without checking permissions.
-   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   * @deprecated Use `resource(resourceId).asSystem({ adminUser })` for the same behavior, or
+   * `resource(resourceId).asUser(adminUser, { meta })` for an operation a user requested.
    */
   updateResourceRecord(
     params: UpdateResourceRecordParams,
@@ -644,7 +646,8 @@ export interface IAdminForth {
 
   /**
    * Deletes a record and runs the resource delete hooks, without checking permissions.
-   * For an operation a user requested, use `resource(resourceId).asUser(adminUser, { meta })`.
+   * @deprecated Use `resource(resourceId).asSystem({ adminUser })` for the same behavior, or
+   * `resource(resourceId).asUser(adminUser, { meta })` for an operation a user requested.
    */
   deleteResourceRecord(
     params: DeleteResourceRecordParams,
@@ -2246,10 +2249,16 @@ export interface IOperationalResource {
   asUser: (adminUser: AdminUser, options?: OperationalResourceUserOptions) => IScopedOperationalResource;
 
   /**
+   * Returns a resource API for writes no user asked for, which still have to run the resource
+   * lifecycle: validation, save hooks and the onDelete strategy. No permission checks, no column
+   * access rules, no row scope. Use it for system writes, e.g. an audit log entry.
+   */
+  asSystem: (options?: OperationalResourceSystemOptions) => ISystemOperationalResource;
+
+  /**
    * Plain data access: no permission checks, no column access rules, no lifecycle hooks.
    * Writes are still normalized. Use it for internal bookkeeping the user did not
-   * ask for; to run hooks without permission checks, use {@link IAdminForth.createResourceRecord}
-   * and its siblings.
+   * ask for; to run hooks without permission checks, use {@link IOperationalResource.asSystem}.
    */
   get: IScopedOperationalResource['get'];
 
@@ -2294,6 +2303,32 @@ export interface OperationalResourceContextOptions {
 }
 
 export type OperationalResourceUserOptions = OperationalResourceContextOptions;
+
+/**
+ * Resource writes returned by {@link IOperationalResource.asSystem}. Same error contract as
+ * {@link IScopedOperationalResource}: `create` and `update` resolve to `{ ok: false, error }`,
+ * `delete` throws on a hook rejection and resolves to `false` when the record did not exist.
+ */
+export interface ISystemOperationalResource {
+  create: IScopedOperationalResource['create'];
+  update: IScopedOperationalResource['update'];
+  delete: IScopedOperationalResource['delete'];
+}
+
+export interface OperationalResourceSystemOptions {
+  /**
+   * User the write is done on behalf of, if any. Hooks receive it as `adminUser`,
+   * e.g. the audit log records it as the author of a change.
+   */
+  adminUser?: AdminUser;
+  extra?: HttpExtra;
+
+  /** Record the caller has already loaded. `update()` passes it to edit save hooks instead of loading it again. */
+  oldRecord?: any;
+
+  /** Record the caller has already loaded. `delete()` passes it to delete save hooks instead of loading it again. */
+  record?: any;
+}
 
 
 

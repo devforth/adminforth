@@ -9,6 +9,8 @@ import type {
   IGroupByRule,
   IOperationalResource,
   IScopedOperationalResource,
+  ISystemOperationalResource,
+  OperationalResourceSystemOptions,
   OperationalResourceUserOptions,
 } from '../types/Back.js';
 import type { AdminUser } from '../types/Common.js';
@@ -26,6 +28,12 @@ export type UserScopeFactory = (
   options: OperationalResourceUserOptions,
 ) => IScopedOperationalResource;
 
+/** Builds the system write layer, which runs lifecycle hooks without permission checks. */
+export type SystemScopeFactory = (
+  data: OperationalResource,
+  options: OperationalResourceSystemOptions,
+) => ISystemOperationalResource;
+
 function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort[] {
   return (Array.isArray(sort) ? sort : [sort]) as IAdminForthSort[];
 }
@@ -35,7 +43,8 @@ function sortsIfSort(sort: IAdminForthSort | IAdminForthSort[]): IAdminForthSort
  * It has no notion of who is asking — no permissions, no column access
  * rules, no lifecycle hooks.
  *
- * For anything a user asked for, take {@link asUser}, which adds those on top.
+ * For anything a user asked for, take {@link asUser}, which adds those on top. For system writes
+ * which still have to run lifecycle hooks, take {@link asSystem}.
  */
 export default class OperationalResource implements IOperationalResource {
   dataConnector: IAdminForthDataSourceConnectorBase;
@@ -45,6 +54,7 @@ export default class OperationalResource implements IOperationalResource {
     dataConnector: IAdminForthDataSourceConnectorBase,
     resourceConfig: AdminForthResource,
     private readonly scopeForUser: UserScopeFactory,
+    private readonly scopeForSystem: SystemScopeFactory,
   ) {
     this.dataConnector = dataConnector;
     this.resourceConfig = resourceConfig;
@@ -52,6 +62,10 @@ export default class OperationalResource implements IOperationalResource {
 
   asUser(adminUser: AdminUser, options: OperationalResourceUserOptions = {}): IScopedOperationalResource {
     return this.scopeForUser(this, adminUser, options);
+  }
+
+  asSystem(options: OperationalResourceSystemOptions = {}): ISystemOperationalResource {
+    return this.scopeForSystem(this, options);
   }
 
   async get(filter: IAdminForthSingleFilter | IAdminForthAndOrFilter | Array<IAdminForthSingleFilter | IAdminForthAndOrFilter>): Promise<any | null> {
