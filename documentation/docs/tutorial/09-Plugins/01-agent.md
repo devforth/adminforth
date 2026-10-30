@@ -359,7 +359,7 @@ turnResource: {
 },
 ```
 
-Before the upload the browser scales an image down to fit 1920×1080 and converts it to WebP (to JPEG in a browser which can not encode WebP, e.g. Safari). The plugin accepts images up to 3.75 MB: the model gets them as base64, and the smallest per-image limit of the providers is 5 MB. Every image costs tokens on every model call, so the model sees an image for a while after it was sent, and only the latest few at once. Older images are replaced with a note, and the agent loads them again with the `view_image` tool when they matter for the answer.
+Before the upload the browser scales an image down to fit 1920×1080 and converts it to WebP (to JPEG in a browser which can not encode WebP, e.g. Safari). The plugin accepts images up to 3.75 MB: the model gets them as base64, and the smallest per-image limit of the providers is 5 MB. Every image costs tokens on every model call, so the model sees an image for a while after it was sent, and only the latest few at once. Older images of a message are replaced with one note, and the agent loads them again with the `view_image` tool before answering about them. With one call per answer it loads all images of the messages which may match the request, the most likely first: it sees all the loaded images for this answer and keeps the ones it picks for the next messages. When one answer needs more images than allowed, the agent asks which images matter.
 
 The limits are options of the plugin, each a whole number from 1:
 
@@ -367,12 +367,16 @@ The limits are options of the plugin, each a whole number from 1:
 new AdminForthAgent({
   // ...
   imageAttachments: {
-    // images one message can have, 5 by default
+    // images one message can have, 5 by default, at most maxViewedPerTurn
     maxPerMessage: 5,
-    // minutes the model sees an image after it was sent or loaded again with view_image, 30 by default
+    // minutes the model sees an image after it was sent or kept by view_image, 30 by default
     visibleMinutes: 30,
-    // images the model sees at once, the latest ones, 5 by default
+    // images the model keeps seeing, the latest ones, 5 by default; a view_image can keep more of the
+    // images it loaded, up to maxViewedPerTurn, until the next images are sent or loaded
     maxVisible: 5,
+    // images the model can load again with one view_image call per answer, whole messages, 10 by default;
+    // it sees all of them for that answer and keeps the ones it picks for the next messages
+    maxViewedPerTurn: 10,
   },
 }),
 ```

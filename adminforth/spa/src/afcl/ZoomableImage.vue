@@ -9,6 +9,11 @@
   .medium-zoom-image--opened {
     @apply z-50;
   }
+  /* the zoomed image is a copy of the thumbnail scaled up with a transform, so a border or a rounding
+     of the thumbnail would grow with it; `!` beats the classes the copy keeps */
+  .medium-zoom-image--opened {
+    @apply !border-0 !rounded-none;
+  }
 </style>
 
 <script setup lang="ts">
