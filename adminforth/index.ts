@@ -1040,8 +1040,11 @@ class AdminForth implements IAdminForth {
       return;
     }
     this.warnedDeprecatedResourceMutations.add(warnKey);
-    afLogger.trace(
-      `${method} is deprecated and will be removed in the next major version. `
+    // frames: this method, the deprecated method, then the plugin or app code which has to migrate
+    const caller = new Error().stack?.split('\n')[3]?.trim();
+    afLogger.warn(
+      `${method} is deprecated and will be removed in the next major version`
+      + `${caller ? ` (called ${caller})` : ''}. `
       + `Use adminforth.resource('${resourceId}').asUser(adminUser, { meta }).${operation}(...) `
       + `for anything a user requested, adminforth.resource('${resourceId}').asSystem({ adminUser }).${operation}(...) `
       + `to run hooks without permission checks, or adminforth.resource('${resourceId}').${operation}(...) `
