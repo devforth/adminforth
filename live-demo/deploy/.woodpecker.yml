@@ -78,3 +78,5 @@ steps:
         from_secret: VAULT_AWS_SECRET_ACCESS_KEY
       VAULT_ADMIN_PASSWORD:
         from_secret: VAULT_ADMIN_PASSWORD
+      VAULT_MAIN_GLACIERIZER_TOKEN:
+        from_secret: VAULT_MAIN_GLACIERIZER_TOKEN
