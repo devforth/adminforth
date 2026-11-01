@@ -31,6 +31,7 @@ services:
       AWS_ACCESS_KEY_ID: "${VAULT_AWS_ACCESS_KEY_ID}"
       AWS_SECRET_ACCESS_KEY: "${VAULT_AWS_SECRET_ACCESS_KEY}"
       MANUAL_MANAGEMENT_PORT: "33397"
+      START_MANUAL_MANAGEMENT_SERVER: "false"
     volumes:
       - af-db:/code/db/
 
