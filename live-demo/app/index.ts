@@ -33,6 +33,8 @@ new AdminForth({
     usersResourceId: 'users',  // resource to get user during login
     usernameField: 'email',  // field where username is stored, should exist in resource
     passwordHashField: 'password_hash',
+    clientIpHeader: 'cf-connecting-ip',
+    rateLimit: ['20/5m', '100/1h'],
     demoCredentials: `${DEMO_EMAIL}:${DEMO_PASSWORD}`,  // never use it for production
     loginPromptHTML: `Use email <b>${DEMO_EMAIL}</b> and password <b>${DEMO_PASSWORD}</b> to login`,
   },
