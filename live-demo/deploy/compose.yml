@@ -4,6 +4,7 @@ services:
     image: harbor.devforth.io/adminforth-demo/app:latest
     build: ../app
     network_mode: host
+    restart: always
     environment:
       - NODE_ENV=production
       - ADMINFORTH_SECRET=${VAULT_AF_SECRET}
