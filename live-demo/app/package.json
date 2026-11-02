@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "pnpm setup-live-demo && pnpm start",
     "setup-live-demo": "[ -f .env ] || (cp .env.example .env && echo 'Created .env from .env.example, put OPENAI_API_KEY into it and run again' && exit 1) && pnpm install && pnpm migrate",
-    "start": "tsx --env-file=.env --watch index.ts",
+    "start": "tsx watch --env-file=.env index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "bundleNow": "tsx bundleNow.ts",
     "build": "tsup index.ts --format esm --clean",
@@ -22,7 +22,7 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^3.2.0",
+    "@adminforth/agent": "^3.5.0",
     "@adminforth/audio-adapter-openai": "^1.3.5",
     "@adminforth/audit-log": "^2.0.2",
     "@adminforth/auto-remove": "^1.0.22",
@@ -43,11 +43,11 @@
     "@adminforth/login-captcha-adapter-cloudflare": "^1.1.7",
     "@adminforth/mcp": "^3.2.0",
     "@adminforth/rich-editor": "^3.0.4",
-    "@adminforth/storage-adapter-amazon-s3": "^1.2.2",
+    "@adminforth/storage-adapter-amazon-s3": "^1.3.0",
     "@adminforth/text-complete": "^3.0.2",
     "@adminforth/two-factors-auth": "^7.1.0",
-    "@adminforth/upload": "^3.0.4",
-    "adminforth": "^4.20.0",
+    "@adminforth/upload": "^3.0.10",
+    "adminforth": "^4.22.2",
     "cldr-core": "^48.2.0",
     "express": "^5.3.0"
   },

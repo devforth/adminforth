@@ -76,6 +76,7 @@ export const adminForthAgent = new AdminForthAgent({
     promptField: 'prompt',
     responseField: 'response',
     checkpointIdField: 'checkpoint_id',
+    attachmentsField: 'attachments',
   },
   checkpointResource: {
     resourceId: 'agent_checkpoints',

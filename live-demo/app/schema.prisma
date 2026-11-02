@@ -72,6 +72,7 @@ model turns {
   prompt        String?
   response      String?
   checkpoint_id String?
+  attachments   String?
 }
 
 model mcp_auth_secrets {
