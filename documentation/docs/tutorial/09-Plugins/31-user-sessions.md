@@ -201,6 +201,116 @@ The sender address or its domain must be verified in SES, see the SES setup step
 add HTML, escape the values of `session`, the IP may come from a request header. An error thrown from the
 callback is logged by the plugin and doesn't affect the sign-in.
 
+## Login history
+
+Pass `loginHistory` to store every sign-in and every failed password attempt of a user in a resource.
+
+Create a table for it in `./schema.prisma`:
+
+```ts title='./schema.prisma'
+model login_history {
+  id          String   @id
+  created_at  DateTime
+  user_id     String
+  success     Boolean
+  attempts    Int
+  ip          String?
+  country     String?
+  user_agent  String?
+  ips         String?  /// JSON with failed attempts by IP
+
+  @@index([user_id, success, created_at])
+}
+```
+
+```bash
+pnpm makemigration --name add-login-history ; pnpm migrate:local
+```
+
+Add a resource for it:
+
+```ts title='./resources/loginHistory.ts'
+import { AdminForthDataTypes, AdminForthResourceInput, AdminForthSortDirections } from 'adminforth';
+import { randomUUID } from 'crypto';
+
+export default {
+  dataSource: 'maindb',
+  table: 'login_history',
+  resourceId: 'login_history',
+  label: 'Login history',
+  columns: [
+    { name: 'id', primaryKey: true, fillOnCreate: () => randomUUID(), showIn: { all: false } },
+    { name: 'created_at', type: AdminForthDataTypes.DATETIME },
+    { name: 'user_id', foreignResource: { resourceId: 'adminuser' } },
+    { name: 'success', type: AdminForthDataTypes.BOOLEAN },
+    { name: 'attempts', type: AdminForthDataTypes.INTEGER },
+    { name: 'ip' },
+    { name: 'country' },
+    { name: 'user_agent', showIn: { list: false } },
+    // substring search finds failed attempts by an IP inside the JSON
+    { name: 'ips', type: AdminForthDataTypes.JSON, filterOptions: { substringSearch: true } },
+  ],
+  options: {
+    allowedActions: { create: false, edit: false, delete: false },
+    defaultSort: { columnName: 'created_at', direction: AdminForthSortDirections.desc },
+  },
+} as AdminForthResourceInput;
+```
+
+And point the plugin to it:
+
+```ts title="./index.ts"
+new UserSessionsPlugin({
+  keyValueAdapter,
+  loginHistory: {
+    resourceId: 'login_history',
+    resourceColumns: {
+      userIdColumnName: 'user_id',
+      successColumnName: 'success',
+      attemptsColumnName: 'attempts',
+      ipColumnName: 'ip',
+      countryColumnName: 'country',
+      userAgentColumnName: 'user_agent',
+      ipsColumnName: 'ips',
+      createdAtColumnName: 'created_at',
+    },
+  },
+})
+```
+
+A sign-in is stored right away, with `attempts` set to 1 and its IP, country and user agent.
+
+Failed attempts are stored in a way which keeps the database safe from a bruteforce:
+
+- Only attempts with a wrong password of an existing user are stored. Attempts with an unknown username
+  are skipped: anybody could create records for them at will, and a mistyped username is often the password.
+  Attempts rejected by `auth.rateLimit` or a [captcha](/docs/tutorial/Plugins/login-captcha) are skipped too.
+- Attempts are counted in memory and written once per `failedLogsInterval` (`1m` by default) as one record
+  per user: `attempts` is their total, `ips` is a JSON object like
+  `{ "1.2.3.4": { "attempts": 3, "country": "DE" } }`. So 5000 attempts in a minute cost one write.
+- `ips` keeps up to `maxIpsPerLog` IPs (100 by default), attempts from other IPs are still counted in `attempts`.
+- Only `maxFailedLogsPerUser` newest failed attempts records of a user are kept (100 by default), older ones
+  are deleted.
+- Attempts counted since the last write are lost when the app restarts.
+
+Sign-ins are not limited, remove old records by age with the [Auto Remove](/docs/tutorial/Plugins/auto-remove) plugin:
+
+```ts title='./resources/loginHistory.ts'
+import AutoRemovePlugin from '@adminforth/auto-remove';
+
+export default {
+  ...
+  plugins: [
+    new AutoRemovePlugin({
+      createdAtField: 'created_at',
+      mode: 'time-based',
+      deleteOlderThan: '3mo',
+      interval: '1d',
+    }),
+  ],
+} as AdminForthResourceInput;
+```
+
 ## Options
 
 | Option | Default | Description |
@@ -212,3 +322,8 @@ callback is logged by the plugin and doesn't affect the sign-in.
 | `canManageOtherUsersSessions` | — | `(adminUser) => Promise<boolean>`, decides who may see and revoke sessions of other users |
 | `lastUsedThrottleSeconds` | `60` | How often `last_used_at` is refreshed. Every refresh is one write to the adapter |
 | `onNewLogin` | — | `({ pk, username, session, reasons, revokePath }) => Promise<void>`, called after a sign-in from a new device or country, see [Notifying about sign-ins from new devices](#notifying-about-sign-ins-from-new-devices) |
+| `loginHistory.resourceId` | — | Resource where sign-ins and failed attempts are stored, see [Login history](#login-history) |
+| `loginHistory.resourceColumns` | required with `loginHistory` | Names of the columns of that resource |
+| `loginHistory.failedLogsInterval` | `1m` | How often counted failed attempts are written, one record per user |
+| `loginHistory.maxIpsPerLog` | `100` | How many IPs are kept in `ips` of one failed attempts record |
+| `loginHistory.maxFailedLogsPerUser` | `100` | How many failed attempts records are kept for one user |
