@@ -165,8 +165,8 @@ This function is used for:
 - Securely logging user actions e.g. in Audit Log plugin
 - Can be used by your own code e.g. hooks to write first login/last login IP address to db
 
-By default it reads `X-Forwarded-For` header from request headers to determine client IP address. 
-AdminForth does not understand whether this header can be trusted or no. In some cases it might be spoofed by client like this:
+By default it takes the last IP address from `X-Forwarded-For` header. Proxies append the address of their client to the end of this header and keep everything the client sent before it, so the last address is the one added by your nearest proxy.
+AdminForth does not understand whether this header can be trusted or no. If there is no proxy in front of the app, the whole header comes from the client and might be spoofed like this:
 
 ```
 curl -H "X-Forwarded-For: <made-out IP>" http://your-server/api...
@@ -198,7 +198,9 @@ new AdminForth({
 ### Using reverse proxy
 
 If first client-facing point is reverse proxy like Nginx or Traefik and there is no more proxies like CDN behind it, you should take care of reliably setting `X-Forwarded-For` header to the client IP address. 
-Main trick here is to make sure that proxy strips any `X-Forwarded-For` headers that are already present in the requeqst and hardly overwrites it with client IP address coming from TCP connection (so it can't be spoofed by client).
+Proxy should either append client IP address coming from TCP connection to the end of the header (nginx `$proxy_add_x_forwarded_for`), or strip any `X-Forwarded-For` headers that are already present in the request and overwrite it with this address (so it can't be spoofed by client).
+
+If there are several proxies in a chain (e.g. Cloudflare in front of nginx), the last address in `X-Forwarded-For` belongs to the previous proxy, not to the client, so use `auth.clientIpHeader` as described above.
 
 
 In Traefik to set `X-Forwarded-For` header you should set `forwardedHeaders` in traefik config:

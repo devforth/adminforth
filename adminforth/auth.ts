@@ -70,10 +70,10 @@ class AdminForthAuth implements IAdminForthAuth {
     if (clientIpHeader) {
       ip = headersLower[clientIpHeader.toLowerCase()];
     } else {
-      // first try common headers which can't bee spoofed, in other words
-      // most common to nginx/traefik/apache
+      // proxies append the client address to the end of X-Forwarded-For,
+      // everything before it is sent by the client and can be spoofed
       // then fallback to less secure headers
-      ip = headersLower['x-forwarded-for']?.split(',').shift().trim() ||
+      ip = headersLower['x-forwarded-for']?.split(',').pop().trim() ||
        headersLower['x-real-ip'] || 
        headersLower['x-client-ip'] || 
        headersLower['x-cluster-client-ip'] || 
