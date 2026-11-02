@@ -68,6 +68,8 @@ export type AgentToolMeta = {
   requiresHumanApproval?: boolean;
   hiddenFromAgents?: boolean;
   onlyReadsData?: boolean;
+  idempotent?: boolean;
+  callsExternalServices?: boolean;
 };
 
 export type AgentResourceMeta = {
@@ -1901,7 +1903,8 @@ export interface AdminForthInputConfig {
 
       /**
        * Client IP header name. If set, AdminForth will use this header to get client IP address.
-       * Otherwise it will use first IP address from X-Forwarded-For header.
+       * Otherwise it will use last IP address from X-Forwarded-For header (the one added by the nearest proxy).
+       * If the header is missing or has a private address, the address of the TCP connection is used.
        * If you are using Cloudflare, set this to 'CF-Connecting-IP'. Case-insensitive.
        */
       clientIpHeader?: string,

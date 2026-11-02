@@ -759,12 +759,18 @@ type AgentToolMeta = {
   requiresHumanApproval?: boolean;
   hiddenFromAgents?: boolean;
   onlyReadsData?: boolean;
+  idempotent?: boolean;
+  callsExternalServices?: boolean;
 };
 ```
 
 - `requiresHumanApproval: true` makes the agent ask the user for approval before it runs the tool. MCP clients receive the `destructiveHint` annotation.
 - `hiddenFromAgents: true` keeps the endpoint out of agent tools, both in the agent and in the [MCP server](/docs/tutorial/Plugins/mcp/). Use it for endpoints that serve your admin panel UI and must not be called by agents.
 - `onlyReadsData: true` declares that the endpoint does not change any data. MCP clients receive the `readOnlyHint` annotation, and a [read-only MCP server](/docs/tutorial/Plugins/mcp/#read-only-mode) exposes only such endpoints.
+- `idempotent: true` declares that calling the endpoint again with the same arguments changes nothing more, like updating or deleting a record. MCP clients receive the `idempotentHint` annotation.
+- `callsExternalServices: true` declares that the endpoint works with services outside your admin panel, like an AI image generator or an email provider. MCP clients receive the `openWorldHint` annotation.
+
+The MCP server sets every annotation of a tool: a flag that is not set gives `false`, and the `title` annotation is made from the tool name, for example `Get resource data`.
 
 To keep a whole resource away from the agent, set `options.agent: { hiddenFromAgents: true }` on it, as described in [MCP Server](/docs/tutorial/Plugins/mcp/). The plugin does it for its own session, turn and checkpoint resources.
 
@@ -806,6 +812,7 @@ export function initApi(app: Express, admin: IAdminForth) {
     description: 'Send an email to one AdminForth user by id. Use this after the user row is resolved.',
     agent: {
       requiresHumanApproval: true,
+      callsExternalServices: true,
     },
     request_schema: {
       type: 'object',
