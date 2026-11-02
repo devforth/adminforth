@@ -32,8 +32,10 @@
       class="af-login-modal overflow-y-auto flex flex-grow
       overflow-x-hidden z-50 min-w-[350px]  justify-center items-center md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-h-full max-w-[400px]">
+            <!-- dropdowns of the injections (the language select) open past the card edge;
+                 the card has no footer whose corners the panel would have to clip -->
             <DialogPanel
-              class="af-login-popup af-login-modal-content max-w-none bg-lightLoginViewBackground dark:bg-darkLoginViewBackground"
+              class="af-login-popup af-login-modal-content max-w-none overflow-visible bg-lightLoginViewBackground dark:bg-darkLoginViewBackground"
               :error="error"
               :classes="{
                 header: 'af-login-modal-header',
