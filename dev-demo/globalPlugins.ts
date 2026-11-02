@@ -48,6 +48,21 @@ export const globalPlugins = [
     onNewLogin: async ({ username, reasons, revokePath }) => {
       console.log(`New sign-in of ${username} (${reasons.join(', ')}), not you? http://localhost:3123${revokePath}`);
     },
+    loginHistory: {
+      resourceId: 'login_history',
+      // short to see failed attempts in the list without waiting for a minute
+      failedLogsInterval: '10s',
+      resourceColumns: {
+        userIdColumnName: 'user_id',
+        successColumnName: 'success',
+        attemptsColumnName: 'attempts',
+        ipColumnName: 'ip',
+        countryColumnName: 'country',
+        userAgentColumnName: 'user_agent',
+        ipsColumnName: 'ips',
+        createdAtColumnName: 'created_at',
+      },
+    },
   }),
   new DashboardPlugin({
     dashboardConfigsResourceId: 'dashboard_configs',

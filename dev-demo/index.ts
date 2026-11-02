@@ -28,6 +28,7 @@ import background_jobs_resource, { EXAMPLE_JOB_HANDLER_NAME, startExampleBackgro
 import BackgroundJobsPlugin from '../plugins/adminforth-background-jobs/index.js';
 
 import auditLogsResource from "./resources/auditLogs.js"
+import loginHistoryResource from './resources/loginHistory.js';
 import sessionsResource from "./resources/agent_resources/sessions.js";
 import dashboardConfigsResource from './resources/dashboard_configs.js';
 import turnsResource from './resources/agent_resources/turns.js';
@@ -179,6 +180,7 @@ export const admin = new AdminForth({
   resources: [
     usersResource,
     auditLogsResource,
+    loginHistoryResource,
     cars_SQLITE_resource,
     cars_MyS_resource,
     cars_PG_resource,
@@ -268,6 +270,11 @@ export const admin = new AdminForth({
       label: 'Audit Logs',
       icon: 'flowbite:search-outline',
       resourceId: 'audit_logs',
+    },
+    {
+      label: 'Login History',
+      icon: 'lucide:log-in',
+      resourceId: 'login_history',
     },
     {
       label: 'Translations',
