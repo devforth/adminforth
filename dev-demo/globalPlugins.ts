@@ -45,6 +45,9 @@ export const globalPlugins = [
   new UserSessionsPlugin({
     keyValueAdapter: levelDbAdapter,
     canManageOtherUsersSessions: async (adminUser) => adminUser.dbUser.role === 'superadmin',
+    onNewLogin: async ({ username, reasons, revokePath }) => {
+      console.log(`New sign-in of ${username} (${reasons.join(', ')}), not you? http://localhost:3123${revokePath}`);
+    },
   }),
   new DashboardPlugin({
     dashboardConfigsResourceId: 'dashboard_configs',
