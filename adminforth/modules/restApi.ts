@@ -603,8 +603,8 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
   /**
    * Runs afterLoginFailed hooks. Hooks can't change the 401 response, they are called for logging only.
    */
-  async processAfterLoginFail ed(username: string, pk: string | null, reason: LoginFailureReason, extra: HttpExtra) {
-    const afterLoginFailed =this.adminforth.config.auth.afterLoginFailed as (AfterLoginFailedFunction[] | undefined);
+  async processAfterLoginFailed(username: string, pk: string | null, reason: LoginFailureReason, extra: HttpExtra) {
+    const afterLoginFailed = this.adminforth.config.auth.afterLoginFailed as (AfterLoginFailedFunction[] | undefined);
 
     for (const hook of listify(afterLoginFailed)) {
       try {
