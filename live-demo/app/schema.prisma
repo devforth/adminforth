@@ -38,20 +38,6 @@ model audit_logs {
   ip_address        String?   /// client ip address
 }
 
-model login_history {
-  id         String   @id
-  created_at DateTime
-  user_id    String
-  success    Boolean
-  attempts   Int
-  ip         String?
-  country    String?
-  user_agent String?
-  ips        String?
-
-  @@index([user_id, success, created_at])
-}
-
 model translations {
     id              String   @id
     en_string       String

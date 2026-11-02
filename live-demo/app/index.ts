@@ -6,7 +6,6 @@ import fs from 'fs';
 import usersResource from "./resources/users";
 import apartmentsResource from "./resources/apartments";
 import auditLogsResource from "./resources/auditLogs"
-import loginHistoryResource from './resources/loginHistory';
 // old DB-based i18n plugin, replaced by I18nStaticPlugin in globalPlugins
 // import translations from "./resources/translations";
 import sessionsResource from './resources/agent_resources/sessions';
@@ -16,7 +15,7 @@ import mcpAuthSecretsResource from './resources/mcp_auth_secrets';
 import jobs_resource from './resources/jobs';
 import { randomUUID } from 'crypto';
 try { fs.mkdirSync('db') } catch (e) {} 
-import { adminForthAgent, adminForthMcp, userSessions } from './globalPlugins';
+import { adminForthAgent, adminForthMcp } from './globalPlugins';
 import I18nStaticPlugin from '@adminforth/i18n-static';
 
 let db;
@@ -71,7 +70,6 @@ new AdminForth({
     apartmentsResource,
     usersResource,
     auditLogsResource,
-    loginHistoryResource,
     // translations,
     sessionsResource,
     turnsResource,
@@ -126,12 +124,6 @@ new AdminForth({
       resourceId: 'audit_logs',
     },
     {
-      label: 'Login History',
-      icon: 'lucide:log-in',
-      resourceId: 'login_history',
-      visible: (adminUser: AdminUser) => adminUser.dbUser.role === 'superadmin',
-    },
-    {
       type: 'gap'
     },
     {
@@ -146,7 +138,6 @@ new AdminForth({
   globalPlugins: [
     adminForthMcp,
     adminForthAgent,
-    userSessions,
     new I18nStaticPlugin({
       supportedLanguages: [
         'en', 'uk', 'ja', 'fr', 'es', 'pt-BR',
