@@ -334,6 +334,43 @@ non-existing users, so an attacker can't use it to find out whether credentials 
 
 If your check needs the user record itself (like two-factor authentication does), use [auth.beforeLoginConfirmation](/docs/api/Back/type-aliases/BeforeLoginConfirmationFunction) instead: it is called after credentials are verified.
 
+## Tracking failed login attempts
+
+`auth.afterLoginFailed` hooks are called after password login attempt failed, right before AdminForth answers with `401`:
+
+```ts title="./index.ts"
+export const admin = new AdminForth({
+
+  ...
+
+  auth: {
+    afterLoginFailed: [
+      async ({ username, pk, reason, adminforth, extra }) => {
+        if (reason === 'invalid_password') {
+          await notifyUser(pk, adminforth.auth.getClientIp(extra.headers));
+        }
+      }
+    ]
+  }
+
+  ...
+
+})
+```
+
+`reason` tells why the attempt failed:
+
+- `rejected`: one of `auth.beforeLoginAttempt` hooks rejected the attempt, credentials were not checked
+- `user_not_found`: there is no user with such username
+- `invalid_password`: user exists, but password is wrong
+
+`pk` is the primary key of the user and is `null` when reason is `rejected` or `user_not_found`.
+
+Attempts blocked by `auth.rateLimit` don't call the hook, so the number of hook calls per IP is never higher than the rate limit.
+Still, every call happens while the client waits for the response, so keep the hook cheap: for example, aggregate attempts in memory and write them to the database in batches.
+
+Hooks can't change the response: error thrown from the hook is logged and login still answers with `401`.
+
 ## Tracking created sessions
 
 `auth.afterSessionCreated` hooks are called right after auth cookie with a new session was issued. They are called for

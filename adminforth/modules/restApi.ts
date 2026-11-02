@@ -2,6 +2,8 @@ import {
   type IAdminForth, 
   type IHttpServer,
   BeforeLoginAttemptFunction,
+  AfterLoginFailedFunction,
+  LoginFailureReason,
   BeforeLoginConfirmationFunction,
   BeforeLogoutFunction,
   AdminForthResource,
@@ -598,6 +600,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
     return null;
   }
 
+  /**
+   * Runs afterLoginFailed hooks. Hooks can't change the 401 response, they are called for logging only.
+   */
+  async processAfterLoginFail ed(username: string, pk: string | null, reason: LoginFailureReason, extra: HttpExtra) {
+    const afterLoginFailed =this.adminforth.config.auth.afterLoginFailed as (AfterLoginFailedFunction[] | undefined);
+
+    for (const hook of listify(afterLoginFailed)) {
+      try {
+        await hook({ username, pk, reason, adminforth: this.adminforth, extra });
+      } catch (e) {
+        afLogger.error(`Error in afterLoginFailed hook, continuing with failed login response: ${e}`);
+      }
+    }
+  }
+
   async processLoginCallbacks(adminUser: AdminUser, toReturn: { redirectTo?: string, allowedLogin:boolean, error?: string }, response: any, extra: HttpExtra, sessionDuration?: string) {
     const beforeLoginConfirmation = this.adminforth.config.auth.beforeLoginConfirmation as (BeforeLoginConfirmationFunction[] | undefined);
 
@@ -672,14 +689,14 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const userResource = this.adminforth.config.resources.find((res) => res.resourceId === this.adminforth.config.auth.usersResourceId);
         const usernameColumn = userResource.columns.find((col) => col.name === this.adminforth.config.auth.usernameField);
         const normalizedUsername = normalizeColumnValue(usernameColumn, username);
+        const extra: HttpExtra = { body, headers, query, cookies, requestUrl, response };
 
         // hooks are called before any lookup in database, so rejected attempt looks the same
         // for existing and non-existing users (e.g. captcha check should not leak valid credentials)
-        const loginAttemptError = await this.processBeforeLoginAttempt(normalizedUsername, {
-          body, headers, query, cookies, requestUrl, response
-        }, tr);
+        const loginAttemptError = await this.processBeforeLoginAttempt(normalizedUsername, extra, tr);
         if (loginAttemptError) {
           response.setStatus(401);
+          await this.processAfterLoginFailed(normalizedUsername, null, 'rejected', extra);
           return loginAttemptError;
         }
 
@@ -709,41 +726,42 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
 
         if (!userRecord) {
           response.setStatus(401);
+          await this.processAfterLoginFailed(normalizedUsername, null, 'user_not_found', extra);
           return { error: INVALID_MESSAGE };
         }
 
+        const pk = userRecord[userResource.columns.find((col) => col.primaryKey).name];
         const passwordHash = userRecord[this.adminforth.config.auth.passwordHashField];
         const valid = await AdminForthAuth.verifyPassword(password, passwordHash);
         if (valid) {
-          adminUser = { 
+          adminUser = {
             dbUser: userRecord,
-            pk: userRecord[userResource.columns.find((col) => col.primaryKey).name], 
+            pk,
             username: normalizedUsername,
           };
 
-          const expireInDuration = rememberMe 
+          const expireInDuration = rememberMe
             ? (this.adminforth.config.auth.rememberMeDuration || '30d')
             : '1d';
 
-          await this.processLoginCallbacks(adminUser, toReturn, response, { 
-            body, headers, query, cookies, requestUrl, response
-          }, expireInDuration);
+          await this.processLoginCallbacks(adminUser, toReturn, response, extra, expireInDuration);
 
           if (toReturn.allowedLogin) {
-            
+
             await this.adminforth.auth.setAuthCookie({
               expireInDuration,
               response,
               username: normalizedUsername,
-              pk: userRecord[userResource.columns.find((col) => col.primaryKey).name],
-              extra: { body, headers, query, cookies, requestUrl, response },
+              pk,
+              extra,
             });
-          } 
+          }
         } else {
           response.setStatus(401);
+          await this.processAfterLoginFailed(normalizedUsername, pk, 'invalid_password', extra);
           return { error: INVALID_MESSAGE };
         }
-          
+
         
         return toReturn;
     }

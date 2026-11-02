@@ -1226,6 +1226,44 @@ export type BeforeLoginAttemptFunction = (params: {
 }) => Promise<{ ok: boolean, error?: string }>;
 
 /**
+ * Why password login attempt failed:
+ * - `rejected`: one of `auth.beforeLoginAttempt` hooks rejected the attempt, credentials were not checked
+ * - `user_not_found`: there is no user with such username
+ * - `invalid_password`: user exists, but password is wrong
+ */
+export type LoginFailureReason = 'rejected' | 'user_not_found' | 'invalid_password';
+
+/**
+ * Called after password login attempt failed, right before AdminForth answers with `401`.
+ * Not called for attempts blocked by `auth.rateLimit`.
+ * Useful to log failed attempts or to notify user about bruteforce of their account.
+ *
+ * Can't change response of the login request: thrown error is logged and login still answers with `401`.
+ */
+export type AfterLoginFailedFunction = (params: {
+  /**
+   * Username which user tried to login with, normalized in same way as it is stored in database.
+   */
+  username: string,
+  /**
+   * Primary key of user with such username. Is `null` when reason is `rejected` or `user_not_found`.
+   */
+  pk: string | null,
+  /**
+   * Why login attempt failed.
+   */
+  reason: LoginFailureReason,
+  /**
+   * Adminforth instance.
+   */
+  adminforth: IAdminForth,
+  /**
+   * Extra HTTP information of login request.
+   */
+  extra: HttpExtra,
+}) => Promise<void>;
+
+/**
  * Called when user logs out, before AdminForth removes auth cookie.
  * Useful for cleanup of things issued for the session (e.g. revoking tokens on external identity provider,
  * removing custom cookies set by plugins) or for logging logout event.
@@ -1803,6 +1841,23 @@ export interface AdminForthInputConfig {
        * ```
        */
       beforeLoginAttempt?: BeforeLoginAttemptFunction | Array<BeforeLoginAttemptFunction>,
+
+      /**
+       * Function or functions which will be called after password login attempt failed, right before
+       * AdminForth answers with `401`. Not called for attempts blocked by `auth.rateLimit`.
+       * Use them to log failed attempts. Hooks can't change the response, thrown errors are logged.
+       *
+       * Example:
+       *
+       * ```ts
+       * afterLoginFailed: async ({ username, pk, reason, adminforth, extra }) => {
+       *   if (reason === 'invalid_password') {
+       *     await notifyUser(pk, adminforth.auth.getClientIp(extra.headers));
+       *   }
+       * },
+       * ```
+       */
+      afterLoginFailed?: AfterLoginFailedFunction | Array<AfterLoginFailedFunction>,
 
       /**
        * Function or functions  which will be called before user try to login.
