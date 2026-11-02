@@ -4,6 +4,7 @@ export const ADMINFORTH_CLIENT_ID_HEADER = 'x-adminforth-client-id';
 
 export type AdminForthRequestContext = {
   websocketClientId?: string;
+  remoteAddress?: string;
 };
 
 const requestContextStorage = new AsyncLocalStorage<AdminForthRequestContext>();

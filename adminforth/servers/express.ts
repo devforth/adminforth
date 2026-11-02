@@ -300,11 +300,7 @@ class ExpressServer implements IExpressHttpServer {
 
   serve(app) {
     this.expressApp = app;
-    this.expressApp.use((req, res, next) => {
-      runWithRequestContext({
-        websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
-      }, next);
-    });
+    this.expressApp.use((req, res, next) => this.runInRequestContext(req, next));
     this.patchSchemaAwareRouteRegistration();
     this.flushPendingEndpointRegistrations();
     // Express 5 exposes the router as `app.router`; Express 4 used the internal `app._router`.
@@ -342,6 +338,7 @@ class ExpressServer implements IExpressHttpServer {
   runInRequestContext(req, callback) {
     return runWithRequestContext({
       websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
+      remoteAddress: req.socket.remoteAddress,
     }, callback);
   }
   

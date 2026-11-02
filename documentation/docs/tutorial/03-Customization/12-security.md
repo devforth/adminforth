@@ -166,6 +166,7 @@ This function is used for:
 - Can be used by your own code e.g. hooks to write first login/last login IP address to db
 
 By default it takes the last IP address from `X-Forwarded-For` header. Proxies append the address of their client to the end of this header and keep everything the client sent before it, so the last address is the one added by your nearest proxy.
+If there is no such header or it has a private address, AdminForth uses the address of the TCP connection, which is the client itself when there is no proxy in front of the app.
 AdminForth does not understand whether this header can be trusted or no. If there is no proxy in front of the app, the whole header comes from the client and might be spoofed like this:
 
 ```

@@ -6,6 +6,7 @@ import { AdminUserAuthorizationResult, AdminUserAuthorizeFunction, AfterSessionC
 import { AdminUser } from './types/Common.js';
 import { listify, removedInV4 } from './modules/utils.js';
 import { afLogger } from './modules/logger.js';
+import { getRequestContext } from './modules/requestContext.js';
 import { Address4, Address6 } from 'ip-address';
 
 // Returns true for valid IPs which are not globally reachable (private, loopback, link-local, CGNAT, reserved, etc.)
@@ -17,6 +18,11 @@ function isIpPrivate(ip: string | null): boolean {
     return !new Address6(ip).isGlobal();
   }
   return false;
+}
+
+// Node reports IPv4 clients of a dual-stack server as IPv4-mapped IPv6 addresses, e.g. ::ffff:1.2.3.4
+function unmapIpv4(ip: string | null): string | null {
+  return Address6.isValid(ip) && new Address6(ip).is4() ? new Address6(ip).to4().correctForm() : ip;
 }
 
 // Function to generate a password hash using PBKDF2
@@ -84,6 +90,10 @@ class AdminForthAuth implements IAdminForthAuth {
        headersLower['client'] || 
        headersLower['x-host'] ||
        null;
+    }
+    if (!ip || isIpPrivate(ip)) {
+      // no proxy header or an internal address in it, so the client is connected directly
+      ip = unmapIpv4(getRequestContext()?.remoteAddress ?? null);
     }
     if (isIpPrivate(ip)) {
       return null;
