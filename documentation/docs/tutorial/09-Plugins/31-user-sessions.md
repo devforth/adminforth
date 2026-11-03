@@ -330,6 +330,37 @@ export default {
 } as AdminForthResourceInput;
 ```
 
+### Showing country flags
+
+`country` holds a two-letter country code, so it can be rendered as a flag with the pre-made
+[Country Flag](/docs/tutorial/Customization/customFieldRendering/#country-flag) renderer:
+
+```ts title='./resources/loginHistory.ts'
+  columns: [
+    ...
+    {
+      name: 'country',
+  //diff-add
+      components: {
+  //diff-add
+        list: '@/renderers/CountryFlag.vue',
+  //diff-add
+        show: {
+  //diff-add
+          file: '@/renderers/CountryFlag.vue',
+  //diff-add
+          meta: { showCountryName: true },
+  //diff-add
+        },
+  //diff-add
+      },
+    },
+    ...
+  ],
+```
+
+In the list the country name is shown in a tooltip of the flag, on the show page it is written next to it.
+
 ## Options
 
 | Option | Default | Description |
