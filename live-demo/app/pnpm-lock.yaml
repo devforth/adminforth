@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@adminforth/agent':
-        specifier: ^3.5.1
-        version: 3.5.1(@adminforth/mcp@3.5.0(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(express@5.3.0))(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(openai@7.47.0(@aws-sdk/credential-provider-node@3.972.92)(@smithy/signature-v4@5.7.5)(undici@7.30.1)(ws@8.22.1)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.1)
+        specifier: ^3.5.2
+        version: 3.5.2(@adminforth/mcp@3.5.0(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(express@5.3.0))(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(openai@7.47.0(@aws-sdk/credential-provider-node@3.972.92)(@smithy/signature-v4@5.7.5)(undici@7.30.1)(ws@8.22.1)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.1)
       '@adminforth/audio-adapter-openai':
         specifier: ^1.3.5
         version: 1.3.5(@aws-sdk/credential-provider-node@3.972.92)(@smithy/signature-v4@5.7.5)(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(ws@8.22.1)(zod@4.6.7)
@@ -52,7 +52,7 @@ importers:
         version: 2.0.2(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))
       '@adminforth/image-generation-adapter-openai':
         specifier: ^1.0.21
-        version: 1.0.21(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))
+        version: 1.0.21(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(debug@4.4.3)
       '@adminforth/image-vision-adapter-openai':
         specifier: ^1.1.8
         version: 1.1.8(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))
@@ -67,7 +67,7 @@ importers:
         version: 1.3.8(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))
       '@adminforth/login-captcha-adapter-cloudflare':
         specifier: ^1.1.7
-        version: 1.1.7(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))
+        version: 1.1.7(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(debug@4.4.3)
       '@adminforth/mcp':
         specifier: ^3.5.0
         version: 3.5.0(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(express@5.3.0)
@@ -117,8 +117,8 @@ importers:
 
 packages:
 
-  '@adminforth/agent@3.5.1':
-    resolution: {integrity: sha512-9KYlzcBKXsIeqiEJoOV+Z3LqIXVMPDlq2gDFsfWGvVPKCVdfK6mI/4MLbf4Xjy/STT6Vn/+zyLao5AwrCaiGYQ==}
+  '@adminforth/agent@3.5.2':
+    resolution: {integrity: sha512-CCb/oUQBng90aDkkz/MBXeOwX6G41q0bwBycJ47G6Jvg9o7AkGjFcoOasaODEJK0s5RduE15Vs8NVRV9vW2K5g==}
     peerDependencies:
       '@adminforth/mcp': ^3.2.0
       adminforth: ^4.21.0
@@ -3460,7 +3460,7 @@ packages:
 
 snapshots:
 
-  '@adminforth/agent@3.5.1(@adminforth/mcp@3.5.0(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(express@5.3.0))(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(openai@7.47.0(@aws-sdk/credential-provider-node@3.972.92)(@smithy/signature-v4@5.7.5)(undici@7.30.1)(ws@8.22.1)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.1)':
+  '@adminforth/agent@3.5.2(@adminforth/mcp@3.5.0(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(express@5.3.0))(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(openai@7.47.0(@aws-sdk/credential-provider-node@3.972.92)(@smithy/signature-v4@5.7.5)(undici@7.30.1)(ws@8.22.1)(zod@4.6.7))(vue@3.5.38(typescript@5.9.3))(ws@8.22.1)':
     dependencies:
       '@adminforth/mcp': 3.5.0(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(express@5.3.0)
       '@langchain/core': 1.2.20(openai@7.47.0(@aws-sdk/credential-provider-node@3.972.92)(@smithy/signature-v4@5.7.5)(undici@7.30.1)(ws@8.22.1)(zod@4.6.7))(ws@8.22.1)
@@ -3586,10 +3586,10 @@ snapshots:
       p-limit: 7.3.3
       zod: 4.6.7
 
-  '@adminforth/image-generation-adapter-openai@1.0.21(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))':
+  '@adminforth/image-generation-adapter-openai@1.0.21(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(debug@4.4.3)':
     dependencies:
       adminforth: 4.23.0(@types/node@26.6.6)(express@5.3.0)
-      axios: 1.21.0
+      axios: 1.21.0(debug@4.4.3)
       file-type: 20.5.0
       form-data: 4.0.6
       typescript: 5.9.3
@@ -3619,10 +3619,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@adminforth/login-captcha-adapter-cloudflare@1.1.7(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))':
+  '@adminforth/login-captcha-adapter-cloudflare@1.1.7(adminforth@4.23.0(@types/node@26.6.6)(express@5.3.0))(debug@4.4.3)':
     dependencies:
       adminforth: 4.23.0(@types/node@26.6.6)(express@5.3.0)
-      axios: 1.21.0
+      axios: 1.21.0(debug@4.4.3)
       file-type: 20.5.0
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -4902,9 +4902,9 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  axios@1.21.0:
+  axios@1.21.0(debug@4.4.3):
     dependencies:
-      follow-redirects: 1.16.2
+      follow-redirects: 1.16.2(debug@4.4.3)
       form-data: 4.0.6
       https-proxy-agent: 5.0.1
       proxy-from-env: 2.1.0
@@ -5596,7 +5596,9 @@ snapshots:
       mlly: 1.8.2
       rollup: 4.67.4
 
-  follow-redirects@1.16.2: {}
+  follow-redirects@1.16.2(debug@4.4.3):
+    optionalDependencies:
+      debug: 4.4.3
 
   for-each@0.3.5:
     dependencies:
