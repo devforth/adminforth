@@ -266,10 +266,14 @@ class ExpressServer implements IExpressHttpServer {
           requestUrl: req.url,
           meta: {},
           response: WS_HANDSHAKE_RESPONSE,
+          websocket: 'handshake',
         };
-        const authorize = () => this.adminforth.auth.authorizeByCookies({ cookies, response: WS_HANDSHAKE_RESPONSE, extra });
+        const reauthorizeExtra: HttpExtra = { ...extra, websocket: 'reauthorize' };
+        const authorize = () => this.adminforth.auth.authorizeByCookies({
+          cookies, response: WS_HANDSHAKE_RESPONSE, extra: reauthorizeExtra,
+        });
 
-        const result = await authorize();
+        const result = await this.adminforth.auth.authorizeByCookies({ cookies, response: WS_HANDSHAKE_RESPONSE, extra });
         if (result.status === 'verifyFailed') {
           throw result.error;
         }

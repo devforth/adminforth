@@ -70,6 +70,7 @@ export const globalPlugins = [
         createdAtColumnName: 'created_at',
       },
     },
+    nonceRotationMinutes: 1
   }),
   new DashboardPlugin({
     dashboardConfigsResourceId: 'dashboard_configs',

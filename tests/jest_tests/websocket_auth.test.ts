@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import request from 'supertest';
 import { admin, app, closeApplication } from './authTestApp';
 
-type AuthorizeHook = (params: { adminUser: any }) => Promise<{ allowed?: boolean, error?: string }>;
+type AuthorizeHook = (params: { adminUser: any, extra: any }) => Promise<{ allowed?: boolean, error?: string }>;
 
 const authorizeHooks = admin.config.auth.adminUserAuthorize as AuthorizeHook[];
 const broker = admin.websocket as any;
@@ -97,5 +97,22 @@ describe('websocket auth', () => {
     const message = nextMessage(ws);
     await admin.websocket.publish(TOPIC, { value: 2 });
     expect(await message).toEqual({ type: 'message', topic: TOPIC, data: { value: 2 } });
+  });
+
+  it('tells authorize hooks whether a connection is established or checked again', async () => {
+    const cookie = await login();
+    const checks: string[] = [];
+    authorizeHooks.push(async ({ extra }) => {
+      // connections of other tests are checked again too
+      if (extra.headers.cookie === cookie) {
+        checks.push(extra.websocket);
+      }
+      return { allowed: true };
+    });
+    await connect(cookie);
+
+    await broker.reauthorizeClients();
+
+    expect(checks).toEqual(['handshake', 'reauthorize']);
   });
 });

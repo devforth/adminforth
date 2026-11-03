@@ -863,7 +863,12 @@ export interface HttpExtra {
   cookies: { key: string, value: string }[],
   requestUrl: string,
   meta?: any,
-  response: IAdminForthHttpResponse
+  response: IAdminForthHttpResponse,
+  /**
+   * Set for a websocket connection: `handshake` when it is established, `reauthorize` when it is checked again later.
+   * Cookies of `reauthorize` are the ones of the handshake, so values which were replaced after it are outdated there.
+   */
+  websocket?: 'handshake' | 'reauthorize',
 }
 
 /**
