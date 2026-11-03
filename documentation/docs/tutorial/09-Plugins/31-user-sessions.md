@@ -236,6 +236,50 @@ The sender address or its domain must be verified in SES, see the SES setup step
 add HTML, escape the values of `session`, the IP may come from a request header. An error thrown from the
 callback is logged by the plugin and doesn't affect the sign-in.
 
+## Detecting copied sessions
+
+Malware on the user's computer can copy the cookies of the browser, and the copied session then works on
+another machine without the password and 2FA. Pass `onSessionCopied` to be told when a session is used in two
+browsers:
+
+```ts title="./index.ts"
+new UserSessionsPlugin({
+  keyValueAdapter,
+  onSessionCopied: async ({ username, session, request }) => {
+    await fetch(process.env.SLACK_WEBHOOK_URL!, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: [
+          `Session of *${username}* is used in two browsers and was ended`,
+          `Signed in: ${session.device?.browser} on ${session.device?.os}, IP: ${session.ip}, country: ${session.country}`,
+          `Other request: ${request.device?.browser} on ${request.device?.os}, IP: ${request.ip}, country: ${request.country}`,
+        ].join('\n'),
+      }),
+    });
+  },
+})
+```
+
+How a copy is found:
+
+- On sign-in the browser gets a `session_nonce` cookie next to the auth cookie, its value is stored with the session.
+- Every 5 minutes (`nonceRotationMinutes`) a response replaces the value. A copy in another browser keeps the old one, so the old value
+  coming after the new one was used tells that two browsers hold the session. It works the same way when the copy
+  gets the new value first.
+- The session is revoked before the callback and both browsers are signed out, as the plugin can't tell which one
+  belongs to the user. `request` is the one with the old value, `session` is how the session was signed in.
+- The old value is still accepted until the browser comes with the new one and for a minute after that, so parallel
+  requests and a lost response don't end the session.
+- It costs no extra reads: the value is checked against the session which is read on every request anyway, and a
+  new value is written together with `last_used_at`.
+- A copy is found only when both browsers use the session. While the computer of the user is off, the copy works
+  until the user comes back or the auth token expires, a shorter session lifetime makes that time shorter.
+- Only sessions signed in while the option is set are checked, so after installing it into a running app every
+  session is checked from its next sign-in.
+
+The callback is not awaited, and its errors are only logged.
+
 ## Login history
 
 Pass `loginHistory` to store every sign-in and every failed password attempt of a user in a resource.
@@ -389,6 +433,8 @@ In the list the country name is shown in a tooltip of the flag, on the show page
 | `canSeeIps` | — | `(adminUser) => Promise<boolean>`, decides who sees IPs of sessions, see [Hiding IP addresses](#hiding-ip-addresses) |
 | `lastUsedThrottleSeconds` | `60` | How often `last_used_at` is refreshed. Every refresh is one write to the adapter |
 | `onNewLogin` | — | `({ pk, username, session, reasons, revokePath }) => Promise<void>`, called after a sign-in from a new device or country, see [Notifying about sign-ins from new devices](#notifying-about-sign-ins-from-new-devices) |
+| `onSessionCopied` | — | `({ pk, username, session, request }) => Promise<void>`, called after a session used in two browsers was revoked, see [Detecting copied sessions](#detecting-copied-sessions) |
+| `nonceRotationMinutes` | `5` | How often the nonce cookie of `onSessionCopied` is replaced. Every replacement is two writes to the adapter |
 | `loginHistory.resourceId` | — | Resource where sign-ins and failed attempts are stored, see [Login history](#login-history) |
 | `loginHistory.resourceColumns` | required with `loginHistory` | Names of the columns of that resource |
 | `loginHistory.failedLogsInterval` | `1m` | How often counted failed attempts are written, one record per user |

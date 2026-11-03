@@ -48,6 +48,13 @@ export const globalPlugins = [
     onNewLogin: async ({ username, reasons, revokePath }) => {
       console.log(`New sign-in of ${username} (${reasons.join(', ')}), not you? http://localhost:3123${revokePath}`);
     },
+    onSessionCopied: async ({ username, session, request }) => {
+      console.log(
+        `Session of ${username} is used in two browsers and was ended. ` +
+        `Signed in: ${session.device?.browser} on ${session.device?.os}, IP: ${session.ip}. ` +
+        `Other request: ${request.device?.browser} on ${request.device?.os}, IP: ${request.ip}`
+      );
+    },
     loginHistory: {
       resourceId: 'login_history',
       // short to see failed attempts in the list without waiting for a minute
