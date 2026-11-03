@@ -62,6 +62,22 @@ The callback is called on every such request, so removing a role takes effect im
 When the option is not set, the block is not added to the show page at all, and the endpoints
 refuse to touch sessions of anybody but the caller.
 
+## Revoking sessions of all users
+
+To sign out everybody at once, e.g. after a security incident, call `revokeAllSessions` of the plugin
+from your code:
+
+```ts
+import UserSessionsPlugin from '@adminforth/user-sessions';
+
+const revoked = await admin.getPluginByClassName<UserSessionsPlugin>('UserSessionsPlugin').revokeAllSessions();
+```
+
+Every user is signed out on their next request, the one who called it included. The method returns the
+number of revoked sessions. Known devices are kept, so the next sign-ins are not reported to
+[`onNewLogin`](#notifying-about-sign-ins-from-new-devices) as new. Requests without a session, like API key
+ones, are not affected.
+
 ## Hiding IP addresses
 
 By default everybody who sees a session sees its IP. When many people share one account, e.g. on a public
