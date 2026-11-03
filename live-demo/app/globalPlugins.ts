@@ -31,6 +31,8 @@ export const userSessions = new UserSessionsPlugin({
   // db folder is the persistent volume, so sessions survive deploys
   keyValueAdapter: new LevelDBKeyValueAdapter({ dbPath: './db/user-sessions' }),
   canManageOtherUsersSessions: async (adminUser) => adminUser.dbUser.role === 'superadmin',
+  // everybody from the internet signs in as the same demo user, they must not see IPs of each other
+  canSeeIps: async (adminUser) => adminUser.dbUser.role === 'superadmin',
   onNewLogin: async (params) => {
     console.log('UserSessionsPlugin onNewLogin:', JSON.stringify({ ...params, revokeUrl: `${adminPanelOrigin}${params.revokePath}` }));
   },

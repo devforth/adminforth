@@ -87,8 +87,8 @@ importers:
         specifier: ^3.0.10
         version: 3.0.10(adminforth@4.23.0(@types/node@26.6.5)(express@5.3.0))
       '@adminforth/user-sessions':
-        specifier: ^2.2.0
-        version: 2.2.0(adminforth@4.23.0(@types/node@26.6.5)(express@5.3.0))
+        specifier: ^2.3.0
+        version: 2.3.0(adminforth@4.23.0(@types/node@26.6.5)(express@5.3.0))
       adminforth:
         specifier: ^4.23.0
         version: 4.23.0(@types/node@26.6.5)(express@5.3.0)
@@ -253,10 +253,10 @@ packages:
     peerDependencies:
       adminforth: ^4.22.0
 
-  '@adminforth/user-sessions@2.2.0':
-    resolution: {integrity: sha512-MhyVkmkhQ6fy1jvugUIlWUipmoXrLqvQkgdtW6NkzJleYR2qhD2BoWIFC8KP5vV0pWq3ks3W8759mfy1oiOi7g==}
+  '@adminforth/user-sessions@2.3.0':
+    resolution: {integrity: sha512-rQEKuxRCEPEss2HkvS98vUxqtUcBpqL8Jx7P9F/liomfadXmKK0wNPw+m/GDZSOwBAB3793mx/KHOPS2fX5rgg==}
     peerDependencies:
-      adminforth: ^4.7.3
+      adminforth: ^4.23.0
 
   '@aws-sdk/checksums@3.1001.4':
     resolution: {integrity: sha512-H8BiG/2DnfwydVxD1uDPLa1s1sfhRnVTbD2OwzfTr3WlJzgbIzICDXxBTlTMjbWNNCe4VS9X55fco+JI34L9kw==}
@@ -3636,7 +3636,7 @@ snapshots:
       adminforth: 4.23.0(@types/node@26.6.5)(express@5.3.0)
       zod: 4.6.7
 
-  '@adminforth/user-sessions@2.2.0(adminforth@4.23.0(@types/node@26.6.5)(express@5.3.0))':
+  '@adminforth/user-sessions@2.3.0(adminforth@4.23.0(@types/node@26.6.5)(express@5.3.0))':
     dependencies:
       adminforth: 4.23.0(@types/node@26.6.5)(express@5.3.0)
       zod: 4.6.7
