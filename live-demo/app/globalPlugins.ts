@@ -3,8 +3,11 @@ import AdminForthMcpPlugin from '@adminforth/mcp';
 import { getLocalizedPlaceholderMessages } from './resources/agent_resources/placeholderMessages';
 import OpenAIAudioAdapter from '@adminforth/audio-adapter-openai'
 import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-openai-responses';
+import UserSessionsPlugin from '@adminforth/user-sessions';
+import LevelDBKeyValueAdapter from '@adminforth/key-value-adapter-leveldb';
 
 const openAiApiKey = process.env.OPENAI_API_KEY as string;
+const adminPanelOrigin = process.env.NODE_ENV === 'production' ? 'https://demo.adminforth.dev' : 'http://localhost:3500';
 
 const createCompletionAdapter = (
   model: string,
@@ -23,8 +26,35 @@ const balancedCompletionAdapter = createCompletionAdapter('gpt-6-luna', 'medium'
 const fastCompletionAdapter = createCompletionAdapter('gpt-6-luna', 'low');
 // const smartThinkingCompletionAdapter = createCompletionAdapter('gpt-5.4', 'xhigh');
 
+// temporary: to test sign-in notifications and login history on the live demo
+export const userSessions = new UserSessionsPlugin({
+  // db folder is the persistent volume, so sessions survive deploys
+  keyValueAdapter: new LevelDBKeyValueAdapter({ dbPath: './db/user-sessions' }),
+  canManageOtherUsersSessions: async (adminUser) => adminUser.dbUser.role === 'superadmin',
+  // everybody from the internet signs in as the same demo user, they must not see IPs of each other
+  canSeeIps: async (adminUser) => adminUser.dbUser.role === 'superadmin',
+  onNewLogin: async (params) => {
+    console.log('UserSessionsPlugin onNewLogin:', JSON.stringify({ ...params, revokeUrl: `${adminPanelOrigin}${params.revokePath}` }));
+  },
+  loginHistory: {
+    resourceId: 'login_history',
+    // short to see failed attempts in the list without waiting for a minute
+    failedLogsInterval: '10s',
+    resourceColumns: {
+      userIdColumnName: 'user_id',
+      successColumnName: 'success',
+      attemptsColumnName: 'attempts',
+      ipColumnName: 'ip',
+      countryColumnName: 'country',
+      userAgentColumnName: 'user_agent',
+      ipsColumnName: 'ips',
+      createdAtColumnName: 'created_at',
+    },
+  },
+});
+
 export const adminForthMcp = new AdminForthMcpPlugin({
-  adminPanelOrigin: process.env.NODE_ENV === 'production' ? 'https://demo.adminforth.dev' : 'http://localhost:3500',
+  adminPanelOrigin,
   authSecretResource: {
     resourceId: 'mcp_auth_secrets',
     idField: 'id',

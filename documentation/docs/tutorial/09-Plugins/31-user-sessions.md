@@ -62,6 +62,25 @@ The callback is called on every such request, so removing a role takes effect im
 When the option is not set, the block is not added to the show page at all, and the endpoints
 refuse to touch sessions of anybody but the caller.
 
+## Hiding IP addresses
+
+By default everybody who sees a session sees its IP. When many people share one account, e.g. on a public
+demo, they would see IPs of each other. Pass `canSeeIps` to show IPs only to some users:
+
+```ts title="./index.ts"
+new UserSessionsPlugin({
+  keyValueAdapter,
+  canSeeIps: async (adminUser) => adminUser.dbUser.role === 'superadmin',
+})
+```
+
+For other users the IP column shows a masked value, own sessions included. Hidden IPs are not sent to the
+browser at all, so they can't be read from the network tab either.
+
+The callback covers the "Active sessions" page and the block on the show page of a user. IPs in the
+[login history](#login-history) are columns of your own resource, restrict them there, e.g. with
+`allowedActions`. The [revoke page](#revoke-page) shows the IP to whoever has the link from `onNewLogin`.
+
 ## Client IP and country
 
 IP is taken from [`adminforth.auth.getClientIp`](/docs/tutorial/Customization/security#trusting-client-ip-addresses),
@@ -320,6 +339,7 @@ export default {
 | `countryHeader` | `CF-IPCountry` | Header with two-letter country code set by your CDN, empty string disables it |
 | `resolveCountry` | — | Called when the header did not tell the country |
 | `canManageOtherUsersSessions` | — | `(adminUser) => Promise<boolean>`, decides who may see and revoke sessions of other users |
+| `canSeeIps` | — | `(adminUser) => Promise<boolean>`, decides who sees IPs of sessions, see [Hiding IP addresses](#hiding-ip-addresses) |
 | `lastUsedThrottleSeconds` | `60` | How often `last_used_at` is refreshed. Every refresh is one write to the adapter |
 | `onNewLogin` | — | `({ pk, username, session, reasons, revokePath }) => Promise<void>`, called after a sign-in from a new device or country, see [Notifying about sign-ins from new devices](#notifying-about-sign-ins-from-new-devices) |
 | `loginHistory.resourceId` | — | Resource where sign-ins and failed attempts are stored, see [Login history](#login-history) |
