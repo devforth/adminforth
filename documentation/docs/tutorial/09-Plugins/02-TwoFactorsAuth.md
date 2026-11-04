@@ -393,7 +393,7 @@ A failed `verify` returns `{ error, code }`, and a failed `verifyAuto` returns `
 |------|---------|
 | `TWO_FACTOR_REQUIRED` | No verification result was passed, and the user is not excluded from 2FA or in the grace period. |
 | `TWO_FACTOR_INVALID` | The TOTP code is wrong or expired, the code confirmation returned by the popup expired, or the passkey is invalid. |
-| `TWO_FACTOR_RATE_LIMITED` | The user entered TOTP codes too often. Every TOTP check, at login and for step-up verification, counts as an attempt, and by default a user gets 30 attempts per minute, 300 per hour and 1000 per day. See [TOTP code rate limit](#totp-code-rate-limit). |
+| `TWO_FACTOR_RATE_LIMITED` | The user entered wrong TOTP codes too often, or the `beforeOtpCheck` hook rejected the attempt. Only wrong and reused codes count as attempts, at login and for step-up verification, and by default a user gets 30 attempts per minute, 300 per hour and 1000 per day. See [TOTP code rate limit](#totp-code-rate-limit) and [Limit TOTP attempts by IP](#limit-totp-attempts-by-ip). |
 | `TWO_FACTOR_NOT_SET_UP` | The user has not set up 2FA yet. |
 | `USER_NOT_FOUND` | The user no longer exists. |
 | `UNSUPPORTED_CONFIRMATION_MODE` | The verification result has an unknown `mode`. |
@@ -715,7 +715,7 @@ This value controls both the lifetime of the temporary login JWT and the expiry 
 
 ## TOTP code rate limit
 
-The plugin limits how often each user can enter TOTP codes, to stop brute force of the code. The limit is counted by user, not by IP, so attempts from all IPs add up. Every TOTP check counts as an attempt: at login and for step-up verification. When the limit is reached, the check fails with the `TWO_FACTOR_RATE_LIMITED` code.
+The plugin limits how often each user can enter TOTP codes, to stop brute force of the code. The limit is counted by user, not by IP, so attempts from all IPs add up. Only wrong and reused codes count as attempts, at login and for step-up verification: a correct code does not use up the limit. When the limit is reached, the check fails with the `TWO_FACTOR_RATE_LIMITED` code.
 
 By default a user gets 30 attempts per minute, 300 per hour and 1000 per day. You can change it with the `totpRateLimit` option:
 
@@ -731,18 +731,18 @@ By default a user gets 30 attempts per minute, 300 per hour and 1000 per day. Yo
 
 Each limit has the format `attempts/period`, where period is `s`, `m`, `h` or `d`. An attempt is allowed only while all limits are not reached.
 
-The limit by user works together with the login [rate limit by IP](/docs/tutorial/Customization/security#login-rate-limits) from `auth.rateLimit`, which also applies to entering the TOTP code at login.
+The limit by user works together with the login [rate limit by IP](/docs/tutorial/Customization/security#login-rate-limits) from `auth.rateLimit`, which also applies to entering the TOTP code at login. To limit TOTP attempts by IP for step-up verification too, see [Limit TOTP attempts by IP](#limit-totp-attempts-by-ip).
 
 ## Hooks on TOTP check
 
-The plugin calls `onOtpFailed` after a user entered a wrong TOTP code and `onOtpSucceeded` after a correct one. Both are called at login and for step-up verification, and receive:
+The plugin calls `beforeOtpCheck` before a TOTP code is checked, `onOtpFailed` after a user entered a wrong code and `onOtpSucceeded` after a correct one. All of them are called at login and for step-up verification, and receive:
 
 - `pk`: primary key of the user who entered the code
 - `dbUser`: record of the user from the users resource
 - `adminforth`: AdminForth instance
 - `extra`: HTTP information of the request, e.g. to get the client IP with `adminforth.auth.getClientIp(extra.headers)`. Not passed when `verify` is called without `extra`.
 
-`onOtpFailed` is not called for attempts rejected by the [rate limit](#totp-code-rate-limit), because the code is not checked then, and for a code which was already used. The code entered while setting up 2FA does not call the hooks either.
+`onOtpFailed` is not called for attempts rejected by the [rate limit](#totp-code-rate-limit) or by [`beforeOtpCheck`](#limit-totp-attempts-by-ip), because the code is not checked then, and for a code which was already used. The code entered while setting up 2FA does not call the hooks either.
 
 The plugin does not block users by itself, so you can do it in your app. For example, to block a user after 10 wrong codes in a row, counted from all IPs, add columns for the counter and the block flag to the users table:
 
@@ -815,6 +815,56 @@ And deny blocked users in `auth.adminUserAuthorize`, which runs on every request
 Check the block in `adminUserAuthorize` and not only in `beforeLoginConfirmation`: a user who passed the password step before the block can still enter a correct code on the 2FA page and get a session. `adminUserAuthorize` also denies requests of sessions which were open before the block.
 
 To unblock the user, another admin sets `is_blocked` to `false` and `failed_otp_attempts` to `0`, e.g. with a custom action on the users resource.
+
+## Limit TOTP attempts by IP
+
+The [rate limit](#totp-code-rate-limit) of the plugin is counted by user. To limit attempts by IP, or by any other rule of your app, return `{ allowed: false }` from the `beforeOtpCheck` hook. The plugin calls it before every TOTP check, at login and for step-up verification, with the same params as [`onOtpFailed`](#hooks-on-totp-check). A rejected attempt fails with the `TWO_FACTOR_RATE_LIMITED` code and the `error` you return, or a default message when you return none. The code is not checked then, so `onOtpFailed` is not called.
+
+An attempt rejected by `beforeOtpCheck` does not count towards `totpRateLimit` of the user. So an attacker whose IP you blocked can't use up the limit of the user they attack and lock the real user out.
+
+For example, to block an IP for 15 minutes after 20 wrong codes from it, counted for all users together, keep the counter in a [key-value adapter](/docs/tutorial/Adapters/key-value-adapters). Use Redis when the app runs in several processes, so they share the counter:
+
+```ts title='./adminuser.ts'
+import RedisKeyValueAdapter from '@adminforth/key-value-adapter-redis';
+
+const MAX_FAILED_OTP_ATTEMPTS_PER_IP = 20;
+const FAILED_OTP_ATTEMPTS_TTL_SECONDS = 15 * 60;
+const failedOtpAttemptsByIp = new RedisKeyValueAdapter({ redisUrl: process.env.REDIS_URL });
+
+...
+    new TwoFactorsAuthPlugin ({
+      twoFaSecretFieldName: 'secret2fa',
+      ...
+      //diff-add
+      beforeOtpCheck: async ({ adminforth, extra }) => {
+      //diff-add
+        const failedAttempts = Number(await failedOtpAttemptsByIp.get(adminforth.auth.getClientIp(extra.headers)));
+      //diff-add
+        if (failedAttempts >= MAX_FAILED_OTP_ATTEMPTS_PER_IP) {
+      //diff-add
+          return { allowed: false, error: 'Too many wrong codes from your IP, try again later' };
+      //diff-add
+        }
+      //diff-add
+        return { allowed: true };
+      //diff-add
+      },
+      //diff-add
+      onOtpFailed: async ({ adminforth, extra }) => {
+      //diff-add
+        const ip = adminforth.auth.getClientIp(extra.headers);
+      //diff-add
+        const failedAttempts = Number(await failedOtpAttemptsByIp.get(ip)) + 1;
+      //diff-add
+        await failedOtpAttemptsByIp.set(ip, String(failedAttempts), FAILED_OTP_ATTEMPTS_TTL_SECONDS);
+      //diff-add
+      },
+    }),
+```
+
+Each wrong code sets the counter again with a new TTL, so the counter of an IP expires 15 minutes after its last wrong code. A blocked IP gets no more wrong codes counted, so it is let in again 15 minutes after the block. If you already count failures by user in `onOtpFailed`, as in [Hooks on TOTP check](#hooks-on-totp-check), add the counter by IP to the same hook.
+
+The example reads the IP from `extra`. The plugin passes `extra` at login, to the popup verification and to `verifyAuto`; pass it to `t2fa.verify` too when you call it yourself.
 
 ## Passkeys setup (WebAuthn) alongside TOTP
 
