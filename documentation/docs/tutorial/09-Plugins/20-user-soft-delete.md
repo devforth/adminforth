@@ -119,3 +119,33 @@ plugins: [
 ```
 
 > ☝️Note that by default deactivated users hidden by filters, so if you want to see them, you'll have to change filters
+
+## Deactivating users from custom code
+
+To deactivate a user from your own API, call `deactivateUser` of the plugin instance:
+
+```ts title="./index.ts"
+import UserSoftDelete from '@adminforth/user-soft-delete';
+
+app.post(`${ADMIN_BASE_URL}/api/deactivate-user/`,
+  admin.express.authorize(
+    async (req: IAdminUserExpressRequest, res: express.Response) => {
+      const { ok, error } = await admin
+        .getPluginByClassName<UserSoftDelete>('UserSoftDelete')
+        .deactivateUser(req.body.userId, req.adminUser);
+      res.json({ ok, error });
+    }
+  )
+);
+```
+
+It runs the same checks as the deactivate button on behalf of the passed admin user: `canDeactivate` (or the
+`delete` permission of the resource when `canDeactivate` is not set), the user must be visible to the admin
+user, and nobody can deactivate their own account. When a check fails, the method returns `{ ok: false, error }`
+and changes nothing.
+
+To deactivate a user without any checks, e.g. from a background job, set the active field directly:
+
+```ts
+await admin.resource('adminuser').update(userId, { is_active: false });
+```
