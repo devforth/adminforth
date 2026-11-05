@@ -137,6 +137,12 @@ export const admin = new AdminForth({
       //diff-add
         actionName: 'Analyze',
       //diff-add
+        allowedActions: {
+      //diff-add
+          generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+      //diff-add
+        },
+      //diff-add
         attachFiles: async ({ record }: { record: any }) => {
       //diff-add
         if (!record.apartment_image) {
@@ -197,6 +203,27 @@ export const admin = new AdminForth({
 ![alt text](Bulk-vision-3.png)
 
 
+## Who can run generation
+
+Generation calls a paid AI provider, so it is disabled for all users by default. Set `allowedActions.generate` to choose who can run it. Users who are not allowed don't see the action, and their generation requests are rejected:
+
+```ts
+new BulkAiFlowPlugin({
+  actionName: 'Analyze',
+  //diff-add
+  allowedActions: {
+  //diff-add
+    generate: ({ adminUser }) => ['superadmin', 'editor'].includes(adminUser.dbUser.role),
+  //diff-add
+  },
+  ...
+}),
+```
+
+`generate: true` allows generation to every user who can see the resource. If `allowedActions.generate` is not set, the plugin logs a warning on startup.
+
+Saving the generated values also needs the `edit` permission on the resource and, if set, `isAllowedToSave`.
+
 ## Text-to-Text Processing
 This is the most basic plugin usage. You can connect any text completion adapter to fill one or several string/number/boolean fields from other fields.
 
@@ -209,6 +236,9 @@ import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-ope
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Translate surnames',
+  allowedActions: {
+    generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+  },
   textCompleteAdapter: new CompletionAdapterOpenAIResponses({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-5-nano',
@@ -233,6 +263,9 @@ import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Guess age',
+  allowedActions: {
+    generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+  },
   visionAdapter: new AdminForthImageVisionAdapterOpenAi({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-6-luna',
@@ -260,6 +293,9 @@ import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-o
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Generate cartoon avatars',
+  allowedActions: {
+    generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+  },
   imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-image-1.5',

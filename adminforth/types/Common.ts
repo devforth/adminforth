@@ -346,6 +346,27 @@ export { type AdminForthActionInput } from './Back.js'
 
 export type AdminForthComponentDeclaration = AdminForthComponentDeclarationFull | string;
 
+export interface AdminForthPageInjectionDeclarationFull extends AdminForthComponentDeclarationFull {
+  /**
+   * Called on the backend every time the resource is loaded for the user. When it returns false,
+   * the injection is not sent to the frontend, so the component is not rendered for this user.
+   * Use it to hide a component from users who are not allowed to use it, and check the same rule
+   * in the backend endpoints the component calls.
+   *
+   * Example:
+   *
+   * ```ts
+   * threeDotsDropdownItems: [{
+   *   file: '@@/GenerateReport.vue',
+   *   isVisible: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+   * }],
+   * ```
+   */
+  isVisible?: (params: { adminUser: AdminUser, resource: AdminForthResource }) => boolean | Promise<boolean>,
+}
+
+export type AdminForthPageInjectionDeclaration = AdminForthPageInjectionDeclarationFull | string;
+
 export type FieldGroup = {
   groupName: string;
   columns: string[];
@@ -587,15 +608,15 @@ export interface AdminForthResourceInputCommon {
          * Component accepts next props: [resource, adminUser, meta]
          */
         list?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          beforeActionButtons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          customActionIcons?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          customActionIconsThreeDotsMenuItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          tableBodyStart?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          tableRowReplace?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          afterBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          beforeActionButtons?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          bottom?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          threeDotsDropdownItems?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          customActionIcons?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          customActionIconsThreeDotsMenuItems?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          tableBodyStart?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          tableRowReplace?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
         },
 
         /**
@@ -604,10 +625,10 @@ export interface AdminForthResourceInputCommon {
          * Component accepts next props: [record, resource, adminUser, meta]
          */
         show?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          afterBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          bottom?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          threeDotsDropdownItems?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
         },
 
         /**
@@ -616,10 +637,10 @@ export interface AdminForthResourceInputCommon {
          * Component accepts next props: [record, resource, adminUser, meta]
          */
         edit?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          afterBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          bottom?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          threeDotsDropdownItems?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
         },
 
         /**
@@ -628,10 +649,10 @@ export interface AdminForthResourceInputCommon {
          * Component accepts next props: [resource, adminUser, meta]
          */
         create?: {
-          beforeBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          afterBreadcrumbs?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          bottom?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
-          threeDotsDropdownItems?: AdminForthComponentDeclaration | Array<AdminForthComponentDeclaration>,
+          beforeBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          afterBreadcrumbs?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          bottom?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
+          threeDotsDropdownItems?: AdminForthPageInjectionDeclaration | Array<AdminForthPageInjectionDeclaration>,
         },
       }
     },
