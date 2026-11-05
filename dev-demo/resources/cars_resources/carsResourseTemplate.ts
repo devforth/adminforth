@@ -225,6 +225,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
               `${dataSource}/car_images/cars/${originalFilename}_${Date.now()}.${originalExtension}`,
         preview: {
           maxShowWidth: "300px",
+          maxListWidth: "100px",
         },
       }),
       new UploadPlugin({
@@ -247,6 +248,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
               `${dataSource}/car_images/cars_promo_images/${originalFilename}_${Date.now()}.${originalExtension}`,
         preview: {
           maxShowWidth: "300px",
+          maxListWidth: "100px",
         },
       }),
       new MarkdownPlugin({
@@ -364,6 +366,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
                   `${dataSource}/car_images/cars_promo_images_generated/${originalFilename}_${Date.now()}.${originalExtension}`,
             preview: {
               maxShowWidth: "300px",
+              maxListWidth: "100px",
               previewUrl: ({filePath}) => `https://tmpbucket-adminforth.s3.eu-central-1.amazonaws.com/${filePath}`,
             },
             generation: {
@@ -394,6 +397,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         }),
         new BulkAiFlowPlugin({
           actionName: 'Generate description and Price',
+          allowedActions: {
+            generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+          },
           askConfirmationBeforeGenerating: true,
           textCompleteAdapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
@@ -414,6 +420,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         }),
         new BulkAiFlowPlugin({
           actionName: 'Analyze image',
+          allowedActions: {
+            generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+          },
           askConfirmationBeforeGenerating: true,
           visionAdapter: new AdminForthImageVisionAdapterOpenAi({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
@@ -438,6 +447,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         }),
         new BulkAiFlowPlugin({
           actionName: 'Generate promo image',
+          allowedActions: {
+            generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+          },
           askConfirmationBeforeGenerating: true,
           imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
             openAiApiKey: process.env.OPENAI_API_KEY as string,

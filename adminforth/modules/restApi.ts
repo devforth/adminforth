@@ -32,7 +32,8 @@ import { ActionCheckSource, AdminForthActionFront, AdminForthConfigMenuItem, Adm
    AdminUser, AllowedActionsEnum,
    AnnouncementBadgeResponse,
    GetConfigResponse,
-   ShowInResolved} from "../types/Common.js";
+   ShowInResolved,
+   type AdminForthPageInjectionDeclaration } from "../types/Common.js";
 import { filtersTools } from "../modules/filtersTools.js";
 import { normalizeColumnValue } from './columnValueNormalizer.js';
 import { isEmptyColumnValue, runColumnValidators } from './columnValueValidator.js';
@@ -50,6 +51,29 @@ import { authorizeResourceOperation, interpretResource, RESOURCE_ACCESS_GRANT } 
 function stripResourceColumnFrontendMeta(column: Record<string, any>) {
   const { default: _default, _baseTypeDebug, ...sanitizedColumn } = column;
   return sanitizedColumn;
+}
+
+/**
+ * Drops the page injections whose isVisible returns false for the user, and the isVisible callbacks themselves.
+ */
+async function getVisiblePageInjections(adminUser: AdminUser, resource: AdminForthResource) {
+  return Object.fromEntries(await Promise.all(
+    Object.entries(resource.options.pageInjections ?? {}).map(async ([page, slots]) => [
+      page,
+      Object.fromEntries(await Promise.all(
+        Object.entries(slots as Record<string, AdminForthPageInjectionDeclaration[]>).map(async ([slot, injections]) => {
+          const visible = await Promise.all(injections.map(async (injection) => {
+            if (typeof injection === 'string' || !injection.isVisible) {
+              return injection;
+            }
+            const { isVisible, ...rest } = injection;
+            return await isVisible({ adminUser, resource }) ? rest : null;
+          }));
+          return [slot, visible.filter(Boolean)];
+        })
+      )),
+    ])
+  ));
 }
 
 const SIMPLE_FILTER_OPERATORS = Object.values(AdminForthFilterOperators).filter((operator) => {
@@ -1239,6 +1263,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
             ),
             options: {
               ...resource.options,
+              pageInjections: await getVisiblePageInjections(adminUser, resource),
               listPageSizeOptions: typeof resource.options.listPageSizeOptions === 'function'
                 ? await resource.options.listPageSizeOptions({ adminUser, adminforth: this.adminforth })
                 : resource.options.listPageSizeOptions,

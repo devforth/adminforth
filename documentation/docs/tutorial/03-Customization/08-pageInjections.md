@@ -824,7 +824,31 @@ const term = ref('');
 </script>
 ```
 
-## List table custom
+## Showing injection only to some users
+
+Any resource page injection can have an `isVisible` callback. It is called on the backend every time the resource is loaded, and when it returns `false` the injection is not sent to the frontend, so the user does not see it:
+
+```ts title="/apartments.ts"
+{
+  resourceId: 'aparts',
+  ...
+  options: {
+    pageInjections: {
+      list: {
+        threeDotsDropdownItems: [
+          {
+            file: '@@/GenerateReport.vue',
+            //diff-add
+            isVisible: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
+          },
+        ],
+      },
+    },
+  },
+}
+```
+
+`isVisible` only hides the component. If the component calls your own endpoint, check the same rule in the endpoint too.
 
 ## Global Injections
 
