@@ -27,7 +27,7 @@
     "@adminforth/audit-log": "^2.1.2",
     "@adminforth/auto-remove": "^1.0.22",
     "@adminforth/background-jobs": "^2.0.3",
-    "@adminforth/bulk-ai-flow": "^2.1.4",
+    "@adminforth/bulk-ai-flow": "^2.2.0",
     "@adminforth/chat-gpt": "^1.0.20",
     "@adminforth/clone-row": "^1.2.25",
     "@adminforth/completion-adapter-openai-responses": "^1.1.10",
@@ -49,7 +49,7 @@
     "@adminforth/two-factors-auth": "^7.1.1",
     "@adminforth/upload": "^3.0.10",
     "@adminforth/user-sessions": "^2.3.1",
-    "adminforth": "^4.23.0",
+    "adminforth": "^4.25.0",
     "cldr-core": "^48.2.0",
     "express": "^5.3.0"
   },

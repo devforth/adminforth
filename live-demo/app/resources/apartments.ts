@@ -244,6 +244,10 @@ const apartmentsResource: AdminForthResourceInput = {
     }),
     new BulkAiFlowPlugin({
       actionName: 'Process with AI',
+      // demo users can try generation (limited by rateLimits below) but can't save the results
+      allowedActions: {
+        generate: true,
+      },
       attachFiles: async ({ record }: { record: any }) => {
         if (!record.apartment_image) {
           return [];
