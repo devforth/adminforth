@@ -1,11 +1,12 @@
 <template>
-  <div class="inline-flex items-center gap-1">
-    <Tooltip v-if="tooltipText">
+  <div class="gap-1" :class="isMultiline ? 'flex items-start w-full' : 'inline-flex items-center'">
+    <Tooltip v-if="tooltipText" :class="{ 'flex-1 min-w-0': isMultiline }">
       <div
         class="rounded-default me-2"
         :class="{
           'overflow-hidden max-h-[20px]': !isMultiline,
           'shrink-0 w-[90px]': compact,
+          'flex-1 min-w-0': isMultiline,
         }"
         @click="toggle"
       >
@@ -33,6 +34,7 @@
       :class="{
         'overflow-hidden max-h-[20px]': !isMultiline,
         'shrink-0 w-[90px]': compact,
+        'flex-1 min-w-0': isMultiline,
       }"
       @click="toggle"
     >
