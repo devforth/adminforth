@@ -42,7 +42,7 @@ All completion adapters accept structured output through the shared `outputSchem
 ```ts
 const adapter = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-5-mini',
+  model: 'gpt-6-luna',
 });
 
 const prompt = 'What is the capital of France? return json';
@@ -75,7 +75,7 @@ Streaming reasoning events depend on the selected model and provider response.
 ```ts
 const adapter = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-5-mini',
+  model: 'gpt-6-luna',
 });
 
 await adapter.complete({
