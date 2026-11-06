@@ -420,9 +420,6 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         }),
         new BulkAiFlowPlugin({
           actionName: 'Analyze image',
-          allowedActions: {
-            generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
-          },
           askConfirmationBeforeGenerating: true,
           visionAdapter: new AdminForthImageVisionAdapterOpenAi({
             openAiApiKey: process.env.OPENAI_API_KEY as string,

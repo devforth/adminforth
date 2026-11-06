@@ -9,10 +9,6 @@ slug: /tutorial/Plugins/bulk-ai-flow
 This plugin allows filling fields in multiple selected records based on data from other fields using LLM.
 This also supports vision tasks so you can ask it to e.g. detect dominant color on image or describe what is on the image. Plugin supports classification to enum options automatically.
 
-:::warning
-Since version 2.2.0 AI generation is disabled for all users until you set `allowedActions.generate` in the plugin options. After updating from an older version, add it to every `BulkAiFlowPlugin` instance, see [Who can run generation](#who-can-run-generation).
-:::
-
 ## Installation
 
 To install the plugin:
@@ -141,12 +137,6 @@ export const admin = new AdminForth({
       //diff-add
         actionName: 'Analyze',
       //diff-add
-        allowedActions: {
-      //diff-add
-          generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
-      //diff-add
-        },
-      //diff-add
         attachFiles: async ({ record }: { record: any }) => {
       //diff-add
         if (!record.apartment_image) {
@@ -209,7 +199,7 @@ export const admin = new AdminForth({
 
 ## Who can run generation
 
-Generation calls a paid AI provider, so it is disabled for all users by default. Set `allowedActions.generate` to choose who can run it. Users who are not allowed don't see the action, and their generation requests are rejected:
+By default generation is allowed to users with the `edit` permission on the resource, because only they can save the generated values. Generation calls a paid AI provider, so you can narrow it down with `allowedActions.generate`. Users who are not allowed don't see the action, and their generation requests are rejected:
 
 ```ts
 new BulkAiFlowPlugin({
@@ -224,7 +214,7 @@ new BulkAiFlowPlugin({
 }),
 ```
 
-`generate: true` allows generation to every user who can see the resource. If `allowedActions.generate` is not set, the plugin logs a warning on startup.
+`generate: true` allows generation to every user who can see the resource, `false` disables it for everyone.
 
 Saving the generated values also needs the `edit` permission on the resource and, if set, `isAllowedToSave`.
 
@@ -240,9 +230,6 @@ import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-ope
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Translate surnames',
-  allowedActions: {
-    generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
-  },
   textCompleteAdapter: new CompletionAdapterOpenAIResponses({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-5-nano',
@@ -267,9 +254,6 @@ import AdminForthImageVisionAdapterOpenAi from '@adminforth/image-vision-adapter
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Guess age',
-  allowedActions: {
-    generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
-  },
   visionAdapter: new AdminForthImageVisionAdapterOpenAi({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-6-luna',
@@ -297,9 +281,6 @@ import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-o
 // Add to your resource plugins array
 new BulkAiFlowPlugin({
   actionName: 'Generate cartoon avatars',
-  allowedActions: {
-    generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
-  },
   imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-image-1.5',
