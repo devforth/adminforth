@@ -326,7 +326,51 @@ new ImageGenerationAdapterOpenAI({
 }),
 ```
 
-> ☝️ `'low'` quality is a great starting point when processing large datasets — you can always re-run generation with `'high'` for selected records once you're happy with the prompts.
+> ☝️ `'low'` quality is a great starting point when processing large datasets — you can always re-run generation with `'high'` for selected records once you're happy with the prompts, or use `'high'` only for some records from the start, see [Different adapters for different records](#different-adapters-for-different-records).
+
+## Different adapters for different records
+
+`textCompleteAdapter`, `visionAdapter`, `imageGenerationAdapter` and `adapter` of a `generateImages` field accept either an adapter or a function which returns the adapter for a record. The function gets the record and the user who runs the generation, and can be async. For example, a stronger model and better image quality for top games only:
+
+```ts
+const lowQualityImages = new ImageGenerationAdapterOpenAI({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-image-1',
+  extraParams: { quality: 'low' },
+});
+const highQualityImages = new ImageGenerationAdapterOpenAI({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-image-1',
+  extraParams: { quality: 'high' },
+});
+const fastText = new CompletionAdapterOpenAIResponses({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-5-nano',
+});
+const smartText = new CompletionAdapterOpenAIResponses({
+  openAiApiKey: process.env.OPENAI_API_KEY as string,
+  model: 'gpt-6-luna',
+});
+
+new BulkAiFlowPlugin({
+  actionName: 'Generate description and cover',
+  //diff-add
+  textCompleteAdapter: ({ record }) => record.rank <= 100 ? smartText : fastText,
+  //diff-add
+  imageGenerationAdapter: ({ record }) => record.rank <= 100 ? highQualityImages : lowQualityImages,
+  ...
+}),
+```
+
+Create the adapters once outside of the function, the function only picks one of them.
+
+The function is called for every record, both on generation and on Regenerate. It gets the record as it is saved in the database, so the values generated in the dialog and not saved yet don't change the choice. If the function throws, the record fails with its error.
+
+The user is useful to pick the adapter by role, e.g. with two vision adapters created the same way:
+
+```ts
+visionAdapter: ({ adminUser }) => adminUser.dbUser.role === 'superadmin' ? smartVision : fastVision,
+```
 
 ## Rate Limiting and Best Practices
 

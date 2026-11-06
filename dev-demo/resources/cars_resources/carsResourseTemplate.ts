@@ -40,6 +40,15 @@ const CAR_RESOURCE_DB_LABELS = {
 
 type CarResourceDataSource = keyof typeof CAR_RESOURCE_DB_LABELS;
 
+// bulk-ai-flow picks the adapter per record: stronger models and image quality for premium cars
+const openAiApiKey = process.env.OPENAI_API_KEY as string;
+const fastText = new CompletionAdapterOpenAIResponses({ openAiApiKey, model: 'gpt-5-nano' });
+const smartText = new CompletionAdapterOpenAIResponses({ openAiApiKey, model: 'gpt-6-luna' });
+const fastVision = new AdminForthImageVisionAdapterOpenAi({ openAiApiKey, model: 'gpt-5-nano' });
+const smartVision = new AdminForthImageVisionAdapterOpenAi({ openAiApiKey, model: 'gpt-6-luna' });
+const lowQualityImages = new ImageGenerationAdapterOpenAI({ openAiApiKey, model: 'gpt-image-2.5-flare', extraParams: { quality: 'low' } });
+const highQualityImages = new ImageGenerationAdapterOpenAI({ openAiApiKey, model: 'gpt-image-2.5-flare', extraParams: { quality: 'high' } });
+
 export default function carsResourseTemplate(resourceId: string, dataSource: CarResourceDataSource, pkFileldName: string) {
   return {
     dataSource: dataSource,
@@ -401,13 +410,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
             generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
           },
           askConfirmationBeforeGenerating: true,
-          textCompleteAdapter: new CompletionAdapterOpenAIResponses({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-6-luna',
-            extraRequestBodyParameters: {
-              temperature: 1,
-            },
-          }),
+          textCompleteAdapter: ({ record }) => record.price > 7000 ? smartText : fastText,
           fillPlainFields: {
             description: "Create a desription for the car with name {{model}} and engine type {{engine_type}}. Desription should be HTML formatted.",
             price: "Based on the car model {{model}} and engine type {{engine_type}}, suggest a competitive market price in USD. Return only the numeric value.",
@@ -421,10 +424,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         new BulkAiFlowPlugin({
           actionName: 'Analyze image',
           askConfirmationBeforeGenerating: true,
-          visionAdapter: new AdminForthImageVisionAdapterOpenAi({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-6-luna',
-          }),
+          visionAdapter: ({ adminUser }) => adminUser.dbUser.role === 'superadmin' ? smartVision : fastVision,
           fillFieldsFromImages: {
             body_type: "What is the body type of the car shown in the image?",
             color: "What is the color of the car shown in the image?",
@@ -448,12 +448,10 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
             generate: ({ adminUser }) => adminUser.dbUser.role === 'superadmin',
           },
           askConfirmationBeforeGenerating: true,
-          imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
-            openAiApiKey: process.env.OPENAI_API_KEY as string,
-            model: 'gpt-image-2.5-flare',
-          }),
+          imageGenerationAdapter: lowQualityImages,
           generateImages: {
             generated_promo_picture: {
+              adapter: ({ record }) => record.price > 7000 ? highQualityImages : lowQualityImages,
               countToGenerate: 1,
               outputSize: '1536x1024',
               prompt: "Create a high-quality promotional image for a {{color}} car shown on attached image. Generated image should be in anime style",
