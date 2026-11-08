@@ -42,10 +42,10 @@ type CarResourceDataSource = keyof typeof CAR_RESOURCE_DB_LABELS;
 
 // bulk-ai-flow picks the adapter per record: stronger models and image quality for premium cars
 const openAiApiKey = process.env.OPENAI_API_KEY as string;
-const fastText = new CompletionAdapterOpenAIResponses({ openAiApiKey, model: 'gpt-5-nano' });
-const smartText = new CompletionAdapterOpenAIResponses({ openAiApiKey, model: 'gpt-6-luna' });
-const fastVision = new AdminForthImageVisionAdapterOpenAi({ openAiApiKey, model: 'gpt-5-nano' });
-const smartVision = new AdminForthImageVisionAdapterOpenAi({ openAiApiKey, model: 'gpt-6-luna' });
+const fastText = new CompletionAdapterOpenAIResponses({ openAiApiKey, model: 'gpt-6-luna' });
+const smartText = new CompletionAdapterOpenAIResponses({ openAiApiKey, model: 'gpt-6.1-terra' });
+const fastVision = new AdminForthImageVisionAdapterOpenAi({ openAiApiKey, model: 'gpt-6-luna' });
+const smartVision = new AdminForthImageVisionAdapterOpenAi({ openAiApiKey, model: 'gpt-6.1-terra' });
 const lowQualityImages = new ImageGenerationAdapterOpenAI({ openAiApiKey, model: 'gpt-image-2.5-flare', extraParams: { quality: 'low' } });
 const highQualityImages = new ImageGenerationAdapterOpenAI({ openAiApiKey, model: 'gpt-image-2.5-flare', extraParams: { quality: 'high' } });
 

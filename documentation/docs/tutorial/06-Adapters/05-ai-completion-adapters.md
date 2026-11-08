@@ -127,7 +127,7 @@ new CompletionAdapterOpenAIResponses({
 }),
 ```
 
-You can specify any GPT model you need. Without `model` the adapter uses `gpt-5-nano`, which is cheap but may behave weakly; `gpt-6-luna` is the cheapest GPT-6 model, and `gpt-6.1-terra` or `gpt-6.1-sol` are stronger.
+You can specify any GPT model you need. The default is `gpt-6-luna`, the cheapest GPT-6 model; use `gpt-6.1-terra` or `gpt-6.1-sol` for harder tasks.
 
 By default, this adapter uses the OpenAI `responses` API (`v1/responses`) unless `useCompletionApi` is set to `true`. If `useCompletionApi` is `true`, it uses the older Chat Completions API (`v1/chat/completions`). 
 
