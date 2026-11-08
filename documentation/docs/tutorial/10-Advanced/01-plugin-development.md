@@ -272,11 +272,7 @@ Let's define API endpoint in our plugin:
 //diff-add
             messages: [{ role: 'user', content, }],
 //diff-add
-            temperature: 0.7,
-//diff-add
-            max_tokens: this.options.expert?.maxTokens || 50,
-//diff-add
-            stop: ['.'],
+            max_completion_tokens: this.options.expert?.maxTokens || 50,
 //diff-add
           })
 //diff-add
@@ -483,7 +479,7 @@ Go to https://platform.openai.com/, go to Dashboard -> API keys -> Create new se
 > ```
 
 
-> 🎓 Homework 1: Extend `expert` settings section to include next parameters: `temperature`, `promptLimit`, `debounceTime`,
+> 🎓 Homework 1: Extend `expert` settings section to include next parameters: `promptLimit`, `debounceTime`,
 
 > 🎓 Homework 2: Plugin does not pass record other values to Chat GPT which can help to create better prompts with context understanding.
 > Try to adjust prompt to include other record values. Keep in mind that longer prompts can be more expensive and slower, so should smartly limit prompt length.

@@ -399,9 +399,6 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
           adapter: new CompletionAdapterOpenAIResponses({
             openAiApiKey: process.env.OPENAI_API_KEY as string,
             model: 'gpt-6-luna',
-            extraRequestBodyParameters: {
-                temperature: 1
-            }
           }),
         }),
         new BulkAiFlowPlugin({

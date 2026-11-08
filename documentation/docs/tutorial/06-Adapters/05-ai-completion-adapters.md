@@ -119,7 +119,6 @@ new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
   model: 'gpt-6.1-sol',
   extraRequestBodyParameters: {
-    temperature: 0.7,
     reasoning: {
       effort: 'medium',
     },
@@ -177,14 +176,14 @@ import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google
 
 new CompletionAdapterGoogleGemini({
   geminiApiKey: process.env.GEMINI_API_KEY as string,
-  model: 'gemini-3-pro-preview',
+  model: 'gemini-4-argon',
   extraRequestBodyParameters: {
     temperature: 0.7,
   },
 }),
 ```
 
-You can specify any Gemini model you need. The default is `gemini-3-flash-preview`.
+You can specify any Gemini model you need. The default is `gemini-3.8-flash`.
 
 ## Adding extra request body params
 
@@ -195,7 +194,7 @@ import CompletionAdapterGoogleGemini from '@adminforth/completion-adapter-google
 
 new CompletionAdapterGoogleGemini({
   geminiApiKey: process.env.GEMINI_API_KEY as string,
-  model: 'gemini-3-pro-preview',
+  model: 'gemini-4-argon',
   extraRequestBodyParameters: {
     temperature: 0.7,
     responseMimeType: 'application/json',

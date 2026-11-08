@@ -39,7 +39,7 @@ import ImageGenerationAdapterNanoBanana from '@adminforth/image-generation-adapt
 
 new ImageGenerationAdapterNanoBanana({
   nanoBananaApiKey: process.env.GEMINI_API_KEY as string,
-  model: 'gemini-3.1-flash-image-preview',
+  model: 'gemini-nano-banana-2.1',
   attachImagesAllowedHosts: ['my-bucket.s3.eu-central-1.amazonaws.com'],
 }),
 ```

@@ -233,9 +233,6 @@ new BulkAiFlowPlugin({
   textCompleteAdapter: new CompletionAdapterOpenAIResponses({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
     model: 'gpt-6-luna',
-    extraRequestBodyParameters: {
-      temperature: 0.7
-    }
   }),
   fillPlainFields: {
     'full_name_en': 'Translate this name to English: {{users_full_name}}',

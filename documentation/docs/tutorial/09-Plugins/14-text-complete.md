@@ -52,12 +52,6 @@ export const admin = new AdminForth({
 //diff-add
         model: 'gpt-6-luna', // default "gpt-6-luna"
 //diff-add
-        extraRequestBodyParameters: {
-//diff-add
-            temperature: 0.7 //Model temperature
-//diff-add
-        }
-//diff-add
       }),
 //diff-add
     }),
