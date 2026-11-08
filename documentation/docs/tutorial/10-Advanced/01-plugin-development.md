@@ -95,7 +95,7 @@ export interface PluginOptions extends PluginsCommonOptions {
 //diff-add
    * Model name. Go to https://platform.openai.com/docs/models, select model and copy name.
 //diff-add
-   * Default is `gpt-5-nano`. Use e.g. more expensive `gpt-5.2` for more powerful model.
+   * Default is `gpt-6-luna`. Use e.g. more expensive `gpt-6.1-sol` for more powerful model.
 //diff-add
    */
 //diff-add
@@ -268,7 +268,7 @@ Let's define API endpoint in our plugin:
 //diff-add
           body: JSON.stringify({
 //diff-add
-            model: this.options.model || 'gpt-5-nano',
+            model: this.options.model || 'gpt-6-luna',
 //diff-add
             messages: [{ role: 'user', content, }],
 //diff-add

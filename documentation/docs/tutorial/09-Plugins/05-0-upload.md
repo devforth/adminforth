@@ -346,7 +346,7 @@ Requesting an upload URL requires permission to write the record the file belong
 ## Image generation
 
 Upload plugin supports AI generation for images. Yo use it you need to install image generation adapter.
-For example for OpenAI models like `gpt-image-1.5` (or old `DALL-E` models):
+For example for OpenAI models like `gpt-image-2.6-flare`:
 
 ```bash
 pnpm add @adminforth/image-generation-adapter-openai
@@ -368,7 +368,7 @@ new UploadPlugin({
   //diff-add
       openAiApiKey: process.env.OPENAI_API_KEY as string,
   //diff-add
-      model: 'gpt-image-1.5', 
+      model: 'gpt-image-2.6-flare', 
   //diff-add
     }),
 //diff-add
@@ -391,7 +391,7 @@ new ImageGenerationAdapterOpenAI({
   //diff-add
     openAiApiKey: process.env.OPENAI_API_KEY as string,
   //diff-add
-    model: 'gpt-image-1.5', 
+    model: 'gpt-image-2.6-flare', 
   //diff-add
     extraParams: {
   //diff-add

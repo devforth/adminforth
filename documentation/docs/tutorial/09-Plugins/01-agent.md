@@ -263,7 +263,7 @@ globalPlugins: [
         name: 'Smart Thinking',
         completionAdapter: new CompletionAdapterOpenAIResponses({
           openAiApiKey: process.env.OPENAI_API_KEY as string,
-          model: 'gpt-5.4',
+          model: 'gpt-6.1-sol',
           extraRequestBodyParameters: {
             reasoning: {
               effort: 'xhigh',

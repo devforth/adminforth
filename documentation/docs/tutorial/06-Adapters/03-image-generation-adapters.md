@@ -14,14 +14,14 @@ pnpm add @adminforth/image-generation-adapter-openai
 
 Uses OpenAI image generation model `gpt-image` to generate images from text prompts.
 
-Up to the winter 2026 OpenAI models are one of the most powerful image generation models available, especially GPT-Image-1.5, which is why we started with them.
+As of November 2026, OpenAI models are among the most powerful image generation models available, especially GPT Image 2.6, which is why we started with them.
 
 ```ts
 import ImageGenerationAdapterOpenAI from '@adminforth/image-generation-adapter-openai';
 
 new ImageGenerationAdapterOpenAI({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-image-1',
+  model: 'gpt-image-2.6-flare',
   extraParams: {
     quality: 'high',
   },

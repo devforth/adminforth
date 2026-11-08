@@ -117,7 +117,7 @@ import CompletionAdapterOpenAIResponses from '@adminforth/completion-adapter-ope
 
 new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-5.2',
+  model: 'gpt-6.1-sol',
   extraRequestBodyParameters: {
     temperature: 0.7,
     reasoning: {
@@ -127,7 +127,7 @@ new CompletionAdapterOpenAIResponses({
 }),
 ```
 
-You can specify any GPT model you need. The default is `gpt-5-nano` as it is cheapest though may behave weakly.
+You can specify any GPT model you need. Without `model` the adapter uses `gpt-5-nano`, which is cheap but may behave weakly; `gpt-6-luna` is the cheapest GPT-6 model, and `gpt-6.1-terra` or `gpt-6.1-sol` are stronger.
 
 By default, this adapter uses the OpenAI `responses` API (`v1/responses`) unless `useCompletionApi` is set to `true`. If `useCompletionApi` is `true`, it uses the older Chat Completions API (`v1/chat/completions`). 
 

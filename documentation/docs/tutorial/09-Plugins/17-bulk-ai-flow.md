@@ -232,7 +232,7 @@ new BulkAiFlowPlugin({
   actionName: 'Translate surnames',
   textCompleteAdapter: new CompletionAdapterOpenAIResponses({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-5-nano',
+    model: 'gpt-6-luna',
     extraRequestBodyParameters: {
       temperature: 0.7
     }
@@ -283,7 +283,7 @@ new BulkAiFlowPlugin({
   actionName: 'Generate cartoon avatars',
   imageGenerationAdapter: new ImageGenerationAdapterOpenAI({
     openAiApiKey: process.env.OPENAI_API_KEY as string,
-    model: 'gpt-image-1.5',
+    model: 'gpt-image-2.6-flare',
   }),
   attachFiles: async ({ record }) => {
     if (!record.user_photo) {
@@ -311,16 +311,17 @@ new BulkAiFlowPlugin({
 |-------|-------------|
 | `'low'` | Fastest generation, lowest cost. Good for drafts or high-volume batch jobs where speed matters more than visual fidelity. |
 | `'medium'` | Balanced quality and speed. A sensible default for most use cases. |
-| `'high'` | Best image quality, slowest and most expensive. Use for final promotional assets or when visual detail is critical. |
+| `'high'` | High fidelity. Use for final promotional assets or when visual detail is critical. |
+| `'xhigh'`, `'max'` | GPT Image 2.6 levels above `'high'`: finest detail, slowest and most expensive. |
 
 ```ts
 new ImageGenerationAdapterOpenAI({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-image-1',
+  model: 'gpt-image-2.6-flare',
   //diff-add
   extraParams: {
   //diff-add
-    quality: 'low', // 'low' | 'medium' | 'high'
+    quality: 'low', // 'low' | 'medium' | 'high' | 'xhigh' | 'max'
   //diff-add
   },
 }),
@@ -335,21 +336,21 @@ new ImageGenerationAdapterOpenAI({
 ```ts
 const lowQualityImages = new ImageGenerationAdapterOpenAI({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-image-1',
+  model: 'gpt-image-2.6-flare',
   extraParams: { quality: 'low' },
 });
 const highQualityImages = new ImageGenerationAdapterOpenAI({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-image-1',
+  model: 'gpt-image-2.6-flare',
   extraParams: { quality: 'high' },
 });
 const fastText = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-5-nano',
+  model: 'gpt-6-luna',
 });
 const smartText = new CompletionAdapterOpenAIResponses({
   openAiApiKey: process.env.OPENAI_API_KEY as string,
-  model: 'gpt-6-luna',
+  model: 'gpt-6.1-terra',
 });
 
 new BulkAiFlowPlugin({
