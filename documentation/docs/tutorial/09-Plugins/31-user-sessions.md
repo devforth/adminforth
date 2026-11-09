@@ -11,7 +11,8 @@ from the browser, and there is no way to tell which devices are signed in.
 
 This plugin stores every issued session in a key-value adapter, shows them to the admin user on a
 settings page, and lets them revoke any session. Logout revokes the session too, so its token stops
-working right away.
+working right away. Requests made with API keys, e.g. of the MCP plugin, are not sessions: they are not
+listed and can't be revoked here.
 
 ![Active sessions page](/img/previews/user_sessions.png)
 
@@ -20,6 +21,8 @@ working right away.
 ```bash
 pnpm add @adminforth/user-sessions @adminforth/key-value-adapter-redis
 ```
+
+The plugin needs AdminForth 4.24.0 or later.
 
 The plugin is global, so add it to `globalPlugins`:
 
@@ -132,7 +135,7 @@ from before, e.g. to post it to Slack or send an email to the user:
 ```ts title="./index.ts"
 new UserSessionsPlugin({
   keyValueAdapter,
-  onNewLogin: async ({ username, session, reasons, revokePath }) => {
+  onNewLogin: async ({ username, session, reasons }) => {
     await fetch(process.env.SLACK_WEBHOOK_URL!, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -141,13 +144,15 @@ new UserSessionsPlugin({
           `New sign-in to *${username}* (${reasons.join(', ')})`,
           `Device: ${session.device?.browser} on ${session.device?.os}`,
           `IP: ${session.ip}, country: ${session.country}`,
-          `Not you? ${process.env.ADMIN_URL}${revokePath}`,
         ].join('\n'),
       }),
     });
   },
 })
 ```
+
+Don't post `revokePath` to a channel others can read: whoever has the link can sign that device out.
+Send it to the user only, e.g. [by email](#sending-an-email-with-aws-ses).
 
 How a sign-in is recognized as new:
 
@@ -169,9 +174,10 @@ The callback is not awaited, so a slow request doesn't delay the sign-in, and it
 ### Revoke page
 
 `revokePath` leads to a page which works without signing in. It shows the time, device, IP and country
-of the sign-in and a button which ends that session.
-Ending a session from there also forgets its device, so the next sign-in from it is reported again.
-The link works as long as the session would.
+of the sign-in and a button which signs that device out: it ends the reported session and every other
+session of the same browser, including later sign-ins from it which were not reported as the device was
+known by then. It also forgets the device, so the next sign-in from it is reported again.
+The link works once and as long as the session would.
 
 `revokePath` starts with `baseUrl` of your app, prepend the origin of your admin panel to make a link
 of it. The plugin doesn't take the origin from the request: the sign-in request is sent by whoever signs
@@ -240,7 +246,10 @@ callback is logged by the plugin and doesn't affect the sign-in.
 
 Malware on the user's computer can copy the cookies of the browser, and the copied session then works on
 another machine without the password and 2FA. Pass `onSessionCopied` to be told when a session is used in two
-browsers:
+browsers.
+
+Use a plugin version later than 2.5.0 for it: 2.5.0 signs every user out about 6 minutes after sign-in when
+this option is set.
 
 ```ts title="./index.ts"
 new UserSessionsPlugin({
@@ -302,6 +311,9 @@ model login_history {
 }
 ```
 
+On MySQL Prisma makes a `String` column `VARCHAR(191)`, too short for `user_agent` (up to 512 characters) and
+`ips`: a longer value fails the insert, and with it the sign-in. Add `@db.Text` to both columns there.
+
 ```bash
 pnpm makemigration --name add-login-history ; pnpm migrate:local
 ```
@@ -311,6 +323,9 @@ Add a resource for it:
 ```ts title='./resources/loginHistory.ts'
 import { AdminForthDataTypes, AdminForthResourceInput, AdminForthSortDirections } from 'adminforth';
 import { randomUUID } from 'crypto';
+
+// the history holds IPs and user agents of every user
+const superadminOnly = async ({ adminUser }) => adminUser.dbUser.role === 'superadmin';
 
 export default {
   dataSource: 'maindb',
@@ -330,7 +345,14 @@ export default {
     { name: 'ips', type: AdminForthDataTypes.JSON, filterOptions: { substringSearch: true } },
   ],
   options: {
-    allowedActions: { create: false, edit: false, delete: false },
+    allowedActions: {
+      create: false,
+      edit: false,
+      delete: false,
+      list: superadminOnly,
+      show: superadminOnly,
+      filter: superadminOnly,
+    },
     defaultSort: { columnName: 'created_at', direction: AdminForthSortDirections.desc },
   },
 } as AdminForthResourceInput;
@@ -426,7 +448,7 @@ In the list the country name is shown in a tooltip of the flag, on the show page
 | Option | Default | Description |
 |---|---|---|
 | `keyValueAdapter` | required | Adapter where active sessions are stored |
-| `collection` | `adminforth-user-sessions` | Collection (key prefix) used in the adapter. Last used times are kept in `<collection>-last-used` |
+| `collection` | `adminforth-user-sessions` | Collection (key prefix) used in the adapter. Known devices are kept in `<collection>-devices`, used revoke links in `<collection>-used-links` |
 | `countryHeader` | `CF-IPCountry` | Header with two-letter country code set by your CDN, empty string disables it |
 | `resolveCountry` | — | Called when the header did not tell the country |
 | `canManageOtherUsersSessions` | — | `(adminUser) => Promise<boolean>`, decides who may see and revoke sessions of other users |
