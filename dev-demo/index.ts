@@ -36,6 +36,7 @@ import checkpointsResource from './resources/agent_resources/checkpoints.js';
 import { FICTIONAL_CAR_BRANDS, FICTIONAL_CAR_MODELS_BY_BRAND, ENGINE_TYPES, BODY_TYPES } from './custom/cars_data.js';
 import passkeysResource from './resources/passkeys.js';
 import carsDescriptionImage from './resources/cars_description_image.js';
+import carMeta from './resources/car_meta.js';
 import translations from "./resources/translations.js";
 import adminExternalIdentitiesResource from './resources/adminUserExternalIdentities.js';
 import key_value_resource from './resources/key_value_resource.js';
@@ -193,6 +194,7 @@ export const admin = new AdminForth({
     m2m_ch,
     passkeysResource,
     carsDescriptionImage,
+    carMeta,
     translations,
     background_jobs_resource,
     sessionsResource,
