@@ -94,6 +94,11 @@ model mcp_auth_secrets {
     @@index([credential_id])
   }
 
+  model car_meta {
+    car_id String  @id
+    note   String?
+  }
+
   model cars_description_image {
     id          String   @id
     created_at  DateTime
