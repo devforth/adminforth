@@ -22,8 +22,8 @@
   "author": "",
   "description": "",
   "dependencies": {
-    "@adminforth/agent": "^3.5.2",
-    "@adminforth/audio-adapter-openai": "^1.3.5",
+    "@adminforth/agent": "^3.5.3",
+    "@adminforth/audio-adapter-openai": "^1.3.7",
     "@adminforth/audit-log": "^2.1.2",
     "@adminforth/auto-remove": "^1.0.22",
     "@adminforth/background-jobs": "^2.0.3",
