@@ -207,7 +207,13 @@ class AdminForthAuth implements IAdminForthAuth {
       return { status: 'invalidToken' };
     }
 
-    const { allowed, error } = await this.runAdminUserAuthorizeHooks(adminUser, response, extra);
+    let hooksResult: { allowed: boolean, error?: string };
+    try {
+      hooksResult = await this.runAdminUserAuthorizeHooks(adminUser, response, extra);
+    } catch (error) {
+      return { status: 'verifyFailed', error };
+    }
+    const { allowed, error } = hooksResult;
     if (!allowed) {
       return { status: 'notAllowed', error };
     }

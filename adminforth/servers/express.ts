@@ -339,7 +339,7 @@ class ExpressServer implements IExpressHttpServer {
   }
 
 
-  runInRequestContext(req, callback) {
+  runInRequestContext<T>(req, callback: () => T): T {
     return runWithRequestContext({
       websocketClientId: getHeaderString(req.headers, ADMINFORTH_CLIENT_ID_HEADER),
       remoteAddress: req.socket.remoteAddress,
@@ -380,7 +380,7 @@ class ExpressServer implements IExpressHttpServer {
 
         req.adminUser = result.adminUser;
         return handler(req, res, next);
-      });
+      }).catch(next);
     };
   }
 
