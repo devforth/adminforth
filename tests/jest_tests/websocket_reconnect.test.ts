@@ -213,3 +213,47 @@ describe('browser websocket reconnect', () => {
     ]);
   });
 });
+
+describe('browser websocket health', () => {
+  it('retries a socket closed before ready after 2 seconds', async () => {
+    const client = await loadWebsocket();
+    client.sockets[0].emit('open');
+    client.sockets[0].emit('close');
+
+    jest.advanceTimersByTime(1_999);
+    expect(client.sockets).toHaveLength(1);
+    jest.advanceTimersByTime(1);
+    expect(client.sockets).toHaveLength(2);
+  });
+
+  it('reconnects when the server stops answering pings', async () => {
+    const client = await loadWebsocket();
+    client.sockets[0].ready();
+
+    jest.advanceTimersByTime(40_000);
+
+    expect(client.sockets[0].closeCalls).toBe(1);
+    expect(client.sockets).toHaveLength(2);
+  });
+
+  it('reconnects an opened socket that never got ready', async () => {
+    const client = await loadWebsocket();
+    client.sockets[0].emit('open');
+
+    jest.advanceTimersByTime(40_000);
+
+    expect(client.sockets).toHaveLength(2);
+  });
+
+  it('keeps a socket that answers pings', async () => {
+    const client = await loadWebsocket();
+    client.sockets[0].ready();
+
+    for (let i = 0; i < 10; i++) {
+      jest.advanceTimersByTime(10_000);
+      client.sockets[0].emit('message', 'pong');
+    }
+
+    expect(client.sockets).toHaveLength(1);
+  });
+});

@@ -20,6 +20,9 @@ const state: {
   ready: false,
 };
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+// server answers every ping, silence means a half-open socket or a handshake that never finished
+const MAX_UNANSWERED_PINGS = 3;
+let unansweredPings = 0;
 
 function doPhysicalSubscribe(topic: string) {
   state.ws!.send(JSON.stringify({ type: 'subscribe', topic }));
@@ -53,6 +56,7 @@ async function connect () {
   state.ws = ws;
   state.status = 'connecting';
   state.ready = false;
+  unansweredPings = 0;
   ws.addEventListener('open', () => {
     if (state.ws !== ws) return;
     console.log('🔌 AFWS connected');
@@ -61,6 +65,7 @@ async function connect () {
   });
   ws.addEventListener('message', (event) => {
     if (state.ws !== ws) return;
+    unansweredPings = 0;
     const data = event.data.toString();
     if (data === 'pong') {
       return;
@@ -93,8 +98,8 @@ async function connect () {
       reconnectTimer = undefined;
       console.log('🔌 AFWS reconnecting after close');
       connect();
-      // if it is first time, reconnect instantly
-    }, state.status === 'connected' ? 0 : 2_000);
+      // a socket that never got ready failed its handshake, retrying instantly would hammer the server
+    }, state.ready ? 0 : 2_000);
     state.status = 'disconnected';
     state.ready = false;
   });
@@ -119,9 +124,15 @@ export function reconnect() {
 }
 
 setInterval(() => {
-  if (state.status === 'connected') {
-    state.ws!.send('ping');
+  if (state.status !== 'connected') {
+    return;
   }
+  if (unansweredPings >= MAX_UNANSWERED_PINGS) {
+    reconnect();
+    return;
+  }
+  unansweredPings++;
+  state.ws!.send('ping');
 }, 10_000);
 
 
