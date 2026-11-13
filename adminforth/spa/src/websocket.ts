@@ -111,6 +111,13 @@ try {
   console.error('🔌 AFWS failed to connect', e);
 }
 
+// login or logout in another tab changed the cookie, this socket still carries the old handshake
+window.addEventListener('storage', (event) => {
+  if (event.key === 'isAuthorized') {
+    reconnect();
+  }
+});
+
 export function reconnect() {
   console.log('🔌 AFWS reconnect initiated');
   clearTimeout(reconnectTimer);

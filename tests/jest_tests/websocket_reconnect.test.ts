@@ -10,6 +10,7 @@ async function loadWebsocket(initialCookie = '') {
   let cookie = initialCookie;
   const sockets: BrowserSocket[] = [];
   const retryCallbacks: (() => void)[] = [];
+  const windowListeners: Record<string, ((event: object) => void)[]> = {};
 
   class BrowserSocket {
     static CONNECTING = 0;
@@ -64,6 +65,9 @@ async function loadWebsocket(initialCookie = '') {
     window: {
       WebSocket: BrowserSocket,
       location: { protocol: 'https:', host: 'admin.example' },
+      addEventListener(type: string, callback: (event: object) => void) {
+        (windowListeners[type] ??= []).push(callback);
+      },
     },
     console: { log() {}, warn() {}, error() {} },
     setTimeout(callback: () => void, delay: number) {
@@ -95,7 +99,13 @@ async function loadWebsocket(initialCookie = '') {
       subscribe(topic: string, callback: (data: unknown) => void): () => void;
     };
   };
-  return { ...exports, sockets, retryCallbacks, setCookie(value: string) { cookie = value; } };
+  return {
+    ...exports,
+    sockets,
+    retryCallbacks,
+    setCookie(value: string) { cookie = value; },
+    windowEvent(type: string, event: object) { windowListeners[type]?.forEach((callback) => callback(event)); },
+  };
 }
 
 beforeEach(() => jest.useFakeTimers());
@@ -253,6 +263,24 @@ describe('browser websocket health', () => {
       jest.advanceTimersByTime(10_000);
       client.sockets[0].emit('message', 'pong');
     }
+
+    expect(client.sockets).toHaveLength(1);
+  });
+});
+
+describe('browser websocket auth changes in other tabs', () => {
+  it('reconnects when another tab logs in or out', async () => {
+    const client = await loadWebsocket();
+
+    client.windowEvent('storage', { key: 'isAuthorized', newValue: 'true' });
+
+    expect(client.sockets).toHaveLength(2);
+  });
+
+  it('ignores other localStorage keys', async () => {
+    const client = await loadWebsocket();
+
+    client.windowEvent('storage', { key: 'afLanguage', newValue: 'uk' });
 
     expect(client.sockets).toHaveLength(1);
   });
