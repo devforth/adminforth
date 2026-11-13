@@ -297,7 +297,8 @@ class ExpressServer implements IExpressHttpServer {
         );
       } catch (e) {
         afLogger.error(`Failed to handle WS connection ${e}`);
-        
+        // unregistered socket would stay open and silent, so the browser would never subscribe or reconnect
+        ws.close();
       }
     });
   }

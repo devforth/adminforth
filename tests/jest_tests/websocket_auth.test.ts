@@ -115,4 +115,20 @@ describe('websocket auth', () => {
 
     expect(checks).toEqual(['handshake', 'reauthorize']);
   });
+
+  it('closes the connection when handshake authorization fails', async () => {
+    const cookie = await login();
+    authorizeHooks.push(async ({ extra }) => {
+      if (extra.websocket === 'handshake') throw new Error('db down');
+      return { allowed: true };
+    });
+    const ws = new (WebSocket as any)(`${wsOrigin}/afws?clientId=test`, { headers: { cookie } });
+    sockets.push(ws);
+    const messages: string[] = [];
+    ws.addEventListener('message', (event) => messages.push(event.data));
+
+    await new Promise((resolve) => ws.addEventListener('close', resolve, { once: true }));
+
+    expect(messages).toEqual([]);
+  });
 });
