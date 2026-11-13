@@ -159,3 +159,30 @@ it('does not register a transport closed while handshake authorization was pendi
     await new Promise<void>((resolve) => server.server.close(resolve));
   }
 });
+
+describe('publish delivery count', () => {
+  it('counts subscribed clients and returns 0 for a topic nobody listens to', async () => {
+    const f = fixture(async () => true);
+    await f.message('subscribe');
+
+    expect(await f.broker.publish(TOPIC, {})).toBe(1);
+    expect(await f.broker.publish('/nobody', {})).toBe(0);
+  });
+
+  it('does not count a dead client whose close handshake is still pending', async () => {
+    const f = fixture(async () => true);
+    await f.message('subscribe');
+    f.client.close = () => {}; // half-open: close event never comes
+    f.client.lastPing = 0;
+    await f.broker.checkDeadClients();
+
+    expect(await f.broker.publish(TOPIC, {})).toBe(0);
+  });
+
+  it('counts only clients passing filterUsers', async () => {
+    const f = fixture(async () => true);
+    await f.message('subscribe');
+
+    expect(await f.broker.publish(TOPIC, {}, async () => false)).toBe(0);
+  });
+});

@@ -196,32 +196,37 @@ export default class SocketBroker implements IWebSocketBroker {
 
   }
 
-  async publish(topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>): Promise<void> {
-    if (!this.topics[topic]) {
+  async publish(topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>): Promise<number> {
+    // checkDeadClients drops a dead client from `clients` at once, but from topics only after its close completes
+    const clients = (this.topics[topic] ?? []).filter((client) => this.clients.get(client.id) === client);
+    if (!clients.length) {
       afLogger.trace(`No clients subscribed to topic ${topic}`);
-      return;
+      return 0;
     }
     const message = JSON.stringify({ type: 'message', topic, data });
 
     if (!filterUsers) {
-      for (const client of this.topics[topic]) {
+      for (const client of clients) {
         afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
         client.send(message);
       }
-      return;
+      return clients.length;
     }
 
+    let sent = 0;
     const limit = pLimit(PUBLISH_FILTER_CONCURRENCY);
     await Promise.all(
-      this.topics[topic].map((client) => limit(async () => {
+      clients.map((client) => limit(async () => {
         if (! (await filterUsers(client.adminUser)) ) {
           afLogger.trace(`Client not authorized to receive message ${topic} ${client.adminUser}`);
           return;
         }
         afLogger.trace(`Sending data to socket ${topic} ${JSON.stringify(data)}`);
         client.send(message);
+        sent++;
       }))
     );
+    return sent;
   }
  
 }

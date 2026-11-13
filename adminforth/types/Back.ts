@@ -2722,7 +2722,8 @@ export interface IWebSocketClient {
 }
 
 export interface IWebSocketBroker {
-  publish: (topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>) => void;
+  /** resolves to the number of connections the message was sent to */
+  publish: (topic: string, data: any, filterUsers?: (adminUser: AdminUser) => Promise<boolean>) => Promise<number>;
 
   registerWsClient: (client: IWebSocketClient) => void;
 }
