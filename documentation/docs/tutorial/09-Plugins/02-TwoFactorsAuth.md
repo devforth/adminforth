@@ -400,6 +400,7 @@ A failed `verify` returns `{ error, code }`, and a failed `verifyAuto` returns `
 | `BROWSER_CONTEXT_REQUIRED` | `verifyAuto` was called outside a browser request and outside a tool call of the MCP server, so there is no browser tab to show the modal in. |
 | `VERIFICATION_CANCELLED` | The user closed the modal opened by `verifyAuto`. |
 | `VERIFICATION_TIMEOUT` | The user did not answer the modal opened by `verifyAuto` within 5 minutes. |
+| `VERIFICATION_DELIVERY_FAILED` | The browser tab that sent the request has no live websocket connection, so `verifyAuto` could not show the modal. Reload the page and try again. |
 | `INVALID_VERIFICATION_SESSION` | The modal answered a `verifyAuto` session that is invalid or belongs to another user. |
 | `INTERNAL_ERROR` | The verification failed with an unexpected error. |
 
