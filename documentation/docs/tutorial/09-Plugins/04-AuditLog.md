@@ -249,6 +249,144 @@ Add the `actionId` to the `enum` of the `action` column, otherwise the log recor
       ...
 ```
 
+## Hiding secret values
+
+Audit log never stores values of `backendOnly` columns. When such a column changes, the log record gets `<hidden value before>` and `<hidden value after>` in place of the old and the new value, so you still see that the value was changed, but not the value itself. This makes `backendOnly` a good fit for API tokens, keys and other secrets.
+
+```ts title='./resources/apiClients.ts'
+columns: [
+  ...
+  {
+    name: 'api_token',
+    type: AdminForthDataTypes.STRING,
+//diff-add
+    backendOnly: true,
+  },
+],
+```
+
+Write a secret from your own code with `asSystem`: it runs the edit hooks, so audit log records the change, and skips column access rules, which reject writes to `backendOnly` columns. Pass `adminUser` and `extra`, then the log record has the user and the client ip:
+
+```ts title='./resources/apiClients.ts'
+import { randomBytes } from 'crypto';
+
+...
+
+options: {
+  actions: [
+    {
+      name: 'Regenerate token',
+      icon: 'lucide:refresh-cw',
+      showIn: { showButton: true, showThreeDotsMenu: true },
+      action: async ({ recordId, adminUser, adminforth, extra }) => {
+        const { error } = await adminforth.resource('api_clients')
+          .asSystem({ adminUser, extra })
+          .update(recordId, { api_token: randomBytes(32).toString('hex') });
+        if (error) {
+          return { ok: false, error };
+        }
+        return { ok: true, successMessage: 'Token regenerated' };
+      },
+    },
+  ],
+},
+```
+
+### Showing the hidden value on demand
+
+A `backendOnly` value never reaches the browser, so the show page has nothing to render for it. To let users see a masked token and reveal it on click, add an endpoint which returns the value only to users who can see the record:
+
+```ts title='./index.ts'
+import * as z from 'zod';
+import { Filters } from 'adminforth';
+
+...
+
+app.post(`${ADMIN_BASE_URL}/api/apiClientToken/`,
+  admin.express.withSchema(
+    {
+      description: 'Returns a masked API token of a client, or the full token when reveal is set.',
+      request: z.object({
+        recordId: z.string(),
+        reveal: z.boolean(),
+      }),
+      response: z.object({
+        token: z.string(),
+      }),
+    },
+    admin.express.authorize(
+      async (req: IAdminUserExpressRequest, res: express.Response) => {
+        const { recordId, reveal } = req.body;
+        // asUser checks that the user may see the record, but strips backendOnly columns
+        if (!await admin.resource('api_clients').asUser(req.adminUser).get(Filters.EQ('id', recordId))) {
+          res.status(404).json({ error: 'Record not found' });
+          return;
+        }
+        const { api_token } = await admin.resource('api_clients').get(Filters.EQ('id', recordId));
+        res.json({ token: reveal ? api_token : `${api_token.slice(0, 4)}••••••` });
+      }
+    )
+  )
+);
+```
+
+Then render the column with a custom component, which loads the masked token and reveals it on click:
+
+```ts title='./resources/apiClients.ts'
+  {
+    name: 'api_token',
+    type: AdminForthDataTypes.STRING,
+    backendOnly: true,
+//diff-add
+    components: {
+//diff-add
+      show: '@@/ApiTokenShow.vue',
+//diff-add
+    },
+  },
+```
+
+```html title='./custom/ApiTokenShow.vue'
+<template>
+  <div class="flex items-center gap-2">
+    <code class="font-mono text-sm">{{ token }}</code>
+    <Button variant="secondary" size="sm" @click="loadToken(!revealed)">
+      <IconEyeOff v-if="revealed" class="w-4 h-4" />
+      <IconEye v-else class="w-4 h-4" />
+      {{ revealed ? 'Hide' : 'Show' }}
+    </Button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { Button } from '@/afcl';
+import { callApi } from '@/utils';
+import { IconEye, IconEyeOff } from '@iconify-prerendered/vue-lucide';
+
+const props = defineProps<{
+  record: any;
+}>();
+
+const token = ref('');
+const revealed = ref(false);
+
+async function loadToken(reveal: boolean) {
+  const res = await callApi({
+    path: '/api/apiClientToken/',
+    method: 'POST',
+    body: { recordId: props.record.id, reveal },
+  });
+  token.value = res.token;
+  revealed.value = reveal;
+}
+
+onMounted(() => loadToken(false));
+</script>
+```
+
+> ☝️ Use `callApi` for your own endpoints. `callAdminForthApi` prepends `/adminapi/v1` to the path and is meant for AdminForth endpoints.
+
 ## Logging client ip address
 
 Audit log can also log the client's IP address if needed.
