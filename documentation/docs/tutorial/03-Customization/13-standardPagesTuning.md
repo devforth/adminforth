@@ -119,6 +119,29 @@ export default {
 }
 ```
 
+### Default filters
+
+Filters applied when the list opens without filters in the URL:
+
+```typescript title="./resources/apartments.ts"
+import { AdminForthFilterOperators } from 'adminforth';
+
+...
+export default {
+  resourceId: 'aparts',
+  options: {
+//diff-add
+    defaultFilters: [
+//diff-add
+      { field: 'listed', operator: AdminForthFilterOperators.EQ, value: true },
+//diff-add
+    ],
+  }
+}
+```
+
+Filters in the URL replace the default ones. If a user clears the filters, the defaults come back on the next page load.
+
 ### Sticky column
 
 

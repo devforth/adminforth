@@ -324,7 +324,7 @@ export function currentQuery() {
 
 export function setQuery(query: any) {
   const currentQuery = { ...router.currentRoute.value.query, ...query };
-  router.replace({
+  return router.replace({
     query: currentQuery,
   });
 }

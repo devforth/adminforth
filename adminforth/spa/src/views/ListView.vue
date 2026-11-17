@@ -218,7 +218,7 @@ import { useRoute } from 'vue-router';
 import { getCustomComponent, getList, startBulkAction, lsKey } from '@/utils';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu.vue';
 import { Button, LinkButton } from '@/afcl'
-import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon } from '@/types/Common';
+import type { AdminForthComponentDeclaration, AdminForthComponentDeclarationFull, AdminForthFilterOperators, AdminForthResourceColumnCommon, FilterParams } from '@/types/Common';
 import { useI18n } from 'vue-i18n';
 
 import {
@@ -416,6 +416,17 @@ class SortQuerySerializer {
     }
 }
 
+// query param for each filter as filter__<column_name>__<operator>=value
+function filtersToQuery(filters: FilterParams[]) {
+  const query: Record<string, string | undefined> = {};
+  filters.forEach(f => {
+    if (f.value !== undefined && f.value !== null && f.value !== '') {
+      query[`filter__${f.field}__${f.operator}`] = JSON.stringify(f.value);
+    }
+  });
+  return query;
+}
+
 let listAutorefresher: any = null;
 
 function clearAutoRefresher() {
@@ -430,6 +441,12 @@ async function init() {
   await coreStore.fetchResourceFull({
     resourceId: route.params.resourceId as string
   });
+
+  // defaults go through the URL like any other filters; awaited so later setQuery calls merge with them
+  const defaultFilters = coreStore.resource!.options?.defaultFilters;
+  if (defaultFilters && !Object.keys(route.query).some(k => k.startsWith('filter__'))) {
+    await setQuery(filtersToQuery(defaultFilters));
+  }
 
   syncPageSize();
 
@@ -518,14 +535,8 @@ watch(() => filtersStore.filters, async (to, from) => {
   console.log('🔄️ filters changed', JSON.stringify(to))
   page.value = 1;
   checkboxes.value = []; // TODO: not sure absolutely needed here
-  // update query param for each filter as filter_<column_name>=value
-  const query:  Record<string, string | undefined> = {};
+  const query = filtersToQuery(filtersStore.filters);
   const currentQ = currentQuery();
-  filtersStore.filters.forEach(f => {
-    if (f.value !== undefined && f.value !== null && f.value !== '') {
-      query[`filter__${f.field}__${f.operator}`] = (JSON.stringify(f.value));
-    }
-  });
   // set every key in currentQ which starts with filter_ to undefined if it is not in query
   Object.keys(currentQ).forEach(k => {
     if (k.startsWith('filter_') && !query[k]) {

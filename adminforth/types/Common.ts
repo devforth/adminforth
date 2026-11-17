@@ -490,6 +490,23 @@ export interface AdminForthResourceInputCommon {
         direction: AdminForthSortDirections | string,
       }
 
+      /**
+       * Filters applied in list view when the URL has no filters.
+       * Example:
+       *
+       * ```ts
+       * import { AdminForthFilterOperators } from 'adminforth';
+       *
+       * ...
+       *
+       * defaultFilters: [
+       *   { field: 'status', operator: AdminForthFilterOperators.EQ, value: 'pending' },
+       * ]
+       * ```
+       *
+       */
+      defaultFilters?: FilterParams[],
+
       /*
        * Custom actions list. Actions available in show, edit and create views. 
        */

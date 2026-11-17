@@ -21,6 +21,7 @@ import path from 'path';
 import { guessLabelFromName, md5hash, RateLimiter, suggestIfTypo, slugifyString, removedInV4 } from './utils.js';
 import { 
   AdminForthSortDirections,
+  AdminForthFilterOperators,
   type AdminForthComponentDeclarationFull,
   AllowedActionsEnum,
   AdminForthComponentDeclaration , 
@@ -867,6 +868,16 @@ export default class ConfigValidator implements IConfigValidator {
         // AdminForthSortDirections is enum
         if (!(Object.values(AdminForthSortDirections) as string[]).includes(dir)) {
           errors.push(`Resource "${res.resourceId}" defaultSort.direction "${dir}" is invalid, allowed values are ${Object.values(AdminForthSortDirections).join(', ')}`);
+        }
+      }
+
+      for (const { field, operator } of options.defaultFilters ?? []) {
+        if (!res.columns.some((c) => c.name === field)) {
+          const similar = suggestIfTypo(res.columns.map((c) => c.name), field);
+          errors.push(`Resource "${res.resourceId}" defaultFilters field "${field}" not found in columns. ${similar ? `Did you mean "${similar}"?` : ''}`);
+        }
+        if (!(Object.values(AdminForthFilterOperators) as string[]).includes(operator)) {
+          errors.push(`Resource "${res.resourceId}" defaultFilters operator "${operator}" is invalid, allowed values are ${Object.values(AdminForthFilterOperators).join(', ')}`);
         }
       }
 

@@ -1,4 +1,4 @@
-import { AdminForthDataTypes, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../../adminforth/index.js';
+import { AdminForthDataTypes, AdminForthFilterOperators, AdminForthResourceColumn, AdminForthResourceInput, AdminUser, Filters } from '../../../adminforth/index.js';
 import { ENGINE_TYPES, BODY_TYPES } from '../../custom/cars_data.js';
 
 import UploadPlugin from '../../../plugins/adminforth-upload/index.js';
@@ -313,7 +313,7 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
                 create: false,
                 edit: false,
                 delete: false,
-              }
+              },
             }
           }
         },
@@ -490,6 +490,9 @@ export default function carsResourseTemplate(resourceId: string, dataSource: Car
         show: true,
         filter: true,
       },
+                    defaultFilters: [
+                { field: 'listed', operator: AdminForthFilterOperators.EQ, value: true },
+              ],
       actions: [
         {
           name: 'Approve Listing',
