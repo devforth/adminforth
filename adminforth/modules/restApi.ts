@@ -513,6 +513,8 @@ const startCustomBulkActionRequestSchema: AnySchemaObject = {
     recordIds: {
       type: 'array',
       items: recordIdentifierSchema,
+      // the records are matched by an OR of their keys, which is empty without them
+      minItems: 1,
     },
     extra: genericObjectSchema,
   },
@@ -673,6 +675,19 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         afLogger.error(`Error in beforeLogout hook, continuing logout: ${e}`);
       }
     }
+  }
+
+  /**
+   * Whether the user can list every one of the records: the resource ACL and the row scope of the list hooks apply,
+   * so a custom action can't reach a record hidden from the user.
+   */
+  private async canListRecords(adminUser: AdminUser, resource: AdminForthResource, recordIds: any[], extra: HttpExtra): Promise<boolean> {
+    const connector = this.adminforth.connectors[resource.dataSource];
+    const count = await this.adminforth
+      .resource(resource.resourceId)
+      .asUser(adminUser, { meta: { requestBody: extra.body }, extra })
+      .count(Filters.OR(recordIds.map((recordId) => Filters.AND(connector.getPrimaryKeyFilters(resource, recordId)))));
+    return count === new Set(recordIds).size;
   }
 
   checkAbortSignal(abortSignal: AbortSignal): boolean {
@@ -2384,14 +2399,21 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
       request_schema: startCustomActionRequestSchema,
       response_schema: startCustomActionResponseSchema,
-      handler: async ({ body, adminUser, tr, cookies, response, headers }) => {
+      handler: async ({ body, adminUser, tr, cookies, response, headers, query, requestUrl }) => {
         const { resourceId, actionId, recordId, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
         }
 
-        const record = await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, recordId);
+        let listable: boolean;
+        try {
+          listable = await this.canListRecords(adminUser, resource, [recordId], { body, query, headers, cookies, requestUrl, response });
+        } catch (e) {
+          return { error: e.message };
+        }
+        // a record the user can't list is reported as missing, so it is not revealed whether it exists
+        const record = listable ? await this.adminforth.connectors[resource.dataSource].getRecordByPrimaryKey(resource, recordId) : null;
         if (!record){
             return { error: `Record with ${recordId} not found` };
         }
@@ -2417,10 +2439,10 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
           const redirectUrl = typeof action.url === 'function'
             ? await action.url({ record, recordId, adminUser, resource })
             : action.url;
+          // the record is not returned: it is the raw row, backendOnly columns included
           return {
             actionId,
             recordId,
-            record,
             resourceId,
             redirectUrl,
           }
@@ -2443,11 +2465,20 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
       request_schema: startCustomBulkActionRequestSchema,
       response_schema: startCustomBulkActionResponseSchema,
-      handler: async ({ body, adminUser, tr, response, cookies, headers }) => {
+      handler: async ({ body, adminUser, tr, response, cookies, headers, query, requestUrl }) => {
         const { resourceId, actionId, recordIds, extra } = body;
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: await tr(`Resource {resourceId} not found`, 'errors', { resourceId }) };
+        }
+        let listable: boolean;
+        try {
+          listable = await this.canListRecords(adminUser, resource, recordIds, { body, query, headers, cookies, requestUrl, response });
+        } catch (e) {
+          return { error: e.message };
+        }
+        if (!listable) {
+          return { error: 'Some of the selected records were not found' };
         }
         const { allowedActions } = await interpretResource(
           adminUser,
