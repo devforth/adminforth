@@ -42,10 +42,10 @@ export type FilterParams = {
      */
     operator: AdminForthFilterOperators;
     /**
-     * Value of filter
+     * Value of filter, an array for `in` and `nin`
      */
-    value: string | number | boolean ;
-} 
+    value: string | number | boolean | (string | number | boolean)[];
+}
 
 export enum AdminForthSortDirections {
   asc = 'asc',
