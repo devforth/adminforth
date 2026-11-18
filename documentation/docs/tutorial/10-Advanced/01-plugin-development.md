@@ -95,7 +95,7 @@ export interface PluginOptions extends PluginsCommonOptions {
 //diff-add
    * Model name. Go to https://platform.openai.com/docs/models, select model and copy name.
 //diff-add
-   * Default is `gpt-6-luna`. Use e.g. more expensive `gpt-6.1-sol` for more powerful model.
+   * Default is `gpt-6-luna`. Use e.g. more expensive `gpt-6.2-sol` for more powerful model.
 //diff-add
    */
 //diff-add
