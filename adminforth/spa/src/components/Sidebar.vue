@@ -65,7 +65,7 @@
 
       <ul class="af-sidebar-container space-y-0.5 text-sm" >
       <template v-if="!iconOnlySidebarEnabled || !isSidebarIconOnly" v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-          <div v-if="item.type === 'divider'" class="my-2 mx-2 border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
+          <div v-if="item.type === 'divider'" class="flex items-center h-4 mx-2"><div class="w-full border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div></div>
           <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-4"></div>
           <div v-else-if="item.type === 'heading'" class="flex items-center justify-left px-3 pt-3 pb-1 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
           ">{{ item.label }}</div>
@@ -113,16 +113,23 @@
       </li>
       </template>
       <template v-if="iconOnlySidebarEnabled && isSidebarIconOnly" v-for="(item, i) in coreStore.menu" :key="`menu-${i}`">
-            <div v-if="item.type === 'divider'" class="my-2 mx-2 border-t border-lightSidebarDevider dark:border-darkSidebarDevider"></div>
+            <div v-if="item.type === 'divider'" class="flex items-center h-4 mx-2">
+              <div class="w-full border-t border-lightSidebarDevider dark:border-darkSidebarDevider" :class="{ invisible: !isSidebarHovering && isNextTo(i, 'heading') }"></div>
+            </div>
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-4"></div>
-            <div v-else-if="item.type === 'heading' && isSidebarHovering" class="flex items-center justify-left px-3 h-8 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
-            ">{{ item.label }}</div>
-            <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="opacity-0 w-1 h-8">{{ item.label }}</div>
+            <div v-else-if="item.type === 'heading' && isSidebarHovering" class="flex items-center justify-left pl-4 pr-3 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
+            " :class="isNextTo(i, 'divider') ? 'h-6' : 'h-8'">{{ item.label }}</div>
+            <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="flex items-center mx-2" :class="isNextTo(i, 'divider') ? 'h-6' : 'h-8'" :aria-label="item.label">
+              <div class="w-full border-t border-lightSidebarDevider dark:border-darkSidebarDevider" :class="{
+                'translate-y-[9px]': coreStore.menu[i + 1]?.type === 'divider',
+                '-translate-y-[9px]': coreStore.menu[i - 1]?.type === 'divider',
+              }"></div>
+            </div>
             <li v-else-if="item.children" class="af-sidebar-expand-container">
                 <button @click="clickOnMenuItem(item)" type="button" class="af-sidebar-expand-button relative flex items-center h-9 py-2 text-sm text-lightSidebarText rounded-default group hover:bg-lightSidebarItemHover hover:text-lightSidebarTextHover dark:text-darkSidebarText dark:hover:bg-darkSidebarItemHover dark:hover:text-darkSidebarTextHover"
                     :class="[
                       isGroupOpened(item) ? 'af-sidebar-dropdown-expanded' : 'af-sidebar-dropdown-collapsed',
-                      isSidebarIconOnly && !isSidebarHovering ? 'w-10 ml-1 px-3' : 'w-full px-3'
+                      isSidebarIconOnly && !isSidebarHovering ? 'w-10 ml-1 px-3' : 'w-full pl-4 pr-3'
                     ]"
                     :aria-controls="`dropdown-example${i}`"
                 >
@@ -393,6 +400,11 @@ function toggleSidebar() {
 
 function isGroupOpened(item: AdminForthConfigMenuItem) {
   return openedGroups.value[item.itemId!] ?? item.open;
+}
+
+function isNextTo(i: number, type: AdminForthConfigMenuItem['type']) {
+  const menu = coreStore.menu;
+  return menu[i - 1]?.type === type || menu[i + 1]?.type === type;
 }
 
 function clickOnMenuItem(item: AdminForthConfigMenuItem) {

@@ -11,8 +11,10 @@
         'pl-2.5 pr-3': isChild && !isSidebarIconOnly && !isSidebarHovering,
         'pl-6 pr-3': isChild && isSidebarIconOnly && isSidebarHovering,
         'w-full': !isSidebarIconOnly || isSidebarHovering,
-        'px-3': !isChild && (!isSidebarIconOnly || isSidebarHovering),
-        'w-10 h-9 ml-1 px-3': isSidebarIconOnly && !isSidebarHovering,
+        'px-3': !isChild && !isSidebarIconOnly,
+        'pl-4 pr-3': !isChild && isSidebarIconOnly && isSidebarHovering,
+        'h-9': isSidebarIconOnly,
+        'w-10 ml-1 px-3': isSidebarIconOnly && !isSidebarHovering,
         'bg-lightSidebarItemActive text-lightSidebarTextActive font-medium dark:bg-darkSidebarItemActive dark:text-darkSidebarTextActive': isItemActive(item)
       }"
   >
