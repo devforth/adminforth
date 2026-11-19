@@ -2046,7 +2046,7 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
       },
       request_schema: getMinMaxForColumnsRequestSchema,
       response_schema: getMinMaxForColumnsResponseSchema,
-      handler: async ({ body }) => {
+      handler: async ({ body, adminUser }) => {
         const { resourceId } = body;
         if (!this.adminforth.statuses.dbDiscover) {
           return { error: 'Database discovery not started' };
@@ -2057,6 +2057,17 @@ export default class AdminForthRestAPI implements IAdminForthRestAPI {
         const resource = this.adminforth.config.resources.find((res) => res.resourceId == resourceId);
         if (!resource) {
           return { error: `Resource '${resourceId}' not found` };
+        }
+        const { allowedActions } = await interpretResource(
+          adminUser,
+          resource,
+          { requestBody: body, pk: undefined },
+          ActionCheckSource.ListRequest,
+          this.adminforth
+        );
+        const { allowed, error } = checkAccess(AllowedActionsEnum.list, allowedActions);
+        if (!allowed) {
+          return { error };
         }
         const item = await this.adminforth.connectors[resource.dataSource].getMinMaxForColumns({
           resource,
