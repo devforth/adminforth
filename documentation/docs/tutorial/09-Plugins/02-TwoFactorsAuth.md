@@ -87,7 +87,7 @@ And add it to `adminuser.ts`
 >
 > If you find users frequently encountering code mismatches due to clock drift, you can increase `timeStepWindow` to `2`. **However, be cautious: larger windows can reduce overall security!**
 >
-> ❗ With a `timeStepWindow` set to `0`, the plugin will pass all the expired codes, which is not secure and should only be used for testing purposes.
+> ❗ With `timeStepWindow` set to `0`, the plugin accepts only the code of the current 30-second step: a code entered just after the step changes, or generated on a device whose clock is a few seconds off, is rejected.
 
 Thats it! Two-Factor Authentication is now enabled:
 ![alt text](image-1.png)
