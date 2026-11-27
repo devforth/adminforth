@@ -119,7 +119,7 @@
             <div v-else-if="item.type === 'gap'" class="flex items-center justify-center h-4"></div>
             <div v-else-if="item.type === 'heading' && isSidebarHovering" class="flex items-center justify-left pl-4 pr-3 text-xs font-medium tracking-wide text-lightSidebarHeading dark:text-darkSidebarHeading
             " :class="isNextTo(i, 'divider') ? 'h-6' : 'h-8'">{{ item.label }}</div>
-            <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="flex items-center mx-2" :class="isNextTo(i, 'divider') ? 'h-6' : 'h-8'" :aria-label="item.label">
+            <div v-else-if="item.type === 'heading' && !isSidebarHovering" class="flex items-center mx-2" :class="isNextTo(i, 'divider') ? 'h-6' : 'h-8'" :aria-label="item.label as string">
               <div class="w-full border-t border-lightSidebarDevider dark:border-darkSidebarDevider" :class="{
                 'translate-y-[9px]': coreStore.menu[i + 1]?.type === 'divider',
                 '-translate-y-[9px]': coreStore.menu[i - 1]?.type === 'divider',
